@@ -2,7 +2,7 @@
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
 <div style="max-width:1000px;margin:0 auto;padding:24px 14px 50px;">
-  <h1 style="font-size:24px;font-weight:800;margin-bottom:18px;">دشبورد مدیریت 🛠️</h1>
+  <h1 style="font-size:24px;font-weight:800;margin-bottom:18px;">داشبورد مدیریت</h1>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;">
     <div class="kpi"><b>{{ "{:,}".format(revenue_toman) }} تومان</b><span>درآمد پرداختی</span></div>
@@ -14,7 +14,7 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
-  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">وضعیت هوش مصنوعی 🤖</h2>
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">وضعیت هوش مصنوعی</h2>
   <div class="glass" style="padding:14px;font-size:.85rem;">
     <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:10px;">
       {% for part, model in ai_status.items() %}
@@ -35,7 +35,34 @@
     </p>
   </div>
 
-  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">کلیدها و رازها 🔐</h2>
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">پروایدر و مدل هوش مصنوعی</h2>
+  <div class="glass" style="padding:16px;">
+    <p class="muted" style="font-size:.78rem;">برای هر بخش، پروایدر و مدل را انتخاب کن. «خودکار» یعنی اول OpenCode Go و در صورت خطا DeepSeek مستقیم (اگر کلیدش ست باشد). بعد از ذخیره، سرویس را ریاستارت کن.</p>
+    <div style="display:grid;gap:4px;margin-top:14px;">
+      {% set parts = {'report':'گزارش کامل', 'chat':'گفتگو با چارت', 'preview':'پیش‌نمایش رایگان'} %}
+      {% for part, label in parts.items() %}
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--stroke);">
+        <b style="min-width:130px;font-size:.85rem;">{{ label }}</b>
+        <select id="provider-{{ part }}" style="flex:1;min-width:170px;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:8px;padding:7px 9px;color:#fff;font-size:.78rem;">
+          <option value="auto" {% if ai_provider[part] == 'auto' %}selected{% endif %}>خودکار (Go + DeepSeek)</option>
+          <option value="go" {% if ai_provider[part] == 'go' %}selected{% endif %}>فقط OpenCode Go</option>
+          <option value="deepseek" {% if ai_provider[part] == 'deepseek' %}selected{% endif %}>فقط DeepSeek مستقیم</option>
+        </select>
+        <select id="model-{{ part }}" style="flex:1;min-width:170px;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:8px;padding:7px 9px;color:#fff;font-size:.78rem;">
+          <option value="deepseek-v4-pro" {% if ai_status[part] == 'deepseek-v4-pro' %}selected{% endif %}>deepseek-v4-pro (عمیق‌تر)</option>
+          <option value="deepseek-v4-flash" {% if ai_status[part] == 'deepseek-v4-flash' %}selected{% endif %}>deepseek-v4-flash (سریع‌تر)</option>
+        </select>
+        <button type="button" onclick="savePart('{{ part }}')" style="padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;font-weight:700;cursor:pointer;">ذخیره</button>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button type="button" onclick="testLLM()" style="padding:9px 18px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#fff;font-weight:700;cursor:pointer;">تست اتصال پروایدرها</button>
+      <span id="llm-test-result" class="muted" style="font-size:.75rem;direction:ltr;"></span>
+    </div>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">کلیدها و رازها</h2>
   <p class="muted" style="font-size:.78rem;margin-bottom:8px;">
     برای استقرار روی سرور جدید، کد/کلید هر بخش را اینجا وارد و ذخیره کنید؛ مقدار به‌صورت رمزنگاری‌شده در دیتابیس ذخیره می‌شود و دیگر نیازی به فایل env نیست. بعد از ذخیره، <b>سرویس را ریاستارت کنید</b> تا اعمال شود. اگر خالی بگذارید، به مقدار متغیر محیطی برمی‌گردد.
   </p>
@@ -189,6 +216,27 @@
   </div>
   <script>
     document.addEventListener('alpine:init', () => { Alpine.store('plans', {}); });
+    async function savePart(part){
+      const provider = document.getElementById('provider-' + part).value;
+      const model = document.getElementById('model-' + part).value;
+      let fd = new FormData(); fd.append('value', provider);
+      await fetch('/api/admin/secrets/' + part + '_llm_provider', {method:'POST', body:fd});
+      fd = new FormData(); fd.append('value', model);
+      const r = await fetch('/api/admin/secrets/' + part + '_llm_model', {method:'POST', body:fd});
+      const j = await r.json();
+      if (j.ok) alert('ذخیره شد — بعد از ریاستارت سرویس اعمال می‌شود');
+      else alert('خطا: ' + (j.detail || 'نامشخص'));
+    }
+    async function testLLM(){
+      const box = document.getElementById('llm-test-result');
+      box.textContent = 'در حال تست...';
+      try {
+        const r = await fetch('/api/admin/llm/test', {method:'POST'});
+        const j = await r.json();
+        const parts = Object.entries(j).map(([k, v]) => k + '=' + (v.ok ? 'OK ' + v.model + ' (' + v.latency_ms + 'ms)' : 'FAIL: ' + v.error));
+        box.textContent = parts.join('  |  ');
+      } catch(e) { box.textContent = 'خطا در تست: ' + e; }
+    }
     async function regenOrder(id){
       if (!confirm('گزارش ناموفق این سفارش دوباره در صف تولید قرار می‌گیرد. ادامه می‌دهی؟')) return;
       const r = await fetch('/api/admin/orders/' + id + '/regenerate', {method:'POST'});

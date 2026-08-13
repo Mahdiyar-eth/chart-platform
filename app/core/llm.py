@@ -106,10 +106,13 @@ class DeepSeekProvider(LLMProvider):
     name = "deepseek"
     MODEL = "deepseek-v4-flash"
 
-    def __init__(self, api_key: str | None = None, api_base: str = "https://api.deepseek.com") -> None:
+    def __init__(self, api_key: str | None = None, api_base: str = "https://api.deepseek.com",
+                 model: str | None = None) -> None:
         super().__init__()
         self.api_key = api_key or get_secret("deepseek_api_key", "DEEPSEEK_API_KEY", "")
         self.api_base = api_base
+        if model:
+            self.MODEL = model
         self.user_agent = "chart-platform/1.0"
         self.extra_payload: dict | None = None
 
@@ -229,16 +232,20 @@ _PART_DEFAULT_MODEL = {
 def build_router(part: str = "report") -> LLMRouter:
     """Build the router for a specific part. Production runs on OpenCode Go
     (DeepSeek V4) only; an optional direct DeepSeek API key acts as fallback.
-    Model per part is overridable via secret `{part}_llm_model` (admin panel)."""
+    Model + provider per part are overridable via secrets `{part}_llm_model`
+    and `{part}_llm_provider` (go / deepseek / auto) from the admin panel."""
     default_model = _PART_DEFAULT_MODEL.get(part, "deepseek-v4-pro")
     model = get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default_model)
+    provider_pref = get_secret(f"{part}_llm_provider", f"{part.upper()}_LLM_PROVIDER", "auto").strip().lower()
     providers: list[LLMProvider] = []
-    go = GoProvider(model=model)
-    if go.api_key:
-        providers.append(go)
-    ds = DeepSeekProvider()
-    if ds.api_key:
-        providers.append(ds)
+    if provider_pref in ("", "auto", "go"):
+        go = GoProvider(model=model)
+        if go.api_key:
+            providers.append(go)
+    if provider_pref in ("", "auto", "deepseek"):
+        ds = DeepSeekProvider(model=model)
+        if ds.api_key:
+            providers.append(ds)
     return LLMRouter(providers)
 
 

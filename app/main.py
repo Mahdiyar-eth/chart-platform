@@ -1564,9 +1564,12 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     # AI chat status: active model per part + provider health + chat usage
     from app.core.llm import build_router
     ai_status: dict[str, str] = {}
+    ai_provider: dict[str, str] = {}
     for part, default in (("report", "deepseek-v4-pro"), ("chat", "deepseek-v4-flash"),
                           ("preview", "deepseek-v4-flash")):
         ai_status[part] = secret_store.get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default)
+        p = secret_store.get_secret(f"{part}_llm_provider", f"{part.upper()}_LLM_PROVIDER", "auto")
+        ai_provider[part] = (p.strip().lower() or "auto")
     ai_health = build_router("report").health_report()
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     chat_today = len(session.exec(select(ChatMessage.id).where(ChatMessage.created_at >= today_start)).all())
@@ -1576,7 +1579,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "revenue_toman": revenue, "by_status": by_status,
         "users": users, "plans": plans, "audit": audit,
         "llm_cost_7d": llm_cost, "llm_runs_7d": len(llm),
-        "ai_status": ai_status, "ai_health": ai_health,
+        "ai_status": ai_status, "ai_health": ai_health, "ai_provider": ai_provider,
         "chat_today": chat_today, "chat_total": chat_total,
         "secrets": secret_store.secret_status(),
         "prompt_keys": PROMPT_KEYS,
@@ -1662,4 +1665,28 @@ def admin_secret_reveal(key: str, request: Request):
     if key not in secret_store._CATALOG_BY_KEY:
         raise HTTPException(404, "unknown secret key")
     return {"key": key, "value": secret_store.reveal_secret(key)}
+
+
+@app.post("/api/admin/llm/test", response_class=JSONResponse)
+async def admin_llm_test(request: Request):
+    """Ping each configured LLM provider so the admin can verify keys live."""
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    from app.core.llm import GoProvider, DeepSeekProvider
+    results: dict[str, dict] = {}
+    go = GoProvider()
+    if go.api_key:
+        r = await go.complete("فقط یک کلمه بگو: سلام", max_tokens=16, temperature=0)
+        results["go"] = {"ok": r.ok, "model": r.model, "latency_ms": r.latency_ms,
+                         "error": r.error or ""}
+    else:
+        results["go"] = {"ok": False, "error": "کلید OpenCode (GO_API_KEY) تنظیم نشده است"}
+    ds = DeepSeekProvider()
+    if ds.api_key:
+        r = await ds.complete("فقط یک کلمه بگو: سلام", max_tokens=16, temperature=0)
+        results["deepseek"] = {"ok": r.ok, "model": r.model, "latency_ms": r.latency_ms,
+                               "error": r.error or ""}
+    else:
+        results["deepseek"] = {"ok": False, "error": "کلید مستقیم DeepSeek تنظیم نشده است (اختیاری)"}
+    return results
 

@@ -51,19 +51,19 @@
     <h2>نکته‌های کوتاه</h2>
     <ul style="margin-top:12px; list-style:none;">
       <li style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07); display:flex; gap:10px;">
-        <span>🌙</span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
+        <span><svg style="width:18px;height:18px;color:var(--gold);flex:none;" aria-hidden="true"><use href="#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
       </li>
       <li style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07); display:flex; gap:10px;">
-        <span>☀️</span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
+        <span><svg style="width:18px;height:18px;color:var(--gold);flex:none;" aria-hidden="true"><use href="#icon-sun"/></svg></span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
       </li>
       {% if 'ASC' in big_three %}
       <li style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07); display:flex; gap:10px;">
-        <span>⬆️</span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
+        <span><svg style="width:18px;height:18px;color:var(--gold);flex:none;" aria-hidden="true"><use href="#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
       </li>
       {% endif %}
       <template x-for="ins in insights" :key="ins.domain">
         <li style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07); display:flex; gap:10px;">
-          <span>✨</span><span x-text="ins.insight"></span>
+          <span><svg style="width:18px;height:18px;color:var(--gold);flex:none;" aria-hidden="true"><use href="#icon-sparkles"/></svg></span><span x-text="ins.insight"></span>
         </li>
       </template>
     </ul>
@@ -72,7 +72,7 @@
 
   <!-- annual transit timeline (plan §9.3) -->
   <section class="glass" style="margin-top:22px; padding:22px;">
-    <h2>🌠 گذرهای سال آینده</h2>
+    <h2>گذرهای سال آینده</h2>
     <p class="muted" style="font-size:.8rem; margin-top:4px;">وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
     <div style="margin-top:14px; overflow-x:auto; direction:ltr;">
       <img src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" style="min-width:640px; width:100%;">
@@ -88,10 +88,10 @@
       <span class="chip">استاندارد ۳۴۹ هزار</span>
       <span class="chip">پرمیوم ۶۹۹ هزار</span>
     </div>
-    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">خرید گزارش کامل ✨</a>
+    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">خرید گزارش کامل</a>
     <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:14px; font-size:.85rem;">
       <a href="/chat/{{ chart.id }}" style="color:var(--muted);">💬 گفت‌وگو با چارت</a>
-      <a href="/transit/{{ chart.id }}" style="color:var(--muted);">🌠 گذرهای کنونی</a>
+      <a href="/transit/{{ chart.id }}" style="color:var(--muted);">گذرهای کنونی</a>
       <button @click="share()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;">📤 اشتراک‌گذاری</button>
     </div>
     <div style="margin-top:14px;" x-cloak>
@@ -118,7 +118,7 @@ function reportState(){
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [],
     share(){
       const url = location.origin + '/chart/{{ chart.id }}?t={{ access_token }}';
-      window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('چارت تولد من ✨'), '_blank');
+      window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('چارت تولد من'), '_blank');
     },
     async init(){
       if(this.checked) return;

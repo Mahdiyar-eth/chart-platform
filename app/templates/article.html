@@ -3,7 +3,7 @@
 {% block og_title %}{{ art.title }}{% endblock %}
 {% block og_image %}{% if art.image %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ art.image }}{% endif %}{% endblock %}
 {% block twitter_card %}summary_large_image{% endblock %}
-{% block meta %}<meta name="description" content="{{ art.meta }}">{% if art.keywords %}<meta name="keywords" content="{{ art.keywords }}">{% endif %}{% endblock %}
+{% block description %}{{ art.meta }}{% endblock %}
 {% block content %}
 <div class="wrap" style="max-width:760px;margin:0 auto;padding:40px 16px 80px;">
   <a href="/articles" style="font-size:.8rem;color:#9a92b0;text-decoration:none;">→ همه‌ی مقالات</a>
@@ -19,7 +19,7 @@
   </article>
   <div style="margin-top:36px;padding:20px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:14px;text-align:center;">
     <p style="margin-bottom:12px;font-weight:700;">آماده‌ای چارت خودت را ببینی؟ اینسایت‌های اولیه رایگان است.</p>
-    <a class="btn-lg" href="/birth-form" style="display:inline-block;">✨ چارت رایگان من</a>
+    <a class="btn-lg" href="/birth-form" style="display:inline-block;">چارت رایگان من</a>
     <div style="margin-top:10px;font-size:.8rem;color:#9a92b0;">
       <a href="/plans" style="color:#d4af37;">مقایسه‌ی پلن‌ها و گزارش کامل</a>
     </div>

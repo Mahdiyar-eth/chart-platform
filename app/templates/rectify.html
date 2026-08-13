@@ -1,17 +1,30 @@
 {% extends "base.html" %}
-{% block title %}یافتن ساعت تولد | بازسازی دقیق چارت تولد{% endblock %}
-{% block meta %}<meta name="description" content="ساعت تولد را نمی‌دانید؟ با ابزار یافتن ساعت تولد بر اساس چند سؤال ساده، چارت دقیق‌تری بسازید">{% endblock %}
+{% block title %}بازبینی ساعت تولد | بازسازی دقیق چارت تولد{% endblock %}
+{% block description %}ساعت تولد را نمی‌دانید؟ با ابزار بازبینی ساعت تولد بر اساس رویدادهای کلیدی زندگی، چارت دقیق‌تری بسازید{% endblock %}
 
 {% block content %}
-<div style="max-width:560px; margin:0 auto; padding-top:36px;">
-  <h1>🕵️ یافتن ساعت تولد</h1>
-  <p class="muted">ساعت دقیق تولد را نمی‌دانی؟ چند رویداد مهم زندگی‌ات را بگو تا با محاسبه گذرهای سیاره‌ای، محتمل‌ترین ساعت تولدت را پیدا کنیم. (این روش علمیِ تثبیت‌شده نیست؛ یک تخمین نجومی است.)</p>
+<div style="max-width:560px; margin:0 auto; padding-top:32px;">
+  <h1 style="display:flex; align-items:center; gap:12px; justify-content:center; font-size:1.7rem;">
+    <svg style="width:34px;height:34px;color:var(--gold);flex:none;" aria-hidden="true"><use href="#icon-clock"/></svg>
+    بازبینی ساعت تولد
+  </h1>
+  <p class="muted" style="text-align:center; line-height:2; margin-top:10px;">ساعت دقیق تولدت را نمی‌دانی؟ با ثبت چند رویداد مهم زندگی، محتمل‌ترین زمان تولدت را بازسازی می‌کنیم.</p>
+
+  <div class="glass" style="padding:18px 20px; margin-top:16px;">
+    <h2 style="font-size:1rem; color:var(--gold);">این روش چطور کار می‌کند؟</h2>
+    <p style="line-height:2; font-size:.9rem; color:#dfe6ff; margin-top:8px;">
+      در نجوم، «بازبینی» (Rectification) روشی قدیمی برای پیدا کردن ساعت تولد نامشخص است. منطق آن ساده است: بعضی رویدادهای مهم زندگی — مثل ازدواج، تولد فرزند، تغییر شغل یا مهاجرت — با گذر سیاره‌ها از روی نقاط حساس چارت هم‌زمان می‌شوند. ما موقعیت سیاره‌ها در تاریخِ آن رویدادها را بررسی می‌کنیم و می‌بینیم کدام ساعت تولد، بهترین هم‌راستایی را با آن‌ها دارد.
+    </p>
+    <p style="line-height:2; font-size:.9rem; color:#9aa2c4; margin-top:10px;">
+      مهم است بدانی: این یک <b style="color:var(--gold);">تخمین نجومی</b> است، نه روش علمیِ تثبیت‌شده، و جایگزین سند رسمی تولد نیست. هرچه رویدادهای بیشتری با تاریخ تقریبی ثبت کنی، نتیجه دقیق‌تر می‌شود.
+    </p>
+  </div>
 
   <form id="recForm" style="margin-top:18px;">
     <input type="hidden" name="calendar" value="jalali">
     <div class="glass" style="padding:18px;">
-      <h2 style="font-size:1rem;">📅 تاریخ تولد</h2>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+      <h2 style="font-size:1rem; display:flex; align-items:center; gap:8px;"><svg style="width:20px;height:20px;color:var(--gold);" aria-hidden="true"><use href="#icon-calendar"/></svg> تاریخ تولد</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;">
         <input name="year" type="number" placeholder="سال 1373" class="input" required>
         <input name="month" type="number" placeholder="ماه" class="input" required>
         <input name="day" type="number" placeholder="روز" class="input" required>
@@ -21,13 +34,15 @@
     </div>
 
     <div class="glass" style="padding:18px; margin-top:12px;">
-      <h2 style="font-size:1rem;">📌 رویدادهای مهم زندگی</h2>
-      <p class="muted" style="font-size:.8rem;">حداقل ۲ رویداد با تاریخ تقریبی (سال/ماه/روز)</p>
-      <div id="eventsBox"></div>
+      <h2 style="font-size:1rem; display:flex; align-items:center; gap:8px;"><svg style="width:20px;height:20px;color:var(--gold);" aria-hidden="true"><use href="#icon-sparkles"/></svg> رویدادهای مهم زندگی</h2>
+      <p class="muted" style="font-size:.8rem; margin-top:6px;">حداقل ۲ رویداد با تاریخ تقریبی (سال/ماه/روز) ثبت کن — هرچه بیشتر، دقیق‌تر</p>
+      <div id="eventsBox" style="margin-top:10px;"></div>
       <button type="button" id="addEvent" class="btn btn-ghost" style="width:100%; margin-top:8px; font-size:.85rem;">+ افزودن رویداد</button>
     </div>
 
-    <button type="submit" class="btn" style="width:100%; margin-top:16px; padding:14px;">یافتن ساعت تولد 🕵️</button>
+    <button type="submit" class="btn" style="width:100%; margin-top:16px; padding:14px;">
+      <svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-clock"/></svg> بازسازی ساعت تولد
+    </button>
   </form>
 
   <div id="recResult" style="display:none; margin-top:20px;"></div>
@@ -40,7 +55,7 @@
 </style>
 <script>
 const CATS = {marriage:'ازدواج', child:'فرزند', job_change:'تغییر شغل', relocation:'مهاجرت', illness:'بیماری', windfall:'موفقیت مالی', fame:'شهرت', loss:'از دست دادن'};
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
 
 function addEventRow(cat, y, m, d) {
   const box = document.getElementById('eventsBox');
@@ -104,14 +119,14 @@ document.getElementById('recForm').addEventListener('submit', async (e) => {
     box.style.display = 'block';
     box.innerHTML =
       '<div class="glass glow" style="padding:22px; text-align:center;">' +
-      '<h2>🕵️ محتمل‌ترین ساعت تولد: <span style="color:#f5c518;">' + esc(d.best_time) + '</span></h2>' +
+      '<h2>محتمل‌ترین ساعت تولد: <span style="color:#f5c518;">' + esc(d.best_time) + '</span></h2>' +
       '<p class="muted" style="margin-top:6px; font-size:.85rem;">بر اساس ' + d.events_used + ' رویداد — امتیاز هم‌راستایی: ' + d.score + '</p>' +
       '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px;">' +
       d.candidates.map(c => '<div class="glass" style="padding:10px;"><b>' + esc(c.time) + '</b><div class="muted" style="font-size:.75rem;">امتیاز ' + c.score + '</div></div>').join('') +
       '</div>' +
-      '<p class="muted" style="margin-top:12px; font-size:.8rem;">⚠️ این تخمین جایگزین سند رسمی تولد نیست.</p>' +
-      '<a href="/birth-form" class="btn" style="display:block; margin-top:12px;">ساخت چارت با این ساعت ✨</a></div>';
-  } finally { btn.disabled = false; btn.textContent = 'یافتن ساعت تولد 🕵️'; }
+      '<p class="muted" style="margin-top:12px; font-size:.8rem;">این تخمین جایگزین سند رسمی تولد نیست.</p>' +
+      '<a href="/birth-form" class="btn" style="display:block; margin-top:12px;">ساخت چارت با این ساعت</a></div>';
+  } finally { btn.disabled = false; btn.textContent = 'بازسازی ساعت تولد'; }
 });
 </script>
 {% endblock %}

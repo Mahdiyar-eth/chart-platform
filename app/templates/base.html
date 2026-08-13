@@ -116,6 +116,33 @@
       .bn-fab .fab-circle svg{ width:26px; height:26px; }
       .bn-fab span{ font-size:.64rem; font-weight:800; color:var(--gold); margin-top:2px; }
     }
+    /* ── Mobile hamburger + slide-in drawer ── */
+    .hamburger{ display:none; }
+    .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+      z-index:89; opacity:0; pointer-events:none; transition:opacity .25s var(--ease); }
+    .drawer-backdrop.show{ opacity:1; pointer-events:auto; }
+    .drawer{ position:fixed; top:0; bottom:0; inset-inline-start:auto; inset-inline-end:0; width:min(82vw,320px); z-index:90;
+      background:rgba(17,22,49,.97); border-inline-start:1px solid rgba(255,255,255,.12);
+      backdrop-filter:blur(26px); -webkit-backdrop-filter:blur(26px);
+      transform:translateX(105%); transition:transform .32s var(--ease);
+      padding:18px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; box-shadow:-20px 0 60px rgba(0,0,0,.5); }
+    .drawer.open{ transform:translateX(0); }
+    .drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:4px 6px 14px;
+      border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:10px; }
+    .drawer-head span{ font-weight:800; font-size:1.05rem; color:var(--txt); }
+    .drawer-close{ width:42px; height:42px; border-radius:13px; background:rgba(255,255,255,.08); border:1px solid var(--stroke);
+      color:var(--txt); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .drawer-close svg{ width:20px; height:20px; }
+    .drawer-item{ display:flex; align-items:center; gap:13px; min-height:52px; padding:0 14px; border-radius:14px;
+      color:var(--txt); text-decoration:none; font-size:.93rem; font-weight:600; transition:background-color .18s var(--ease); }
+    .drawer-item svg{ width:21px; height:21px; color:var(--gold); flex:none; opacity:.95; }
+    .drawer-item:active{ background:rgba(255,255,255,.08); }
+    .drawer-item.active{ background:linear-gradient(135deg, rgba(245,197,24,.16), rgba(232,142,11,.06)); color:var(--gold); }
+    @media (max-width:768px){
+      .hamburger{ display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:14px;
+        background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:var(--txt); cursor:pointer; flex:none; }
+      .hamburger svg{ width:22px; height:22px; }
+    }
     /* glass card (brighter) */
     .glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--radius);
       backdrop-filter:blur(22px) saturate(150%); -webkit-backdrop-filter:blur(22px) saturate(150%);
@@ -194,12 +221,15 @@
           <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="zg-brand" gradientUnits="userSpaceOnUse" x1="17" y1="17" x2="47" y2="47"><stop offset="0" stop-color="#F0C75E"/><stop offset="1" stop-color="#C8901E"/></linearGradient></defs><circle cx="32" cy="32" r="28" fill="none" stroke="url(#zg-brand)" stroke-width="3.5"/><circle cx="32" cy="32" r="20.5" fill="none" stroke="url(#zg-brand)" stroke-width="1" opacity="0.5"/><g stroke="url(#zg-brand)" stroke-width="2.2" stroke-linecap="round"><line x1="32" y1="7" x2="32" y2="12" transform="rotate(0 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(30 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(60 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(90 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(120 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(150 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(180 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(210 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(240 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(270 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(300 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(330 32 32)"/></g><path d="M32 17 L35.8 28.2 L47 32 L35.8 35.8 L32 47 L28.2 35.8 L17 32 L28.2 28.2 Z" fill="url(#zg-brand)"/></svg>
           <span>زایچه</span>
         </a>
+        <button class="hamburger" aria-label="باز کردن منو" onclick="toggleDrawer(true)"><svg aria-hidden="true"><use href="#icon-menu"/></svg></button>
         <nav class="appnav" aria-label="ناوبری اصلی">
           <a href="/" class="nav-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
           <a href="/birth-form" class="nav-item"><svg aria-hidden="true"><use href="#icon-compass"/></svg>چارت رایگان</a>
+          <a href="/synastry" class="nav-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری</a>
+          <a href="/rectify" class="nav-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت</a>
           <a href="/plans" class="nav-item"><svg aria-hidden="true"><use href="#icon-tag"/></svg>پلن‌ها</a>
-          <a href="/articles" class="nav-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>مقالات</a>
           <a href="/sky" class="nav-item"><svg aria-hidden="true"><use href="#icon-moon"/></svg>آسمان امروز</a>
+          <a href="/articles" class="nav-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>مقالات</a>
           <a href="/learn" class="nav-item"><svg aria-hidden="true"><use href="#icon-book"/></svg>آموزش</a>
           <a href="/guide" class="nav-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>راهنما</a>
           <a href="/account" class="nav-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
@@ -238,25 +268,48 @@
         </div>
       </div>
       <div class="footer-bar">
-        <div class="disc">🔭 زایچه — نقشه‌ی نجومی تو، نه پیش‌گویی. محتوای این سایت برای خودشناسی و تأمل است؛ تصمیم‌های مهم زندگی را با عقل، مشورت و استخاره بگیر.</div>
+        <div class="disc">زایچه — نقشه‌ی نجومی تو، نه پیش‌گویی. محتوای این سایت برای خودشناسی و تأمل است؛ تصمیم‌های مهم زندگی را با عقل و مشورت بگیر.</div>
         <div>© ۱۴۰۵ زایچه · نقشه‌ی آسمان تو · پرداخت امن زرین‌پال</div>
       </div>
     </footer>
   </div>
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+  <aside class="drawer" id="drawer" aria-label="منوی کامل">
+    <div class="drawer-head">
+      <span>منو</span>
+      <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="بستن منو"><svg aria-hidden="true"><use href="#icon-close"/></svg></button>
+    </div>
+    <a href="/" class="drawer-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
+    <a href="/birth-form" class="drawer-item"><svg aria-hidden="true"><use href="#icon-compass"/></svg>چارت رایگان</a>
+    <a href="/synastry" class="drawer-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری (سازگاری)</a>
+    <a href="/rectify" class="drawer-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت تولد</a>
+    <a href="/plans" class="drawer-item"><svg aria-hidden="true"><use href="#icon-tag"/></svg>پلن‌ها و قیمت</a>
+    <a href="/sky" class="drawer-item"><svg aria-hidden="true"><use href="#icon-moon"/></svg>آسمان امروز</a>
+    <a href="/articles" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>مقالات</a>
+    <a href="/learn" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book"/></svg>آموزش نجوم</a>
+    <a href="/guide" class="drawer-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>راهنما</a>
+    <a href="/account" class="drawer-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
+    <a href="/about" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>درباره ما</a>
+    <a href="/contact" class="drawer-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>تماس با پشتیبانی</a>
+  </aside>
   <nav class="bottomnav" aria-label="ناوبری پایین">
     <a href="/" class="bn-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
-    <a href="/plans" class="bn-item"><svg aria-hidden="true"><use href="#icon-tag"/></svg>پلن‌ها</a>
+    <a href="/synastry" class="bn-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری</a>
     <a href="/birth-form" class="bn-fab" aria-label="چارت رایگان">
       <span class="fab-circle"><svg aria-hidden="true"><use href="#icon-compass"/></svg></span>
       <span>چارت رایگان</span>
     </a>
-    <a href="/guide" class="bn-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>راهنما</a>
+    <a href="/rectify" class="bn-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت</a>
     <a href="/account" class="bn-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
   </nav>
   <script>
+  function toggleDrawer(open) {
+    document.getElementById('drawer').classList.toggle('open', open);
+    document.getElementById('drawerBackdrop').classList.toggle('show', open);
+  }
   document.addEventListener('DOMContentLoaded', function(){
     var p = location.pathname;
-    document.querySelectorAll('.nav-item, .bn-item').forEach(function(a){
+    document.querySelectorAll('.nav-item, .bn-item, .drawer-item').forEach(function(a){
       var h = a.getAttribute('href');
       if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
     });

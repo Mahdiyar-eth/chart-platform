@@ -1,6 +1,6 @@
 /* Chart-platform service worker (PWA — plan §13.9): offline app shell + last chart.
    Cache-first for static assets, network-first for pages. */
-const CACHE = "chart-v1";
+const CACHE = "chart-v2";
 const SHELL = ["/", "/birth-form", "/learn", "/static/tailwind_inline.css", "/static/sw-register.js"];
 
 self.addEventListener("install", (e) => {

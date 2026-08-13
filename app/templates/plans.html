@@ -1,28 +1,41 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width:980px;margin:0 auto;padding:28px 18px 60px;" x-data="purchase()">
-  <h1 style="text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;">گزارش کامل چارت تولد</h1>
-  <p style="text-align:center;color:#b8c2f0;margin-bottom:30px;">سه سطح انتخاب کن — هر کدام بر اساس چارت محاسبه‌شده‌ی خودت تولید می‌شود</p>
+{% set audience = {
+  'basic': 'اگر تازه‌کار هستی و می‌خواهی با چارتت و سه‌گانه‌ی اصلی‌ات آشنا شوی',
+  'full': 'اگر شناخت عمیق و قابل ردیابی از همه‌ی جنبه‌های زندگی‌ات می‌خواهی',
+  'gold': 'اگر علاوه بر گزارش کامل، گفت‌وگوی شخصی با هوش مصنوعی و گذرهای آینده را می‌خواهی',
+  'synastry': 'اگر می‌خواهی سازگاری رابطه‌ات را با شریک، همسر یا همکارت بسنجی',
+  'monthly': 'اگر می‌خواهی هر هفته نگاهی به آسمان و تأمل هفتگی داشته باشی'
+} %}
+<div style="max-width:1040px;margin:0 auto;padding:28px 18px 70px;" x-data="purchase()">
+  <h1 style="text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;">پلن‌های گزارش چارت تولد</h1>
+  <p style="text-align:center;color:#b8c2f0;margin-bottom:10px;line-height:2;max-width:680px;margin-inline:auto;">
+    همه‌ی پلن‌ها بر اساس چارتِ محاسبه‌شده‌ی خودت تولید می‌شوند. اول رایگان چارت بساز و پیش‌نمایش را ببین، بعد انتخاب کن.
+  </p>
+  <div style="text-align:center;margin-bottom:28px;">
+    <a href="/birth-form" class="btn btn-lg"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان بساز</a>
+  </div>
 
-  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
 
     {% for p in plans %}
-    <div class="glass" style="flex:1;min-width:250px;max-width:300px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if loop.index == 2 %}border:2px solid var(--gold);{% endif %}">
-      {% if loop.index == 2 %}<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c518,#e08e0b);color:#1a1400;font-size:11px;font-weight:800;padding:3px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(245,197,24,.4);">پیشنهاد ما</div>{% endif %}
-      <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 2px;">{{ p.name_fa }}</h2>
-      <p style="color:#b8c2f0;font-size:12.5px;margin:0 0 16px;">{{ p.subtitle_fa }}</p>
-      <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:14px;">
+    <div class="glass" style="flex:1;min-width:260px;max-width:320px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if p.key == 'full' %}border:2px solid var(--gold);{% endif %}">
+      {% if p.key == 'full' %}<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c518,#e08e0b);color:#1a1400;font-size:11px;font-weight:800;padding:3px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(245,197,24,.4);">پیشنهاد ما</div>{% endif %}
+      <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 4px;">{{ p.name_fa }}</h2>
+      <p style="color:#b8c2f0;font-size:12.5px;margin:0 0 10px;line-height:1.7;">{{ p.subtitle_fa }}</p>
+      <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:6px;">
         {{ "{:,}".format(p.price_toman) }} <span style="font-size:13px;color:#b8c2f0;font-weight:500;">تومان</span>
       </div>
+      <div style="font-size:12px;color:#9aa2c4;margin-bottom:16px;line-height:1.8;">{{ audience.get(p.key, '') }}</div>
       <ul style="list-style:none;padding:0;margin:0 0 22px;flex:1;">
         {% for f in p.features %}
-        <li style="padding:6px 0;font-size:13.5px;color:#dfe6ff;display:flex;gap:9px;align-items:flex-start;">
-          <span style="color:var(--gold);font-weight:700;">✓</span><span>{{ f }}</span>
+        <li style="padding:7px 0;font-size:13.5px;color:#dfe6ff;display:flex;gap:9px;align-items:flex-start;line-height:1.65;">
+          <svg style="width:16px;height:16px;color:var(--gold);flex:none;margin-top:2px;" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
         </li>
         {% endfor %}
       </ul>
       <button class="btn btn-lg" @click="buy('{{ p.key }}')"
-              style="width:100%;{% if loop.index == 2 %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
+              style="width:100%;{% if p.key == 'full' %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
         خرید {{ p.name_fa }}
       </button>
     </div>
@@ -31,18 +44,38 @@
   </div>
 
   <p style="text-align:center;color:#b8c2f0;font-size:12.5px;margin-top:26px;">
-    پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود
+    پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود.
   </p>
+
+  <div style="max-width:680px;margin:32px auto 0;">
+    <h2 style="font-size:1.05rem;color:#fff;margin-bottom:12px;">سؤالات پرتکرار درباره پلن‌ها</h2>
+    <div class="glass" style="padding:16px 18px;margin-bottom:10px;">
+      <b style="font-size:.9rem;color:#fff;">فرق پلن کامل و طلایی چیست؟</b>
+      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">پلن کامل همان گزارش ۱۳ بخشی با شواهد نجومی است. پلن طلایی همه‌ی آن را دارد، به‌علاوه‌ی گفت‌وگوی شخصی با هوش مصنوعی درباره‌ی چارتت (۵ سوال در روز)، فصل فرهنگی-اسلامی و نقشه‌ی گذرهای ۴ ماه آینده.</p>
+    </div>
+    <div class="glass" style="padding:16px 18px;margin-bottom:10px;">
+      <b style="font-size:.9rem;color:#fff;">سیناستری جداگانه است؟</b>
+      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">بله. سیناستری (سنجش سازگاری دو چارت) یک محصول مستقل است و نیازی به خرید گزارش کامل ندارد. اول می‌توانی نمره‌ی کلی را رایگان ببینی.</p>
+    </div>
+    <div class="glass" style="padding:16px 18px;">
+      <b style="font-size:.9rem;color:#fff;">اگر پلن پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
+      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">چارت و گزارش‌هایت ذخیره می‌مانند. کافیست پلن بالاتر را بخری؛ گزارش کامل‌تر روی همان چارت تولید می‌شود.</p>
+    </div>
+  </div>
 </div>
 
 <div x-data="purchase()" x-cloak>
   <div x-show="busy" style="position:fixed;inset:0;background:rgba(20,10,40,.55);backdrop-filter:blur(4px);z-index:99;display:flex;align-items:center;justify-content:center;">
     <div class="glass" style="padding:26px 40px;border-radius:18px;text-align:center;">
-      <div style="font-size:30px;margin-bottom:10px;">🔄</div>
+      <svg style="width:32px;height:32px;color:var(--gold);margin:0 auto 10px;animation:spin 1s linear infinite;" aria-hidden="true"><use href="#icon-refresh"/></svg>
       <div style="font-weight:700;">در حال اتصال به درگاه پرداخت...</div>
     </div>
   </div>
 </div>
+
+<style>
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
 
 <script>
 function purchase() {
@@ -51,7 +84,6 @@ function purchase() {
     async buy(planKey) {
       const chartId = new URLSearchParams(location.search).get('chart') || '';
       if (!chartId) {
-        // no chart yet — create the free chart first, then come back to buy
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
         return;
       }
