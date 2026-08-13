@@ -53,8 +53,8 @@ PLANS_SEED = [
                    "تحلیل جنبهها و خانهها", "دانلود PDF ۲۵+ صفحهای"]),
     Plan(key="gold", name_fa="طلایی", subtitle_fa="شناخت عمیق + پشتیبانی",
          price_toman=699_000, sort=3, active=True,
-         features=["همهی امکانات کامل", "مشاورهی هوشمند (AI Chat)",
-                   "بهروزرسانیهای آینده رایگان", "اولویت در صف تولید"]),
+         features=["همه‌ی امکانات کامل", "گفت‌وگو با هوش مصنوعی (۵ سوال در روز)",
+                   "به‌روزرسانی‌های آینده رایگان", "اولویت در صف تولید"]),
 ]
 
 
@@ -1456,10 +1456,12 @@ def page_faq(request: Request):
 @app.get("/articles", response_class=HTMLResponse)
 def page_articles(request: Request):
     arts = _load_articles()
+    categories = sorted({a.get("category", "عمومی") for a in arts})
     return templates.TemplateResponse(request, "articles_index.html", {
         "title": "مقالات نجوم و چارت تولد",
         "meta": "مجموعه مقالات آموزشی نجوم، چارت تولد، سیارات، برج‌ها و تحلیل شخصیت — به زبان ساده",
         "articles": arts,
+        "categories": categories,
     })
 
 
