@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}سازگاری دو چارت تولد | بررسی کد‌مک با نجوم{% endblock %}
+{% block meta %}<meta name="description" content="مقایسه دو چارت تولد برای سنجش سازگاری عاطفی، شغلی و ارتباطی دو نفر با محاسبات نجومی دقیق">{% endblock %}
+
+{% block content %}
+<div style="max-width:560px; margin:0 auto; padding-top:36px;">
+  <h1>💞 سازگاری دو چارت</h1>
+  <p class="muted">اطلاعات تولد دو نفر را وارد کن تا هم‌راستایی سیارات، حوزه‌های عشق/ذهن/کار و نمره کلی سازگاری‌تان را ببینی.</p>
+
+  <form id="synForm" style="margin-top:18px;">
+    <div class="glass" style="padding:18px;">
+      <h2 style="font-size:1rem;">👤 نفر اول</h2>
+      <input name="name_a" placeholder="نام (اختیاری)" class="input" style="width:100%;">
+      <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px;">
+        <input name="year_a" type="number" placeholder="سال 1373" class="input" required>
+        <input name="month_a" type="number" placeholder="ماه" class="input" required>
+        <input name="day_a" type="number" placeholder="روز" class="input" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <input name="hour_a" type="number" placeholder="ساعت 06" class="input" required>
+        <input name="minute_a" type="number" placeholder="دقیقه 10" class="input" required>
+      </div>
+      <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input" style="width:100%; margin-top:8px;" required autocomplete="off">
+      <div class="city-suggest-a" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="glass" style="padding:18px; margin-top:12px;">
+      <h2 style="font-size:1rem;">👤 نفر دوم</h2>
+      <input name="name_b" placeholder="نام (اختیاری)" class="input" style="width:100%;">
+      <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px;">
+        <input name="year_b" type="number" placeholder="سال 1369" class="input" required>
+        <input name="month_b" type="number" placeholder="ماه" class="input" required>
+        <input name="day_b" type="number" placeholder="روز" class="input" required>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <input name="hour_b" type="number" placeholder="ساعت 14" class="input" required>
+        <input name="minute_b" type="number" placeholder="دقیقه 30" class="input" required>
+      </div>
+      <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input" style="width:100%; margin-top:8px;" required autocomplete="off">
+      <div class="city-suggest-b" style="margin-top:6px;"></div>
+    </div>
+
+    <button type="submit" class="btn" style="width:100%; margin-top:16px; padding:14px;">محاسبه سازگاری 💞</button>
+  </form>
+
+  <div id="synResult" style="display:none; margin-top:20px;"></div>
+</div>
+
+<style>
+.inp{ padding:11px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#eee; font-family:inherit; font-size:.9rem; box-sizing:border-box; }
+.sug{ padding:10px; border-radius:8px; margin-top:4px; background:rgba(255,255,255,.08); cursor:pointer; font-size:.85rem; }
+</style>
+<script>
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function citySearch(inp, box, sel) {
+  inp.addEventListener('input', async () => {
+    const q = inp.value.trim();
+    if (q.length < 2) { box.innerHTML = ''; return; }
+    const r = await fetch('/api/cities?q=' + encodeURIComponent(q));
+    const d = await r.json();
+    box.innerHTML = '';
+    (d.results || []).slice(0, 4).forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'sug';
+      div.textContent = c.city_fa + ' (' + c.province_fa + ')';
+      div.onclick = () => { sel(c); box.innerHTML = ''; };
+      box.appendChild(div);
+    });
+  });
+}
+let cityA = null, cityB = null;
+citySearch(document.querySelector('input[name=city_a]'), document.querySelector('.city-suggest-a'), c => { cityA = c; document.querySelector('input[name=city_a]').value = c.city_fa; });
+citySearch(document.querySelector('input[name=city_b]'), document.querySelector('.city-suggest-b'), c => { cityB = c; document.querySelector('input[name=city_b]').value = c.city_fa; });
+
+document.getElementById('synForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!cityA || !cityB) { alert('شهرها را از لیست انتخاب کن'); return; }
+  const f = new FormData(e.target);
+  f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
+  const btn = e.target.querySelector('button');
+  btn.disabled = true; btn.textContent = 'در حال محاسبه...';
+  try {
+    const r = await fetch('/api/synastry', { method: 'POST', body: f });
+    const d = await r.json();
+    if (!r.ok) { alert(d.detail || 'خطا'); return; }
+    const cls = d.score >= 65 ? '#4caf7d' : d.score >= 50 ? '#f5c518' : '#ff6b6b';
+    document.getElementById('synResult').style.display = 'block';
+    document.getElementById('synResult').innerHTML =
+      '<div class="glass glow" style="padding:22px; text-align:center;">' +
+      '<h2>نمره سازگاری: <span style="color:' + cls + ';">' + d.score + '</span></h2>' +
+      '<p style="margin-top:8px;">' + esc(d.verdict) + '</p>' +
+      '<p class="muted" style="margin-top:12px; font-size:.85rem;">💎 تحلیل کامل (۴ حوزه + ۲۵ ارتباط سیارهای) پس از خرید نمایش داده میشود.</p>' +
+      '<button class="btn btn-lg" style="margin-top:14px;" onclick="buySyn()">خرید تحلیل کامل — ۴۹۹ هزار تومان 💎</button>' +
+      '</div>';
+  } finally { btn.disabled = false; btn.textContent = 'محاسبه سازگاری 💞'; }
+});
+
+let synOrderState = null;
+async function buySyn() {
+  const f = new FormData(document.getElementById('synForm'));
+  f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
+  const r = await fetch('/api/synastry/order', { method: 'POST', body: f });
+  const d = await r.json();
+  if (!r.ok) { alert(d.detail || 'خطا در ایجاد سفارش'); return; }
+  synOrderState = { chart_a: d.chart_a, chart_b: d.chart_b, order_id: d.order_id };
+  location.href = d.payment_url;  // → زرینپال → بازگشت به /payment/result
+}
+
+// after returning from zarinpal: /payment/result?order_id=... → user comes back to /synastry
+// poll unlock: if the paid pair exists, fetch full analysis
+async function tryUnlock() {
+  if (!synOrderState) return;
+  const acc = await fetch('/api/synastry/access?chart_a=' + synOrderState.chart_a + '&chart_b=' + synOrderState.chart_b);
+  const ad = await acc.json();
+  if (ad.full) {
+    const fd = new FormData();
+    fd.set('chart_a', synOrderState.chart_a); fd.set('chart_b', synOrderState.chart_b);
+    const r = await fetch('/api/synastry/full', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (r.ok) renderFullSyn(d);
+  } else {
+    setTimeout(tryUnlock, 4000);
+  }
+}
+function renderFullSyn(d) {
+  const cls = d.overall >= 65 ? '#4caf7d' : d.overall >= 50 ? '#f5c518' : '#ff6b6b';
+  document.getElementById('synResult').innerHTML =
+    '<div class="glass glow" style="padding:22px; text-align:center;">' +
+    '<h2>نمره سازگاری: <span style="color:' + cls + ';">' + d.overall + '</span></h2>' +
+    '<p style="margin-top:8px;">' + esc(d.verdict) + '</p>' +
+    '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px;">' +
+    ['love','mind','career','spirit'].map(k => {
+      const labels = {love:'عشق 💘', mind:'ذهن 🧠', career:'کار 💼', spirit:'معنا ✨'};
+      return '<div class="glass" style="padding:12px;"><b>' + labels[k] + '</b><br><span style="font-size:1.3rem;">' + d.domains[k] + '</span></div>';
+    }).join('') + '</div>' +
+    '<details style="margin-top:16px; text-align:right;"><summary style="cursor:pointer; font-size:.85rem;">' + d.connections_count + ' ارتباط سیارهای</summary>' +
+    '<div style="max-height:260px; overflow-y:auto; margin-top:8px; font-size:.85rem;">' +
+    d.connections.slice(0, 16).map(c => '<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);">' + c.a + ' (' + c.a_sign + ') ' + esc(c.aspect_fa) + ' ' + c.b + ' (' + c.b_sign + ') — اورب ' + c.orb + '°</div>').join('') +
+    '</div></details></div>';
+}
+</script>
+{% endblock %}

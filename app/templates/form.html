@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding-top:36px;">
+  <a href="/" class="muted" style="text-decoration:none; font-size:.9rem;">→ بازگشت</a>
+  <h1 style="margin-top:10px;">فرم تولد</h1>
+  <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
+
+  <form id="birthForm" class="glass glow" style="padding:24px 20px;" x-data="formState()" @submit.prevent="submit($event)" x-cloak>
+    <div class="steps">
+      <template x-for="(s, i) in 5" :key="i">
+        <div class="step-dot" :class="{'on': i < step}"><i></i></div>
+      </template>
+    </div>
+    <!-- STEP 1: date -->
+    <div x-show="step === 1" x-transition>
+      <label>نوع تقویم {% with text='شمسی = تقویم ایرانی (جلالی)؛ میلادی = تقویم بین‌المللی. اگر تاریخ تولدت شمسی است «شمسی» را انتخاب کن — ما خودمان تبدیل می‌کنیم.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <div>
+        <button type="button" class="chip" :class="{'sel': cal === 'jalali'}" @click="cal = 'jalali'">شمسی</button>
+        <button type="button" class="chip" :class="{'sel': cal === 'gregorian'}" @click="cal = 'gregorian'">میلادی</button>
+      </div>
+      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px;">
+        <div><label>سال</label><input class="input" type="number" x-model.number="year" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
+        <div><label>ماه</label><input class="input" type="number" x-model.number="month" min="1" max="12"></div>
+        <div><label>روز</label><input class="input" type="number" x-model.number="day" min="1" max="31"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: time -->
+    <div x-show="step === 2" x-transition>
+      <label>ساعت تولد را می‌دانی؟ {% with text='ساعت دقیق تولد برای محاسبه‌ی طالع (برجِ طلوع‌کننده) و خانه‌های نجومی لازم است. اگر ساعت را نمی‌دانی، «نه» را بزن — خورشید و ماه و سیارات همچنان کامل محاسبه می‌شوند.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <div>
+        <button type="button" class="chip" :class="{'sel': timeKnown}" @click="timeKnown = true">بله، دقیق</button>
+        <button type="button" class="chip" :class="{'sel': !timeKnown}" @click="timeKnown = false">نه / تقریبی</button>
+      </div>
+      <template x-if="timeKnown">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+          <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" min="0" max="23"></div>
+          <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" min="0" max="59"></div>
+        </div>
+      </template>
+      <p class="muted" style="margin-top:10px; font-size:.85rem;" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
+    </div>
+
+    <!-- STEP 3: city -->
+    <div x-show="step === 3" x-transition>
+      <label>شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <input class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران">
+      <div style="margin-top:10px;">
+        <template x-for="c in cities" :key="c.city_fa + c.province_fa">
+          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted" style="font-size:.75rem;" x-text="' (' + c.province_fa + ')'"></span></button>
+        </template>
+      </div>
+    </div>
+
+    <!-- STEP 4: focus areas -->
+    <div x-show="step === 4" x-transition>
+      <label>حوزه‌های مورد علاقه‌ات (چندتایی) {% with text='بخش‌هایی از گزارش که بیشتر به آن‌ها علاقه‌داری. این انتخاب ترتیب و تأکید بخش‌های گزارش را شخصی‌سازی می‌کند — بعداً هم می‌توانی تغییرش بدهی.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <div>
+        <template x-for="a in areas" :key="a">
+          <button type="button" class="chip" :class="{'sel': focus.includes(a)}" @click="toggleArea(a)" x-text="a"></button>
+        </template>
+      </div>
+    </div>
+
+    <!-- STEP 5: question + submit -->
+    <div x-show="step === 5" x-transition>
+      <label>سؤال شخصی (اختیاری)</label>
+      <input class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟">
+      <p class="muted" style="margin-top:12px; font-size:.9rem;">در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:26px;">
+      <button type="button" class="btn btn-ghost" x-show="step > 1" @click="step--" style="flex:1;">قبلی</button>
+      <button type="button" class="btn" x-show="step < 5" @click="next()" style="flex:2;">ادامه</button>
+      <button type="submit" class="btn" x-show="step === 5" style="flex:2;" :disabled="loading" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت ✨'"></button>
+    </div>
+    <p x-show="error" x-text="error" style="color:#ff6b6b; margin-top:12px; font-size:.9rem;"></p>
+  </form>
+</div>
+
+<script>
+function formState(){
+  return {
+    step: 1, cal: 'jalali', year: 1373, month: 1, day: 1,
+    timeKnown: true, hour: 12, minute: 0,
+    cityQ: '', cities: [], picked: '', city: null,
+    areas: ['هویت و شخصیت','ذهن و منطق','عواطف و شهود','پول و ثروت','شغل','روابط و ازدواج','خانواده','انرژی و تندرستی','خلاقیت','آموزش و مهاجرت','شبکه‌ها و دوستان','معنویت','کارما'],
+    focus: [], question: '', loading: false, error: '',
+    async searchCity(){
+      if(!this.cityQ.trim()){ this.cities = []; return; }
+      const r = await fetch('/api/cities?q=' + encodeURIComponent(this.cityQ));
+      const d = await r.json(); this.cities = d.results;
+    },
+    pickCity(c){ this.picked = c.city_fa; this.city = c; this.cities = []; },
+    toggleArea(a){ const i = this.focus.indexOf(a); i >= 0 ? this.focus.splice(i,1) : this.focus.push(a); },
+    next(){
+      if(this.step === 1 && (!this.year || !this.month || !this.day)){ this.error = 'تاریخ را کامل وارد کن'; return; }
+      if(this.step === 3 && !this.city){ this.error = 'شهر تولد را انتخاب کن'; return; }
+      this.error = ''; this.step++;
+    },
+    async submit(e){
+      e.preventDefault(); this.loading = true; this.error = '';
+      const fd = new FormData();
+      fd.append('calendar', this.cal); fd.append('year', this.year); fd.append('month', this.month); fd.append('day', this.day);
+      fd.append('time_known', this.timeKnown); fd.append('hour', this.hour); fd.append('minute', this.minute);
+      fd.append('city_fa', this.picked); fd.append('lat', this.city ? this.city.lat : ''); fd.append('lon', this.city ? this.city.lon : '');
+      fd.append('focus_areas', this.focus.join(','));
+      if(this.question && this.question.trim()){ fd.append('personal_question', this.question.trim()); }
+      try{
+        const r = await fetch('/api/charts', {method:'POST', body: fd});
+        const d = await r.json();
+        if(!r.ok) throw new Error(d.detail || 'خطا');
+        window.umami?.track('form_submit', {time_known: this.timeKnown});
+        const sp = new URLSearchParams(location.search);
+        const redirect = sp.get('redirect');
+        const plan = sp.get('plan');
+        if (redirect === '/plans') {
+          window.location.href = '/plans?chart=' + d.chart_id + (plan ? '&plan=' + plan : '');
+        } else {
+          window.location.href = '/chart/' + d.chart_id;
+        }
+      }catch(err){ this.error = err.message; }
+      finally{ this.loading = false; }
+    }
+  };
+}
+document.addEventListener('alpine:init', () => { /* nothing — formState defined globally below */ });
+</script>
+{% endblock %}

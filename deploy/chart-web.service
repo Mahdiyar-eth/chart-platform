@@ -1,0 +1,16 @@
+[Unit]
+Description=Chart Platform — FastAPI web app (uvicorn)
+After=network.target postgresql.service redis-server.service
+Requires=redis-server.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/chart-platform
+ExecStart=/root/chart-platform/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8767 --proxy-headers --forwarded-allow-ips=127.0.0.1 --workers 2 --no-access-log
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/root/chart-platform
+
+[Install]
+WantedBy=multi-user.target

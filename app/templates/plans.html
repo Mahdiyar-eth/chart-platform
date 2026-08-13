@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:980px;margin:0 auto;padding:28px 18px 60px;" x-data="purchase()">
+  <h1 style="text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;">گزارش کامل چارت تولد</h1>
+  <p style="text-align:center;color:#b8c2f0;margin-bottom:30px;">سه سطح انتخاب کن — هر کدام بر اساس چارت محاسبه‌شده‌ی خودت تولید می‌شود</p>
+
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+
+    {% for p in plans %}
+    <div class="glass" style="flex:1;min-width:250px;max-width:300px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if loop.index == 2 %}border:2px solid var(--gold);{% endif %}">
+      {% if loop.index == 2 %}<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c518,#e08e0b);color:#1a1400;font-size:11px;font-weight:800;padding:3px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(245,197,24,.4);">پیشنهاد ما</div>{% endif %}
+      <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 2px;">{{ p.name_fa }}</h2>
+      <p style="color:#b8c2f0;font-size:12.5px;margin:0 0 16px;">{{ p.subtitle_fa }}</p>
+      <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:14px;">
+        {{ "{:,}".format(p.price_toman) }} <span style="font-size:13px;color:#b8c2f0;font-weight:500;">تومان</span>
+      </div>
+      <ul style="list-style:none;padding:0;margin:0 0 22px;flex:1;">
+        {% for f in p.features %}
+        <li style="padding:6px 0;font-size:13.5px;color:#dfe6ff;display:flex;gap:9px;align-items:flex-start;">
+          <span style="color:var(--gold);font-weight:700;">✓</span><span>{{ f }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <button class="btn btn-lg" @click="buy('{{ p.key }}')"
+              style="width:100%;{% if loop.index == 2 %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
+        خرید {{ p.name_fa }}
+      </button>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <p style="text-align:center;color:#b8c2f0;font-size:12.5px;margin-top:26px;">
+    پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود
+  </p>
+</div>
+
+<div x-data="purchase()" x-cloak>
+  <div x-show="busy" style="position:fixed;inset:0;background:rgba(20,10,40,.55);backdrop-filter:blur(4px);z-index:99;display:flex;align-items:center;justify-content:center;">
+    <div class="glass" style="padding:26px 40px;border-radius:18px;text-align:center;">
+      <div style="font-size:30px;margin-bottom:10px;">🔄</div>
+      <div style="font-weight:700;">در حال اتصال به درگاه پرداخت...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function purchase() {
+  return {
+    busy: false,
+    async buy(planKey) {
+      const chartId = new URLSearchParams(location.search).get('chart') || '';
+      if (!chartId) {
+        // no chart yet — create the free chart first, then come back to buy
+        location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
+        return;
+      }
+      this.busy = true;
+      try {
+        const fd = new FormData();
+        fd.append('plan_key', planKey);
+        fd.append('chart_id', chartId);
+        const r = await fetch('/api/orders', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!r.ok) { alert(j.detail || 'خطا در ایجاد سفارش'); this.busy = false; return; }
+        window.location.href = j.payment_url;
+      } catch (e) { alert('ارتباط با سرور برقرار نشد'); this.busy = false; }
+    }
+  };
+}
+</script>
+{% endblock %}

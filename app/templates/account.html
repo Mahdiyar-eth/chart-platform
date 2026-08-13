@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}حساب کاربری | گزارش‌ها و خریدها{% endblock %}
+{% block meta %}<meta name="robots" content="noindex,nofollow"><meta name="description" content="حساب کاربری چارت تولد: گزارش‌های خود، سفارش‌ها، اشتراک و دانلودها در یک جا">{% endblock %}
+
+{% block content %}
+<div style="max-width:560px; margin:0 auto; padding-top:36px;">
+  <h1>حساب کاربری</h1>
+  <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
+
+  {% if not profiles %}
+  <div class="glass" style="margin-top:18px; padding:20px; text-align:center;">
+    <p>هنوز چارتی نساخته‌ای.</p>
+    <a class="btn" href="/birth-form" style="display:inline-block; margin-top:12px;">ساخت چارت رایگان ✨</a>
+  </div>
+  {% else %}
+  <section class="glass" style="margin-top:18px; padding:20px;">
+    <h2 style="font-size:1.05rem;">پروفایل‌های تولد ({{ profiles|length }})</h2>
+    {% for p in profiles %}
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
+      <div>
+        <b>{{ p.name or 'بدون نام' }}</b>
+        <span class="muted" style="display:block; font-size:.82rem;">{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
+      </div>
+      <span class="chip" style="font-size:.75rem;">{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px;">
+    <h2 style="font-size:1.05rem;">گزارش‌ها</h2>
+    {% for r in reports %}
+    <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div>
+          <b>گزارش #{{ r.id[:8] }}</b>
+          <span class="muted" style="display:block; font-size:.82rem;">{{ r.status }}</span>
+        </div>
+        {% if r.status == 'done' %}
+        <a class="btn" style="font-size:.8rem; padding:6px 14px;" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <p class="muted" style="padding-top:8px;">گزارشی وجود ندارد — بعد از خرید گزارش کامل، اینجا می‌بینی.</p>
+    {% endfor %}
+  </section>
+
+  {% if weekly %}
+  <section class="glass" style="margin-top:14px; padding:20px;">
+    <h2 style="font-size:1.05rem;">🌌 نگاهی به آسمان هفته</h2>
+    {% for chart_id, w in weekly.items() %}
+    <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
+      <p style="margin:0; line-height:1.8; font-size:.92rem;">{{ w.text|safe }}</p>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">🌌 اشتراک هفتگی «نگاهی به آسمان هفته»</h2>
+    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">هر هفته، نگاهی تأملی به گذرهای سیارهای چارتت — مستقیم در تلگرام.</p>
+    <a class="btn" href="https://t.me/Astrology_chartx_bot" target="_blank" rel="noopener" style="display:inline-block; padding:10px 22px;">فعال‌سازی در تلگرام</a>
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px;">
+    <h2 style="font-size:1.05rem;">سفارش‌ها</h2>
+    {% for o in orders %}
+    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
+      <span>{{ o.plan_key }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
+      <span class="chip" style="font-size:.75rem;">{{ o.status }}</span>
+    </div>
+    {% else %}
+    <p class="muted" style="padding-top:8px;">سفارشی ثبت نشده.</p>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <div class="glass glow" style="margin-top:14px; padding:20px; text-align:right;">
+    <h2 style="font-size:1.05rem;">🎁 دعوت از دوستان</h2>
+    <p class="muted" style="font-size:.85rem;">نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۵٪ پاداش ثبت می‌کنی.</p>
+    <div style="display:flex; gap:8px; margin-top:10px; direction:ltr;">
+      <input id="refLink" readonly value="{{ ref_url }}" style="flex:1; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#eee; font-size:.85rem;">
+      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn" style="padding:10px 14px;">کپی</button>
+    </div>
+  </div>
+
+  <div style="margin-top:18px; display:flex; gap:10px;">
+    <a class="btn btn-ghost" href="/plans" style="flex:1; text-align:center;">مشاهده پلن‌ها</a>
+    <a class="btn btn-ghost" href="/birth-form" style="flex:1; text-align:center;">چارت جدید</a>
+  </div>
+  <form method="post" action="/account/delete" onsubmit="return confirm('همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) برای همیشه حذف می‌شود. ادامه می‌دهی؟')" style="margin-top:10px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="btn btn-ghost" style="width:100%; color:#ff6b6b; border-color:rgba(255,107,107,.4);">حذف کامل حساب و داده‌ها</button>
+  </form>
+  <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
+</div>
+{% endblock %}

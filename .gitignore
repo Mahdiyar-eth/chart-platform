@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Data
+*.db
+*.sqlite3
+/data/
+/uploads/
+
+# Logs
+*.log
+logs/
+/var/log/
+
+# OS
+.DS_Store
+
+# Build
+dist/
+build/
+*.pdf
+!docs/*.pdf
+
+# IDE
+.idea/
+.vscode/
+DATABASE_URL
+.env
+
+# Generated FLUX article images (regenerable via scripts/generate_article_images.py)
+app/static/articles/
+
+# Umami (analytics) secrets
+deploy/umami.env
+deploy/umami-admin.txt
+
+# API keys (never commit)
+keys/

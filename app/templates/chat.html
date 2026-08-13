@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:720px;margin:0 auto;padding:20px 14px 40px;" x-data="chat()" x-init="init()">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <h1 style="font-size:22px;font-weight:800;color:#e8ecff;">گفت‌وگو با چارت تولد ✨</h1>
+    <a class="btn btn-ghost" href="/chart/{{ chart_id }}" style="min-height:40px;padding:0 16px;font-size:.85rem;">← چارت</a>
+  </div>
+  <p class="muted" style="font-size:.9rem;margin-bottom:14px;">
+    از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده... پاسخ بر اساس محاسبهی دقیق چارت و گزارش اختصاصی توست.
+  </p>
+
+  <div id="msgs" style="display:flex;flex-direction:column;gap:10px;min-height:46vh;max-height:58vh;overflow-y:auto;padding:4px;" x-ref="box">
+    <template x-for="m in msgs" :key="m.id">
+      <div :style="m.me ? 'align-self:flex-end;background:linear-gradient(135deg,#6a5acd,#4a3f8f);color:#fff;border-radius:16px 16px 4px 16px;' : 'align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#e8ecff;border-radius:16px 16px 16px 4px;'"
+           style="max-width:82%;padding:11px 15px;font-size:.95rem;line-height:1.7;white-space:pre-wrap;">
+        <span x-text="m.text"></span>
+      </div>
+    </template>
+    <div x-show="busy" style="align-self:flex-start;color:var(--muted);font-size:.9rem;">⏳ در حال نوشتن...</div>
+  </div>
+
+  <form @submit.prevent="send()" style="display:flex;gap:8px;margin-top:12px;">
+    <input class="input" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
+           :disabled="busy" style="flex:1;">
+    <button class="btn btn-lg" :disabled="busy" style="min-height:50px;padding:0 22px;">ارسال</button>
+  </form>
+
+  <template x-if="locked">
+    <p style="color:#ffb454;font-size:.9rem;margin-top:12px;text-align:center;">
+      🔒 گفت‌وگو با چارت بخشی از پلن‌های <b>کامل</b> و <b>طلایی</b> است — <a href="/plans?chart={{ chart_id }}" style="color:#f5c518;">خرید و فعال‌سازی</a>
+    </p>
+  </template>
+</div>
+<script>
+function chat(){
+  return {
+    msgs: [], q: '', busy: false, locked: false,
+    async init(){
+      const r = await fetch('/api/chat/access/{{ chart_id }}');
+      const d = await r.json();
+      this.locked = !d.allowed;
+    },
+    async send(){
+      const text = this.q.trim(); if(!text || this.busy) return;
+      this.msgs.push({id: Date.now(), text, me:true}); this.q=''; this.busy=true;
+      this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
+      try{
+        const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body: new URLSearchParams({chart_id:'{{ chart_id }}', question:text})});
+        const d = await r.json();
+        if(r.status === 403){ this.locked = true; }
+        else if(d.answer){ this.msgs.push({id: Date.now()+1, text: d.answer, me:false}); }
+        else { this.msgs.push({id: Date.now()+1, text: 'پاسخی آماده نشد؛ دوباره تلاش کنید.', me:false}); }
+      }catch(e){
+        this.msgs.push({id: Date.now()+1, text: 'خطا در ارتباط با سرور.', me:false});
+      }
+      this.busy=false;
+      this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
+    }
+  }
+}
+</script>
+{% endblock %}

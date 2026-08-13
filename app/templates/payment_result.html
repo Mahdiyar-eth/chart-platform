@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto;padding:50px 18px;text-align:center;">
+  <div style="font-size:52px;margin-bottom:14px;">{% if order.status == 'paid' %}✅{% else %}⚠️{% endif %}</div>
+  {% if order.status == 'paid' %}<script>window.umami?.track('payment_success', {plan: '{{ plan.key if plan else '' }}', amount: {{ order.amount_rial }}});</script>{% endif %}
+
+  {% if order.status == 'paid' %}
+  <h1 style="font-size:24px;font-weight:800;color:var(--gold);margin:0 0 8px;">پرداخت با موفقیت انجام شد</h1>
+  <p style="color:#b8c2f0;margin:0 0 24px;">
+    پلن <b>{{ plan.name_fa if plan else '' }}</b> فعال شد — به زودی گزارش شما آماده می‌شود.
+  </p>
+  <div class="glass" style="padding:18px;border-radius:16px;margin-bottom:24px;text-align:right;font-size:13.5px;color:#dfe6ff;">
+    <div style="display:flex;justify-content:space-between;padding:4px 0;">
+      <span>شماره پیگیری:</span><b dir="ltr">{{ order.ref_id or '—' }}</b>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;">
+      <span>مبلغ:</span><b>{{ "{:,}".format(order.amount_rial // 10) }} تومان</b>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;">
+      <span>وضعیت:</span><b style="color:var(--gold);">پرداخت‌شده</b>
+    </div>
+  </div>
+  <a class="btn btn-lg" href="/chart/{{ order.chart_id }}">مشاهده‌ی چارت تولد</a>
+  {% else %}
+  <h1 style="font-size:24px;font-weight:800;color:#ff7a6b;margin:0 0 8px;">پرداخت ناموفق بود</h1>
+  <p style="color:#b8c2f0;margin:0 0 24px;">در صورت کسر مبلغ، طی ۷۲ ساعت به حساب شما بازگردانده می‌شود.</p>
+  <a class="btn btn-lg" href="/plans?chart={{ order.chart_id }}">تلاش دوباره</a>
+  {% endif %}
+</div>
+{% endblock %}

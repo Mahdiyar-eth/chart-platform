@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: chart_platform_test
+          POSTGRES_USER: chart_test
+          POSTGRES_PASSWORD: chart_test_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chart_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test
+      PUBLIC_BASE_URL: http://127.0.0.1:8000
+      REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0
+      - name: Test
+        run: |
+          scripts/ci.sh

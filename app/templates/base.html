@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block robots %}{% endblock %}
+  <title>{% block title %}چارت تولد آنلاین — زایچه{% endblock %}</title>
+  <meta name="description" content="{% block description %}گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی — شناخت شخصیت، مسیر شغلی، روابط و استعدادها.{% endblock %}">
+  <meta property="og:site_name" content="زایچه">
+  <meta name="application-name" content="زایچه">
+  <meta property="og:title" content="{% block og_title %}زایچه — نقشه‌ی آسمان تو، برای شناخت بهتر خودت{% endblock %}">
+  <meta property="og:description" content="گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:image" content="{% block og_image %}{{ request.url.scheme }}://{{ request.url.netloc }}/static/icon-192.png{% endblock %}">
+  <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ request.url.path }}{% endblock %}">
+  <script async src="https://analytics.negar.io/script.js" data-website-id="e8f58dc5-fee9-455d-8ee6-18e26ea23791" data-domains="chart.negar.io"></script>
+  <meta name="theme-color" content="#0d1430">
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"زایچه","alternateName":"چارت تولد آنلاین","inLanguage":"fa-IR","description":"گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی"}
+  </script>
+  <script defer src="/static/vendor/alpine.min.js"></script>
+  <script src="/static/vendor/htmx.min.js"></script>
+  <script defer src="/static/sw-register.js"></script>
+  <style>
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Medium.ttf') format('truetype'); font-weight:500; font-display:swap; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-ExtraBold.ttf') format('truetype'); font-weight:800; font-display:swap; }
+    /* ── Liquid Glass v3 — app-like navigation + clean cosmic palette ── */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root{
+      --bg:#0d1430; --bg2:#111a3d; --glass:rgba(255,255,255,.085);
+      --stroke:rgba(255,255,255,.18); --gold:#f5c518; --txt:#eef1ff; --muted:#a8b4e8;
+      --accent:#7c6cf0; --radius:22px;
+      --ease:cubic-bezier(.23,1,.32,1);
+    }
+    html,body{ background:radial-gradient(1200px 800px at 70% -10%, #232c66 0%, var(--bg) 55%), var(--bg); color:var(--txt); font-family:Vazirmatn, Tahoma, sans-serif; min-height:100vh; overflow-x:hidden; }
+    body{ padding-bottom:32px; }
+    /* animated aurora field — clean violet/indigo/gold (no olive/teal) */
+    .aurora{ position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+    .aurora i{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.5; will-change:transform; }
+    .a1{ width:320px; height:320px; background:#7c6cf0; top:-70px; right:-70px; animation:drift1 19s var(--ease) infinite; }
+    .a2{ width:260px; height:260px; background:#4f5bd5; bottom:8%; left:-80px; animation:drift2 15s var(--ease) infinite; }
+    .a3{ width:200px; height:200px; background:#f5c518; top:38%; left:18%; opacity:.10; animation:drift3 22s var(--ease) infinite; }
+    @keyframes drift1{ 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(-40px,26px) scale(1.1); } 66%{ transform:translate(24px,-18px) scale(.94); } }
+    @keyframes drift2{ 0%,100%{ transform:translate(0,0) scale(1); } 40%{ transform:translate(36px,-30px) scale(1.12); } 75%{ transform:translate(-28px,16px) scale(.92); } }
+    @keyframes drift3{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(40px,34px) scale(1.15); } }
+    .starfield{ position:fixed; inset:0; pointer-events:none; opacity:.5; z-index:0;
+      background-image:radial-gradient(1.5px 1.5px at 20% 30%, #fff8, transparent), radial-gradient(1px 1px at 80% 20%, #fffb, transparent),
+      radial-gradient(1.2px 1.2px at 40% 70%, #fff6, transparent), radial-gradient(1px 1px at 60% 85%, #fff5, transparent),
+      radial-gradient(1.8px 1.8px at 90% 55%, #fff4, transparent); }
+    .wrap{ position:relative; z-index:1; max-width:960px; margin:0 auto; padding:0 16px; }
+    /* ── Top App Bar (glass, sticky) — brand + primary actions ── */
+    .appbar{ position:sticky; top:10px; z-index:60; margin:12px 0 22px; animation:appbarIn .55s var(--ease) both; }
+    .appbar-inner{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:8px 8px 8px 14px; border-radius:20px; overflow:hidden;
+      background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.22);
+      backdrop-filter:blur(26px) saturate(170%); -webkit-backdrop-filter:blur(26px) saturate(170%);
+      box-shadow:0 12px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.22); }
+    .appbar-inner::after{ content:''; position:absolute; inset:-40%; pointer-events:none;
+      background:linear-gradient(115deg, transparent 42%, rgba(255,255,255,.16) 50%, transparent 58%);
+      transform:translateX(-130%) skewX(-14deg); animation:shine 7.5s ease-in-out infinite; }
+    @keyframes shine{ 0%, 58%{ transform:translateX(-130%) skewX(-14deg); } 68%, 100%{ transform:translateX(130%) skewX(-14deg); } }
+    @keyframes appbarIn{ from{ opacity:0; transform:translateY(-16px); } to{ opacity:1; transform:none; } }
+    .brand{ display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 10px; white-space:nowrap;
+      font-weight:800; font-size:1.05rem; color:var(--txt); text-decoration:none; }
+    .brand svg{ width:22px; height:22px; color:var(--gold); flex:none; }
+    .appnav{ display:flex; align-items:center; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .appnav::-webkit-scrollbar{ display:none; }
+    .nav-item{ display:inline-flex; align-items:center; gap:6px; min-height:46px; padding:0 13px; border-radius:14px;
+      color:rgba(255,255,255,.82); text-decoration:none; font-size:.88rem; font-weight:600; white-space:nowrap;
+      transition:background-color .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease), transform .16s ease-out;
+      animation:itemIn .45s var(--ease) both; }
+    .nav-item:nth-child(1){ animation-delay:.08s } .nav-item:nth-child(2){ animation-delay:.14s }
+    .nav-item:nth-child(3){ animation-delay:.20s } .nav-item:nth-child(4){ animation-delay:.26s }
+    .nav-item:nth-child(5){ animation-delay:.32s }
+    @keyframes itemIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+    .nav-item svg{ width:18px; height:18px; flex:none; opacity:.9; }
+    .nav-item:hover{ background:rgba(255,255,255,.10); color:#fff; }
+    .nav-item:active{ transform:scale(.95); }
+    .nav-item.active{ color:var(--gold);
+      background:linear-gradient(135deg, rgba(245,197,24,.18), rgba(232,142,11,.08));
+      box-shadow:inset 0 0 0 1px rgba(245,197,24,.4), 0 4px 20px rgba(245,197,24,.18); }
+    /* ── Bottom app nav (mobile) + central FAB ── */
+    .bottomnav{ display:none; }
+    @media (max-width:768px){
+      .appnav{ display:none; }
+      body{ padding-bottom:150px; }
+      .bottomnav{ position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:80;
+        display:flex; align-items:flex-end; gap:2px; padding:8px 10px; border-radius:24px;
+        width:calc(100% - 24px); max-width:420px;
+        background:rgba(20,26,58,.78); border:1px solid rgba(255,255,255,.16);
+        backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%);
+        box-shadow:0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.16);
+        animation:bnIn .5s var(--ease) both; }
+      @keyframes bnIn{ from{ opacity:0; transform:translate(-50%,18px); } to{ opacity:1; transform:translate(-50%,0); } }
+      .bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-height:52px;
+        padding:4px 2px; border-radius:16px; color:rgba(255,255,255,.64); text-decoration:none; font-size:.66rem; font-weight:600;
+        transition:color .2s var(--ease), background-color .2s; }
+      .bn-item svg{ width:22px; height:22px; flex:none; }
+      .bn-item:active{ transform:scale(.94); }
+      .bn-item.active{ color:var(--gold); }
+      .bn-fab{ flex:1.15; display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; margin-top:-24px; }
+      .bn-fab .fab-circle{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+        background:linear-gradient(135deg,#f5c518,#e08e0b); color:#1a1400;
+        box-shadow:0 8px 26px rgba(245,197,24,.5), 0 0 0 5px rgba(20,26,58,.8);
+        transition:transform .16s ease-out; }
+      .bn-fab:active .fab-circle{ transform:scale(.93); }
+      .bn-fab .fab-circle svg{ width:26px; height:26px; }
+      .bn-fab span{ font-size:.64rem; font-weight:800; color:var(--gold); margin-top:2px; }
+    }
+    /* glass card (brighter) */
+    .glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--radius);
+      backdrop-filter:blur(22px) saturate(150%); -webkit-backdrop-filter:blur(22px) saturate(150%);
+      box-shadow:0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12); }
+    .glow{ box-shadow:0 0 40px rgba(124,108,240,.3), 0 8px 32px rgba(0,0,0,.4); }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px;
+      padding:0 22px; border:none; border-radius:14px; cursor:pointer; font-family:inherit; font-size:1rem; font-weight:700;
+      background:linear-gradient(135deg,#f5c518,#e08e0b); color:#1a1400; transition:transform .16s ease-out, box-shadow .2s var(--ease); text-decoration:none; }
+    .btn:hover{ box-shadow:0 8px 26px rgba(245,197,24,.35); }
+    .btn:active{ transform:scale(.97); }
+    .btn-ghost{ background:rgba(255,255,255,.08); color:var(--txt); border:1px solid var(--stroke); }
+    .btn-lg{ min-height:54px; padding:0 32px; font-size:1.1rem; border-radius:16px; }
+    .chip{ display:inline-flex; align-items:center; min-height:44px; padding:0 16px; margin:4px;
+      border:1px solid var(--stroke); border-radius:999px; background:rgba(255,255,255,.06); color:var(--txt); cursor:pointer; font-family:inherit; font-size:.95rem; transition:all .18s var(--ease); }
+    .chip:hover{ background:rgba(255,255,255,.12); }
+    .chip:active{ transform:scale(.96); }
+    .chip.sel{ background:linear-gradient(135deg,#6a5acd,#4a3f8f); border-color:#8b7ce8; box-shadow:0 0 14px rgba(124,108,240,.5); }
+    .input{ width:100%; min-height:50px; padding:0 14px; border-radius:14px; border:1px solid var(--stroke);
+      background:rgba(255,255,255,.07); color:var(--txt); font-family:inherit; font-size:1rem; outline:none; transition:border-color .2s, box-shadow .2s; }
+    .input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,108,240,.28); }
+    .input::placeholder{ color:#8a97c9; }
+    label{ font-size:.85rem; color:var(--muted); display:block; margin:14px 0 6px; }
+    h1{ font-size:clamp(1.6rem,4vw,2.4rem); line-height:1.35; color:var(--txt); }
+    h2{ font-size:clamp(1.2rem,3vw,1.6rem); line-height:1.4; color:var(--txt); }
+    .muted{ color:var(--muted); }
+    .gold{ color:var(--gold); }
+    .hidden{ display:none !important; }
+    /* progress bar (glass step-by-step) */
+    .steps{ display:flex; gap:8px; margin:18px 0 26px; }
+    .step-dot{ flex:1; height:6px; border-radius:99px; background:rgba(255,255,255,.12); overflow:hidden; }
+    .step-dot > i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#f5c518,#e08e0b); border-radius:99px; transition:width .4s var(--ease); }
+    .step-dot.on > i{ width:100%; }
+    /* sign cards */
+    .sign-card{ background:rgba(255,255,255,.06); border:1px solid var(--stroke); border-radius:18px; padding:16px; text-align:center; transition:transform .18s var(--ease), background-color .2s; }
+    .sign-card:hover{ background:rgba(255,255,255,.1); transform:translateY(-2px); }
+    .sign-card b{ display:block; font-size:1.05rem; margin-top:6px; }
+    .sign-card span{ font-size:.8rem; color:var(--muted); }
+    /* result boxes */
+    .kpi{ background:rgba(255,255,255,.06); border:1px solid var(--stroke); border-radius:18px; padding:18px; transition:transform .18s var(--ease); }
+    .kpi:hover{ transform:translateY(-2px); }
+    .kpi b{ font-size:1.15rem; display:block; }
+    .kpi span{ font-size:.85rem; color:var(--muted); display:block; margin-top:4px; }
+    [x-cloak]{ display:none !important; }
+    /* footer — 4-column glass (dark-mode readable) */
+    .footer{ margin-top:60px; padding:34px 4px 40px; border-top:1px solid rgba(255,255,255,.1); }
+    .footer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:26px; }
+    .footer-col h4{ font-size:.85rem; font-weight:800; color:var(--gold); margin-bottom:14px; letter-spacing:.2px; }
+    .footer-col a{ display:block; color:var(--muted); text-decoration:none; font-size:.84rem; padding:5px 0; transition:color .2s; }
+    .footer-col a:hover{ color:#fff; }
+    .footer-bar{ margin-top:30px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08);
+      display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; font-size:.76rem; color:var(--muted); }
+    .footer-bar .disc{ max-width:560px; line-height:1.9; opacity:.9; }
+    @media (max-width:640px){ .wrap{ padding:0 12px; } .btn-lg{ width:100%; }
+      .appbar{ top:8px; margin:8px 0 16px; }
+      .brand{ font-size:.98rem; padding:0 6px; } }
+    @media (max-width:400px){ .brand span{ font-size:.95rem; } .brand{ padding:0 4px; } }
+    @media (prefers-reduced-motion:reduce){
+      .appbar-inner::after, .aurora i, .nav-item, .appbar, .bottomnav{ animation:none !important; }
+    }
+    .help-tip { position: relative; display: inline-flex; vertical-align: middle; margin-inline-start: 5px; }
+    .help-tip-btn { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); background: transparent; font-size: .7rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; }
+    .help-tip-btn:hover { background: var(--accent); color: #1a1626; }
+    .help-tip-box { position: absolute; z-index: 50; top: 24px; inset-inline-start: 0; width: 240px; max-width: 72vw; background: #241f33; border: 1px solid rgba(212,175,55,.35); border-radius: 10px; padding: 10px 12px; font-size: .8rem; line-height: 1.7; color: #e8e2f5; box-shadow: 0 8px 24px rgba(0,0,0,.45); text-align: start; font-weight: 400; }
+    .help-tip-box::before { content: ''; position: absolute; top: -5px; inset-inline-start: 10px; width: 8px; height: 8px; background: #241f33; border-inline-start: 1px solid rgba(212,175,55,.35); border-top: 1px solid rgba(212,175,55,.35); transform: rotate(45deg); }
+    .article-banner svg { width: 100%; height: auto; display: block; }
+  </style>
+</head>
+<body>
+  <div class="aurora"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
+  <div class="starfield"></div>
+  <div class="wrap">
+    <header class="appbar">
+      <div class="appbar-inner">
+        <a href="/" class="brand" aria-label="زایچه — صفحه اصلی">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          <span>زایچه</span>
+        </a>
+        <nav class="appnav" aria-label="ناوبری اصلی">
+          <a href="/" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></svg>
+            خانه
+          </a>
+          <a href="/birth-form" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            چارت رایگان
+          </a>
+          <a href="/articles" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+            مقالات
+          </a>
+          <a href="/guide" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg>
+            راهنما
+          </a>
+          <a href="/account" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            حساب من
+          </a>
+        </nav>
+      </div>
+    </header>
+    {% block content %}{% endblock %}
+    <footer class="footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>خدمات</h4>
+          <a href="/birth-form">چارت رایگان</a>
+          <a href="/plans">پلن‌ها و قیمت</a>
+          <a href="/synastry">سیناستری</a>
+          <a href="/rectify">بازبینی ساعت تولد</a>
+        </div>
+        <div class="footer-col">
+          <h4>آشنایی</h4>
+          <a href="/about">درباره ما</a>
+          <a href="/articles">مقالات</a>
+          <a href="/sky">آسمان امروز</a>
+          <a href="/learn">آموزش نجوم</a>
+        </div>
+        <div class="footer-col">
+          <h4>پشتیبانی</h4>
+          <a href="/guide">راهنمای استفاده</a>
+          <a href="/faq">سؤالات پرتکرار</a>
+          <a href="/contact">تماس با پشتیبانی</a>
+        </div>
+        <div class="footer-col">
+          <h4>قوانین</h4>
+          <a href="/privacy">حریم خصوصی</a>
+          <a href="/terms">قوانین استفاده</a>
+          <a href="/refund">شرایط استرداد</a>
+          <a href="/disclaimer">سلب مسئولیت</a>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <div class="disc">🔭 زایچه — نقشه‌ی نجومی تو، نه پیش‌گویی. محتوای این سایت برای خودشناسی و تأمل است؛ تصمیم‌های مهم زندگی را با عقل، مشورت و استخاره بگیر.</div>
+        <div>© ۱۴۰۵ زایچه · نقشه‌ی آسمان تو · پرداخت امن زرین‌پال</div>
+      </div>
+    </footer>
+  </div>
+  <nav class="bottomnav" aria-label="ناوبری پایین">
+    <a href="/" class="bn-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></svg>
+      خانه
+    </a>
+    <a href="/plans" class="bn-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      پلن‌ها
+    </a>
+    <a href="/birth-form" class="bn-fab" aria-label="چارت رایگان">
+      <span class="fab-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+      </span>
+      <span>چارت رایگان</span>
+    </a>
+    <a href="/guide" class="bn-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg>
+      راهنما
+    </a>
+    <a href="/account" class="bn-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      حساب من
+    </a>
+  </nav>
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var p = location.pathname;
+    document.querySelectorAll('.nav-item, .bn-item').forEach(function(a){
+      var h = a.getAttribute('href');
+      if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
+    });
+  });
+  </script>
+</body>
+</html>

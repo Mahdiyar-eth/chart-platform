@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{{ art.title }}{% endblock %}
+{% block og_title %}{{ art.title }}{% endblock %}
+{% block og_image %}{% if art.image %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ art.image }}{% endif %}{% endblock %}
+{% block twitter_card %}summary_large_image{% endblock %}
+{% block meta %}<meta name="description" content="{{ art.meta }}">{% if art.keywords %}<meta name="keywords" content="{{ art.keywords }}">{% endif %}{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:760px;margin:0 auto;padding:40px 16px 80px;">
+  <a href="/articles" style="font-size:.8rem;color:#9a92b0;text-decoration:none;">→ همه‌ی مقالات</a>
+  <div class="article-banner" style="border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.08); margin:14px 0 18px; direction:ltr;">{{ banner_svg | safe }}</div>
+  <h1 style="font-size:1.5rem;margin:10px 0 6px;line-height:1.6;">{{ art.title }}</h1>
+  <div style="font-size:.75rem;color:#9a92b0;margin-bottom:16px;">{{ art.category }} · {{ art.date_fa }}</div>
+  {% if art.image %}<img src="{{ art.image }}" alt="{{ art.title }}" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin-bottom:20px;">{% endif %}
+  <article style="line-height:2;color:#ddd6ea;font-size:.95rem;">
+    {% for sec in art.body %}
+    {% if sec.h2 %}<h2 style="font-size:1.15rem;color:#d4af37;margin:26px 0 10px;">{{ sec.h2 }}</h2>{% endif %}
+    <p style="margin-bottom:14px;">{{ sec.p }}</p>
+    {% endfor %}
+  </article>
+  <div style="margin-top:36px;padding:20px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:14px;text-align:center;">
+    <p style="margin-bottom:12px;font-weight:700;">آماده‌ای چارت خودت را ببینی؟ اینسایت‌های اولیه رایگان است.</p>
+    <a class="btn-lg" href="/birth-form" style="display:inline-block;">✨ چارت رایگان من</a>
+    <div style="margin-top:10px;font-size:.8rem;color:#9a92b0;">
+      <a href="/plans" style="color:#d4af37;">مقایسه‌ی پلن‌ها و گزارش کامل</a>
+    </div>
+  </div>
+  {% if others %}
+  <div style="margin-top:40px;">
+    <h2 style="font-size:1rem;color:#d4af37;margin-bottom:12px;">مقالات مرتبط</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+      {% for o in others %}
+      <a href="/articles/{{ o.slug }}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-decoration:none;font-size:.82rem;line-height:1.6;color:#f2edfa;">{{ o.title }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+[Unit]
+Description=Chart Platform — ARQ report worker
+After=network.target postgresql.service redis-server.service
+Requires=redis-server.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/chart-platform
+ExecStart=/root/chart-platform/venv/bin/arq app.report.worker.WorkerSettings
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/root/chart-platform
+
+[Install]
+WantedBy=multi-user.target

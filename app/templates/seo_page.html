@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block og_title %}{{ page.title }}{% endblock %}
+{% block meta %}<meta name="description" content="{{ meta_description }}">{% endblock %}
+{% block canonical %}{{ canonical }}{% endblock %}
+{% block content %}
+<div style="max-width:720px;margin:0 auto;padding:24px 16px 80px;">
+  <nav style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">
+    <a href="/learn" style="color:var(--accent);text-decoration:none;">آموزش نجوم</a>
+    <span style="margin:0 6px;">←</span><span>{{ page.title }}</span>
+  </nav>
+
+  <h1 style="font-size:1.55rem;line-height:1.55;margin-bottom:14px;">{{ page.title }}</h1>
+
+  {% if page.get("element") %}
+  {% set el = page.element %}
+  {% set el_bg = "#7c6cf0" if el == "هوا" else ("#f5c518" if el == "آتش" else ("#2a9d8f" if el == "خاک" else "#4f9ddb")) %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;">
+    <span style="display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;font-size:.82rem;font-weight:700;background:{{ el_bg }}22;border:1px solid {{ el_bg }}55;color:{{ el_bg }};">عنصر: {{ el }}</span>
+    <span style="display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;font-size:.82rem;font-weight:700;background:rgba(255,255,255,.06);border:1px solid var(--stroke);color:var(--txt);">حاکم: {{ page.ruler }}</span>
+  </div>
+  {% endif %}
+
+  {% if page.get("personality") %}
+  {% set sections = [
+    ("شخصیت", page.personality),
+    ("عشق و رابطه", page.love),
+    ("کار و مسیر شغلی", page.work),
+    ("چالش و رشد", page.challenge),
+    ("خورشید در این برج", page.sun),
+    ("ماه در این برج", page.moon),
+    ("طالع این برج", page.asc)
+  ] %}
+  <div style="display:grid;gap:12px;">
+    {% for label, body in sections %}
+    {% if body %}
+    <div class="glass" style="padding:18px 20px;border-radius:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="width:10px;height:22px;border-radius:6px;background:linear-gradient(180deg,#f5c518,#e08e0b);flex:none;"></span>
+        <h2 style="font-size:1.02rem;color:#f5c518;margin:0;line-height:1.4;">{{ label }}</h2>
+      </div>
+      <p style="line-height:1.95;color:#e4def2;font-size:.95rem;margin:0;">{{ body }}</p>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass" style="padding:22px 24px;border-radius:18px;line-height:2.05;color:#e4def2;font-size:.97rem;">
+    {{ page.text }}
+  </div>
+  {% endif %}
+
+  <div class="glass glow" style="margin-top:26px;padding:22px;text-align:center;border-radius:18px;">
+    <b style="font-size:1rem;">این را در چارت خودت ببین</b>
+    <p class="muted" style="font-size:.82rem;margin:6px 0 12px;">موقعیت دقیق این را در نقشه‌ی تولدت پیدا کن؛ اینسایت‌های اولیه رایگان است.</p>
+    <a href="/birth-form" class="btn btn-lg" style="display:inline-flex;">ساخت چارت رایگان</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+<span class="help-tip" x-data="{open:false}">
+  <button type="button" class="help-tip-btn" @click="open=!open" aria-label="راهنما" title="راهنما">؟</button>
+  <span class="help-tip-box" x-show="open" @click.outside="open=false" x-cloak>{{ text }}</span>
+</span>

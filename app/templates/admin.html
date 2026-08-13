@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+<div style="max-width:1000px;margin:0 auto;padding:24px 14px 50px;">
+  <h1 style="font-size:24px;font-weight:800;margin-bottom:18px;">دشبورد مدیریت 🛠️</h1>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;">
+    <div class="kpi"><b>{{ "{:,}".format(revenue_toman) }} تومان</b><span>درآمد پرداختی</span></div>
+    {% for s, n in by_status.items() %}
+    <div class="kpi"><b>{{ n }}</b><span>سفارش {{ {'pending':'در انتظار','paid':'پرداخت‌شده','failed':'ناموفق'}.get(s, s) }}</span></div>
+    {% endfor %}
+    <div class="kpi"><b>{{ reports|selectattr('status','equalto','done')|list|length }}</b><span>گزارش آماده</span></div>
+    <div class="kpi"><b>{{ llm_cost_7d }}$</b><span>هزینه AI (۷ روز) — {{ llm_runs_7d }} درخواست</span></div>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">کلیدها و رازها 🔐</h2>
+  <p class="muted" style="font-size:.78rem;margin-bottom:8px;">
+    برای استقرار روی سرور جدید، کد/کلید هر بخش را اینجا وارد و ذخیره کنید؛ مقدار به‌صورت رمزنگاری‌شده در دیتابیس ذخیره می‌شود و دیگر نیازی به فایل env نیست. بعد از ذخیره، <b>سرویس را ریاستارت کنید</b> تا اعمال شود. اگر خالی بگذارید، به مقدار متغیر محیطی برمی‌گردد.
+  </p>
+  <div style="display:grid;gap:14px;">
+    {% for group, items in secrets|groupby('group') %}
+    <div style="border:1px solid var(--stroke);border-radius:12px;padding:14px;background:rgba(255,255,255,.03);">
+      <h3 style="font-size:.9rem;font-weight:700;margin:0 0 10px;color:#c4b5fd;">{{ group }}</h3>
+      {% for s in items %}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--stroke);">
+        <div style="flex:1;min-width:180px;">
+          <b style="font-size:.85rem;">{{ s.label }}</b>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px;">
+            <code dir="ltr" style="font-size:.7rem;color:var(--muted);">{{ s.key }}</code>
+            {% if s.source == 'db' %}<span style="font-size:.68rem;padding:1px 7px;border-radius:8px;background:rgba(42,157,143,.18);color:#2a9d8f;">💾 ذخیره‌شده در سایت</span>
+            {% elif s.source == 'env' %}<span style="font-size:.68rem;padding:1px 7px;border-radius:8px;background:rgba(245,197,24,.14);color:#f5c518;">متغیر محیطی</span>
+            {% else %}<span style="font-size:.68rem;padding:1px 7px;border-radius:8px;background:rgba(192,57,43,.15);color:#e76f51;">تنظیم نشده</span>{% endif %}
+          </div>
+        </div>
+        <input id="secret-in-{{ s.key }}" type="password" dir="ltr" placeholder="مقدار جدید" autocomplete="off"
+               style="flex:1;min-width:180px;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:8px;padding:7px 9px;color:#fff;font-size:.78rem;">
+        <div style="display:flex;gap:6px;">
+          <button type="button" onclick="revealSecret('{{ s.key }}')" title="نمایش مقدار فعلی" style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#fff;cursor:pointer;">👁</button>
+          <button type="button" onclick="saveSecret('{{ s.key }}')" style="padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;font-weight:700;cursor:pointer;">ذخیره</button>
+          <button type="button" onclick="clearSecret('{{ s.key }}')" title="پاک کردن (بازگشت به متغیر محیطی)" style="padding:6px 10px;border-radius:8px;background:rgba(192,57,43,.15);border:1px solid #c0392b;color:#e76f51;cursor:pointer;">🗑</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">پلن‌ها</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:560px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">کلید</th><th>نام</th><th>قیمت (تومان)</th><th>فعال</th><th>ذخیره</th></tr></thead>
+      <tbody>
+        {% for p in plans %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;" dir="ltr">{{ p.key }}</td>
+          <td>{{ p.name_fa }}</td>
+          <td><input x-data x-model="$store.plans['{{ p.key }}'].price" x-init="$store.plans['{{ p.key }}'] = {price: {{ p.price_toman }}, active: {{ 'true' if p.active else 'false' }}}" type="number" style="width:110px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);border-radius:8px;padding:6px 8px;color:#fff;"></td>
+          <td><label><input type="checkbox" x-data x-model="$store.plans['{{ p.key }}'].active" x-init="$store.plans['{{ p.key }}'] = {price: {{ p.price_toman }}, active: {{ 'true' if p.active else 'false' }}}"> فعال</label></td>
+          <td><button class="btn" style="padding:5px 12px;font-size:.8rem;" @click="savePlan('{{ p.key }}')">💾</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">کاربران (آخرین ۵۰)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:560px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">تاریخ</th><th>موبایل</th><th>نام</th><th>نقش</th><th>وضعیت</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;white-space:nowrap;">{{ u.created_at.strftime('%m-%d') }}</td>
+          <td dir="ltr">{{ u.phone or '—' }}</td>
+          <td>{{ u.email or '—' }}</td>
+          <td>{{ u.role }}</td>
+          <td>{{ u.status }}</td>
+        </tr>
+        {% endfor %}
+        {% if not users %}<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--muted);">کاربری ثبت نشده</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">لاگ ممیزی (آخرین ۳۰)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:560px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">زمان</th><th>ادمین</th><th>عملیات</th><th>موجودیت</th><th>جزئیات</th></tr></thead>
+      <tbody>
+        {% for a in audit %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:8px;white-space:nowrap;">{{ a.created_at.strftime('%m-%d %H:%M') }}</td>
+          <td>{{ a.admin }}</td>
+          <td dir="ltr">{{ a.action }}</td>
+          <td dir="ltr">{{ a.entity }}</td>
+          <td style="color:var(--muted);">{{ a.details }}</td>
+        </tr>
+        {% endfor %}
+        {% if not audit %}<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--muted);">لاگی ثبت نشده</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">پرامپت‌ها (اورراید نسخه‌بندی‌شده)</h2>
+  <p class="muted" style="font-size:.78rem;margin-bottom:8px;">متن جایگزین پرامپت در تولید گزارش‌های بعدی — نسخه‌ی جدید، نسخه‌ی قبلی را غیرفعال می‌کند.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;">
+    {% for k in prompt_keys %}
+    <div style="border:1px solid var(--stroke);border-radius:12px;padding:12px;background:rgba(255,255,255,.03);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <b style="font-size:.85rem;">{{ k }}</b>
+        {% set pv = prompt_overrides|selectattr('key','equalto',k)|first %}
+        <span style="font-size:.72rem;color:var(--muted);">{% if pv %}v{{ pv.version }}{% if pv.is_active %} ✅{% endif %}{% else %}پیش‌فرض{% endif %}</span>
+      </div>
+      <textarea id="prompt-{{ k }}" rows="5" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:8px;padding:8px;color:#fff;font-size:.78rem;direction:ltr;text-align:left;" placeholder="متن پیش‌فرض — فقط برای ویرایش بنویسید">{{ pv.content if pv and pv.is_active else '' }}</textarea>
+      <button onclick="savePrompt('{{ k }}')" style="margin-top:8px;width:100%;padding:7px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;font-weight:700;cursor:pointer;">ذخیره نسخه‌ی جدید</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">سفارش‌ها (آخرین ۱۰۰)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:600px;">
+      <thead>
+        <tr style="color:var(--muted);text-align:right;">
+          <th style="padding:10px 8px;">تاریخ</th><th>پلن</th><th>مبلغ</th><th>وضعیت</th><th>پیگیری</th><th>گزارش</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;white-space:nowrap;">{{ o.created_at.strftime('%m-%d %H:%M') }}</td>
+          <td>{{ o.plan_key }}</td>
+          <td>{{ "{:,}".format(o.amount_rial // 10) }} ت</td>
+          <td style="color:{% if o.status == 'paid' %}#2a9d8f{% elif o.status == 'failed' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">
+            {{ {'pending':'در انتظار','paid':'پرداخت‌شده','failed':'ناموفق'}.get(o.status, o.status) }}
+          </td>
+          <td dir="ltr">{{ o.ref_id or '—' }}</td>
+          <td>
+            {{ '✔' if o.report_id else '—' }}
+            {% if o.status == 'paid' %}
+            <button onclick="regenOrder('{{ o.id }}')" title="بازتولید گزارش ناموفق" style="margin-right:6px;padding:3px 8px;border-radius:6px;background:rgba(139,92,246,.15);border:1px solid #8b5cf6;color:#c4b5fd;font-size:.72rem;cursor:pointer;">↻ بازتولید</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not orders %}<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--muted);">سفارشی ثبت نشده</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">گزارش‌ها (آخرین ۲۰)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:600px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">تاریخ</th><th>وضعیت</th><th>بخش‌ها</th><th>PDF</th></tr></thead>
+      <tbody>
+        {% for r in reports %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;white-space:nowrap;">{{ r.created_at.strftime('%m-%d %H:%M') }}</td>
+          <td style="color:{% if r.status == 'done' %}#2a9d8f{% elif r.status == 'failed' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">{{ r.status }}</td>
+          <td>{{ r.sections|length if r.sections else 0 }}</td>
+          <td>{% if r.pdf_path %}<a href="/api/reports/{{ r.id }}/pdf" style="color:#f5c518;">دانلود</a>{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+        {% if not reports %}<tr><td colspan="4" style="padding:14px;text-align:center;color:var(--muted);">گزارشی ثبت نشده</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+  <script>
+    document.addEventListener('alpine:init', () => { Alpine.store('plans', {}); });
+    async function regenOrder(id){
+      if (!confirm('گزارش ناموفق این سفارش دوباره در صف تولید قرار می‌گیرد. ادامه می‌دهی؟')) return;
+      const r = await fetch('/api/admin/orders/' + id + '/regenerate', {method:'POST'});
+      const j = await r.json();
+      if (j.ok) { alert('در صف تولید قرار گرفت (گزارش ' + j.report_id.slice(0,8) + ')'); location.reload(); }
+      else alert('خطا: ' + (j.detail || 'نامشخص'));
+    }
+    async function savePrompt(key){
+      const content = document.getElementById('prompt-' + key).value.trim();
+      if (!content) return alert('متن خالی است');
+      const fd = new FormData(); fd.append('content', content);
+      const r = await fetch('/api/admin/prompts/' + key, {method:'POST', body:fd});
+      const j = await r.json();
+      if (j.ok) { alert('نسخه ' + j.version + ' ذخیره شد'); location.reload(); }
+      else alert('خطا: ' + (j.detail || 'نامشخص'));
+    }
+    async function savePlan(key){
+      const p = Alpine.store('plans')[key];
+      if (!p) return;
+      const fd = new FormData();
+      fd.set('price_toman', p.price); fd.set('active', p.active ? '1' : '0');
+      const r = await fetch('/api/admin/plans/' + key, {method:'PUT', body: fd});
+      const d = await r.json();
+      if (!r.ok) alert(d.detail || 'خطا');
+    }
+    async function revealSecret(key){
+      const inp = document.getElementById('secret-in-' + key);
+      if (inp.type === 'text') { inp.type = 'password'; return; }
+      const r = await fetch('/api/admin/secrets/' + key + '/reveal', {method:'POST'});
+      const j = await r.json();
+      inp.value = j.value || '';
+      inp.type = 'text';
+    }
+    async function saveSecret(key){
+      const v = document.getElementById('secret-in-' + key).value;
+      const fd = new FormData(); fd.append('value', v);
+      const r = await fetch('/api/admin/secrets/' + key, {method:'POST', body: fd});
+      const j = await r.json();
+      if (j.ok) {
+        alert(v.trim() ? 'ذخیره شد ✅ — سرویس را ریاستارت کنید تا اعمال شود' : 'پاک شد — به مقدار محیطی برمی‌گردد');
+        location.reload();
+      } else alert('خطا: ' + (j.detail || 'نامشخص'));
+    }
+    async function clearSecret(key){
+      if (!confirm('این کلید پاک شود و به مقدار متغیر محیطی برگردد؟')) return;
+      const fd = new FormData(); fd.append('value', '');
+      const r = await fetch('/api/admin/secrets/' + key, {method:'POST', body: fd});
+      const j = await r.json();
+      if (j.ok) { alert('پاک شد ✅'); location.reload(); }
+      else alert('خطا: ' + (j.detail || 'نامشخص'));
+    }
+  </script>
+</div>
+{% endblock %}

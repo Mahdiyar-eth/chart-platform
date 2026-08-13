@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:0 auto;padding:40px 18px;">
+  <div class="glass" style="padding:28px;border-radius:18px;text-align:center;">
+    <div style="font-size:42px;margin-bottom:8px;">🔐</div>
+    <h1 style="font-size:20px;font-weight:800;margin-bottom:16px;">ورود مدیریت</h1>
+    {% if error %}<p style="color:#ff6b6b;margin-bottom:12px;">{{ error }}</p>{% endif %}
+    <form method="post" action="/admin/login">
+      <input name="pin" type="password" inputmode="numeric" pattern="[0-9]*" required
+             placeholder="رمز ورود (فقط عدد)"
+             style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);
+                    background:rgba(255,255,255,.06);color:var(--txt);font-size:18px;text-align:center;letter-spacing:6px;margin-bottom:14px;">
+      <button type="submit" class="btn btn-lg" style="width:100%;">ورود</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

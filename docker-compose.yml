@@ -1,0 +1,30 @@
+# Chart Platform — deploy via Docker (alternative to systemd units in deploy/).
+#
+# Uses the HOST's Postgres + Redis (shared infra on this server) via
+# `network_mode: host`, so DATABASE_URL / REDIS_URL in .env point at 127.0.0.1
+# exactly as they do for the systemd setup. Linux-only (host networking).
+#
+#   docker compose up -d --build
+#
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    working_dir: /app
+    command: >
+      uvicorn app.main:app --host 127.0.0.1 --port 8767
+      --proxy-headers --forwarded-allow-ips=127.0.0.1 --workers 2 --no-access-log
+    volumes:
+      - ./app/static:/app/app/static   # generated PDFs + article images + guide
+
+  worker:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    working_dir: /app
+    command: arq app.report.worker.WorkerSettings
+    volumes:
+      - ./app/static:/app/app/static
