@@ -11,6 +11,28 @@
     {% endfor %}
     <div class="kpi"><b>{{ reports|selectattr('status','equalto','done')|list|length }}</b><span>گزارش آماده</span></div>
     <div class="kpi"><b>{{ llm_cost_7d }}$</b><span>هزینه AI (۷ روز) — {{ llm_runs_7d }} درخواست</span></div>
+    <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">وضعیت هوش مصنوعی 🤖</h2>
+  <div class="glass" style="padding:14px;font-size:.85rem;">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:10px;">
+      {% for part, model in ai_status.items() %}
+      <div>
+        <b style="color:#c4b5fd;">{{ {'report':'گزارش کامل','chat':'گفتگو','preview':'پیش‌نمایش'}.get(part, part) }}</b>
+        <code dir="ltr" style="margin-right:6px;font-size:.78rem;color:#e8ecff;">{{ model }}</code>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:.78rem;">
+      {% for h in ai_health %}
+      <span><b style="color:{{ '#2a9d8f' if h.healthy else '#e76f51' }};">{{ h.provider }}</b>
+        {% if h.healthy %}سالم{% else %}خطا×{{ h.error_streak }}{% endif %}</span>
+      {% endfor %}
+    </div>
+    <p class="muted" style="font-size:.72rem;margin-top:8px;">
+      مدل هر بخش از بخش «کلیدها و رازها» قابل تغییر است (report_llm_model / chat_llm_model / preview_llm_model). سهمیه روزانه گفتگو: chat_daily_limit_gold و chat_daily_limit_monthly.
+    </p>
   </div>
 
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">کلیدها و رازها 🔐</h2>

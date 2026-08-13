@@ -3,10 +3,13 @@ LLM Provider layer — deterministic chart data NEVER goes through LLM.
 
 Architecture (plan v3.1 section 6.1):
     LLMProvider (abstract: health/quota/latency/error_rate/cost)
-      ├── GeminiProvider   (direct REST, AQ free-tier keys, rotation)  ✅ tested
-      ├── DeepSeekProvider (OpenAI-compatible API)                     ⏳ needs key
-      └── AvalAIProvider   (OpenAI-compatible Iranian gateway)          ⏳ needs key
+      ├── GoProvider       (OpenCode Go subscription — DeepSeek V4 Flash/Pro)
+      └── DeepSeekProvider (official DeepSeek API — optional direct fallback)
     LLMRouter picks the best provider by health + quota + cost.
+
+Owner decision (2026-08-13): Gemini + AvalAI removed. Production runs on
+OpenCode Go (DeepSeek V4) only, with per-part model selection
+(report=pro, chat/preview=flash) overridable from the admin panel.
 """
 from __future__ import annotations
 
@@ -95,97 +98,6 @@ class LLMProvider(ABC):
         return (usage.prompt_tokens * 0.14 + usage.completion_tokens * 0.28) / 1_000_000
 
 
-# ─────────────────────────── Gemini (direct REST, free-tier AQ keys) ───────────────────────────
-
-class GeminiProvider(LLMProvider):
-    """Gemini 3.6 Flash via native generateContent?key= — PROVEN working from this server (2026-08-12)."""
-
-    name = "gemini"
-    MODEL = "gemini-3.6-flash"
-
-    def __init__(self, keys: list[str], api_base: str = "https://generativelanguage.googleapis.com/v1beta") -> None:
-        super().__init__()
-        self.keys = keys
-        self.api_base = api_base
-        self._idx = 0
-        self._exhausted: dict[str, float] = {}  # key -> cooldown-until (monotonic)
-        self._daily_quota = 20  # free tier: 20 req/day/project/model
-        self._daily: dict[str, int] = {}
-        self._daily_reset = int(time.time()) // 86400
-
-    def _next_key(self) -> str:
-        """Round-robin over keys, skipping cooldown + daily-quota-exhausted keys."""
-        today = int(time.time()) // 86400
-        if today != self._daily_reset:
-            self._daily.clear()
-            self._daily_reset = today
-        for _ in range(len(self.keys)):
-            key = self.keys[self._idx % len(self.keys)]
-            self._idx += 1
-            if self._exhausted.get(key, 0) <= time.monotonic() and self._daily.get(key, 0) < self._daily_quota:
-                self._daily[key] = self._daily.get(key, 0) + 1
-                return key
-        # everything cooling down / quota-exhausted — try the next key anyway (retry > nothing)
-        key = self.keys[self._idx % len(self.keys)]
-        self._idx += 1
-        return key
-
-    def _mark_exhausted(self, key: str, cooldown_s: float) -> None:
-        self._exhausted[key] = time.monotonic() + cooldown_s
-        logger.warning("Gemini key %s… cooldown %.0fs (remaining healthy keys: %d)",
-                       key[-6:], cooldown_s, sum(1 for k in self.keys if self._exhausted.get(k, 0) <= time.monotonic()))
-
-    async def complete(self, prompt: str, system: str | None = None,
-                       max_tokens: int = 2048, temperature: float = 0.7,
-                       json_mode: bool = False) -> LLMResult:
-        t0 = time.monotonic()
-        payload = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
-        }
-        if json_mode:
-            payload["generationConfig"]["responseMimeType"] = "application/json"
-        if system:
-            payload["systemInstruction"] = {"parts": [{"text": system}]}
-        # try up to len(keys) times — skip exhausted keys automatically
-        for attempt in range(max(len(self.keys), 1)):
-            key = self._next_key()
-            url = f"{self.api_base}/models/{self.MODEL}:generateContent?key={key}"
-            try:
-                async with httpx.AsyncClient(timeout=120) as cl:
-                    r = await cl.post(url, json=payload)
-                if r.status_code == 200:
-                    data = r.json()
-                    text = "".join(p.get("text", "") for p in data.get("candidates", [{}])[0].get("content", {}).get("parts", []))
-                    usage = data.get("usageMetadata", {})
-                    u = LLMUsage(prompt_tokens=usage.get("promptTokenCount", 0),
-                                 completion_tokens=usage.get("candidatesTokenCount", 0))
-                    lat = int((time.monotonic() - t0) * 1000)
-                    self.report_success(lat, u)
-                    return LLMResult(text=text, provider=self.name, model=self.MODEL,
-                                     latency_ms=lat, usage=u, cost=self.estimate_cost(u))
-                err = r.text[:200]
-                if r.status_code == 429:
-                    if "quota" in r.text.lower() or "billing" in r.text.lower():
-                        self._mark_exhausted(key, 3600)
-                    else:
-                        self._mark_exhausted(key, 30)
-                elif r.status_code >= 500:
-                    self._mark_exhausted(key, 30)
-                if attempt == len(self.keys) - 1:
-                    self.report_error(err)
-                    return LLMResult(text="", provider=self.name, model=self.MODEL, error=f"HTTP {r.status_code}: {err}")
-            except Exception as e:  # network etc.
-                if attempt == len(self.keys) - 1:
-                    self.report_error(str(e))
-                    return LLMResult(text="", provider=self.name, model=self.MODEL, error=str(e))
-        return LLMResult(text="", provider=self.name, model=self.MODEL, error="no keys available")
-
-    @staticmethod
-    def estimate_cost(usage: LLMUsage) -> float:
-        return 0.0  # free-tier keys
-
-
 # ─────────────────────────── DeepSeek (OpenAI-compatible) ───────────────────────────
 
 class DeepSeekProvider(LLMProvider):
@@ -267,19 +179,6 @@ class GoProvider(DeepSeekProvider):
         return 0.0  # flat subscription — not per-token
 
 
-# ─────────────────────────── AvalAI (Iranian gateway, OpenAI-compatible) ───────────────────────────
-
-class AvalAIProvider(DeepSeekProvider):
-    """AvalAI (avalai.ir) — OpenAI-compatible Iranian gateway with riyal billing.
-    Set AVALAI_API_KEY. Optional paid fallback; interface identical to DeepSeek."""
-
-    name = "avalai"
-    MODEL = "deepseek-chat"  # their default DeepSeek model
-
-    def __init__(self, api_key: str | None = None, api_base: str = "https://api.avalai.ir/v1") -> None:
-        super().__init__(api_key=api_key or get_secret("avalai_api_key", "AVALAI_API_KEY", ""), api_base=api_base)
-
-
 # ─────────────────────────── Router ───────────────────────────
 
 class LLMRouter:
@@ -319,46 +218,30 @@ class LLMRouter:
 
 # ─────────────────────────── factory ───────────────────────────
 
-def load_gemini_keys(path: str | None = None) -> list[str]:
-    """Load Gemini keys: platform .env path → platform keys/ → hermes fallback."""
-    candidates = []
-    if path:
-        candidates.append(Path(path))
-    candidates += [
-        Path(get_secret("gemini_keys_path", "GEMINI_KEYS_PATH", "keys/gemini-keys.txt")),
-        Path("/root/chart-platform/keys/gemini-keys.txt"),
-        Path("/root/.hermes/keys/gemini-3.6-keys.txt"),
-    ]
-    for cand in candidates:
-        if cand.exists():
-            keys = [l.strip() for l in cand.read_text().splitlines()
-                    if l.strip().startswith("AQ.")]
-            if keys:
-                return keys
-    return []
+# Per-part default model — overridable from the admin panel (secret store).
+_PART_DEFAULT_MODEL = {
+    "report": "deepseek-v4-pro",     # full report generation (worker)
+    "chat": "deepseek-v4-flash",     # AI chat (gold/monthly)
+    "preview": "deepseek-v4-flash",  # free 3-5 insights enrichment
+}
 
 
-def build_router() -> LLMRouter:
+def build_router(part: str = "report") -> LLMRouter:
+    """Build the router for a specific part. Production runs on OpenCode Go
+    (DeepSeek V4) only; an optional direct DeepSeek API key acts as fallback.
+    Model per part is overridable via secret `{part}_llm_model` (admin panel)."""
+    default_model = _PART_DEFAULT_MODEL.get(part, "deepseek-v4-pro")
+    model = get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default_model)
     providers: list[LLMProvider] = []
-    go = GoProvider()
+    go = GoProvider(model=model)
     if go.api_key:
         providers.append(go)
-    gkeys = load_gemini_keys()
-    if gkeys:
-        providers.append(GeminiProvider(gkeys))
-    providers.append(DeepSeekProvider())
-    providers.append(AvalAIProvider())
+    ds = DeepSeekProvider()
+    if ds.api_key:
+        providers.append(ds)
     return LLMRouter(providers)
 
 
 def build_chat_router() -> LLMRouter:
-    """Chat/preview router — fast + quota-cheap: go-flash → gemini → avalai."""
-    providers: list[LLMProvider] = []
-    go = GoProvider(model="deepseek-v4-flash")
-    if go.api_key:
-        providers.append(go)
-    gkeys = load_gemini_keys()
-    if gkeys:
-        providers.append(GeminiProvider(gkeys))
-    providers.append(AvalAIProvider())
-    return LLMRouter(providers)
+    """Backward-compatible alias — chat uses the flash model by default."""
+    return build_router("chat")

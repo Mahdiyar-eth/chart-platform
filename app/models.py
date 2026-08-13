@@ -85,6 +85,24 @@ class LLMRun(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class ChatMessage(SQLModel, table=True):
+    """AI chat turn — serves both user-visible history and admin usage metering."""
+    __tablename__ = "chat_messages"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    chart_id: str = Field(default=None, foreign_key="charts.id", index=True)
+    role: str = Field(default="user")  # user | assistant
+    content: str = Field(default="")
+    intent: str | None = Field(default=None)
+    domains: list[str] = Field(default_factory=list, sa_column=Column(JSONB))
+    provider: str | None = Field(default=None)
+    model: str | None = Field(default=None)
+    prompt_tokens: int = Field(default=0)
+    completion_tokens: int = Field(default=0)
+    cost_usd: float = Field(default=0.0)
+    ok: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Report(SQLModel, table=True):
     """Generated 13-section report (sections + metrics + PDF artifact)."""
     __tablename__ = "reports"

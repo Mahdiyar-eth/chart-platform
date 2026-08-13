@@ -65,7 +65,7 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
             try:
                 with Session(db_engine) as _s:
                     _s.add(LLMRun(report_id=report_id, provider=res.provider,
-                                  model=res.model, gateway="gemini",
+                                  model=res.model, gateway=res.provider,
                                   prompt_tokens=res.usage.prompt_tokens,
                                   completion_tokens=res.usage.completion_tokens,
                                   cost_usd=res.cost, ok=res.ok,

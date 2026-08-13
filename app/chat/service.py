@@ -9,7 +9,7 @@ from app.chat.retrieval import build_chat_prompt, retrieve_context
 
 def chat_answer(question: str, chart_json: dict, report_sections: dict | None = None,
                 focus_areas: list[str] | None = None, router=None) -> dict:
-    """Sync entry (dev/tests): returns {answer, intent, domains, cost, tokens}."""
+    """Sync entry (dev/tests): returns {answer, intent, domains, cost, tokens, provider, model}."""
     route = route_question(question, focus_areas)
     ctx = retrieve_context(chart_json, report_sections, route["domains"])
     prompt = build_chat_prompt(question, ctx)
@@ -27,4 +27,6 @@ def chat_answer(question: str, chart_json: dict, report_sections: dict | None = 
         "ok": res.ok,
         "cost_usd": res.cost,
         "tokens": res.usage.total,
+        "provider": getattr(res, "provider", None),
+        "model": getattr(res, "model", None),
     }

@@ -102,14 +102,14 @@ ENRICH_TEMPLATE = """تو نویسندهی محتوای ساده و جذاب ب�
 
 async def enrich_insights_async(chart: dict, insights: dict) -> dict | None:
     """Rewrite the deterministic one-liners as plain-language insights via the
-    cheap chat router (deepseek-flash flat-subscription → gemini free → fallback).
-    Returns a new insights dict with enriched text, or None on failure (caller
-    keeps the deterministic originals)."""
+    cheap preview router (deepseek-flash flat-subscription). Returns a new
+    insights dict with enriched text, or None on failure (caller keeps the
+    deterministic originals)."""
     facts = [i["insight"] for i in insights.get("insights", [])]
     if not facts:
         return None
-    from app.core.llm import build_chat_router
-    router = build_chat_router()
+    from app.core.llm import build_router
+    router = build_router("preview")
     prompt = ENRICH_TEMPLATE.format(facts_block="\n".join(f"- {f}" for f in facts))
     res = await router.complete(prompt, max_tokens=900, temperature=0.6, json_mode=True)
     if not res.ok:

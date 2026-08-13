@@ -30,7 +30,7 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from app.models import (AuditLog, BirthProfile, Chart, Coupon, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
                         PromptVersion, ReferralCode, ReferralEvent, Report, Subscription,
                         User, WeeklyReflection)
 from app import secret_store
@@ -1046,6 +1046,25 @@ def chat_page(request: Request, chart_id: str, session: Session = Depends(get_se
     })
 
 
+def _chat_quota_info(session: Session, chart_id: str, order) -> dict:
+    """Daily quota for a chart's AI chat (gold vs monthly, admin-overridable)."""
+    limit_key = "chat_daily_limit_gold" if order.plan_key == "gold" else "chat_daily_limit_monthly"
+    default = "5" if order.plan_key == "gold" else "15"
+    try:
+        daily_limit = int(secret_store.get_secret(limit_key, limit_key.upper(), default))
+    except ValueError:
+        daily_limit = int(default)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    used = len(session.exec(
+        select(ChatMessage.id).where(
+            ChatMessage.chart_id == chart_id,
+            ChatMessage.role == "user",
+            ChatMessage.created_at >= today_start,
+        )
+    ).all())
+    return {"used": used, "limit": daily_limit, "remaining": max(0, daily_limit - used)}
+
+
 @app.get("/api/chat/access/{chart_id}")
 def api_chat_access(chart_id: str, session: Session = Depends(get_session)):
     # audit P0-4: AI chat is a GOLD/monthly feature (plan §7) — basic/full don't include it
@@ -1053,7 +1072,23 @@ def api_chat_access(chart_id: str, session: Session = Depends(get_session)):
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
     allowed = bool(order and order.plan_key in ("gold", "monthly"))
-    return {"allowed": allowed}
+    if not allowed:
+        return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
+    quota = _chat_quota_info(session, chart_id, order)
+    return {"allowed": True, **quota}
+
+
+@app.get("/api/chat/history/{chart_id}")
+def api_chat_history(chart_id: str, session: Session = Depends(get_session)):
+    msgs = session.exec(
+        select(ChatMessage).where(ChatMessage.chart_id == chart_id)
+        .order_by(ChatMessage.created_at.asc())
+    ).all()
+    return {"messages": [
+        {"role": m.role, "content": m.content,
+         "created_at": m.created_at.isoformat() if m.created_at else None}
+        for m in msgs
+    ]}
 
 
 @app.post("/api/chat")
@@ -1075,6 +1110,11 @@ def api_chat(
     if not order or order.plan_key not in ("gold", "monthly"):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
 
+    # daily quota (per chart)
+    quota = _chat_quota_info(session, chart_id, order)
+    if quota["used"] >= quota["limit"]:
+        raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا ✨")
+
     profile = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
     report = session.exec(
         select(Report).where(Report.chart_id == chart_id).order_by(Report.created_at.desc())
@@ -1085,6 +1125,23 @@ def api_chat(
         report_sections=(report.sections if report and report.sections else None),
         focus_areas=(profile.focus_areas if profile else None),
     )
+
+    # persist history (user + assistant) — doubles as admin usage metering
+    try:
+        session.add(ChatMessage(chart_id=chart_id, role="user", content=question))
+        session.add(ChatMessage(
+            chart_id=chart_id, role="assistant", content=result.get("answer", ""),
+            intent=result.get("intent"), domains=result.get("domains") or [],
+            provider=result.get("provider"), model=result.get("model"),
+            completion_tokens=result.get("tokens", 0),
+            cost_usd=result.get("cost_usd", 0.0), ok=bool(result.get("ok")),
+        ))
+        session.commit()
+    except Exception:  # noqa: BLE001 — history must never break the answer
+        session.rollback()
+
+    result["quota"] = {"used": quota["used"] + 1, "limit": quota["limit"],
+                       "remaining": max(0, quota["limit"] - (quota["used"] + 1))}
     return result
 
 
@@ -1502,11 +1559,23 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     by_status: dict[str, int] = {}
     for o in orders:
         by_status[o.status] = by_status.get(o.status, 0) + 1
+    # AI chat status: active model per part + provider health + chat usage
+    from app.core.llm import build_router
+    ai_status: dict[str, str] = {}
+    for part, default in (("report", "deepseek-v4-pro"), ("chat", "deepseek-v4-flash"),
+                          ("preview", "deepseek-v4-flash")):
+        ai_status[part] = secret_store.get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default)
+    ai_health = build_router("report").health_report()
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    chat_today = len(session.exec(select(ChatMessage.id).where(ChatMessage.created_at >= today_start)).all())
+    chat_total = len(session.exec(select(ChatMessage.id)).all())
     return templates.TemplateResponse(request, "admin.html", {
         "title": "دشبورد مدیریت", "orders": orders, "reports": reports,
         "revenue_toman": revenue, "by_status": by_status,
         "users": users, "plans": plans, "audit": audit,
         "llm_cost_7d": llm_cost, "llm_runs_7d": len(llm),
+        "ai_status": ai_status, "ai_health": ai_health,
+        "chat_today": chat_today, "chat_total": chat_total,
         "secrets": secret_store.secret_status(),
         "prompt_keys": PROMPT_KEYS,
         "prompt_overrides": [{"key": o["key"], "version": o["version"],
