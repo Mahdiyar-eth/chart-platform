@@ -1469,8 +1469,8 @@ def page_articles(request: Request):
 def page_sky(request: Request):
     from app.astrology.sky import sky_today
     return templates.TemplateResponse(request, "sky.html", {
-        "title": "آسمان امروز — نگاهی به آسمان و تمرین تأمل",
-        "meta": "موقعیت امروز سیارات، فاز ماه و یک تمرین کوتاه تأمل هفتگی برای خودشناسی",
+        "title": "آسمان امروز — فاز ماه، موقعیت سیارات و جنبه‌های آسمانی",
+        "meta": "موقعیت امروز سیارات، فاز ماه، جنبه‌های آسمانی و رجوعی‌ها — با توضیح ساده و تخصصی برای خودشناسی و تأمل",
         "sky": sky_today(),
     })
 

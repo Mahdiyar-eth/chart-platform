@@ -1,45 +1,170 @@
 {% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block description %}{{ meta }}{% endblock %}
 {% block content %}
-<div style="max-width:760px; margin:0 auto; padding:40px 16px 60px;">
-  <header style="text-align:center;">
-    <div style="font-size:2.4rem; line-height:1;">🌌</div>
-    <h1 style="margin-top:12px;">آسمان امروز</h1>
-    <p class="muted" style="margin-top:6px;">{{ sky.date_fa }}</p>
+<style>
+  .sky{max-width:780px;margin:0 auto;padding:32px 16px 64px;}
+  .sky header{text-align:center;}
+  .sky .hd-icon{width:66px;height:66px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.32);color:var(--gold);}
+  .sky h1{margin-top:14px;font-size:1.9rem;font-weight:800;}
+  .sky .sub{margin-top:6px;color:var(--muted);}
+  .sky .toggle{display:flex;justify-content:center;gap:8px;margin-top:18px;}
+  .mode-btn{padding:9px 24px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--muted);font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
+  .mode-btn.mode-on{background:linear-gradient(135deg,#F0C75E,#C8901E);color:#1a1626;border-color:transparent;}
+  .sky .glass{margin-top:16px;padding:20px;}
+  .sec-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+  .sec-head svg{width:20px;height:20px;color:var(--gold);flex-shrink:0;}
+  .sec-head h2{font-size:1.08rem;font-weight:800;color:var(--gold);}
+  .moon-hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .moon-hero .phase-name{font-size:1.35rem;font-weight:800;}
+  .illum{flex:1;min-width:140px;}
+  .illum .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}
+  .illum .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#F0C75E,#C8901E);}
+  .illum .lbl{margin-top:6px;font-size:.78rem;color:var(--muted);}
+  .mean{margin-top:12px;font-size:.94rem;line-height:1.9;color:#e8e2f5;}
+  .spec-box{margin-top:12px;padding:10px 14px;border:1px dashed rgba(212,175,55,.4);border-radius:10px;background:rgba(212,175,55,.06);font-size:.86rem;line-height:1.8;color:var(--muted);}
+  .spec-box b{color:var(--gold);}
+  .planet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .planet-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;}
+  .planet-card .glyph{font-size:1.35rem;color:var(--gold);line-height:1;}
+  .planet-card .nm{margin-top:6px;font-weight:800;font-size:.9rem;}
+  .planet-card .sg{margin-top:2px;color:var(--muted);font-size:.8rem;}
+  .planet-card .theme{margin-top:8px;font-size:.78rem;line-height:1.6;color:#cfc7e4;}
+  .planet-card .spec{margin-top:6px;font-size:.75rem;color:var(--gold);}
+  .retro-badge{color:#ff9f43;font-size:.8rem;font-weight:700;}
+  .note{font-size:.78rem;color:var(--muted);margin-top:12px;line-height:1.7;}
+  .retro-list{display:flex;flex-direction:column;gap:10px;}
+  .retro-item{display:flex;gap:12px;align-items:flex-start;padding:11px 13px;border:1px solid rgba(255,159,67,.25);background:rgba(255,159,67,.05);border-radius:12px;}
+  .retro-item .glyph{font-size:1.3rem;color:#ff9f43;line-height:1;}
+  .retro-item .t{font-size:.88rem;line-height:1.7;color:#e8e2f5;}
+  .retro-item .t b{color:#ffd9a8;}
+  .aspect-list{display:flex;flex-direction:column;gap:10px;}
+  .aspect-row{display:flex;gap:12px;align-items:center;padding:11px 13px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);border-radius:12px;}
+  .aspect-row .glyphs{font-size:1.15rem;color:var(--gold);white-space:nowrap;min-width:56px;text-align:center;}
+  .aspect-row .info .nm{font-weight:800;font-size:.88rem;}
+  .aspect-row .info .mn{font-size:.8rem;color:#cfc7e4;line-height:1.6;margin-top:3px;}
+  .aspect-row .info .spec{color:var(--gold);font-size:.75rem;margin-top:4px;}
+  .event-list{display:flex;flex-direction:column;gap:10px;}
+  .event-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);border-radius:12px;}
+  .event-row svg{width:20px;height:20px;color:var(--gold);flex-shrink:0;}
+  .event-row .lbl{font-weight:800;font-size:.92rem;}
+  .event-row .dt{color:var(--muted);font-size:.84rem;margin-inline-start:auto;text-align:start;line-height:1.5;}
+  .reflect{margin-top:12px;font-size:1.05rem;line-height:2;font-weight:700;}
+  .cta-box{text-align:center;}
+  .disc{margin-top:18px;text-align:center;font-size:.78rem;color:var(--muted);line-height:1.8;}
+</style>
+
+<div class="sky" x-data="{spec:false}">
+  <header>
+    <div class="hd-icon"><svg style="width:34px;height:34px;" aria-hidden="true"><use href="#icon-moon"/></svg></div>
+    <h1>آسمان امروز</h1>
+    <p class="sub">{{ sky.date_fa }}</p>
   </header>
 
-  <section class="glass" style="margin-top:20px; padding:22px; text-align:center;">
-    <div style="font-size:1.1rem; font-weight:700; color:var(--gold);">فاز ماه</div>
-    <div style="font-size:1.6rem; margin-top:6px;">🌙 {{ sky.moon_phase }}</div>
-    <p class="muted" style="margin-top:8px; font-size:.88rem; line-height:1.7;">ماه امروز در چرخه‌ی خود؛ دعوتی به نگاه آرام‌تر به ریتم درون.</p>
+  <div class="toggle" role="tablist" aria-label="سطح جزئیات">
+    <button type="button" class="mode-btn" :class="!spec && 'mode-on'" @click="spec=false">ساده</button>
+    <button type="button" class="mode-btn" :class="spec && 'mode-on'" @click="spec=true">تخصصی</button>
+  </div>
+
+  <!-- 1) moon phase -->
+  <section class="glass">
+    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-moon"/></svg><h2>فاز ماه</h2></div>
+    <div class="moon-hero">
+      <div class="phase-name">{{ sky.moon_phase }}</div>
+      <div class="illum">
+        <div class="bar"><span style="width:{{ sky.moon_illumination }}%"></span></div>
+        <div class="lbl">روشنایی {{ sky.moon_illumination }}٪</div>
+      </div>
+    </div>
+    <p class="mean">{{ sky.moon_phase_meaning }}</p>
+    <div class="spec-box" x-show="spec" x-cloak>
+      ماه در <b>{{ sky.moon_sign_fa }}</b>، درجه‌ی <b>{{ sky.moon_degree }}</b> — محاسبه با سیستم سایدریال (لاهیری).
+    </div>
   </section>
 
-  <section class="glass" style="margin-top:16px; padding:22px;">
-    <h2 style="font-size:1.05rem; color:var(--gold); margin-bottom:14px;">موقعیت سیارات امروز</h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px;">
+  <!-- 2) planetary positions -->
+  <section class="glass">
+    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-sparkles"/></svg><h2>موقعیت سیارات امروز</h2></div>
+    <div class="planet-grid">
       {% for p in sky.planets %}
-      <div style="background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:10px 12px;">
-        <div style="font-size:1.2rem;">{{ p.glyph }}</div>
-        <div style="font-weight:700; font-size:.88rem; margin-top:2px;">{{ p.name_fa }}{% if p.retro %} <span style="color:#ff9f43;">↻</span>{% endif %}</div>
-        <div class="muted" style="font-size:.78rem; margin-top:2px;">{{ p.sign_fa }}</div>
+      <div class="planet-card">
+        <div class="glyph">{{ p.glyph }}</div>
+        <div class="nm">{{ p.name_fa }}{% if p.retro %} <span class="retro-badge">↻</span>{% endif %}</div>
+        <div class="sg">{{ p.sign_fa }}</div>
+        <div class="theme">{{ p.theme }}</div>
+        <div class="spec" x-show="spec" x-cloak>{{ p.degree }}° · {{ p.element_fa }} · {{ p.modality_fa }}</div>
       </div>
       {% endfor %}
     </div>
-    <p class="muted" style="margin-top:12px; font-size:.8rem;">↻ یعنی حرکت رجوعی (retrograde) — یک پدیده‌ی طبیعی رصدی، نه هشدار.</p>
+    <p class="note"><span class="retro-badge">↻</span> یعنی حرکت رجوعی — یک پدیده‌ی طبیعیِ رصدی، نه هشدار.</p>
   </section>
 
-  <section class="glass glow" style="margin-top:16px; padding:22px; text-align:center;">
-    <h2 style="font-size:1.05rem; color:var(--gold);">🌱 تمرین تأمل این هفته</h2>
-    <p style="margin-top:12px; font-size:1.05rem; line-height:2;">«{{ sky.reflection }}»</p>
-    <p class="muted" style="margin-top:12px; font-size:.85rem; line-height:1.7;">چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
+  <!-- 3) retrogrades -->
+  <section class="glass">
+    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
+    {% if sky.retrogrades %}
+    <p class="mean" style="font-size:.9rem;">حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
+    <div class="retro-list" style="margin-top:12px;">
+      {% for r in sky.retrogrades %}
+      <div class="retro-item">
+        <span class="glyph">{{ r.glyph }}</span>
+        <span class="t"><b>{{ r.name_fa }}</b> در {{ r.sign_fa }} — وقتِ بازبینیِ {{ r.review }}.</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="mean" style="font-size:.9rem;">الان هیچ سیاره‌ای در حرکت رجوعی نیست.</p>
+    {% endif %}
   </section>
 
-  <div class="glass" style="margin-top:16px; padding:18px; text-align:center;">
-    <p style="margin-bottom:12px; font-weight:700;">می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
-    <a class="btn btn-lg" href="/birth-form">✨ چارت تولد رایگان من</a>
+  <!-- 4) today's aspects -->
+  <section class="glass">
+    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-link"/></svg><h2>جنبه‌های امروز</h2></div>
+    {% if sky.aspects %}
+    <div class="aspect-list">
+      {% for a in sky.aspects %}
+      <div class="aspect-row">
+        <div class="glyphs">{{ a.a_glyph }} {{ a.glyph }} {{ a.b_glyph }}</div>
+        <div class="info">
+          <div class="nm">{{ a.a_fa }} و {{ a.b_fa }} — {{ a.name }}</div>
+          <div class="mn">{{ a.meaning }}</div>
+          <div class="spec" x-show="spec" x-cloak>اورب {{ a.orb }} درجه</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="mean" style="font-size:.9rem;">امروز جنبه‌ی شاخصی میان سیارات نیست.</p>
+    {% endif %}
+  </section>
+
+  <!-- 5) upcoming moon events -->
+  <section class="glass">
+    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-calendar"/></svg><h2>رویدادهای آسمانی پیش رو</h2></div>
+    <div class="event-list">
+      {% for e in sky.moon_events %}
+      <div class="event-row">
+        <svg aria-hidden="true"><use href="#icon-moon"/></svg>
+        <span class="lbl">{{ e.label }}</span>
+        <span class="dt">{{ e.date_fa }}<br><span style="color:var(--muted)">{{ e.sign_fa }}</span></span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 6) weekly reflection -->
+  <section class="glass" style="text-align:center;">
+    <div class="sec-head" style="justify-content:center;"><svg aria-hidden="true"><use href="#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
+    <p class="reflect">«{{ sky.reflection }}»</p>
+    <p class="note" style="margin-top:12px;">چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
+  </section>
+
+  <!-- 7) CTA -->
+  <div class="glass cta-box">
+    <p style="font-weight:800;margin-bottom:12px;">می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
+    <a class="btn btn-lg" href="/birth-form">چارت تولد رایگان من</a>
   </div>
 
-  <p class="muted" style="margin-top:18px; text-align:center; font-size:.8rem; line-height:1.7;">
-    این‌ها نقشه‌ی موقعیت‌های آسمانی‌اند، نه تعیینِ سرنوشت. آسمان بسترِ تأمل است؛ تصمیم نهایی با عقل و اختیار توست.
-  </p>
+  <p class="disc">این‌ها نقشه‌ی موقعیت‌های آسمانی‌اند، نه تعیینِ سرنوشت. آسمان بسترِ تأمل است؛ تصمیم نهایی با عقل و اختیار توست.</p>
 </div>
 {% endblock %}
