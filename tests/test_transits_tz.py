@@ -6,7 +6,7 @@ anchored to THEIR local day. Ephemeris input stays UTC.
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
