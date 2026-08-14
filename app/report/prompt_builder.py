@@ -128,9 +128,12 @@ ISLAMIC_TEMPLATE = """تو نویسندهی فصل «فرهنگ و باورها�
 - این فصل **فرهنگی-معنوی** است، نه نجومی و نه فقهی. هیچ ادعایی درباره‌ی غیب، تقدیر قطعی، یا نظر شرعی قطعی نکن.
 - «آینه‌ی خودشناسی»: از مفاهیم قرآن و سنت (شکر، توکل، صبر، توبه، عدل، مسئولیت) فقط به‌عنوان **چهارچوب رشد اخلاقی** استفاده کن — هرگز به‌عنوان حکم یا پیش‌گویی.
 - احترام کامل: برای هر کس با هر باوری قابل‌خواندن باشد. مؤمن و غیرمؤمن هر دو باید آن را مفید بدانند.
-- هیچ آیه‌ای را جعل نکن؛ اگر از آیه استفاده می‌کنی، مفاهیم مشهور و قطعی (مثل اهمیت توکل و صبر) را بدون نقل‌قول تحت‌اللفظی بیاور، یا بنویس «در سنت ما بر توکل و صبر تأکید شده است».
+- هیچ آیه‌ای را جعل نکن؛ نقل‌قول فقط از «فهرست مفاهیم تأییدشده» پایین مجاز است و فقط با همان ارجاع سوره/آیهٔ فهرست — هیچ نقل‌قول دیگری از قرآن یا حدیث نکن.
 - ادعای پزشکی ممنوع. وعده‌ی مالی/شفای قطعی ممنوع.
 - پاسخ فقط JSON معتبر — بدون مقدمه و بدون مارک‌داون.
+
+# فهرست مفاهیم تأییدشده (KB — تنها منبع مجاز ارجاع)
+{kb_block}
 
 # اطلاعات مکمل (برای شخصی‌سازی لحن — نه برای حدس زدن)
 - Big Three: {big_three}
@@ -155,11 +158,27 @@ ISLAMIC_TEMPLATE = """تو نویسندهی فصل «فرهنگ و باورها�
 """
 
 
+def _load_islamic_kb() -> list[dict]:
+    """H1.7: verified Islamic concepts (surah/ayah refs) — loaded once per call
+    (small file); the only citation source the LLM may use."""
+    import json
+    from pathlib import Path
+    path = Path(__file__).resolve().parent.parent / "content" / "islamic_kb.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data["concepts"]
+
+
 def build_islamic_prompt(chart: dict) -> tuple[str, dict]:
     bt = big_three(chart)
+    kb = _load_islamic_kb()
+    kb_block = "\n".join(
+        f"- {c['fa']}: {c['concept']} (ارجاع: {c['ref']})" for c in kb
+    )
     context = {"domain": "islamic", "domain_title": "فرهنگ و باورها — از منظر خودشناسی",
-               "factors": "", "moon_phase": chart.get("moon_phase", ""), "big_three": bt}
-    prompt = ISLAMIC_TEMPLATE.format(big_three=bt, moon_phase=context["moon_phase"])
+               "factors": "", "moon_phase": chart.get("moon_phase", ""), "big_three": bt,
+               "kb_count": len(kb)}
+    prompt = ISLAMIC_TEMPLATE.format(big_three=bt, moon_phase=context["moon_phase"],
+                                     kb_block=kb_block)
     return prompt, context
 
 
