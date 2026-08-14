@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 
 import app.main as main_mod
 from app.db import engine
@@ -137,3 +137,8 @@ def test_web_monthly_activation_creates_null_chat_sub():
         assert sub is not None
         from app.timeutil import ensure_utc
         assert ensure_utc(sub.expires_at) > datetime.now(timezone.utc)
+        # F-28 cleanup: leave no active web sub behind — run_weekly_delivery in
+        # later tests iterates ALL active subs (push-only now, not a crash)
+        s.delete(sub)
+        s.exec(text("DELETE FROM charts WHERE id = :cid").bindparams(cid=cid))
+        s.commit()
