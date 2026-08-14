@@ -141,6 +141,32 @@ def test_synastry_order_failure_leaves_no_orphan_data(monkeypatch):
     assert profiles_after == profiles_before, (profiles_before, profiles_after)
 
 
+# ── F-19 residual (audit v9 P1): cleanup itself MUST be fail-closed — if the
+# compensation fails, surface 5xx (NOT the original 400) + audit trail, so an
+# orphaned guest Person B can never be silently swallowed.
+def test_synastry_cleanup_failure_is_fail_closed(monkeypatch):
+    class _Boom:
+        def request(self, *a, **k):
+            raise RuntimeError("gateway unavailable")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: _Boom())
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: _Boom())
+    # make the compensation DELETE itself fail
+    monkeypatch.setattr("sqlmodel.Session.delete", lambda self, obj: (_ for _ in ()).throw(RuntimeError("db down")))
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+
+    r = c.post("/api/synastry/order", data={
+        "name_a": "الف", "year_a": "1373", "month_a": "6", "day_a": "1",
+        "hour_a": "6", "minute_a": "10", "city_a": "تهران", "calendar_a": "jalali",
+        "name_b": "ب", "year_b": "1375", "month_b": "1", "day_b": "15",
+        "hour_b": "12", "minute_b": "0", "city_b": "اصفهان", "calendar_b": "jalali",
+    })
+    # fail-closed: 5xx, NOT the payment 400 — the incomplete state is visible
+    assert r.status_code == 502, r.status_code
+    assert "پشتیبانی" in r.json().get("detail", "")
+
+
 # ── F-20: wallet with insufficient balance creates NO order, reserves NO coupon
 def test_wallet_insufficient_balance_creates_no_order():
     c = TestClient(main_mod.app)
@@ -177,3 +203,51 @@ def test_wallet_insufficient_balance_creates_no_order():
         after = s.exec(select(func.count()).select_from(Order)).one()
         assert after == before  # NO order was created at all
         assert s.get(Coupon, cpid).used_count == 0  # nothing was reserved
+
+
+# ── F-20 residual (audit v9 P2): wallet pre-check must accept the DISCOUNTED
+# final amount — a user who can cover 1,192,000 (1.49M − 20% coupon) but not
+# the full 1,490,000 must NOT be rejected.
+def test_wallet_pays_discounted_amount_with_coupon(monkeypatch):
+    class _FakeZP:
+        def request(self, *a, **k):
+            return "Q" + _uuid.uuid4().hex[:10].upper(), "https://pay.example/x"
+
+        def verify(self, *a, **k):
+            return {"ref_id": "REF" + _uuid.uuid4().hex[:6]}
+
+    fake = _FakeZP()
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+
+    phone = "98913" + str(9_000_000 + _uuid.uuid4().int % 1_000_000)
+    with Session(engine) as s:
+        # 1.25M — covers the discounted 1.192M basic plan, NOT the full 1.49M
+        u = User(phone=phone, balance_rial=1_250_000)
+        s.add(u)
+        s.commit()
+        s.refresh(u)
+        uid = u.id
+        cp = Coupon(code="F20D-" + _uuid.uuid4().hex[:6].upper(), percent=20,
+                    max_uses=5, active=True)
+        s.add(cp)
+        s.commit()
+        cpid, real_code = cp.id, cp.code
+
+    from app.auth import _user_cookie_value
+    c.cookies.update({"chart_user": _user_cookie_value(uid)})
+    cid = _mk_chart(c)
+
+    r = c.post("/api/orders", data={
+        "plan_key": "basic", "chart_id": cid, "coupon": real_code,
+    }, headers={"x-pay-with-balance": "1"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body.get("paid_by_balance") is True
+    with Session(engine) as s:
+        o = s.exec(select(Order).order_by(Order.created_at.desc())).first()
+        assert o.status == "paid"
+        assert o.amount_rial == 1_192_000  # 1.49M − 20%
+        assert s.get(User, uid).balance_rial == 58_000  # 1.25M − 1.192M
+        assert s.get(Coupon, cpid).used_count == 1

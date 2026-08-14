@@ -674,10 +674,21 @@ def api_create_order(
     user = get_current_user(request)
     # F-20 (audit v8 P2): in the wallet path, fail FAST before creating the
     # order — no pending order + coupon reservation is left behind when the
-    # balance can't cover even the full (undiscounted) plan price.
+    # balance can't cover the payable amount. The estimate applies the coupon
+    # discount (and referral 10%) so a user whose balance covers the
+    # DISCOUNTED final amount is not rejected (audit v9 residual fix).
     if request.headers.get("x-pay-with-balance", "") == "1":
         _plan = session.get(Plan, plan_key)
-        if not user or not _plan or (user.balance_rial or 0) < (_plan.price_rial or 0):
+        est = (_plan.price_rial or 0) if _plan else 0
+        if est and coupon:
+            _cp = session.exec(
+                select(Coupon).where(Coupon.code == coupon.strip().upper())
+            ).first()
+            if _cp and _cp.active:
+                est = max(1, int(est * (100 - _cp.percent) / 100))
+        elif est and not coupon and request.cookies.get("chart_ref"):
+            est = max(1, int(est * 0.9))  # referral estimate; real check in create_order
+        if not user or not _plan or (user.balance_rial or 0) < est:
             raise HTTPException(400, "موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
@@ -942,8 +953,20 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
             session.delete(profile_a)
             session.delete(profile_b)
             session.commit()
-        except Exception as _e:  # noqa: BLE001 — cleanup is best-effort
-            session.rollback()
+        except Exception as _e:  # noqa: BLE001
+            # F-19 residual (audit v9 P1): cleanup MUST be fail-closed — if
+            # the compensation itself fails, the guest Person B data may be
+            # orphaned with NO deletion path. Surface a 5xx (NOT the original
+            # 400) so the operator sees the incomplete state instead of the
+            # user silently walking away with leftover private data.
+            try:
+                session.rollback()
+                from app.security import audit
+                audit(session.bind, "system", "synastry.cleanup_failed",
+                      chart_a.id, f"compensation failed: {_e!r} — charts/profiles may be orphaned")
+            except Exception:
+                pass
+            raise HTTPException(502, "خطای داخلی: دادههای سیناستری پاک نشد — با پشتیبانی تماس بگیرید")
         raise HTTPException(400, str(e))
     return {"order_id": order.id, "payment_url": pay_url,
             "chart_a": chart_a.id, "chart_b": chart_b.id,
