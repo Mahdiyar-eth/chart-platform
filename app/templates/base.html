@@ -208,6 +208,10 @@
     .help-tip-box { position: absolute; z-index: 50; top: 24px; inset-inline-start: 0; width: 240px; max-width: 72vw; background: #241f33; border: 1px solid rgba(212,175,55,.35); border-radius: 10px; padding: 10px 12px; font-size: .8rem; line-height: 1.7; color: #e8e2f5; box-shadow: 0 8px 24px rgba(0,0,0,.45); text-align: start; font-weight: 400; }
     .help-tip-box::before { content: ''; position: absolute; top: -5px; inset-inline-start: 10px; width: 8px; height: 8px; background: #241f33; border-inline-start: 1px solid rgba(212,175,55,.35); border-top: 1px solid rgba(212,175,55,.35); transform: rotate(45deg); }
     .article-banner svg { width: 100%; height: auto; display: block; }
+    .degraded-bar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;gap:8px;
+      background:linear-gradient(90deg,#5b2a0e,#7a3b12);color:#ffd9a8;padding:10px 14px;font-size:.85rem;
+      box-shadow:0 2px 12px rgba(0,0,0,.35)}
+    .degraded-bar.hidden{display:none}
   </style>
 </head>
 <body>
@@ -302,6 +306,10 @@
     <a href="/rectify" class="bn-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت</a>
     <a href="/account" class="bn-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
   </nav>
+  <div id="degradedBar" class="degraded-bar hidden" role="alert">
+    <svg aria-hidden="true" style="width:16px;height:16px;flex:none;"><use href="#icon-help"/></svg>
+    <span></span>
+  </div>
   <script>
   function toggleDrawer(open) {
     document.getElementById('drawer').classList.toggle('open', open);
@@ -314,6 +322,28 @@
       if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
     });
   });
+  /* audit r3 (P2-18): degraded-status banner — poll /health, show when Redis/DB down */
+  (function(){
+    var shown = false;
+    var bar = document.getElementById('degradedBar');
+    if (!bar) return;
+    function check(){
+      fetch('/health', {headers: {'Accept': 'application/json'}})
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if (j && j.status === 'degraded' && !shown){
+            shown = true;
+            bar.classList.remove('hidden');
+            var msg = j.db === 'down' ? 'دیتابیس موقتاً در دسترس نیست — برخی امکانات محدود شده‌اند.'
+                     : 'سرویس‌های پشتیبان موقتاً محدود شده‌اند — کمی بعد دوباره تلاش کن.';
+            bar.querySelector('span').textContent = msg;
+          }
+        })
+        .catch(function(){ /* keep silent on transient network errors */ });
+    }
+    check();
+    setInterval(check, 60000);
+  })();
   </script>
 </body>
 </html>
