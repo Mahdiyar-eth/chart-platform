@@ -13,7 +13,7 @@ router = APIRouter()
 def sitemap_xml():
     import os
     from fastapi.responses import Response
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
             "/terms", "/refund", "/disclaimer", "/contact",
             "/guide", "/about", "/faq", "/articles"]
@@ -46,7 +46,7 @@ def sitemap_xml():
 def robots_txt():
     import os
     from fastapi.responses import Response
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     return Response(content=f"User-agent: *\nAllow: /\nSitemap: {base}/sitemap.xml\n",
                     media_type="text/plain")
 

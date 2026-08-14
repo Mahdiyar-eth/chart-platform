@@ -108,7 +108,7 @@ def create_order(
     if referral_event:
         referral_event.order_id = order.id
 
-    public_base = os.getenv("PUBLIC_BASE_URL", "http://127.0.0.1:8767")
+    public_base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io")
     callback_url = f"{public_base}/api/payments/verify"
 
     client = ZarinpalClient()

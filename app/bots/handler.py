@@ -84,7 +84,7 @@ def start_keyboard() -> dict:
 
 
 def chart_actions_keyboard(chart_id: str, tok: str = "") -> dict:
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     q = f"?t={tok}" if tok else ""  # audit r4 A6: bot charts carry capability token
     sep = "&" if q else ""          # keep the query string well-formed
     return {
@@ -221,7 +221,7 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
         chart_id = row.id
 
     bt = big_three(chart.chart_json)
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     caption = (
         f"🌟 **چارت تولد تو آماده شد!**\n\n"
         f"☀️ خورشید: **{bt.get('Sun', {}).get('sign_fa', '')}**\n"
