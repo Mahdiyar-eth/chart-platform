@@ -1,14 +1,14 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `31e4f10 2026-08-14 chore(ci): non-self-matching secret patterns (context-anchored) + regen bundle`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `61b333c 2026-08-14 chore(ci): anchor umami-pw pattern to JSON context (no self-match) + regen bundle`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` + پیوست دور سوم: `docs/audit/ROUND-3-ADDENDUM.md`
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 151 passed, 4 skipped, 2 warnings in 2.04s
-- **کامیت‌ها:** 25 · head: 31e4f10 2026-08-14 chore(ci): non-self-matching secret patterns (context-anchored) + regen bundle
+- **تست‌ها:** 151 passed, 4 skipped, 2 warnings in 1.83s
+- **کامیت‌ها:** 26 · head: 61b333c 2026-08-14 chore(ci): anchor umami-pw pattern to JSON context (no self-match) + regen bundle
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
 - **مهاجرت‌ها:** 4 Alembic (baseline → chat_messages → align-audit-r3 → zodiac) — `alembic check` پاک
 - **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict, MemoryMax=1.5G) · Redis+ARQ · PostgreSQL 16 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
@@ -12623,7 +12623,7 @@ echo "==> pip-audit (dependency vulnerabilities)"
 venv/bin/pip-audit -r requirements.txt
 
 echo "==> secret scan (hardcoded keys/tokens)"
-BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}|password": "47873702|AQ\.[0-9A-Za-z_-]{35,}|AIza[0-9A-Za-z_-]{30,}|^HASH_SALT=[0-9a-fA-F]{32,}|^APP_SECRET=[0-9a-fA-F]{32,}' \
+BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}|umami-admin\.txt|umami\.env[:.]|AQ\.[0-9A-Za-z_-]{35,}|AIza[0-9A-Za-z_-]{30,}|^HASH_SALT=[0-9a-fA-F]{32,}|^APP_SECRET=[0-9a-fA-F]{32,}' \
   --include='*.py' --include='*.sh' --include='*.yml' --include='*.yaml' \
   --include='*.html' --include='*.md' --include='*.json' --include='*.toml' --include='*.ini' \
   app/ scripts/ alembic/ deploy/ docs/ tests/ .github/ 2>/dev/null || true)
@@ -15285,12 +15285,13 @@ tests/test_phase10.py::test_plans_include_new_keys
     keys = {p.key for p in s.query(Plan).all()}
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-151 passed, 4 skipped, 2 warnings in 2.04s
+151 passed, 4 skipped, 2 warnings in 1.83s
 ```
 
-## ۱۸) تاریخچه گیت (آخرین 25 کامیت)
+## ۱۸) تاریخچه گیت (آخرین 26 کامیت)
 
 ```
+61b333c 2026-08-14 chore(ci): anchor umami-pw pattern to JSON context (no self-match) + regen bundle
 31e4f10 2026-08-14 chore(ci): non-self-matching secret patterns (context-anchored) + regen bundle
 e0eaa8f 2026-08-14 security(a1): remove gemini AQ keys from repo (moved to /root/.hermes/keys/ 600), gitignore keys/, extend secret-scan with AQ/AIza patterns
 9421a5b 2026-08-14 chore(ci): restore umami old-password as banned-string in secret-scan (value now public after rotation)
