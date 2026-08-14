@@ -29,8 +29,8 @@ GOLDEN_CHARTS = [
             "moon_phase": "Waning",
             "moon_phase_deg": 201.3,
             "saturn_retrograde": True, "saturn_house": 7,
+            "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
         },
-        "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
     },
     {
         "id": "chart-2-no-time",
@@ -93,7 +93,8 @@ GOLDEN_CHARTS = [
                   "hour": 14, "minute": 30, "time_known": True, "jalali": False,
                   "tz_name": "Asia/Tehran"},
         "engine_config": None,
-        "expected": {"has_retrograde": True},  # at least one retrograde planet
+        "expected": {"has_retrograde": True,
+                     "verify_utc": "2020-05-15 10:00:00"},  # 14:30 +4:30 DST → UTC
     },
     {
         "id": "chart-7-sidereal-lahiri",
@@ -116,7 +117,7 @@ GOLDEN_CHARTS = [
             "moon_phase": "Waning",
             "moon_phase_deg": 201.286,
             "saturn_retrograde": True, "saturn_house": 7,
+            "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
         },
-        "verify_utc": "1994-08-23 01:40:00",
     },
 ]

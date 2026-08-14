@@ -44,9 +44,14 @@ def test_chart_computes(g):
 
 @pytest.mark.parametrize("g", GOLDEN_CHARTS, ids=[g["id"] for g in GOLDEN_CHARTS])
 def test_utc_conversion(g):
-    """zoneinfo must produce the expected UTC for every DST era (no manual tables)."""
+    """zoneinfo must produce the expected UTC for every DST era (no manual tables).
+
+    C4 classification: chart-2-no-time is the ONLY golden chart without a
+    time-of-birth — its UTC is undefined by design (houses/angles empty,
+    covered by test_structure) — so exactly ONE parametrization skips.
+    """
     if "verify_utc" not in g.get("expected", {}):
-        pytest.skip("no UTC expectation")
+        pytest.skip("no UTC expectation — birth time unknown (chart-2-no-time)")
     c = _chart(g).chart_json
     assert c["birth"]["utc_time"] == g["expected"]["verify_utc"], (
         f"UTC mismatch: {c['birth']['utc_time']} != {g['expected']['verify_utc']}"
