@@ -37,3 +37,41 @@ def test_reflection_handles_empty_events():
     # a chart with no upcoming tight aspects still yields a non-empty reflection
     txt = build_weekly_reflection(_chart())
     assert len(txt) > 60
+
+
+def test_web_subscription_chat_id_none_does_not_crash():
+    """F-28 (runtime audit): web subs (chat_id=None) must not int(None)-crash
+    the weekly delivery; the reflection row must still be stored."""
+    import asyncio
+    import uuid
+    from unittest.mock import patch
+
+    from sqlmodel import Session, text
+
+    from app.db import engine
+    from app.models import Chart, Subscription
+    from app.report import weekly as w
+
+    cid = f"f28-{uuid.uuid4().hex[:10]}"
+    with Session(engine) as s:
+        s.add(Chart(id=cid, chart_json={}))
+        s.add(Subscription(platform="web", chart_id=cid,
+                           freq="weekly", plan_key="monthly", active=True))
+        s.commit()
+
+    async def _run():
+        with (patch.object(w, "build_weekly_reflection", return_value="متن هفته"),
+              patch.object(w, "send_message") as sm_mock):
+            res = await w.run_weekly_delivery()
+        return res, sm_mock.call_count
+
+    res, bot_calls = asyncio.run(_run())
+    assert res == {"sent": 1, "failed": 0}
+    assert bot_calls == 0  # web sub → push-only, no bot int(None)
+    with Session(engine) as s:
+        s.exec(text(f"DELETE FROM weekly_reflections WHERE chart_id='{cid}'"))
+        s.exec(text(f"DELETE FROM subscriptions WHERE chart_id='{cid}'"))
+        s.exec(text(f"DELETE FROM charts WHERE id='{cid}'"))
+        s.commit()
+
+

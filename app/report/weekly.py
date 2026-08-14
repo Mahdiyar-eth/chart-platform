@@ -121,11 +121,17 @@ async def run_weekly_delivery() -> dict:
                 if already:
                     continue  # already delivered for this chart this week
                 text = build_weekly_reflection(chart.chart_json)
-                s.add(WeeklyReflection(chart_id=sub.chart_id, week_start=week, text=text))
                 prof_id = chart.profile_id  # read BEFORE session closes
+                s.add(WeeklyReflection(chart_id=sub.chart_id, week_start=week, text=text))
                 s.commit()
 
-            await send_message(int(sub.chat_id), text, sub.platform)
+            # F-28 (runtime audit): web subscriptions have chat_id=None —
+            # int(None) crashed the whole delivery AND the reflection row was
+            # committed first, so the failed week was never retried.
+            if sub.chat_id:
+                await send_message(int(sub.chat_id), text, sub.platform)
+            else:
+                log.info("weekly: web subscription %s — push-only delivery", sub.id)
 
             # D1: also notify the owning user's browser(s), if push is set up
             try:
