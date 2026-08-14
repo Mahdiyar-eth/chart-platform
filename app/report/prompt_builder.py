@@ -94,6 +94,15 @@ def build_prompt(chart: dict, domain: str) -> tuple[str, dict]:
                 "خانه‌ها چیزی ننویس و نگو «نمی‌توان گفت» — صرفاً از خورشید/ماه/سیارات "
                 "استفاده کن. اگر بخش به خانه وابسته است، به جای آن از جنبه‌ها و "
                 "برج‌های سیارات استفاده کن.")
+        # H0.3: moon sign uncertainty — never assert a single sign on a
+        # boundary day; present the range with honest hedging.
+        b = chart.get("birth") or {}
+        mconf = b.get("moon_confidence", "high")
+        possible = b.get("moon_possible_signs") or []
+        if mconf != "high" and possible:
+            note += (f"\n⚠️ ماه در این روز بین «{' و '.join(possible)}» در نوسان است "
+                     f"(ساعت تولد نامعلوم، اطمینان: {mconf}). دربارهٔ برج ماه قاطع نباش؛ "
+                     "هر دو حالت را با لحن محتاطانه پوشش بده و نگو کدام قطعی است.")
     prompt = SECTION_TEMPLATE.format(
         factors_block=context["factors"],
         moon_phase=context["moon_phase"],

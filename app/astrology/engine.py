@@ -225,6 +225,22 @@ def compute_chart(birth: BirthData, config: dict | None = None) -> ChartResult:
     phase = "Full" if 180 - 8 <= moon_phase <= 180 + 8 else (
         "New" if moon_phase <= 8 or moon_phase >= 352 else "Waxing" if moon_phase < 180 else "Waning")
 
+    # H0.3: unknown birth time — the Moon (~13°/day) can cross a sign boundary
+    # within the birth day; probe the sign at 00:00 and 23:59 local time.
+    moon_confidence = "high"
+    moon_possible: list[str] = []
+    if not birth.time_known:
+        jd_s = jd_from_utc(to_utc(local.replace(hour=0, minute=0), birth.tz_name))
+        jd_e = jd_from_utc(to_utc(local.replace(hour=23, minute=59), birth.tz_name))
+        s0 = sign_of(swe.calc_ut(jd_s, swe.MOON, flags)[0][0])
+        s1 = sign_of(swe.calc_ut(jd_e, swe.MOON, flags)[0][0])
+        uniq = sorted(set([s0, s1, planets["Moon"]["sign_index"]]))
+        moon_confidence = "high" if len(uniq) == 1 else "medium" if len(uniq) == 2 else "low"
+        if len(uniq) > 1:
+            moon_possible = [SIGNS_FA[s] for s in uniq]
+            planets["Moon"]["sign_confidence"] = moon_confidence
+            planets["Moon"]["possible_signs"] = moon_possible
+
     chart = {
         "engine_config": cfg,
         "birth": {
@@ -234,6 +250,8 @@ def compute_chart(birth: BirthData, config: dict | None = None) -> ChartResult:
             "julian_day_ut": round(jd, 6),
             "lat": birth.lat, "lon": birth.lon,
             "time_known": birth.time_known,
+            "moon_confidence": moon_confidence,  # H0.3
+            "moon_possible_signs": moon_possible,
         },
         "planets": planets,
         "angles": angles,
