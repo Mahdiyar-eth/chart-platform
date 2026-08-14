@@ -57,8 +57,18 @@ def create_order(
             raise ValueError("کد تخفیف نامعتبر است")
         if coupon_row.expires_at and ensure_utc(coupon_row.expires_at) < utcnow():
             raise ValueError("کد تخفیف منقضی شده")
-        if coupon_row.used_count >= coupon_row.max_uses:
+        # audit r4 A10 — RESERVATION PATTERN: reserve the slot ATOMICALLY at
+        # creation. A stale pre-check would let two users both pass with the
+        # last slot and then lose money at payment time; the atomic UPDATE is
+        # the real gate (same trick as the r3 payment claim).
+        from sqlalchemy import text as _text
+        reserved = session.exec(_text(
+            "UPDATE coupons SET used_count = used_count + 1 "
+            "WHERE id = :cid AND used_count < max_uses RETURNING id"
+        ), params={"cid": coupon_row.id}).first()
+        if not reserved:
             raise ValueError("کد تخفیف مصرف شده")
+        session.refresh(coupon_row)
         amount = max(1, int(amount * (100 - coupon_row.percent) / 100))
 
     referral_event = None
@@ -109,6 +119,11 @@ def create_order(
         )
     except ZarinpalError as e:
         order.status = "failed"
+        # release the coupon reservation — no payment will happen (audit r4 A10)
+        if order.coupon_id:
+            c = session.get(Coupon, order.coupon_id)
+            if c and c.used_count > 0:
+                c.used_count -= 1
         session.commit()
         raise RuntimeError(f"درگاه پرداخت در دسترس نیست: {e}") from e
 

@@ -616,6 +616,15 @@ def api_order_status(order_id: str, request: Request,
             "report_id": order.report_id}
 
 
+def _release_coupon(session: Session, order) -> None:
+    """audit r4 A10: undo a coupon reservation (failed payment / refund /
+    stale order). Keeps used_count honest so slots are never lost."""
+    if order and order.coupon_id:
+        c = session.get(Coupon, order.coupon_id)
+        if c and c.used_count > 0:
+            c.used_count -= 1
+
+
 @app.get("/api/payments/verify")
 def api_payment_verify(
     request: Request,
@@ -652,18 +661,9 @@ def api_payment_verify(
             order.card_pan = v.get("card_pan")
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
-            # consume coupon (idempotent — only once per order; atomic against
-            # concurrent verifies so max_uses can never be exceeded — audit P1 r3)
-            if order.coupon_id:
-                from sqlalchemy import text
-                consumed = session.exec(text(
-                    "UPDATE coupons SET used_count = used_count + 1 "
-                    "WHERE id = :cid AND used_count < max_uses RETURNING id"
-                ), params={"cid": order.coupon_id}).first()
-                if not consumed:
-                    order.status = "failed"
-                    session.commit()
-                    return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
+            # Coupon was RESERVED atomically at order creation (audit r4 A10) —
+            # nothing to consume here; idempotency holds because the
+            # pending→paid claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
             from app.payment.orders import REPORT_PLANS, activate_subscription
             if order.plan_key == "monthly":
@@ -688,9 +688,11 @@ def api_payment_verify(
                         session.commit()
         except ZarinpalError:
             order.status = "failed"
+            _release_coupon(session, order)  # audit r4 A10
             session.commit()
     else:
         order.status = "failed"
+        _release_coupon(session, order)  # audit r4 A10
         session.commit()
 
     return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
@@ -821,10 +823,7 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
     if order.status != "paid":
         raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
     order.status = "refunded"
-    if order.coupon_id:
-        c = session.get(Coupon, order.coupon_id)
-        if c and c.used_count > 0:
-            c.used_count -= 1
+    _release_coupon(session, order)  # audit r4 A10 — return the slot
     session.commit()
     from app.security import audit
     audit(session.bind, "admin", "order.refund", order.id, order.ref_id or "")
