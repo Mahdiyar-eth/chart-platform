@@ -123,3 +123,23 @@ def test_empty_sign_skipped():
     _c["planets"]["Mercury"] = {"sign_en": "Virgo", "sign_fa": "سنبله", "sign_index": 5}
     sec = _section({"factor": "Mercury", "sign": "", "house": 6})
     assert qa_section(sec, _c, "karma") == []
+
+
+def test_factors_block_includes_sign_from_chart():
+    """Aspect-matched rules must still show the planet's sign (F-32)."""
+    from app.report.prompt_builder import factors_block
+    chart = {
+        "planets": {"Mars": {"sign_fa": "سرطان", "house": 11, "degree": 4.0, "retrograde": False}},
+        "angles": {},
+        "aspects": [{"p1": "Mars", "p2": "Venus", "aspect": "square", "aspect_fa": "تربیع", "orb": 2.0}],
+    }
+    block = factors_block(chart, "career", [{"factor": "Mars", "detail": {"house": 11}}])
+    assert "برج سرطان" in block
+
+
+def test_unknown_sign_skipped():
+    """«نامشخص» sign (old charts w/o angle signs) must not fail (F-31)."""
+    _c = dict(_CHART)
+    _c["angles"] = {"MC": {"longitude": 90.0}}  # no sign metadata (pre-F-30 chart)
+    sec = _section({"factor": "MC", "sign": "نامشخص", "house": 10})
+    assert qa_section(sec, _c, "career") == []

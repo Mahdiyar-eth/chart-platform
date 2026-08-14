@@ -52,22 +52,32 @@ SECTION_TEMPLATE = """تو نویسندهی حرفهای گزارش چارت ت�
 
 
 def factors_block(chart: dict, domain: str, active: list[dict]) -> str:
-    """Compact, human-readable factor block for one domain."""
+    """Compact, human-readable factor block for one domain.
+
+    F-32 (runtime audit): rules matched via ASPECT carry a detail dict without
+    the sign, so the model was left guessing («برج عطارد: اسد» while Mercury
+    is in Virgo) and QA rightly rejected it 5×. Always pull the sign from the
+    chart itself, whatever the rule matched on.
+    """
+    planets = chart.get("planets", {})
+    angles = chart.get("angles", {})
     lines = []
     for r in active:
-        d = r.get("detail") or {}
+        f = r["factor"]
+        src = planets.get(f) or angles.get(f) or {}
         parts = []
-        if d.get("sign_fa"):
-            parts.append(f"برج {d['sign_fa']}")
-        if d.get("house"):
-            parts.append(f"خانه {d['house']}")
-        if d.get("degree") is not None:
-            parts.append(f"{d['degree']} درجه")
-        if d.get("retrograde"):
+        if src.get("sign_fa"):
+            parts.append(f"برج {src['sign_fa']}")
+        d = r.get("detail") or {}
+        if d.get("house") or src.get("house"):
+            parts.append(f"خانه {d.get('house') or src.get('house')}")
+        if d.get("degree") is not None or src.get("degree") is not None:
+            parts.append(f"{d.get('degree') if d.get('degree') is not None else src.get('degree')} درجه")
+        if d.get("retrograde") or src.get("retrograde"):
             parts.append("رتروگرید")
         if d.get("phase"):
             parts.append(f"فاز {d['phase']}")
-        line = f"- {r['factor']}: " + ("، ".join(parts) if parts else "فعال")
+        line = f"- {f}: " + ("، ".join(parts) if parts else "فعال")
         lines.append(line)
     # aspects involving this domain's factors
     aspects = chart.get("aspects", [])
