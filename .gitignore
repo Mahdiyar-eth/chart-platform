@@ -50,3 +50,4 @@ deploy/umami-admin.txt
 # API keys (never commit)
 keys/
 .coverage
+keys/
