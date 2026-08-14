@@ -193,6 +193,9 @@ class WorkerSettings:
     redis_settings = RedisSettings.from_dsn(REDIS_URL)
     max_jobs = 4
     job_timeout = 1800
+    max_tries = 5          # H0.4: ARQ-level retry (default already 5 — explicit)
+    retry_delay = 15       # seconds before ARQ re-runs a failed job
+    keep_result = 120      # keep job results for observability (seconds)
 
 
 if __name__ == "__main__":  # pragma: no cover — direct async test

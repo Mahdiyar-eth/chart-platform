@@ -120,6 +120,13 @@ class Report(SQLModel, table=True):
     error: str | None = Field(default=None)
     retry_count: int = Field(default=0)        # DLQ retry tracking (Phase 3)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(  # H0.4: heartbeat for stale-job recovery
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column_kwargs={
+            "server_default": text("now()"),
+            "onupdate": lambda: datetime.now(timezone.utc),
+        },
+    )
 
 
 class Plan(SQLModel, table=True):
