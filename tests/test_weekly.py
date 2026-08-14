@@ -53,6 +53,12 @@ def test_web_subscription_chat_id_none_does_not_crash():
     from app.report import weekly as w
 
     cid = f"f28-{uuid.uuid4().hex[:10]}"
+    # F-28 hygiene: other tests may leave active subs behind; delivery
+    # iterates ALL of them, so clear the slate before asserting counts
+    with Session(engine) as s:
+        s.exec(text("DELETE FROM weekly_reflections"))
+        s.exec(text("DELETE FROM subscriptions"))
+        s.commit()
     with Session(engine) as s:
         s.add(Chart(id=cid, chart_json={}))
         s.add(Subscription(platform="web", chart_id=cid,

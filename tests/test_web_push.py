@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 
 import app.push as push_mod
 from app.main import app as main_app
@@ -99,6 +99,12 @@ def test_subscribe_links_user_and_weekly_sends(monkeypatch):
         s.add(Sub(chart_id=ch.id, chat_id="12345", platform="telegram", active=True))
         s.commit()
         cid, pid = ch.id, p.id
+    # F-28 hygiene: other tests may leave active subs behind; delivery
+    # iterates ALL of them, so clear the slate before asserting counts
+    with Session(engine) as s:
+        s.exec(text("DELETE FROM weekly_reflections"))
+        s.exec(text("DELETE FROM subscriptions"))
+        s.commit()
     # drop any leftover WeeklyReflection for this chart (per-run cleanup —
     # the DB persists between runs, and `already` skips delivery)
     with Session(engine) as s:
