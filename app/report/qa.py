@@ -131,6 +131,18 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
     errors: list[str] = []
     if section is None:
         return ["خروجی JSON نامعتبر است"]
+    # F-32b (runtime audit): the model keeps citing factors that are NOT active
+    # in this section (e.g. Node/Lilith/Fortune in a spirituality section whose
+    # only active factor is Neptune) — those are fabrications from the model's
+    # own astrological memory. Scope evidence to the domain's active factors;
+    # when a domain has no active rule at all the builder falls back to Big
+    # Three, so every chart factor stays allowed in that case.
+    try:
+        from app.report.rules import evaluate
+        _active_factors = {r["factor"] for r in evaluate(chart).get(domain, [])}
+    except Exception:  # noqa: BLE001 — QA must never crash the worker
+        _active_factors = set()
+    _allow_any = not _active_factors
 
     insights = section.get("insights", [])
     if not isinstance(insights, list) or len(insights) < 2:
@@ -196,6 +208,12 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 # whole section 3× and falling back to generic text is worse.
                 if f not in {"Vesta", "Ceres", "Pallas", "Juno", "Lilith", "Chiron"}:
                     errors.append(f"{domain}: عامل {f} در چارت وجود ندارد")
+            elif not _allow_any and f not in _active_factors:
+                # F-32b: factor is in the chart but NOT active for this section
+                # (the builder only sent the active ones) — citing it means the
+                # model is improvising from astrological memory. Reject, and the
+                # feedback loop tells it to stick to the listed factors.
+                errors.append(f"{domain}: عامل {f} خارج از عوامل فعال این بخش است")
             else:
                 # verify sign/house if present
                 src = chart["planets"].get(f) or chart["angles"].get(f)

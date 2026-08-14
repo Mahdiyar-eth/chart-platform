@@ -52,12 +52,12 @@ def test_qa_accepts_mc_and_asc_evidence():
 
 def test_qa_accepts_factor_asc():
     sec = _section({"factor": "Asc", "sign": "Leo", "house": 1})
-    assert qa_section(sec, _CHART, "career") == []
+    assert qa_section(sec, _CHART, "identity") == []
 
 
 def test_qa_still_rejects_unknown_aspect_endpoint():
     sec = _section({"aspect": "Sun conjunct Sagittarius"})
-    errs = qa_section(sec, _CHART, "career")
+    errs = qa_section(sec, _CHART, "identity")
     assert any("جنبه ناشناخته" in e for e in errs)
 
 
@@ -68,7 +68,7 @@ def test_fa_evidence_accepted():
     _c = dict(_CHART)
     sec = _section({"factor": "خورشید", "sign": "اسد", "house": 10},
                    {"aspect": "خورشید تربیع نپتون"})
-    assert qa_section(sec, _c, "career") == []
+    assert qa_section(sec, _c, "identity") == []
 
 
 def test_angle_evidence_without_sign_metadata_not_rejected():
@@ -77,26 +77,26 @@ def test_angle_evidence_without_sign_metadata_not_rejected():
           "angles": {"ASC": {"house": 1, "longitude": 144.9},
                      "MC": {"house": 10, "longitude": 5.0}}}
     sec = _section({"factor": "ASC", "sign": "Leo", "house": 1})
-    assert qa_section(sec, _c, "career") == []
+    assert qa_section(sec, _c, "identity") == []
 
 
 def test_vesta_soft_flaw_not_fatal():
     """Well-known asteroid absent from the chart is a soft flaw (no fallback)."""
     sec = _section({"aspect": "Mercury trine Vesta"})
-    assert qa_section(sec, dict(_CHART), "career") == []
+    assert qa_section(sec, dict(_CHART), "mind") == []
 
 
 def test_sign_check_still_strict_when_metadata_present():
     """Wrong sign with metadata present must still fail."""
     sec = _section({"factor": "Sun", "sign": "Pisces", "house": 10})
-    errs = qa_section(sec, dict(_CHART), "career")
+    errs = qa_section(sec, dict(_CHART), "identity")
     assert any("برج نادرست" in e for e in errs)
 
 
 def test_zwnj_variant_evidence_accepted():
     """Model writes شش‌ضلعی with ZWNJ — must still normalize (F-27b)."""
     sec = _section({"aspect": "عطارد شش\u200cضلعی مریخ"})
-    assert qa_section(sec, dict(_CHART), "career") == []
+    assert qa_section(sec, dict(_CHART), "mind") == []
 
 
 def test_brj_prefix_and_moon_phase_sign_accepted():
@@ -104,9 +104,10 @@ def test_brj_prefix_and_moon_phase_sign_accepted():
     _c = dict(_CHART)
     _c["planets"]["Neptune"] = {"sign_en": "Capricorn", "sign_fa": "جدی", "sign_index": 9}
     _c["planets"]["Moon"] = {"sign_en": "Pisces", "sign_fa": "حوت", "sign_index": 11}
-    sec = _section({"factor": "Neptune", "sign": "برج جدی", "house": 8},
-                   {"factor": "Moon", "sign": "فاز Waning", "house": 12})
+    sec = _section({"factor": "Neptune", "sign": "برج جدی", "house": 8})
     assert qa_section(sec, _c, "spirituality") == []
+    sec2 = _section({"factor": "Moon", "sign": "فاز Waning", "house": 12})
+    assert qa_section(sec2, _c, "emotions") == []
 
 
 def test_vx_evidence_accepted():
@@ -122,7 +123,7 @@ def test_empty_sign_skipped():
     _c = dict(_CHART)
     _c["planets"]["Mercury"] = {"sign_en": "Virgo", "sign_fa": "سنبله", "sign_index": 5}
     sec = _section({"factor": "Mercury", "sign": "", "house": 6})
-    assert qa_section(sec, _c, "karma") == []
+    assert qa_section(sec, _c, "mind") == []
 
 
 def test_factors_block_includes_sign_from_chart():
@@ -142,4 +143,20 @@ def test_unknown_sign_skipped():
     _c = dict(_CHART)
     _c["angles"] = {"MC": {"longitude": 90.0}}  # no sign metadata (pre-F-30 chart)
     sec = _section({"factor": "MC", "sign": "نامشخص", "house": 10})
-    assert qa_section(sec, _c, "career") == []
+    assert qa_section(sec, _c, "identity") == []
+
+
+def test_out_of_domain_factor_rejected():
+    """Node cited in a section whose only active factor is Neptune (F-32b)."""
+    _c = dict(_CHART)  # Mars+Node+Moon+Sun active (rule[0] uses Mars etc.)
+    sec = _section({"factor": "Node", "sign": "عقرب", "house": 8})
+    errs = qa_section(sec, _c, "spirituality")
+    assert any("خارج از عوامل فعال" in e for e in errs)
+
+
+def test_domain_factor_accepted():
+    """An active factor of the domain must pass the scope check (F-32b)."""
+    _c = dict(_CHART)
+    sec = _section({"factor": "Mars", "sign": "سرطان", "house": 11})
+    errs = qa_section(sec, _c, "career")
+    assert not any("خارج از عوامل فعال" in e for e in errs)
