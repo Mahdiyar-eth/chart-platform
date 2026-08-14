@@ -110,10 +110,23 @@
     <a class="btn btn-ghost" href="/plans" style="flex:1; text-align:center;">مشاهده پلن‌ها</a>
     <a class="btn btn-ghost" href="/birth-form" style="flex:1; text-align:center;">چارت جدید</a>
   </div>
-  <form method="post" action="/account/delete" onsubmit="return confirm('همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) برای همیشه حذف می‌شود. ادامه می‌دهی؟')" style="margin-top:10px;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="btn btn-ghost" style="width:100%; color:#ff6b6b; border-color:rgba(255,107,107,.4);">حذف کامل حساب و داده‌ها</button>
-  </form>
+  <!-- F-29 (runtime audit): confirm() replaced with an Alpine modal — native
+       confirm() is invisible/unreliable on mobile and banned by design rules -->
+  <div x-data="{ open: false }" style="margin-top:10px;">
+    <button @click="open = true" class="btn btn-ghost" style="width:100%; color:#ff6b6b; border-color:rgba(255,107,107,.4);">حذف کامل حساب و داده‌ها</button>
+    <div x-cloak x-show="open" class="modal-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px;" @click.self="open = false">
+      <div class="glass" style="max-width:360px; width:100%; padding:22px; border-radius:16px; text-align:center;">
+        <div style="font-size:1.6rem; margin-bottom:8px;">⚠️</div>
+        <h3 style="margin-bottom:10px;">حذف کامل حساب</h3>
+        <p class="muted" style="font-size:.88rem; line-height:1.8;">همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
+        <form method="post" action="/account/delete" style="margin-top:14px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn" style="width:100%; background:#e5484d; border-color:#e5484d; margin-bottom:8px;">بله، حذف کن</button>
+          <button type="button" @click="open = false" class="btn btn-ghost" style="width:100%;">انصراف</button>
+        </form>
+      </div>
+    </div>
+  </div>
   <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
 </div>
 <script>

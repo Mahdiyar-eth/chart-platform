@@ -97,7 +97,7 @@
         <div style="display:flex;gap:6px;">
           <button type="button" onclick="revealSecret('{{ s.key }}')" title="نمایش مقدار فعلی" style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#fff;cursor:pointer;">👁</button>
           <button type="button" onclick="saveSecret('{{ s.key }}')" style="padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;color:#fff;font-weight:700;cursor:pointer;">ذخیره</button>
-          <button type="button" onclick="clearSecret('{{ s.key }}')" title="پاک کردن (بازگشت به متغیر محیطی)" style="padding:6px 10px;border-radius:8px;background:rgba(192,57,43,.15);border:1px solid #c0392b;color:#e76f51;cursor:pointer;">🗑</button>
+          <button type="button" onclick="clearSecret('{{ s.key }}', this)" title="پاک کردن (بازگشت به متغیر محیطی)" style="padding:6px 10px;border-radius:8px;background:rgba(192,57,43,.15);border:1px solid #c0392b;color:#e76f51;cursor:pointer;">🗑</button>
         </div>
       </div>
       {% endfor %}
@@ -198,7 +198,7 @@
           <td>
             {{ '✔' if o.report_id else '—' }}
             {% if o.status == 'paid' %}
-            <button onclick="regenOrder('{{ o.id }}')" title="بازتولید گزارش ناموفق" style="margin-right:6px;padding:3px 8px;border-radius:6px;background:rgba(139,92,246,.15);border:1px solid #8b5cf6;color:#c4b5fd;font-size:.72rem;cursor:pointer;">↻ بازتولید</button>
+            <button onclick="regenOrder('{{ o.id }}', this)" title="بازتولید گزارش ناموفق" style="margin-right:6px;padding:3px 8px;border-radius:6px;background:rgba(139,92,246,.15);border:1px solid #8b5cf6;color:#c4b5fd;font-size:.72rem;cursor:pointer;">↻ بازتولید</button>
             {% endif %}
           </td>
         </tr>
@@ -308,8 +308,10 @@
         box.textContent = parts.join('  |  ');
       } catch(e) { box.textContent = 'خطا در تست: ' + e; }
     }
-    async function regenOrder(id){
-      if (!confirm('گزارش ناموفق این سفارش دوباره در صف تولید قرار می‌گیرد. ادامه می‌دهی؟')) return;
+    async function regenOrder(id, btn){
+      // F-29 (runtime audit): native confirm() → inline two-step (mobile-safe)
+      if (!btn.dataset.arm){ btn.dataset.arm = '1'; btn.textContent = 'مطمئنی؟ دوباره بزن'; setTimeout(()=>{ delete btn.dataset.arm; btn.textContent = btn.dataset.orig || btn.textContent; }, 4000); return; }
+      btn.textContent = btn.dataset.orig || btn.textContent;
       const r = await fetch('/api/admin/orders/' + id + '/regenerate', {method:'POST'});
       const j = await r.json();
       if (j.ok) { alert('در صف تولید قرار گرفت (گزارش ' + j.report_id.slice(0,8) + ')'); location.reload(); }
@@ -351,8 +353,10 @@
         location.reload();
       } else alert('خطا: ' + (j.detail || 'نامشخص'));
     }
-    async function clearSecret(key){
-      if (!confirm('این کلید پاک شود و به مقدار متغیر محیطی برگردد؟')) return;
+    async function clearSecret(key, btn){
+      // F-29 (runtime audit): native confirm() → inline two-step (mobile-safe)
+      if (!btn.dataset.arm){ btn.dataset.arm = '1'; btn.textContent = 'مطمئنی؟ دوباره بزن'; setTimeout(()=>{ delete btn.dataset.arm; btn.textContent = btn.dataset.orig || btn.textContent; }, 4000); return; }
+      btn.textContent = btn.dataset.orig || btn.textContent;
       const fd = new FormData(); fd.append('value', '');
       const r = await fetch('/api/admin/secrets/' + key, {method:'POST', body: fd});
       const j = await r.json();
