@@ -14,7 +14,7 @@ from pathlib import Path
 
 import redis.asyncio as redis_async
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Body, Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -1524,6 +1524,40 @@ def auth_logout():
     resp = RedirectResponse("/", status_code=303)
     resp.delete_cookie("chart_user")
     return resp
+
+
+# ── Web Push (D1) ────────────────────────────────────────────────────────────
+
+@app.get("/api/push/vapid-public-key")
+def push_vapid_public_key():
+    """VAPID public key for the browser's pushManager.subscribe()."""
+    from app.push import VAPID_PUBLIC_KEY
+    if not VAPID_PUBLIC_KEY:
+        raise HTTPException(503, "push not configured")
+    return {"key": VAPID_PUBLIC_KEY}
+
+
+@app.post("/api/push/subscribe")
+def push_subscribe(payload: dict | None = Body(default=None),
+                   request: Request = None,
+                   session: Session = Depends(get_session)):
+    """Register a browser push subscription (endpoint + p256dh + auth)."""
+    from app.push import subscribe as _subscribe
+    u = get_current_user(request)
+    body = payload or {}
+    ok = _subscribe(body.get("endpoint", ""), body.get("p256dh", ""),
+                    body.get("auth", ""), u.id if u else None, session)
+    if not ok:
+        raise HTTPException(400, "invalid subscription")
+    return {"ok": True}
+
+
+@app.post("/api/push/unsubscribe")
+def push_unsubscribe(payload: dict | None = Body(default=None),
+                     session: Session = Depends(get_session)):
+    from app.push import unsubscribe as _unsubscribe
+    _unsubscribe((payload or {}).get("endpoint", ""), session)
+    return {"ok": True}
 
 
 @app.get("/account", response_class=HTMLResponse)

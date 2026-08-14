@@ -122,9 +122,27 @@ async def run_weekly_delivery() -> dict:
                     continue  # already delivered for this chart this week
                 text = build_weekly_reflection(chart.chart_json)
                 s.add(WeeklyReflection(chart_id=sub.chart_id, week_start=week, text=text))
+                prof_id = chart.profile_id  # read BEFORE session closes
                 s.commit()
 
             await send_message(int(sub.chat_id), text, sub.platform)
+
+            # D1: also notify the owning user's browser(s), if push is set up
+            try:
+                from app.push import send_to_user
+                from app.models import BirthProfile
+                with Session(engine) as s2:
+                    prof = s2.get(BirthProfile, prof_id) if prof_id else None
+                    if prof and prof.user_id:
+                        send_to_user(
+                            prof.user_id,
+                            "نگاهی به آسمان هفته",
+                            f"گزارش هفتگی چارت «{prof.name or '—'}» آماده است.",
+                            "/account",
+                            s2,
+                        )
+            except Exception as e:  # noqa: BLE001 — push must never break delivery
+                log.warning("weekly push skipped for sub %s: %s", sub.id, e)
 
             with Session(engine) as s:
                 sub_row = s.get(Subscription, sub.id)

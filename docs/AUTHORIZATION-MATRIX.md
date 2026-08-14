@@ -51,6 +51,8 @@
 | `POST /api/v1/bale/webhook/{secret}` | Public | secret در URL |
 | `POST /api/auth/otp/request` | Public | rate limit + هش OTP (P1-2) |
 | `POST /api/auth/otp/verify` | Public | rate limit + هش OTP (P1-2) |
+| `GET /api/push/vapid-public-key` | Public | کلید عمومی VAPID (503 اگر پیکربندی نشده) |
+| `POST /api/push/subscribe`, `POST /api/push/unsubscribe` | User/Optional | ثبت/حذف اشتراک اعلان مرورگر؛ با ورود → اتصال به user |
 | `GET /api/auth/me` | User | کوکی ورود |
 | `POST /api/auth/logout` | User | کوکی ورود |
 | `GET /account` | User | کوکی ورود |

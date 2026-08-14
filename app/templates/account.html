@@ -63,6 +63,12 @@
     <a class="btn" href="https://t.me/Astrology_chartx_bot" target="_blank" rel="noopener" style="display:inline-block; padding:10px 22px;">فعال‌سازی در تلگرام</a>
   </section>
 
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">🔔 اعلان مرورگر</h2>
+    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
+    <button id="pushBtn" class="btn" style="padding:10px 22px;">فعال‌سازی اعلان</button>
+  </section>
+
   <section class="glass" style="margin-top:14px; padding:20px;">
     <h2 style="font-size:1.05rem;">سفارش‌ها</h2>
     {% for o in orders %}
@@ -95,4 +101,40 @@
   </form>
   <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
 </div>
+<script>
+/* D1: Web Push subscribe/unsubscribe from the account page */
+(function () {
+  var btn = document.getElementById('pushBtn');
+  if (!btn) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    btn.textContent = 'مرورگرت اعلان پشتیبانی نمی‌کند';
+    btn.disabled = true;
+    return;
+  }
+  btn.addEventListener('click', function () {
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') { btn.textContent = 'دسترسی اعلان رد شد'; return; }
+      return navigator.serviceWorker.register('/sw.js').then(function () {
+        return navigator.serviceWorker.ready;
+      }).then(function (reg) {
+        return fetch('/api/push/vapid-public-key').then(function (r) { return r.json(); })
+          .then(function (j) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(j.key) }); });
+      }).then(function (sub) {
+        return fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: sub.endpoint, p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))), auth: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))) })
+        });
+      }).then(function (r) { if (r.ok) btn.textContent = '✓ اعلان فعال شد'; });
+    }).catch(function () { btn.textContent = 'خطا در فعال‌سازی'; });
+  });
+  function urlBase64ToUint8Array(base64) {
+    var pad = base64.replace(/=+$/, '');
+    var raw = atob(pad);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+})();
+</script>
 {% endblock %}

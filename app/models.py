@@ -265,3 +265,14 @@ class Secret(SQLModel, table=True):
     updated_by: str = Field(default="admin")
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
+class PushSubscription(SQLModel, table=True):
+    """Web Push subscription (D1) — one row per browser endpoint."""
+    __tablename__ = "push_subscriptions"
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    user_id: str | None = Field(default=None, foreign_key="users.id", index=True)
+    endpoint: str = Field(unique=True, index=True)
+    p256dh: str
+    auth: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+

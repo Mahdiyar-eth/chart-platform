@@ -43,3 +43,34 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(e.request).then((hit) => hit || caches.match("/")))
   );
 });
+
+/* ── Web Push (D1) ─────────────────────────────────────────────────────────── */
+self.addEventListener("push", (e) => {
+  let data = { title: "زایچه", body: "", url: "/" };
+  try {
+    if (e.data) data = Object.assign(data, e.data.json());
+  } catch (_) { /* non-JSON payloads → defaults */ }
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/static/app-icon.png",
+      badge: "/static/app-icon.png",
+      data: { url: data.url },
+      dir: "rtl",
+      lang: "fa",
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/";
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ("focus" in c) { c.focus(); c.navigate(url); return; }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});
