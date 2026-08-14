@@ -45,6 +45,7 @@
 | `GET /api/chat/access/{chart_id}` | Capability | 403 «دسترسی به این گفتگو ندارید» |
 | `GET /api/chat/history/{chart_id}` | Capability | 403 (همان) |
 | `POST /api/chat` | Capability | 403 (همان) + سهمیه اتمیک (A9) |
+| `POST /api/chat/stream` | Capability | D4: SSE استریم — همان گاردها؛ سهمیه فقط پس از اولین توکن مصرف می‌شود |
 | `GET /api/charts/{chart_id}/transits` | Capability | `_owns_chart` |
 | `GET /transit/{chart_id}` | Capability | `_owns_chart` |
 | `POST /api/v1/telegram/webhook` | Public | secret در URL + امضای تلگرام |

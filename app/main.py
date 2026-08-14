@@ -1331,13 +1331,11 @@ def api_chat_history(chart_id: str, request: Request, session: Session = Depends
     ]}
 
 
-@app.post("/api/chat")
-def api_chat(
-    request: Request,
-    chart_id: str = Form(...),
-    question: str = Form(..., max_length=500),
-    session: Session = Depends(get_session),
-):
+def _chat_guarded_context(request: Request, chart_id: str,
+                          session: Session) -> tuple:
+    """Shared guards for /api/chat and /api/chat/stream (D4): rate limit,
+    ownership, paid plan, subscription expiry, atomic daily quota claim.
+    Returns (chart, order, acct, profile, report) — raises HTTPException."""
     if not _rate_limit(f"chat:{_rl_client(request)}", 20, 60):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     chart = session.get(Chart, chart_id)
@@ -1373,6 +1371,17 @@ def api_chat(
     report = session.exec(
         select(Report).where(Report.chart_id == chart_id).order_by(Report.created_at.desc())
     ).first()
+    return chart, order, acct, profile, report
+
+
+@app.post("/api/chat")
+def api_chat(
+    request: Request,
+    chart_id: str = Form(...),
+    question: str = Form(..., max_length=500),
+    session: Session = Depends(get_session),
+):
+    chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
 
     try:
         result = chat_answer(
@@ -1401,11 +1410,68 @@ def api_chat(
 
     # reflect the atomic counter (or best-known used) in the response
     shown = chat_quota_used(acct)
+    daily_limit = _chat_daily_limit(order)
     if shown is None:
-        shown = (used or 0) if used is not None else _chat_quota_info(session, chart_id, order, acct)["used"]
+        shown = _chat_quota_info(session, chart_id, order, acct)["used"]
     result["quota"] = {"used": shown, "limit": daily_limit,
                        "remaining": max(0, daily_limit - shown)}
     return result
+
+
+@app.post("/api/chat/stream")
+async def api_chat_stream(
+    request: Request,
+    chart_id: str = Form(...),
+    question: str = Form(..., max_length=500),
+    session: Session = Depends(get_session),
+):
+    """D4: real SSE token streaming (text/event-stream). Same guards as
+    /api/chat; quota is claimed ONCE up front and released if the stream dies
+    before any token. History is persisted on completion."""
+    from fastapi.responses import StreamingResponse
+    chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
+
+    async def event_stream():
+        from app.chat.service import chat_stream
+        produced = False
+        try:
+            async for ev in chat_stream(
+                question, chart.chart_json,
+                report_sections=(report.sections if report and report.sections else None),
+                focus_areas=(profile.focus_areas if profile else None),
+                report_id=(report.id if report else None),
+            ):
+                if ev["type"] == "token":
+                    produced = True
+                # SSE: one `event:` line + `data:` json per frame
+                data = json.dumps(ev, ensure_ascii=False)
+                yield f"event: {ev['type']}\ndata: {data}\n\n"
+                if ev["type"] == "done":
+                    answer = ev.get("answer", "")
+                    try:
+                        with Session(engine) as s2:
+                            s2.add(ChatMessage(chart_id=chart_id, role="user", content=question))
+                            s2.add(ChatMessage(
+                                chart_id=chart_id, role="assistant", content=answer,
+                                intent=ev.get("intent"), domains=ev.get("domains") or [],
+                                provider=ev.get("provider"), model=ev.get("model"),
+                                completion_tokens=ev.get("tokens", 0),
+                                cost_usd=ev.get("cost_usd", 0.0), ok=True,
+                            ))
+                            s2.commit()
+                    except Exception:  # noqa: BLE001 — history must never break the stream
+                        pass
+                if ev["type"] == "error":
+                    yield f"event: quota\ndata: {json.dumps({'used': 0, 'limit': 0, 'remaining': 0}, ensure_ascii=False)}\n\n"
+        except Exception as e:  # noqa: BLE001 — never leave the client hanging
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'message': str(e)[:200]}, ensure_ascii=False)}\n\n"
+        finally:
+            if not produced:
+                chat_quota_release(acct)  # stream died before any token — refund
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "X-Accel-Buffering": "no"})
 
 
 @app.get("/api/charts/{chart_id}/transits")

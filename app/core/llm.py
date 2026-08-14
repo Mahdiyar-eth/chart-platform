@@ -14,10 +14,12 @@ OpenCode Go (DeepSeek V4) only, with per-part model selection
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import time
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
 import httpx
@@ -87,6 +89,21 @@ class LLMProvider(ABC):
     async def complete(self, prompt: str, system: str | None = None,
                        max_tokens: int = 2048, temperature: float = 0.7) -> LLMResult:
         """Single completion. Returns structured result — never raises for API errors."""
+
+    async def stream(self, prompt: str, system: str | None = None,
+                     max_tokens: int = 2048,
+                     temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """D4: streaming completion. Default = fall back to complete() in one
+        shot so every provider (even non-streaming) supports the interface."""
+        res = await self.complete(prompt, system=system, max_tokens=max_tokens,
+                                  temperature=temperature)
+        if res.error:
+            yield res
+        else:
+            yield res  # single-shot is a valid "stream" of one chunk
+            yield LLMResult(text=res.text, provider=self.name, model=self.MODEL,
+                            latency_ms=res.latency_ms, usage=res.usage,
+                            cost=res.cost)
 
     def report_success(self, latency_ms: int, usage: LLMUsage) -> None:
         self.health.last_latency_ms = latency_ms
@@ -170,6 +187,63 @@ class DeepSeekProvider(LLMProvider):
             self.report_error(str(e))
             return LLMResult(text="", provider=self.name, model=self.MODEL, error=str(e))
 
+    async def stream(self, prompt: str, system: str | None = None,
+                     max_tokens: int = 2048, temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """SSE streaming completion — yields partial results with .text being
+        the ACCUMULATED text so far; final yield carries usage + provider.
+        D4: real token streaming over the OpenAI-compatible /chat/completions
+        stream. Never raises: errors are yielded as LLMResult(error=...)."""
+        if not self.api_key:
+            yield LLMResult(text="", provider=self.name, model=self.MODEL,
+                            error="DEEPSEEK_API_KEY not set")
+            return
+        t0 = time.monotonic()
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        payload: dict = {"model": self.MODEL, "messages": messages,
+                         "max_tokens": max_tokens, "temperature": temperature,
+                         "stream": True}
+        if self.extra_payload:
+            payload.update(self.extra_payload)
+        headers = {"Authorization": f"Bearer {self.api_key}",
+                   "User-Agent": self.user_agent}
+        acc = ""
+        try:
+            async with httpx.AsyncClient(timeout=_PER_CALL_TIMEOUT) as cl:
+                async with cl.stream("POST", f"{self.api_base}/chat/completions",
+                                     headers=headers, json=payload) as r:
+                    if r.status_code != 200:
+                        err = (await r.aread())[:200].decode(errors="replace")
+                        self.report_error(err)
+                        yield LLMResult(text="", provider=self.name, model=self.MODEL,
+                                        error=f"HTTP {r.status_code}: {err}")
+                        return
+                    async for line in r.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
+                        chunk = line[len("data:"):].strip()
+                        if chunk == "[DONE]":
+                            break
+                        try:
+                            obj = json.loads(chunk)
+                        except json.JSONDecodeError:
+                            continue
+                        delta = obj["choices"][0].get("delta", {})
+                        piece = delta.get("content") or ""
+                        if piece:
+                            acc += piece
+                            yield LLMResult(text=acc, provider=self.name, model=self.MODEL)
+            u = LLMUsage(prompt_tokens=0, completion_tokens=len(acc))
+            lat = int((time.monotonic() - t0) * 1000)
+            self.report_success(lat, u)
+            yield LLMResult(text=acc, provider=self.name, model=self.MODEL,
+                            latency_ms=lat, usage=u, cost=self.estimate_cost(u))
+        except Exception as e:  # noqa: BLE001
+            self.report_error(str(e))
+            yield LLMResult(text=acc, provider=self.name, model=self.MODEL, error=str(e))
+
 
 # ─────────────────────────── Go (opencode.ai subscription, OpenAI-compatible) ───────────────────────────
 
@@ -243,6 +317,33 @@ class LLMRouter:
                 return last
             logger.warning("LLM provider %s failed: %s — trying next", p.name, last.error)
         return last or LLMResult(text="", provider="none", model="", error="all providers failed")
+
+    async def stream_complete(self, prompt: str, system: str | None = None,
+                              max_tokens: int = 2048,
+                              temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """D4: streaming completion with the same fallback chain as complete().
+        Yields accumulated text chunks; the LAST yield carries usage/provider
+        (or .error when every provider failed)."""
+        last: LLMResult | None = None
+        for p in self._rank():
+            try:
+                emitted = False
+                async for chunk in p.stream(prompt, system=system,
+                                            max_tokens=max_tokens,
+                                            temperature=temperature):
+                    emitted = True
+                    last = chunk
+                    if chunk.error:
+                        logger.warning("LLM provider %s stream error: %s — trying next",
+                                       p.name, chunk.error)
+                        break
+                    yield chunk
+                if emitted and last and not last.error:
+                    return
+            except Exception as e:  # noqa: BLE001 — a broken provider must not kill the stream
+                logger.warning("LLM provider %s stream raised: %s — trying next", p.name, e)
+                last = LLMResult(text="", provider=p.name, model="", error=str(e))
+        yield last or LLMResult(text="", provider="none", model="", error="all providers failed")
 
     def health_report(self) -> list[dict]:
         return [
