@@ -210,7 +210,7 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                     src_signs = {s for s in (str(src.get("sign_en", "")).lower(),
                                              str(src.get("sign_fa", "")).lower(),
                                              str(src.get("sign_index", ""))) if s}
-                    if (src_signs and not _ev_sign.startswith("فاز")
+                    if (_ev_sign and src_signs and not _ev_sign.startswith("فاز")
                             and _ev_sign.lower() not in src_signs):
                         errors.append(f"{domain}: برج نادرست در evidence برای {f}: {ev.get('sign')}")
 

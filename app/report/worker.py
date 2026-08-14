@@ -28,7 +28,8 @@ from app.report.renderer import render_report_pdf
 log = logging.getLogger("report.worker")
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 REPORTS_DIR = Path(__file__).resolve().parent.parent.parent / "reports"
-MAX_RETRIES = 2
+MAX_RETRIES = 4  # F-31: 3 attempts were not enough for stubborn sections;
+                  # each retry now carries the QA reasons + replacement words
 
 
 async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,

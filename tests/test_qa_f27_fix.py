@@ -115,3 +115,11 @@ def test_vx_evidence_accepted():
     _c["angles"] = {"Vx": {"longitude": 10.0, "sign_en": "Aries", "sign_fa": "حمل", "sign_index": 0}}
     sec = _section({"aspect": "Mars sextile Vx"})
     assert qa_section(sec, _c, "career") == []
+
+
+def test_empty_sign_skipped():
+    """Evidence with an empty sign string must not fail (F-31)."""
+    _c = dict(_CHART)
+    _c["planets"]["Mercury"] = {"sign_en": "Virgo", "sign_fa": "سنبله", "sign_index": 5}
+    sec = _section({"factor": "Mercury", "sign": "", "house": 6})
+    assert qa_section(sec, _c, "karma") == []
