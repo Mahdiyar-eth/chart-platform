@@ -1,16 +1,16 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `b25ca26 2026-08-14 docs: V5-AUDIT-FIXES report — 10/10 findings verified & fixed, 303 tests`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `fe21f9e 2026-08-14 docs: V6-AUDIT-FIXES report — 4/4 verified & fixed (305 tests, 15 migrations)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 303 passed, 1 skipped in 16.12s (58 فایل تست)
-- **کامیت‌ها:** 85 · head: b25ca26 2026-08-14 docs: V5-AUDIT-FIXES report — 10/10 findings verified & fixed, 303 tests
+- **تست‌ها:** 305 passed, 1 skipped in 16.39s (58 فایل تست)
+- **کامیت‌ها:** 88 · head: fe21f9e 2026-08-14 docs: V6-AUDIT-FIXES report — 4/4 verified & fixed (305 tests, 15 migrations)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
-- **مهاجرت‌ها:** 14 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
+- **مهاجرت‌ها:** 15 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
 - **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict) · Redis+ARQ · PostgreSQL 16 + pgvector 0.6 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
 - **دور چهارم (A/B/C/D):** امنیت A11 + بکاپ age/presigned + ریفاند زرین‌پال + state machine پرداخت + circuit breaker LLM · TTS→R2 · لایو‌نس/ری‌دینس تفکیکی · حریم خصوصی/retention · Web Push (VAPID، سرویس‌کارگر، اعلان هفتگی) · RAG pgvector (e5-small چندزبانه 384-dim) · کیف پول رفرال (۵٪، پرداخت با موجودی، تسویه) · چت استریم SSE (توکن واقعی)
@@ -36,11 +36,11 @@ app/                  FastAPI app
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
-tests/                58 فایل تست (303 passed, 1 skipped in 16.12s)
+tests/                58 فایل تست (305 passed, 1 skipped in 16.39s)
 scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
 docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
-alembic/versions/     14 مهاجرت
+alembic/versions/     15 مهاجرت
 .github/workflows/    CI
 ```
 
@@ -49,7 +49,7 @@ alembic/versions/     14 مهاجرت
 
 ## ۱) فایل اصلی اپلیکیشن (main.py — مسیرهای هسته + include routes)
 
-### `app/main.py` (1839 lines)
+### `app/main.py` (1845 lines)
 
 ```python
 """Chart Platform — FastAPI app (Phase 2: free product).
@@ -813,15 +813,6 @@ def api_payment_verify(
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
             order.status = "paid"
-            # D3: credit the referrer's wallet (5% of discounted amount)
-            try:
-                from app.payment.orders import reward_referral
-                reward_referral(session, order)
-            except Exception:  # noqa: BLE001 — referral must never break payment
-                session.rollback()
-                order = session.exec(
-                    select(Order).where(Order.authority == Authority)).first()
-            assert order is not None, "order vanished mid-verify"
             # Coupon was RESERVED atomically at order creation (audit r4 A10) —
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
@@ -847,6 +838,16 @@ def api_payment_verify(
                         rep.error = "queue unavailable at payment time — از ادمین بازتولید کنید"
                         session.add(rep)
                         session.commit()
+            # F-12 (audit v6 P1): reward the referrer AFTER the settlement
+            # commit — a referral failure must NEVER roll the payment back
+            # (money already moved at the gateway; rolling back here would
+            # leave the order unpaid while the report still generates).
+            try:
+                from app.payment.orders import reward_referral
+                reward_referral(session, order)
+                session.commit()
+            except Exception:  # noqa: BLE001 — referral is best-effort
+                session.rollback()
         except ZarinpalError:
             # gateway definitively rejected the payment (authority invalid /
             # expired / transaction refused) — money did NOT move → failed
@@ -1602,7 +1603,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # topologically order these deletes, so an explicit flush() per FK level
     # is required (Chart→BirthProfile, Message→Chart). Before this fix,
     # account deletion 500'd for ANY user with charts/chats.
-    from app.storage import delete_object
+    from app.storage import delete_object_checked
     for cid in chart_ids:
         # chat messages (FK → chart) — was missing entirely (audit r4 C6)
         for msg in session.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all():
@@ -1611,13 +1612,18 @@ def account_delete(request: Request, csrf_token: str = Form(""),
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
             # F-08 (audit v5 P1): audio object + local PDF artifact too — the
             # old code only deleted rep.r2_key and leaked both of these.
-            for key in (rep.r2_key, rep.audio_r2_key):
-                if key:
-                    try:
-                        delete_object(key)
-                    except Exception:  # noqa: BLE001 — best-effort, audited below
-                        audit(session.bind, u.phone or u.id, "account.delete_r2_failed",
-                              key, "R2 deletion failed during account deletion")
+            # F-13 (audit v6 P1): R2 deletion is now FAIL-CLOSED — a leaked
+            # private artifact is worse than a failed deletion, so any R2 error
+            # rolls the whole account deletion back (user retries later).
+            try:
+                for key in (rep.r2_key, rep.audio_r2_key):
+                    if key:
+                        delete_object_checked(key)
+            except Exception as e:  # noqa: BLE001 — artifact cleanup failed
+                audit(session.bind, u.phone or u.id, "account.delete_r2_failed",
+                      rep.id, str(e)[:200])
+                session.rollback()
+                raise HTTPException(502, "حذف حساب کامل نشد؛ چند دقیقه بعد دوباره تلاش کنید")
             if rep.pdf_path:
                 try:
                     os.remove(rep.pdf_path)
@@ -1898,7 +1904,7 @@ async def admin_llm_test(request: Request):
 
 ## ۱.۵) مسیرهای استخراج‌شده (H1.9 — app/routes/)
 
-### `app/routes/admin.py` (239 lines)
+### `app/routes/admin.py` (242 lines)
 
 ```python
 """H1.9 — admin API routes extracted from main.py (coupons, prompts, refund,
@@ -1998,9 +2004,11 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
     except Exception as e:  # noqa: BLE001 — gateway/network error
         err = str(e)
-        # F-04: an already-refunded authority is SUCCESS, not failure — the
-        # money already moved back on an earlier attempt whose commit died.
-        if any(k in err.lower() for k in ("already", "duplicate", "refunded", "66", "67")):
+        # F-14 (audit v6 P1): an already-refunded authority is SUCCESS — but
+        # decided on the STRUCTURED gateway code (66/67), never on substrings
+        # (a timeout message mentioning '66' is NOT 'already refunded').
+        gcode = getattr(e, "gateway_code", None)
+        if gcode in (66, 67):
             order.status = "refunded"
             order.error = None
             _release_coupon(session, order)
@@ -2010,7 +2018,8 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
                     sub.active = False
                     sub.expires_at = datetime.now(timezone.utc)
             session.commit()
-            audit(session.bind, "admin", "order.refund", order.id, "already-refunded (idempotent)")
+            audit(session.bind, "admin", "order.refund", order.id,
+                  f"already-refunded (gateway code {gcode})")
             return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
         order.status = "refund_failed"
         order.error = f"ریفاند ناموفق: {err[:300]}"
@@ -2616,7 +2625,7 @@ def get_session():
 
 ```
 
-### `app/models.py` (339 lines)
+### `app/models.py` (345 lines)
 
 ```python
 """Database models (plan v3.1 §7) — users → birth_profiles → charts.
@@ -2871,6 +2880,12 @@ class ReferralCode(SQLModel, table=True):
 class WithdrawalRequest(SQLModel, table=True):
     """Wallet cash-out request (D3) — admin approves manually (status=paid)."""
     __tablename__ = "withdrawal_requests"
+    # F-11 (audit v6 P0): partial unique index — at most ONE pending withdrawal
+    # per user, enforced at the DB level against concurrent requests.
+    __table_args__ = (
+        Index("uq_withdrawal_one_pending", "user_id", unique=True,
+              postgresql_where=text("status = 'pending'")),
+    )
     id: str = Field(default_factory=_uuid, primary_key=True)
     user_id: str = Field(foreign_key="users.id", index=True)
     amount_rial: int = Field(default=0)
@@ -3706,7 +3721,7 @@ def audit(engine, admin: str, action: str, entity: str = "", details: str = "") 
 
 ```
 
-### `app/storage.py` (109 lines)
+### `app/storage.py` (118 lines)
 
 ```python
 """Cloudflare R2 object storage for report PDFs (plan §11 R2).
@@ -3817,6 +3832,15 @@ def delete_object(key: str) -> bool:
         return True
     except Exception:  # noqa: BLE001 — never raise on cleanup
         return False
+
+
+def delete_object_checked(key: str) -> None:
+    """F-13 (audit v6 P1): delete an R2 object or RAISE — used where a leaked
+    private artifact is worse than a failed operation (account deletion)."""
+    if not configured() or not key:
+        return
+    client = _client()
+    client.delete_object(Bucket=R2_BUCKET, Key=key)
 
 ```
 
@@ -7714,7 +7738,7 @@ if __name__ == "__main__":  # pragma: no cover — manual maintenance
 
 ## ۷) پرداخت، سفارش و کیف پول
 
-### `app/payment/orders.py` (288 lines)
+### `app/payment/orders.py` (300 lines)
 
 ```python
 """Shared order creation + subscription activation (plan v3.0 §7/§8/§12).
@@ -7925,22 +7949,31 @@ def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
     F-01 (audit v5 P0): the amount is RESERVED (debited) at request time and
     returned on rejection — otherwise the same balance could be withdrawn
     repeatedly after each 'paid' resolution (unlimited admin payout).
+    F-11 (audit v6 P0): the reserve is an ATOMIC conditional UPDATE and the
+    'one pending' rule is enforced by a partial unique index — two concurrent
+    requests can no longer both pass the ORM checks and create two withdrawals
+    (overdraw). The loser hits the unique index and its debit rolls back.
     """
     # H1.4: minimum payout — 500k rial (50k toman) keeps manual bank transfers
     # worth the effort and discourages dust-level abuse
     MIN_WITHDRAW_RIAL = 500_000
     u = session.get(User, user_id)
-    if not u or amount_rial < MIN_WITHDRAW_RIAL or amount_rial > (u.balance_rial or 0):
+    if not u or amount_rial < MIN_WITHDRAW_RIAL:
         return False
-    if session.exec(select(WithdrawalRequest).where(
-            WithdrawalRequest.user_id == user_id,
-            WithdrawalRequest.status == "pending")).first():
+    # F-11: atomic conditional debit (rowcount 0 ⇒ insufficient balance / no user)
+    res = session.exec(text(
+        "UPDATE users SET balance_rial = balance_rial - :amt "
+        "WHERE id = :uid AND balance_rial >= :amt"
+    ).bindparams(amt=amount_rial, uid=user_id))
+    if res.rowcount != 1:
         return False
-    # F-01: reserve now — reject later refunds this back
-    u.balance_rial = (u.balance_rial or 0) - amount_rial
-    session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
-    session.commit()
-    return True
+    try:
+        session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
+        session.commit()
+        return True
+    except Exception:  # noqa: BLE001 — partial unique index (concurrent pending)
+        session.rollback()  # undo the debit too
+        return False
 
 
 def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") -> bool:
@@ -7989,12 +8022,6 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
     order.status = "paid"
     order.paid_at = datetime.now(timezone.utc)
     order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {(user.balance_rial or 0) + order.amount_rial:,} ریال"
-    # F-10: credit the referrer (5%) — same hook as the Zarinpal verify path
-    try:
-        reward_referral(session, order)
-    except Exception:  # noqa: BLE001 — referral must never break payment
-        session.rollback()
-        order = session.get(Order, order.id)
     if order.plan_key == "monthly":
         activate_subscription(session, order)
     if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
@@ -8003,11 +8030,20 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
         session.flush()
         order.report_id = rep.id
     session.commit()
+    # F-12 (audit v6 P1): reward the referrer AFTER the settlement commit —
+    # a referral failure must never roll the payment back (in the Zarinpal
+    # path the gateway money has already moved; rolling back would leave the
+    # order unpaid while the report is generated). Best-effort + idempotent.
+    try:
+        reward_referral(session, order)
+        session.commit()
+    except Exception:  # noqa: BLE001 — referral must never break payment
+        session.rollback()
     return True
 
 ```
 
-### `app/payment/zarinpal.py` (106 lines)
+### `app/payment/zarinpal.py` (120 lines)
 
 ```python
 """Zarinpal v4 payment client — sandbox + production.
@@ -8033,7 +8069,15 @@ PROD_PAY = "https://payment.zarinpal.com/pg/StartPay"
 
 
 class ZarinpalError(Exception):
-    pass
+    """Structured gateway error.
+
+    F-14 (audit v6 P1): carries the gateway error code when the API provides
+    one — callers must decide on the CODE, never on substrings of the message
+    (a timeout text mentioning '66 seconds' is not 'already refunded')."""
+
+    def __init__(self, message: str, gateway_code: int | None = None):
+        super().__init__(message)
+        self.gateway_code = gateway_code
 
 
 class ZarinpalClient:
@@ -8105,11 +8149,17 @@ class ZarinpalClient:
         data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
         errs = data.get("errors") or []
         if errs:
-            raise ZarinpalError(f"refund failed: {errs}")
+            # F-14: surface the gateway code (66/67 = already refunded) —
+            # the caller maps success on the CODE, not on message text.
+            code = None
+            if isinstance(errs, list) and errs and isinstance(errs[0], dict):
+                code = errs[0].get("code")
+            raise ZarinpalError(f"refund failed: {errs}", gateway_code=code)
         d = data.get("data") or {}
         code = d.get("code")
         if code != 100:
-            raise ZarinpalError(f"refund code {code}: {d.get('message')}")
+            raise ZarinpalError(f"refund code {code}: {d.get('message')}",
+                                gateway_code=code)
         return {"ref_id": d.get("ref_id", "")}
 
 
@@ -13888,7 +13938,7 @@ def _seed_user_with_data(s) -> tuple[User, str, str]:
 
 def test_account_delete_cascades_all_data(monkeypatch):
     deleted = []
-    monkeypatch.setattr("app.storage.delete_object", lambda key: deleted.append(key))
+    monkeypatch.setattr("app.storage.delete_object_checked", lambda key: deleted.append(key))
     c = TestClient(main_app)
     with Session(engine) as s:
         u, cid, rep_id = _seed_user_with_data(s)
@@ -17260,7 +17310,7 @@ def test_compute_transits_accepts_when_override():
 
 ```
 
-### `tests/test_v5_audit_fixes.py` (276 lines)
+### `tests/test_v5_audit_fixes.py` (335 lines)
 
 ```python
 """V5 audit (F-01..F-10): wallet reserve, atomic debit race, wallet→report
@@ -17378,6 +17428,65 @@ def test_balance_pay_is_atomic_under_contention():
         assert len(paid) == 2
 
 
+# ── F-11 (audit v6 P0): concurrent withdrawals — atomic debit + partial
+# unique index ⇒ exactly ONE pending withdrawal can ever exist per user
+def test_concurrent_withdrawals_only_one_wins():
+    import threading
+    from app.payment.orders import withdraw_request
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5c{__import__('uuid').uuid4().hex[:8]}", 1_000_000)
+        uid = u.id
+    wins = [0]
+
+    def _try():
+        with Session(engine) as s2:
+            if withdraw_request(s2, uid, 700_000):
+                wins[0] += 1
+
+    ts = [threading.Thread(target=_try) for _ in range(3)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert wins[0] == 1  # exactly ONE pending withdrawal may exist
+    with Session(engine) as s:
+        n = len(s.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == uid,
+            WithdrawalRequest.status == "pending")).all())
+        u = s.get(User, uid)
+        assert n == 1
+        assert u.balance_rial == 300_000  # 1M - 700k reserved exactly once
+
+
+# ── F-13 (audit v6 P1): R2 deletion failure blocks account deletion
+def test_account_delete_fails_closed_when_r2_delete_fails(monkeypatch):
+    from app.security import new_csrf_token
+    c = TestClient(app)
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5g{__import__('uuid').uuid4().hex[:8]}", 0)
+        uid = u.id
+    c.cookies.set("chart_user", __import__("app.auth", fromlist=["_user_cookie_value"])._user_cookie_value(uid))
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        p = s.exec(select(__import__("app.models", fromlist=["BirthProfile"]).BirthProfile)
+                   .where(__import__("app.models", fromlist=["BirthProfile"]).BirthProfile.user_id == uid)).one()
+        s.exec(__import__("sqlalchemy", fromlist=["text"]).text(
+            "UPDATE charts SET profile_id=:p WHERE id=:c").bindparams(p=p.id, c=cid))
+        rep = Report(chart_id=cid, status="done", plan_key="basic", r2_key="pdfs/leak.pdf")
+        s.add(rep)
+        s.commit()
+        rep_id = rep.id
+    monkeypatch.setattr("app.storage.delete_object_checked",
+                        lambda k: (_ for _ in ()).throw(RuntimeError("R2 down")))
+
+    token = new_csrf_token()
+    c.cookies.set("csrf_token", token)
+    r = c.post("/account/delete", data={"csrf_token": token})
+    assert r.status_code == 502  # fail-closed: no partial deletion
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        assert u is not None  # account still exists — retry later
+        assert s.exec(select(Report).where(Report.id == rep_id)).first() is not None  # artifacts intact
+
+
 # ── F-03: wallet-paid report gets enqueued (P1) ─────────────────────────────
 def test_wallet_payment_enqueues_report(monkeypatch):
     enqueued: list[str] = []
@@ -17411,7 +17520,7 @@ def test_refund_idempotent_when_gateway_already_refunded(monkeypatch):
         def refund(self, *a, **k):
             self.calls += 1
             raise __import__("app.payment.zarinpal", fromlist=["ZarinpalError"]).ZarinpalError(
-                "refund failed: [{'code': 66, 'message': 'already refunded'}]")
+                "refund failed: [{'code': 66, 'message': 'already refunded'}]", gateway_code=66)
 
     fake = _Fake()
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
@@ -17458,7 +17567,7 @@ def test_account_delete_cleans_audio_and_pdf(monkeypatch):
     import os
     from app.models import BirthProfile, Chart
     deleted: list[str] = []
-    monkeypatch.setattr("app.storage.delete_object",
+    monkeypatch.setattr("app.storage.delete_object_checked",
                         lambda k: (deleted.append(k) or True))
     c = TestClient(app)
     with Session(engine) as s:
@@ -21388,6 +21497,48 @@ def downgrade() -> None:
 
 ```
 
+### `alembic/versions/cec42d441b5c_f11_unique_partial_index_one_pending_.py` (37 lines)
+
+```python
+"""f11 unique partial index: one pending withdrawal per user
+
+Revision ID: cec42d441b5c
+Revises: 9d34ed9201c2
+Create Date: 2026-08-14 17:11:36.602738
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = 'cec42d441b5c'
+down_revision: Union[str, Sequence[str], None] = '9d34ed9201c2'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """F-11 (audit v6 P0): at most ONE pending withdrawal per user — the
+    atomic enforcement of the application-level 'one pending at a time' rule
+    under concurrent requests."""
+    op.create_index(
+        "uq_withdrawal_one_pending",
+        "withdrawal_requests",
+        ["user_id"],
+        unique=True,
+        postgresql_where=sa.text("status = 'pending'"),
+    )
+
+
+def downgrade() -> None:
+    op.drop_index("uq_withdrawal_one_pending", table_name="withdrawal_requests")
+
+```
+
 ### `alembic/versions/d4db5d787f91_b6_subscriptions_order_id_orders_error_.py` (38 lines)
 
 ```python
@@ -24735,15 +24886,18 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 ........................................................................ [ 23%]
 .............s.......................................................... [ 47%]
-........................................................................ [ 71%]
+........................................................................ [ 70%]
 ........................................................................ [ 94%]
-................                                                         [100%]
-303 passed, 1 skipped in 16.12s
+..................                                                       [100%]
+305 passed, 1 skipped in 16.39s
 ```
 
 ## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+fe21f9e 2026-08-14 docs: V6-AUDIT-FIXES report — 4/4 verified & fixed (305 tests, 15 migrations)
+792aa0b 2026-08-14 fix(v6-audit): F-11 P0 withdrawal race (atomic debit + partial unique index), F-12 referral after settlement commit, F-13 R2 delete fail-closed, F-14 structured gateway codes
+af8bee9 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (193 files, 58 test files, 303 passed, v5 fixes included)
 b25ca26 2026-08-14 docs: V5-AUDIT-FIXES report — 10/10 findings verified & fixed, 303 tests
 150f619 2026-08-14 fix(v5-audit): all 10 findings — F-01 P0 withdrawal reserves balance (reject refunds, paid keeps debit); F-02 P0 atomic conditional debit (UPDATE ... WHERE balance>=amt) kills double-spend race; F-03 P1 wallet-paid reports enqueued like Zarinpal; F-04 P1 refund retryable from 'refunding' + already-refunded→refunded; F-05 P1 webhook dedupe Redis SET-NX-EX across 2 workers (no wholesale clear); F-06 P1 timezone fail-closed (Tehran fallback only inside Iran, 400/bot-msg otherwise); F-07 P1 report creation serialized via pg_advisory_xact_lock; F-08 P1 account delete also removes audio_r2_key + local pdf_path; F-09 P1 chat policy moved to real system message (CHAT_SYSTEM_PROMPT); F-10 P2 wallet payment rewards referrer; 11 new tests (303 passed)
 b697d97 2026-08-14 docs: AUDIT-PROMPT-v5 — comprehensive audit prompt for external AI review (claim-based rules, 8 mandatory domains, output structure)
@@ -24781,7 +24935,4 @@ b093641 2026-08-14 chore: ruff fix
 f7428cc 2026-08-14 ops(c5): split health — /liveness (process heartbeat, no deps) vs /readiness (DB+Redis+worker+R2+disk, 503 when degraded); /health compat alias; UI banner polls /readiness; 4 tests
 ba51802 2026-08-14 test(c4): classify 4 skipped golden-UTC tests — verify_utc expectations added for chart-1/chart-8/chart-7-sidereal, only chart-2-no-time (no birth time by design) stays skipped with docstring; 199 passed, 1 skipped
 ee0579f 2026-08-14 chore(c3): zero-warning test suite — replace deprecated per-request cookies= with client.cookies.update (9 files), s.query→s.exec(select), pytest.ini filter for starlette lib deprecation, refactor_cookies helper; 196 passed, 0 warnings
-69ebdac 2026-08-14 chore(c2): remove dead send_transit_digests.py (replaced by weekly_transit.py, crontab already updated); R2_BUCKET default fallback zayche-storage (never voice-clone)
-7dba09b 2026-08-14 chore: ruff fix
-74af9cf 2026-08-14 feat(c1): report audio served from R2 — audio_key/upload_audio in storage, cache-hit presigned redirect, miss generates→uploads→30min presigned→temp cleanup; 3 tests
 ```
