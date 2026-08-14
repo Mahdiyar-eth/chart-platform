@@ -23,7 +23,7 @@ from sqlmodel import Session, select
 import app.config  # noqa: F401 — load .env FIRST
 from app.env import IS_PROD
 from app.auth import get_current_user, request_otp, set_user_cookie, verify_otp
-from app.security import security_guard
+from app.security import security_guard, chat_quota_claim, chat_quota_release, chat_quota_used
 from app.astrology.big_three import big_three
 from app.astrology.cities_ir import search_cities
 from app.astrology.engine import compute_from_fields
@@ -374,6 +374,32 @@ def api_create_report(chart_id: str, request: Request,
     ).first()
     if not paid:
         raise HTTPException(403, "برای تولید گزارش، ابتدا پلن را خریداری کنید")
+    # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
+    # enqueue multiple LLM jobs. queued/processing → return existing;
+    # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
+    regenerate = request.query_params.get("regenerate") == "1"
+    existing = session.exec(
+        select(Report).where(Report.chart_id == chart_id)
+        .order_by(Report.created_at.desc())
+    ).first()
+    if existing and not regenerate:
+        if existing.status in ("queued", "processing"):
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": True, "plan_key": existing.plan_key, "existing": True}
+        if existing.status in ("done", "degraded"):
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": False, "plan_key": existing.plan_key, "existing": True}
+        if existing.status == "failed":
+            existing.status = "queued"
+            existing.error = None
+            session.commit()
+            ok = _enqueue_report(existing.id)
+            if not ok:
+                existing.status = "failed"
+                existing.error = "queue unavailable (worker not running)"
+                session.commit()
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": ok, "plan_key": existing.plan_key, "existing": True}
     rep = Report(chart_id=chart_id, status="queued", plan_key=paid.plan_key or "full")
     session.add(rep)
     session.commit()
@@ -1085,14 +1111,35 @@ def chat_page(request: Request, chart_id: str, session: Session = Depends(get_se
     })
 
 
-def _chat_quota_info(session: Session, chart_id: str, order) -> dict:
-    """Daily quota for a chart's AI chat (gold vs monthly, admin-overridable)."""
+def _chat_account_key(chart, order, request) -> str:
+    """Per-ACCOUNT quota scope (audit r4 A8 — marketing/product decision):
+    registered users share one daily pool across ALL their charts; bot
+    identities share per chat; anonymous fall back to the chart capability."""
+    user = get_current_user(request)
+    if user:
+        return f"u:{user.id}"
+    if order and order.chat_id:
+        return f"b:{order.platform or 'telegram'}:{order.chat_id}"
+    return f"c:{chart.id}"
+
+
+def _chat_daily_limit(order) -> int:
+    """Gold=5/day, monthly=15/day (admin-overridable via secrets table)."""
     limit_key = "chat_daily_limit_gold" if order.plan_key == "gold" else "chat_daily_limit_monthly"
     default = "5" if order.plan_key == "gold" else "15"
     try:
-        daily_limit = int(secret_store.get_secret(limit_key, limit_key.upper(), default))
+        return int(secret_store.get_secret(limit_key, limit_key.upper(), default))
     except ValueError:
-        daily_limit = int(default)
+        return int(default)
+
+
+def _chat_quota_info(session: Session, chart_id: str, order, account_key: str | None = None) -> dict:
+    """Daily quota display for a chart's AI chat (gold vs monthly)."""
+    daily_limit = _chat_daily_limit(order)
+    if account_key:
+        used = chat_quota_used(account_key)
+        if used is not None:
+            return {"used": used, "limit": daily_limit, "remaining": max(0, daily_limit - used)}
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     used = len(session.exec(
         select(ChatMessage.id).where(
@@ -1116,7 +1163,8 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     allowed = bool(order and order.plan_key in ("gold", "monthly"))
     if not allowed:
         return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
-    quota = _chat_quota_info(session, chart_id, order)
+    quota = _chat_quota_info(session, chart_id, order,
+                             _chat_account_key(session.get(Chart, chart_id), order, request))
     return {"allowed": True, **quota}
 
 
@@ -1159,21 +1207,32 @@ def api_chat(
     if not order or order.plan_key not in ("gold", "monthly"):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
 
-    # daily quota (per chart)
-    quota = _chat_quota_info(session, chart_id, order)
-    if quota["used"] >= quota["limit"]:
-        raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا")
+    # daily quota — ATOMIC per-account claim (audit r4 A8): Redis INCR+TTL so
+    # concurrent requests can't both pass the last slot; DB count as degraded fallback
+    daily_limit = _chat_daily_limit(order)
+    acct = _chat_account_key(chart, order, request)
+    used = chat_quota_claim(acct, daily_limit)
+    if used is None:  # Redis down → degraded DB-count check
+        quota = _chat_quota_info(session, chart_id, order, acct)
+        if quota["used"] >= quota["limit"]:
+            raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا")
+    elif used > daily_limit:
+        raise HTTPException(429, f"سهمیه امروزت تمام شد ({daily_limit} سوال در روز). فردا دوباره بیا")
 
     profile = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
     report = session.exec(
         select(Report).where(Report.chart_id == chart_id).order_by(Report.created_at.desc())
     ).first()
 
-    result = chat_answer(
-        question, chart.chart_json,
-        report_sections=(report.sections if report and report.sections else None),
-        focus_areas=(profile.focus_areas if profile else None),
-    )
+    try:
+        result = chat_answer(
+            question, chart.chart_json,
+            report_sections=(report.sections if report and report.sections else None),
+            focus_areas=(profile.focus_areas if profile else None),
+        )
+    except Exception:
+        chat_quota_release(acct)  # don't burn the daily quota on a failed call
+        raise
 
     # persist history (user + assistant) — doubles as admin usage metering
     try:
@@ -1189,8 +1248,12 @@ def api_chat(
     except Exception:  # noqa: BLE001 — history must never break the answer
         session.rollback()
 
-    result["quota"] = {"used": quota["used"] + 1, "limit": quota["limit"],
-                       "remaining": max(0, quota["limit"] - (quota["used"] + 1))}
+    # reflect the atomic counter (or best-known used) in the response
+    shown = chat_quota_used(acct)
+    if shown is None:
+        shown = (used or 0) if used is not None else _chat_quota_info(session, chart_id, order, acct)["used"]
+    result["quota"] = {"used": shown, "limit": daily_limit,
+                       "remaining": max(0, daily_limit - shown)}
     return result
 
 

@@ -62,6 +62,45 @@ def _rl_redis_check(key: str, max_calls: int, window: int) -> bool:
     return n <= max_calls
 
 
+def chat_quota_claim(account_key: str, limit: int) -> int | None:
+    """Atomic per-ACCOUNT daily quota claim (audit r4 A8): Redis INCR+TTL.
+
+    Returns the new used count, or None when Redis is unavailable (caller
+    falls back to a DB count). Multiple charts of one account share the pool."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    nk = f"chatq:{day}:{account_key}"
+    try:
+        r = _rl_redis()
+        n = r.incr(nk)
+        if n == 1:
+            r.expire(nk, 26 * 3600)
+        return n
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def chat_quota_release(account_key: str) -> None:
+    """Undo a claim when the request failed before producing an answer."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    try:
+        _rl_redis().decr(f"chatq:{day}:{account_key}")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def chat_quota_used(account_key: str) -> int | None:
+    """Current atomic counter for display; None when Redis is unavailable."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    try:
+        n = _rl_redis().get(f"chatq:{day}:{account_key}")
+        return int(n) if n is not None else 0
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def new_csrf_token() -> str:
     return _secrets.token_urlsafe(16)
 
