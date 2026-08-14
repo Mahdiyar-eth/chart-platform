@@ -555,6 +555,12 @@ def api_create_order(
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A5: order ownership
+        raise HTTPException(403, "not authorized")
+    if secondary_chart_id:
+        sec = session.get(Chart, secondary_chart_id)
+        if not sec or not _owns_chart(sec, session, request):
+            raise HTTPException(403, "not authorized")
     user = get_current_user(request)
     try:
         order, pay_url = create_order(
@@ -914,14 +920,16 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
 
 
 @app.post("/api/synastry/full")
-def api_synastry_full(chart_a: str = Form(...), chart_b: str = Form(...),
-                      session: Session = Depends(get_session)):
-    """Full synastry report — requires a paid synastry order for the pair."""
+def api_synastry_full(request: Request, session: Session = Depends(get_session),
+                      chart_a: str = Form(...), chart_b: str = Form(...)):
+    """Full synastry report — requires OWNING both charts AND a paid synastry order (audit r4 A4)."""
     from app.astrology.synastry import synastry
     ca = session.get(Chart, chart_a)
     cb = session.get(Chart, chart_b)
     if not ca or not cb:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
+        raise HTTPException(403, "not authorized")
     paid = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
@@ -934,7 +942,13 @@ def api_synastry_full(chart_a: str = Form(...), chart_b: str = Form(...),
 
 
 @app.get("/api/synastry/access")
-def api_synastry_access(chart_a: str, chart_b: str, session: Session = Depends(get_session)):
+def api_synastry_access(chart_a: str, chart_b: str, request: Request, session: Session = Depends(get_session)):
+    ca = session.get(Chart, chart_a)
+    cb = session.get(Chart, chart_b)
+    if not ca or not cb:
+        raise HTTPException(404, "chart not found")
+    if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
+        raise HTTPException(403, "not authorized")
     paid = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
@@ -1181,10 +1195,12 @@ def api_chat(
 
 
 @app.get("/api/charts/{chart_id}/transits")
-def api_chart_transits(chart_id: str, session: Session = Depends(get_session)):
+def api_chart_transits(chart_id: str, request: Request, session: Session = Depends(get_session)):
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A3: transit IDOR
+        raise HTTPException(403, "not authorized")
     from app.astrology.transits import compute_transits
     return {"events": compute_transits(chart.chart_json)}
 
@@ -1194,6 +1210,8 @@ def transit_page(request: Request, chart_id: str, session: Session = Depends(get
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A3: transit IDOR
+        raise HTTPException(403, "not authorized")
     from app.astrology.transits import compute_transits
     return templates.TemplateResponse(request, "transit.html", {
         "title": "گذرهای کنونی", "chart_id": chart_id,
