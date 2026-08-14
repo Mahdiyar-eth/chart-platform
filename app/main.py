@@ -278,7 +278,7 @@ def _compute_and_save_chart(
     lat: float | None, lon: float | None,
     name: str, zodiac: str, focus_areas: str | None = None,
     personal_question: str | None = None,
-    user_id: str | None = None,
+    user_id: str | None = None, guest: bool = False,
 ) -> tuple[Chart, BirthProfile]:
     """Shared chart computation + persistence (charts API, synastry orders, bots)."""
     if calendar not in ("jalali", "gregorian"):
@@ -307,7 +307,8 @@ def _compute_and_save_chart(
         name=name, zodiac=zodiac,
         focus_areas=[a.strip() for a in (focus_areas or "").split(",") if a.strip()],
         personal_question=personal_question or None,
-        user_id=user_id or (get_current_user(request).id if get_current_user(request) else None),
+        user_id=(None if guest else
+                 (user_id or (get_current_user(request).id if get_current_user(request) else None))),
     )
     assert lat is not None and lon is not None
     try:
@@ -1043,7 +1044,11 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
                        day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
                        city_b: str = Form(None), calendar_b: str = Form("jalali"),
                        zodiac_b: str = Form("tropical")):
-    """Save both charts + create the paid synastry order (plan §8, ~499k toman)."""
+    """Save both charts + create the paid synastry order (plan §8, ~499k toman).
+
+    H1.6: Person B is a GUEST profile (user_id=NULL, no account required) —
+    only the buyer's chart A lands in their account; B's birth data is stored
+    as an anonymous profile reachable solely via its capability token."""
     from app.payment.orders import create_order
     chart_a, _ = _compute_and_save_chart(
         session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
@@ -1052,7 +1057,8 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
     chart_b, _ = _compute_and_save_chart(
         session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
         time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
-        province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b)
+        province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
+        guest=True)  # H1.6: guest — anonymous BirthProfile + capability token
     session.add(chart_a); session.add(chart_b)
     session.commit(); session.refresh(chart_a); session.refresh(chart_b)
     user = get_current_user(request)
@@ -1066,7 +1072,8 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
     except RuntimeError as e:
         raise HTTPException(502, str(e))
     return {"order_id": order.id, "payment_url": pay_url,
-            "chart_a": chart_a.id, "chart_b": chart_b.id}
+            "chart_a": chart_a.id, "chart_b": chart_b.id,
+            "token_b": chart_b.access_token}  # H1.6: guest capability token
 
 
 @app.post("/api/synastry/full")

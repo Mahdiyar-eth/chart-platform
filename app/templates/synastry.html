@@ -119,6 +119,7 @@ document.getElementById('synForm').addEventListener('submit', async (e) => {
 });
 
 let synOrderState = null;
+function getCookie(n){ const m = document.cookie.match(new RegExp('(^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[2]) : ''; }
 async function buySyn() {
   const f = new FormData(document.getElementById('synForm'));
   f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
@@ -126,6 +127,13 @@ async function buySyn() {
   const d = await r.json();
   if (!r.ok) { alert(d.detail || 'خطا در ایجاد سفارش'); return; }
   synOrderState = { chart_a: d.chart_a, chart_b: d.chart_b, order_id: d.order_id };
+  // H1.6: guest chart B — keep its capability token in chart_access cookie so
+  // the paid full report can be unlocked without person B having an account
+  if (d.token_b) {
+    const ck = JSON.parse(getCookie('chart_access') || '{}');
+    ck[d.chart_b] = d.token_b;
+    document.cookie = 'chart_access=' + encodeURIComponent(JSON.stringify(ck)) + ';path=/;max-age=31536000;SameSite=Lax';
+  }
   location.href = d.payment_url;
 }
 
