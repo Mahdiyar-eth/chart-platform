@@ -2,7 +2,7 @@
 """Umami v3 bootstrap: login (admin/umami), set a strong digits-only password,
 register the website, and print the tracker snippet.
 
-Credentials are written to deploy/umami-admin.txt (chmod 600).
+Credentials are written to /opt/umami-admin.txt (chmod 600) — OUTSIDE the repo.
 Idempotent: logs in, rotates the password, creates the website only if absent.
 """
 from __future__ import annotations
@@ -14,7 +14,8 @@ import urllib.request
 import urllib.error
 
 BASE = "https://analytics.negar.io"
-ADMIN_FILE = "/root/chart-platform/deploy/umami-admin.txt"
+# OUTSIDE the repo — never write secrets into the git working tree
+ADMIN_FILE = "/opt/umami-admin.txt"
 
 
 def _post(path: str, body: dict, token: str | None = None) -> dict:
