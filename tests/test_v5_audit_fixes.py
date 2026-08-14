@@ -113,6 +113,65 @@ def test_balance_pay_is_atomic_under_contention():
         assert len(paid) == 2
 
 
+# ── F-11 (audit v6 P0): concurrent withdrawals — atomic debit + partial
+# unique index ⇒ exactly ONE pending withdrawal can ever exist per user
+def test_concurrent_withdrawals_only_one_wins():
+    import threading
+    from app.payment.orders import withdraw_request
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5c{__import__('uuid').uuid4().hex[:8]}", 1_000_000)
+        uid = u.id
+    wins = [0]
+
+    def _try():
+        with Session(engine) as s2:
+            if withdraw_request(s2, uid, 700_000):
+                wins[0] += 1
+
+    ts = [threading.Thread(target=_try) for _ in range(3)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert wins[0] == 1  # exactly ONE pending withdrawal may exist
+    with Session(engine) as s:
+        n = len(s.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == uid,
+            WithdrawalRequest.status == "pending")).all())
+        u = s.get(User, uid)
+        assert n == 1
+        assert u.balance_rial == 300_000  # 1M - 700k reserved exactly once
+
+
+# ── F-13 (audit v6 P1): R2 deletion failure blocks account deletion
+def test_account_delete_fails_closed_when_r2_delete_fails(monkeypatch):
+    from app.security import new_csrf_token
+    c = TestClient(app)
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5g{__import__('uuid').uuid4().hex[:8]}", 0)
+        uid = u.id
+    c.cookies.set("chart_user", __import__("app.auth", fromlist=["_user_cookie_value"])._user_cookie_value(uid))
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        p = s.exec(select(__import__("app.models", fromlist=["BirthProfile"]).BirthProfile)
+                   .where(__import__("app.models", fromlist=["BirthProfile"]).BirthProfile.user_id == uid)).one()
+        s.exec(__import__("sqlalchemy", fromlist=["text"]).text(
+            "UPDATE charts SET profile_id=:p WHERE id=:c").bindparams(p=p.id, c=cid))
+        rep = Report(chart_id=cid, status="done", plan_key="basic", r2_key="pdfs/leak.pdf")
+        s.add(rep)
+        s.commit()
+        rep_id = rep.id
+    monkeypatch.setattr("app.storage.delete_object_checked",
+                        lambda k: (_ for _ in ()).throw(RuntimeError("R2 down")))
+
+    token = new_csrf_token()
+    c.cookies.set("csrf_token", token)
+    r = c.post("/account/delete", data={"csrf_token": token})
+    assert r.status_code == 502  # fail-closed: no partial deletion
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        assert u is not None  # account still exists — retry later
+        assert s.exec(select(Report).where(Report.id == rep_id)).first() is not None  # artifacts intact
+
+
 # ── F-03: wallet-paid report gets enqueued (P1) ─────────────────────────────
 def test_wallet_payment_enqueues_report(monkeypatch):
     enqueued: list[str] = []
@@ -146,7 +205,7 @@ def test_refund_idempotent_when_gateway_already_refunded(monkeypatch):
         def refund(self, *a, **k):
             self.calls += 1
             raise __import__("app.payment.zarinpal", fromlist=["ZarinpalError"]).ZarinpalError(
-                "refund failed: [{'code': 66, 'message': 'already refunded'}]")
+                "refund failed: [{'code': 66, 'message': 'already refunded'}]", gateway_code=66)
 
     fake = _Fake()
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
@@ -193,7 +252,7 @@ def test_account_delete_cleans_audio_and_pdf(monkeypatch):
     import os
     from app.models import BirthProfile, Chart
     deleted: list[str] = []
-    monkeypatch.setattr("app.storage.delete_object",
+    monkeypatch.setattr("app.storage.delete_object_checked",
                         lambda k: (deleted.append(k) or True))
     c = TestClient(app)
     with Session(engine) as s:

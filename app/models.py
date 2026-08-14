@@ -250,6 +250,12 @@ class ReferralCode(SQLModel, table=True):
 class WithdrawalRequest(SQLModel, table=True):
     """Wallet cash-out request (D3) — admin approves manually (status=paid)."""
     __tablename__ = "withdrawal_requests"
+    # F-11 (audit v6 P0): partial unique index — at most ONE pending withdrawal
+    # per user, enforced at the DB level against concurrent requests.
+    __table_args__ = (
+        Index("uq_withdrawal_one_pending", "user_id", unique=True,
+              postgresql_where=text("status = 'pending'")),
+    )
     id: str = Field(default_factory=_uuid, primary_key=True)
     user_id: str = Field(foreign_key="users.id", index=True)
     amount_rial: int = Field(default=0)

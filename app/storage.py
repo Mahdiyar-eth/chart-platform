@@ -106,3 +106,12 @@ def delete_object(key: str) -> bool:
         return True
     except Exception:  # noqa: BLE001 — never raise on cleanup
         return False
+
+
+def delete_object_checked(key: str) -> None:
+    """F-13 (audit v6 P1): delete an R2 object or RAISE — used where a leaked
+    private artifact is worse than a failed operation (account deletion)."""
+    if not configured() or not key:
+        return
+    client = _client()
+    client.delete_object(Bucket=R2_BUCKET, Key=key)

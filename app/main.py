@@ -759,15 +759,6 @@ def api_payment_verify(
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
             order.status = "paid"
-            # D3: credit the referrer's wallet (5% of discounted amount)
-            try:
-                from app.payment.orders import reward_referral
-                reward_referral(session, order)
-            except Exception:  # noqa: BLE001 — referral must never break payment
-                session.rollback()
-                order = session.exec(
-                    select(Order).where(Order.authority == Authority)).first()
-            assert order is not None, "order vanished mid-verify"
             # Coupon was RESERVED atomically at order creation (audit r4 A10) —
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
@@ -793,6 +784,16 @@ def api_payment_verify(
                         rep.error = "queue unavailable at payment time — از ادمین بازتولید کنید"
                         session.add(rep)
                         session.commit()
+            # F-12 (audit v6 P1): reward the referrer AFTER the settlement
+            # commit — a referral failure must NEVER roll the payment back
+            # (money already moved at the gateway; rolling back here would
+            # leave the order unpaid while the report still generates).
+            try:
+                from app.payment.orders import reward_referral
+                reward_referral(session, order)
+                session.commit()
+            except Exception:  # noqa: BLE001 — referral is best-effort
+                session.rollback()
         except ZarinpalError:
             # gateway definitively rejected the payment (authority invalid /
             # expired / transaction refused) — money did NOT move → failed
@@ -1548,7 +1549,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # topologically order these deletes, so an explicit flush() per FK level
     # is required (Chart→BirthProfile, Message→Chart). Before this fix,
     # account deletion 500'd for ANY user with charts/chats.
-    from app.storage import delete_object
+    from app.storage import delete_object_checked
     for cid in chart_ids:
         # chat messages (FK → chart) — was missing entirely (audit r4 C6)
         for msg in session.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all():
@@ -1557,13 +1558,18 @@ def account_delete(request: Request, csrf_token: str = Form(""),
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
             # F-08 (audit v5 P1): audio object + local PDF artifact too — the
             # old code only deleted rep.r2_key and leaked both of these.
-            for key in (rep.r2_key, rep.audio_r2_key):
-                if key:
-                    try:
-                        delete_object(key)
-                    except Exception:  # noqa: BLE001 — best-effort, audited below
-                        audit(session.bind, u.phone or u.id, "account.delete_r2_failed",
-                              key, "R2 deletion failed during account deletion")
+            # F-13 (audit v6 P1): R2 deletion is now FAIL-CLOSED — a leaked
+            # private artifact is worse than a failed deletion, so any R2 error
+            # rolls the whole account deletion back (user retries later).
+            try:
+                for key in (rep.r2_key, rep.audio_r2_key):
+                    if key:
+                        delete_object_checked(key)
+            except Exception as e:  # noqa: BLE001 — artifact cleanup failed
+                audit(session.bind, u.phone or u.id, "account.delete_r2_failed",
+                      rep.id, str(e)[:200])
+                session.rollback()
+                raise HTTPException(502, "حذف حساب کامل نشد؛ چند دقیقه بعد دوباره تلاش کنید")
             if rep.pdf_path:
                 try:
                     os.remove(rep.pdf_path)

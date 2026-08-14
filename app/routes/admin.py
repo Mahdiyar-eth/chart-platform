@@ -95,9 +95,11 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
     except Exception as e:  # noqa: BLE001 — gateway/network error
         err = str(e)
-        # F-04: an already-refunded authority is SUCCESS, not failure — the
-        # money already moved back on an earlier attempt whose commit died.
-        if any(k in err.lower() for k in ("already", "duplicate", "refunded", "66", "67")):
+        # F-14 (audit v6 P1): an already-refunded authority is SUCCESS — but
+        # decided on the STRUCTURED gateway code (66/67), never on substrings
+        # (a timeout message mentioning '66' is NOT 'already refunded').
+        gcode = getattr(e, "gateway_code", None)
+        if gcode in (66, 67):
             order.status = "refunded"
             order.error = None
             _release_coupon(session, order)
@@ -107,7 +109,8 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
                     sub.active = False
                     sub.expires_at = datetime.now(timezone.utc)
             session.commit()
-            audit(session.bind, "admin", "order.refund", order.id, "already-refunded (idempotent)")
+            audit(session.bind, "admin", "order.refund", order.id,
+                  f"already-refunded (gateway code {gcode})")
             return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
         order.status = "refund_failed"
         order.error = f"ریفاند ناموفق: {err[:300]}"

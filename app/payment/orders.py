@@ -206,22 +206,31 @@ def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
     F-01 (audit v5 P0): the amount is RESERVED (debited) at request time and
     returned on rejection — otherwise the same balance could be withdrawn
     repeatedly after each 'paid' resolution (unlimited admin payout).
+    F-11 (audit v6 P0): the reserve is an ATOMIC conditional UPDATE and the
+    'one pending' rule is enforced by a partial unique index — two concurrent
+    requests can no longer both pass the ORM checks and create two withdrawals
+    (overdraw). The loser hits the unique index and its debit rolls back.
     """
     # H1.4: minimum payout — 500k rial (50k toman) keeps manual bank transfers
     # worth the effort and discourages dust-level abuse
     MIN_WITHDRAW_RIAL = 500_000
     u = session.get(User, user_id)
-    if not u or amount_rial < MIN_WITHDRAW_RIAL or amount_rial > (u.balance_rial or 0):
+    if not u or amount_rial < MIN_WITHDRAW_RIAL:
         return False
-    if session.exec(select(WithdrawalRequest).where(
-            WithdrawalRequest.user_id == user_id,
-            WithdrawalRequest.status == "pending")).first():
+    # F-11: atomic conditional debit (rowcount 0 ⇒ insufficient balance / no user)
+    res = session.exec(text(
+        "UPDATE users SET balance_rial = balance_rial - :amt "
+        "WHERE id = :uid AND balance_rial >= :amt"
+    ).bindparams(amt=amount_rial, uid=user_id))
+    if res.rowcount != 1:
         return False
-    # F-01: reserve now — reject later refunds this back
-    u.balance_rial = (u.balance_rial or 0) - amount_rial
-    session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
-    session.commit()
-    return True
+    try:
+        session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
+        session.commit()
+        return True
+    except Exception:  # noqa: BLE001 — partial unique index (concurrent pending)
+        session.rollback()  # undo the debit too
+        return False
 
 
 def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") -> bool:
@@ -270,12 +279,6 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
     order.status = "paid"
     order.paid_at = datetime.now(timezone.utc)
     order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {(user.balance_rial or 0) + order.amount_rial:,} ریال"
-    # F-10: credit the referrer (5%) — same hook as the Zarinpal verify path
-    try:
-        reward_referral(session, order)
-    except Exception:  # noqa: BLE001 — referral must never break payment
-        session.rollback()
-        order = session.get(Order, order.id)
     if order.plan_key == "monthly":
         activate_subscription(session, order)
     if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
@@ -284,4 +287,13 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
         session.flush()
         order.report_id = rep.id
     session.commit()
+    # F-12 (audit v6 P1): reward the referrer AFTER the settlement commit —
+    # a referral failure must never roll the payment back (in the Zarinpal
+    # path the gateway money has already moved; rolling back would leave the
+    # order unpaid while the report is generated). Best-effort + idempotent.
+    try:
+        reward_referral(session, order)
+        session.commit()
+    except Exception:  # noqa: BLE001 — referral must never break payment
+        session.rollback()
     return True

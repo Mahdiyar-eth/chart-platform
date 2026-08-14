@@ -50,7 +50,7 @@ def _seed_user_with_data(s) -> tuple[User, str, str]:
 
 def test_account_delete_cascades_all_data(monkeypatch):
     deleted = []
-    monkeypatch.setattr("app.storage.delete_object", lambda key: deleted.append(key))
+    monkeypatch.setattr("app.storage.delete_object_checked", lambda key: deleted.append(key))
     c = TestClient(main_app)
     with Session(engine) as s:
         u, cid, rep_id = _seed_user_with_data(s)

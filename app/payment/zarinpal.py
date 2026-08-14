@@ -21,7 +21,15 @@ PROD_PAY = "https://payment.zarinpal.com/pg/StartPay"
 
 
 class ZarinpalError(Exception):
-    pass
+    """Structured gateway error.
+
+    F-14 (audit v6 P1): carries the gateway error code when the API provides
+    one — callers must decide on the CODE, never on substrings of the message
+    (a timeout text mentioning '66 seconds' is not 'already refunded')."""
+
+    def __init__(self, message: str, gateway_code: int | None = None):
+        super().__init__(message)
+        self.gateway_code = gateway_code
 
 
 class ZarinpalClient:
@@ -93,11 +101,17 @@ class ZarinpalClient:
         data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
         errs = data.get("errors") or []
         if errs:
-            raise ZarinpalError(f"refund failed: {errs}")
+            # F-14: surface the gateway code (66/67 = already refunded) —
+            # the caller maps success on the CODE, not on message text.
+            code = None
+            if isinstance(errs, list) and errs and isinstance(errs[0], dict):
+                code = errs[0].get("code")
+            raise ZarinpalError(f"refund failed: {errs}", gateway_code=code)
         d = data.get("data") or {}
         code = d.get("code")
         if code != 100:
-            raise ZarinpalError(f"refund code {code}: {d.get('message')}")
+            raise ZarinpalError(f"refund code {code}: {d.get('message')}",
+                                gateway_code=code)
         return {"ref_id": d.get("ref_id", "")}
 
 
