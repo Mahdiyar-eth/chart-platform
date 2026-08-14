@@ -1,14 +1,14 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `d84a24a 2026-08-14 docs: V10-AUDIT-FIXES report — F-19/F-20 residuals closed (314 tests)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 312 passed, 1 skipped in 16.78s (59 فایل تست)
-- **کامیت‌ها:** 98 · head: b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)
+- **تست‌ها:** 314 passed, 1 skipped in 16.60s (59 فایل تست)
+- **کامیت‌ها:** 101 · head: d84a24a 2026-08-14 docs: V10-AUDIT-FIXES report — F-19/F-20 residuals closed (314 tests)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
 - **مهاجرت‌ها:** 16 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
@@ -36,7 +36,7 @@ app/                  FastAPI app
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
-tests/                59 فایل تست (312 passed, 1 skipped in 16.78s)
+tests/                59 فایل تست (314 passed, 1 skipped in 16.60s)
 scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
 docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
@@ -49,7 +49,7 @@ alembic/versions/     16 مهاجرت
 
 ## ۱) فایل اصلی اپلیکیشن (main.py — مسیرهای هسته + include routes)
 
-### `app/main.py` (1876 lines)
+### `app/main.py` (1899 lines)
 
 ```python
 """Chart Platform — FastAPI app (Phase 2: free product).
@@ -728,10 +728,21 @@ def api_create_order(
     user = get_current_user(request)
     # F-20 (audit v8 P2): in the wallet path, fail FAST before creating the
     # order — no pending order + coupon reservation is left behind when the
-    # balance can't cover even the full (undiscounted) plan price.
+    # balance can't cover the payable amount. The estimate applies the coupon
+    # discount (and referral 10%) so a user whose balance covers the
+    # DISCOUNTED final amount is not rejected (audit v9 residual fix).
     if request.headers.get("x-pay-with-balance", "") == "1":
         _plan = session.get(Plan, plan_key)
-        if not user or not _plan or (user.balance_rial or 0) < (_plan.price_rial or 0):
+        est = (_plan.price_rial or 0) if _plan else 0
+        if est and coupon:
+            _cp = session.exec(
+                select(Coupon).where(Coupon.code == coupon.strip().upper())
+            ).first()
+            if _cp and _cp.active:
+                est = max(1, int(est * (100 - _cp.percent) / 100))
+        elif est and not coupon and request.cookies.get("chart_ref"):
+            est = max(1, int(est * 0.9))  # referral estimate; real check in create_order
+        if not user or not _plan or (user.balance_rial or 0) < est:
             raise HTTPException(400, "موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
@@ -996,8 +1007,20 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
             session.delete(profile_a)
             session.delete(profile_b)
             session.commit()
-        except Exception as _e:  # noqa: BLE001 — cleanup is best-effort
-            session.rollback()
+        except Exception as _e:  # noqa: BLE001
+            # F-19 residual (audit v9 P1): cleanup MUST be fail-closed — if
+            # the compensation itself fails, the guest Person B data may be
+            # orphaned with NO deletion path. Surface a 5xx (NOT the original
+            # 400) so the operator sees the incomplete state instead of the
+            # user silently walking away with leftover private data.
+            try:
+                session.rollback()
+                from app.security import audit
+                audit(session.bind, "system", "synastry.cleanup_failed",
+                      chart_a.id, f"compensation failed: {_e!r} — charts/profiles may be orphaned")
+            except Exception:
+                pass
+            raise HTTPException(502, "خطای داخلی: دادههای سیناستری پاک نشد — با پشتیبانی تماس بگیرید")
         raise HTTPException(400, str(e))
     return {"order_id": order.id, "payment_url": pay_url,
             "chart_a": chart_a.id, "chart_b": chart_b.id,
@@ -17866,7 +17889,7 @@ def test_wallet_payment_rewards_referrer():
 
 ```
 
-### `tests/test_v8_audit_fixes.py` (180 lines)
+### `tests/test_v8_audit_fixes.py` (254 lines)
 
 ```python
 """F-18..F-20 (audit v8) regression tests.
@@ -18012,6 +18035,32 @@ def test_synastry_order_failure_leaves_no_orphan_data(monkeypatch):
     assert profiles_after == profiles_before, (profiles_before, profiles_after)
 
 
+# ── F-19 residual (audit v9 P1): cleanup itself MUST be fail-closed — if the
+# compensation fails, surface 5xx (NOT the original 400) + audit trail, so an
+# orphaned guest Person B can never be silently swallowed.
+def test_synastry_cleanup_failure_is_fail_closed(monkeypatch):
+    class _Boom:
+        def request(self, *a, **k):
+            raise RuntimeError("gateway unavailable")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: _Boom())
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: _Boom())
+    # make the compensation DELETE itself fail
+    monkeypatch.setattr("sqlmodel.Session.delete", lambda self, obj: (_ for _ in ()).throw(RuntimeError("db down")))
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+
+    r = c.post("/api/synastry/order", data={
+        "name_a": "الف", "year_a": "1373", "month_a": "6", "day_a": "1",
+        "hour_a": "6", "minute_a": "10", "city_a": "تهران", "calendar_a": "jalali",
+        "name_b": "ب", "year_b": "1375", "month_b": "1", "day_b": "15",
+        "hour_b": "12", "minute_b": "0", "city_b": "اصفهان", "calendar_b": "jalali",
+    })
+    # fail-closed: 5xx, NOT the payment 400 — the incomplete state is visible
+    assert r.status_code == 502, r.status_code
+    assert "پشتیبانی" in r.json().get("detail", "")
+
+
 # ── F-20: wallet with insufficient balance creates NO order, reserves NO coupon
 def test_wallet_insufficient_balance_creates_no_order():
     c = TestClient(main_mod.app)
@@ -18048,6 +18097,54 @@ def test_wallet_insufficient_balance_creates_no_order():
         after = s.exec(select(func.count()).select_from(Order)).one()
         assert after == before  # NO order was created at all
         assert s.get(Coupon, cpid).used_count == 0  # nothing was reserved
+
+
+# ── F-20 residual (audit v9 P2): wallet pre-check must accept the DISCOUNTED
+# final amount — a user who can cover 1,192,000 (1.49M − 20% coupon) but not
+# the full 1,490,000 must NOT be rejected.
+def test_wallet_pays_discounted_amount_with_coupon(monkeypatch):
+    class _FakeZP:
+        def request(self, *a, **k):
+            return "Q" + _uuid.uuid4().hex[:10].upper(), "https://pay.example/x"
+
+        def verify(self, *a, **k):
+            return {"ref_id": "REF" + _uuid.uuid4().hex[:6]}
+
+    fake = _FakeZP()
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+
+    phone = "98913" + str(9_000_000 + _uuid.uuid4().int % 1_000_000)
+    with Session(engine) as s:
+        # 1.25M — covers the discounted 1.192M basic plan, NOT the full 1.49M
+        u = User(phone=phone, balance_rial=1_250_000)
+        s.add(u)
+        s.commit()
+        s.refresh(u)
+        uid = u.id
+        cp = Coupon(code="F20D-" + _uuid.uuid4().hex[:6].upper(), percent=20,
+                    max_uses=5, active=True)
+        s.add(cp)
+        s.commit()
+        cpid, real_code = cp.id, cp.code
+
+    from app.auth import _user_cookie_value
+    c.cookies.update({"chart_user": _user_cookie_value(uid)})
+    cid = _mk_chart(c)
+
+    r = c.post("/api/orders", data={
+        "plan_key": "basic", "chart_id": cid, "coupon": real_code,
+    }, headers={"x-pay-with-balance": "1"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body.get("paid_by_balance") is True
+    with Session(engine) as s:
+        o = s.exec(select(Order).order_by(Order.created_at.desc())).first()
+        assert o.status == "paid"
+        assert o.amount_rial == 1_192_000  # 1.49M − 20%
+        assert s.get(User, uid).balance_rial == 58_000  # 1.25M − 1.192M
+        assert s.get(Coupon, cpid).used_count == 1
 
 ```
 
@@ -25344,17 +25441,20 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## ۱۸) خروجی واقعی pytest (آخرین اجرا)
 
 ```
-........................................................................ [ 23%]
-.............s.......................................................... [ 46%]
-........................................................................ [ 69%]
-........................................................................ [ 92%]
-.........................                                                [100%]
-312 passed, 1 skipped in 16.78s
+........................................................................ [ 22%]
+.............s.......................................................... [ 45%]
+........................................................................ [ 68%]
+........................................................................ [ 91%]
+...........................                                              [100%]
+314 passed, 1 skipped in 16.60s
 ```
 
 ## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+d84a24a 2026-08-14 docs: V10-AUDIT-FIXES report — F-19/F-20 residuals closed (314 tests)
+82195e8 2026-08-14 fix(v9-audit): F-19 residual fail-closed synastry cleanup (5xx + audit), F-20 residual discounted wallet pre-check
+b16db23 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (196 files, 59 test files, 312 passed, F-18..F-20 included)
 b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)
 ac7b86b 2026-08-14 fix(v8-audit): F-18 CAS refund (side-effects exactly once), F-19 synastry failure compensation, F-20 wallet fail-fast + immediate coupon release
 b1fc64f 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (195 files, 16 migrations, 309 passed, F-17 included)
@@ -25392,7 +25492,4 @@ aeef2e0 2026-08-14 feat(h0.3): unknown birth time — Moon sign confidence. Engi
 212275c 2026-08-14 fix(h0.2): account deletion full cascade — report_chunks (RAG embeddings, IntegrityError on delete) and withdrawal_requests (FK→users) were never deleted; explicit flush after chunk deletes (no relationship → unitofwork can't order); regression test seeds the full FK graph; 246 passed
 2e5992d 2026-08-14 feat(h0.1): real timezone resolution — tz_from_coords (timezonefinder) replaces hardcoded Asia/Tehran in chart/synastry/bots paths; /api/cities searches 1100 world cities (geonames seed + 162 Persian aliases); response carries tz_name; 6 new golden charts (London/NY DST summer+winter, Dubai); 13 E2E tests; 246 passed
 a381b61 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE — round-4 complete (166 files, 20 tables, 11 migrations, 43 test files, 223 passed; adds push.py, rag.py, sw.js, D1-D4 tests, ROUND4 reports)
-d6e6ef1 2026-08-14 docs: ROUND4-PHASE-D report (D1-D4 complete)
-6b11f56 2026-08-14 feat(d4): SSE streaming chat — LLMProvider.stream() real token streaming (OpenAI-compatible), router.stream_complete with fallback chain, /api/chat/stream text/event-stream (same guards as /api/chat, quota refunded if stream dies pre-token), chat UI consumes SSE with typing cursor (emoji->sprite icon-lock), authz matrix row; 3 tests; 223 passed
-f808242 2026-08-14 feat(d3): referral wallet — users.balance_rial + withdrawal_requests + orders.note, reward 5% credited to referrer on paid order (idempotent), pay_order_with_balance (full-amount only, no mixed), withdraw/resolve shared logic in orders.py, wallet section in account + balance payment button in plans + admin queue; 4 tests; 220 passed
 ```
