@@ -53,28 +53,31 @@ def _cookies(cid: str, tok: str) -> dict:
 def test_quota_exhausted_returns_429(chat_ctx):
     c, cid, tok = chat_ctx
     ck = _cookies(cid, tok)
+    c.cookies.update(ck)
     for _ in range(3):
         r = c.post("/api/chat", data={"chart_id": cid, "question": "سوال"},
-                   cookies=ck)
+                   )
         assert r.status_code == 200, r.text
     r = c.post("/api/chat", data={"chart_id": cid, "question": "سوال چهارم"},
-               cookies=ck)
+               )
     assert r.status_code == 429
 
 
 def test_concurrent_claims_exactly_limit_successes(chat_ctx):
     c, cid, tok = chat_ctx
     ck = _cookies(cid, tok)
+    c.cookies.update(ck)
     results = []
     barrier = threading.Barrier(10)
     lock = threading.Lock()
 
     def worker():
         tc = TestClient(main_mod.app)  # TestClient is not thread-safe
+        tc.cookies.update(ck)
         try:
             barrier.wait()
             r = tc.post("/api/chat", data={"chart_id": cid, "question": "س"},
-                        cookies=ck)
+                        )
             with lock:
                 results.append(r.status_code)
         except Exception as e:  # noqa: BLE001
@@ -119,10 +122,11 @@ def test_account_scope_shared_across_charts(chat_ctx):
         s.add(o1)
         s.commit()
     ck = {"chart_access": json.dumps({cid: tok, cid2: tok2})}
+    c.cookies.update(ck)
     for _ in range(3):  # 3 questions on chart 1
         assert c.post("/api/chat", data={"chart_id": cid, "question": "س"},
-                      cookies=ck).status_code == 200
+                      ).status_code == 200
     # chart 2 is already exhausted by the same account pool
     r = c.post("/api/chat", data={"chart_id": cid2, "question": "س"},
-               cookies=ck)
+               )
     assert r.status_code == 429

@@ -74,8 +74,9 @@ def test_prompt_overrides_versioning():
 
 
 def test_plans_include_new_keys():
+    from sqlmodel import select
     from app.db import Session, engine
     from app.models import Plan
     with Session(engine) as s:
-        keys = {p.key for p in s.query(Plan).all()}
+        keys = {p.key for p in s.exec(select(Plan)).all()}
     assert {"basic", "full", "gold", "synastry", "monthly"} <= keys

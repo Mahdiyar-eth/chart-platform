@@ -79,8 +79,8 @@ def test_synastry_full_owned_but_unpaid_403():
     c = TestClient(app)
     ca, tok = _create_chart(c)
     cb, _ = _create_chart(c)
-    r = c.post("/api/synastry/full", data={"chart_a": ca, "chart_b": cb},
-               cookies=_cap_cookie(ca, tok))
+    c.cookies.update(_cap_cookie(ca, tok))
+    r = c.post("/api/synastry/full", data={"chart_a": ca, "chart_b": cb})
     # owned pair, but no paid order → still 403 (purchase required)
     assert r.status_code == 403
 
@@ -106,7 +106,7 @@ def test_order_foreign_secondary_chart_403():
 def test_order_owned_chart_reaches_payment():
     c = TestClient(app)
     cid, tok = _create_chart(c)
-    r = c.post("/api/orders", data={"plan_key": "full", "chart_id": cid},
-               cookies=_cap_cookie(cid, tok))
+    c.cookies.update(_cap_cookie(cid, tok))
+    r = c.post("/api/orders", data={"plan_key": "full", "chart_id": cid})
     assert r.status_code == 200, r.text
     assert "payment_url" in r.json()

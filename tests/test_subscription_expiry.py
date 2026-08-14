@@ -81,8 +81,9 @@ def test_expired_subscription_blocks_chat(chat_mock):
         s.add(sub)
         s.commit()
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     r = c.post("/api/chat", data={"chart_id": cid, "question": "س"},
-               cookies=ck)
+               )
     assert r.status_code == 403
     assert "منقضی" in r.json()["detail"]
 
@@ -97,8 +98,9 @@ def test_active_subscription_allows_chat(chat_mock):
         activate_subscription(s, o)
         s.commit()
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     r = c.post("/api/chat", data={"chart_id": cid, "question": "س"},
-               cookies=ck)
+               )
     assert r.status_code == 200, r.text
 
 
@@ -114,7 +116,8 @@ def test_access_endpoint_reports_expired_reason(chat_mock):
         s.add(sub)
         s.commit()
     ck = {"chart_access": json.dumps({cid: tok})}
-    d = c.get(f"/api/chat/access/{cid}", cookies=ck).json()
+    c.cookies.update(ck)
+    d = c.get(f"/api/chat/access/{cid}").json()
     assert d["allowed"] is False
     assert d.get("reason") == "subscription_expired"
 

@@ -35,10 +35,11 @@ def _cookies(cid: str, tok: str) -> dict:
 def test_double_post_returns_same_report():
     c, cid, tok = _chart_with_paid_order()
     ck = _cookies(cid, tok)
-    r1 = c.post(f"/api/charts/{cid}/report", cookies=ck)
+    c.cookies.update(ck)
+    r1 = c.post(f"/api/charts/{cid}/report")
     assert r1.status_code == 200, r1.text
     d1 = r1.json()
-    r2 = c.post(f"/api/charts/{cid}/report", cookies=ck)
+    r2 = c.post(f"/api/charts/{cid}/report")
     d2 = r2.json()
     assert d2["report_id"] == d1["report_id"]
     assert d2.get("existing") is True
@@ -47,15 +48,17 @@ def test_double_post_returns_same_report():
 def test_explicit_regenerate_creates_new_report():
     c, cid, tok = _chart_with_paid_order()
     ck = _cookies(cid, tok)
-    d1 = c.post(f"/api/charts/{cid}/report", cookies=ck).json()
-    d2 = c.post(f"/api/charts/{cid}/report?regenerate=1", cookies=ck).json()
+    c.cookies.update(ck)
+    d1 = c.post(f"/api/charts/{cid}/report").json()
+    d2 = c.post(f"/api/charts/{cid}/report?regenerate=1").json()
     assert d2["report_id"] != d1["report_id"]
 
 
 def test_failed_report_requeued_not_duplicated():
     c, cid, tok = _chart_with_paid_order()
     ck = _cookies(cid, tok)
-    d1 = c.post(f"/api/charts/{cid}/report", cookies=ck).json()
+    c.cookies.update(ck)
+    d1 = c.post(f"/api/charts/{cid}/report").json()
     # simulate worker failure
     with Session(engine) as s:
         from app.models import Report
@@ -64,6 +67,6 @@ def test_failed_report_requeued_not_duplicated():
         rep.error = "worker crashed"
         s.add(rep)
         s.commit()
-    d2 = c.post(f"/api/charts/{cid}/report", cookies=ck).json()
+    d2 = c.post(f"/api/charts/{cid}/report").json()
     assert d2["report_id"] == d1["report_id"]  # re-queued, NOT a new row
     assert d2["status"] in ("queued", "failed")

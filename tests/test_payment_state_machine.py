@@ -82,10 +82,11 @@ def test_network_error_keeps_order_pending_not_failed(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
     with Session(engine) as s:
         o = _paid_order(s, cid)
         oid, auth = o.id, o.authority
-    r = c.get(f"/api/payments/verify?Authority={auth}&Status=OK", cookies=ck, follow_redirects=False)
+    r = c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)
     assert r.status_code == 303
     with Session(engine) as s:
         o = s.get(Order, oid)
@@ -101,13 +102,14 @@ def test_refresh_after_network_error_completes_payment(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
     with Session(engine) as s:
         o = _paid_order(s, cid)
         oid, auth = o.id, o.authority
-    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", cookies=ck, follow_redirects=False)  # network error
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)  # network error
     monkeypatch.setattr("app.main.ZarinpalClient", OkZP)
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", OkZP)
-    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", cookies=ck, follow_redirects=False)  # refresh → paid
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)  # refresh → paid
     with Session(engine) as s:
         o = s.get(Order, oid)
         assert o.status == "paid"
@@ -122,10 +124,11 @@ def test_gateway_rejection_marks_failed_and_releases_coupon(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
     with Session(engine) as s:
         o = _paid_order(s, cid, with_coupon=True)
         oid, auth, cpid = o.id, o.authority, o.coupon_id
-    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", cookies=ck, follow_redirects=False)
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)
     with Session(engine) as s:
         o = s.get(Order, oid)
         assert o.status == "failed"

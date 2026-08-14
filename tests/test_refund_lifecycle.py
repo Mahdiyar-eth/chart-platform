@@ -74,6 +74,7 @@ def test_refund_success_closes_subscription_and_releases_coupon(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
     c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
     cid, tok = _mk_chart(c)
     chat = f"tg-refund-{_uuid.uuid4().hex[:6]}"
     with Session(engine) as s:
@@ -92,7 +93,7 @@ def test_refund_success_closes_subscription_and_releases_coupon(monkeypatch):
         sub = s.exec(select(Subscription).where(Subscription.order_id == oid)).one()
         assert sub.active
 
-    r = c.post(f"/api/admin/orders/{oid}/refund", cookies=_admin_cookies())
+    r = c.post(f"/api/admin/orders/{oid}/refund")
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "refunded"
     assert fake.refund_calls == 1
@@ -114,13 +115,14 @@ def test_refund_gateway_error_marks_failed_and_allows_retry(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
     c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
     cid, tok = _mk_chart(c)
     with Session(engine) as s:
         o = _order(s, cid, f"tg-rf-{_uuid.uuid4().hex[:6]}")
         s.commit()
         oid = o.id
 
-    r = c.post(f"/api/admin/orders/{oid}/refund", cookies=_admin_cookies())
+    r = c.post(f"/api/admin/orders/{oid}/refund")
     assert r.status_code == 502
     assert fake.refund_calls == 1
     with Session(engine) as s:
@@ -130,7 +132,7 @@ def test_refund_gateway_error_marks_failed_and_allows_retry(monkeypatch):
 
     # retry allowed once the gateway is back
     fake.refund_ok = True
-    r2 = c.post(f"/api/admin/orders/{oid}/refund", cookies=_admin_cookies())
+    r2 = c.post(f"/api/admin/orders/{oid}/refund")
     assert r2.status_code == 200, r2.text
     assert fake.refund_calls == 2
     with Session(engine) as s:
@@ -142,20 +144,21 @@ def test_refund_rejects_pending_and_already_refunded(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
     monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
     c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
     cid, tok = _mk_chart(c)
     with Session(engine) as s:
         o = _order(s, cid, f"tg-rr-{_uuid.uuid4().hex[:6]}")
         o.status = "pending"
         s.commit()
         oid = o.id
-    r = c.post(f"/api/admin/orders/{oid}/refund", cookies=_admin_cookies())
+    r = c.post(f"/api/admin/orders/{oid}/refund")
     assert r.status_code == 400
 
     with Session(engine) as s:
         o = s.get(Order, oid)
         o.status = "refunded"
         s.commit()
-    r2 = c.post(f"/api/admin/orders/{oid}/refund", cookies=_admin_cookies())
+    r2 = c.post(f"/api/admin/orders/{oid}/refund")
     assert r2.status_code == 400
     assert fake.refund_calls == 0  # never hit the gateway
 

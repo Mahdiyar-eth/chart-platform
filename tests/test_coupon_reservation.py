@@ -65,14 +65,16 @@ def test_last_slot_reserved_at_creation(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
-                cookies=ck)
+                )
     assert r1.status_code == 200, r1.text
     # second user with the same coupon — slot already reserved → 400
     cid2, tok2 = _mk_chart(c)
     ck2 = {"chart_access": json.dumps({cid2: tok2})}
+    c.cookies.update(ck2)
     r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "gold", "coupon": code},
-                cookies=ck2)
+                )
     assert r2.status_code == 400
     assert "مصرف شده" in r2.json()["detail"]
 
@@ -87,8 +89,9 @@ def test_verify_failure_releases_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
-               cookies=ck)
+               )
     oid = r.json()["order_id"]
     with Session(engine) as s:
         cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
@@ -118,8 +121,9 @@ def test_gateway_down_at_creation_releases_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
-               cookies=ck)
+               )
     assert r.status_code == 502
     with Session(engine) as s:
         cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
@@ -136,8 +140,9 @@ def test_refund_returns_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
     oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
-                 cookies=ck).json()["order_id"]
+                 ).json()["order_id"]
     with Session(engine) as s:
         auth = s.get(Order, oid).authority
     c.get(f"/api/payments/verify?Authority={auth}&Status=OK")
@@ -147,7 +152,8 @@ def test_refund_returns_slot(monkeypatch):
     # admin refund (audit r4 B6: real Zarinpal refund call — FakeZP.refund mocked)
     from app.main import _admin_cookie_value
     admin_ck = {"chart_admin": _admin_cookie_value()}
-    r = c.post(f"/api/admin/orders/{oid}/refund", cookies=admin_ck)
+    c.cookies.update(admin_ck)
+    r = c.post(f"/api/admin/orders/{oid}/refund")
     assert r.status_code == 200, r.text
     with Session(engine) as s:
         cp = s.exec(select(Coupon).where(Coupon.code == code)).first()

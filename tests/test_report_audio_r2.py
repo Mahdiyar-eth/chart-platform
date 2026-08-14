@@ -46,9 +46,10 @@ def test_audio_served_via_presigned_url(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
     with Session(engine) as s:
         rid = _done_report(s, cid)
-    r = c.get(f"/api/reports/{rid}/audio", cookies=ck, follow_redirects=False)
+    r = c.get(f"/api/reports/{rid}/audio", follow_redirects=False)
     assert r.status_code == 302
     assert r.headers["location"].startswith("https://r2.example/chart-audio/")
     assert "sig=1" in r.headers["location"]
@@ -66,9 +67,10 @@ def test_audio_cache_hit_skips_generation(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
     with Session(engine) as s:
         rid = _done_report(s, cid)
-    r = c.get(f"/api/reports/{rid}/audio", cookies=ck, follow_redirects=False)
+    r = c.get(f"/api/reports/{rid}/audio", follow_redirects=False)
     assert r.status_code == 302
     assert calls["n"] == 0, "cache hit must not regenerate/upload"
 
