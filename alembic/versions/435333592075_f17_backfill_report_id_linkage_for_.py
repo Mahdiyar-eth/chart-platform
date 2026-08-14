@@ -41,7 +41,10 @@ def upgrade() -> None:
         "  AND NOT EXISTS (SELECT 1 FROM orders o2 "
         "                  WHERE o2.chart_id = o.chart_id AND o2.status = 'paid' "
         "                    AND o2.id <> o.id) "
-        "  AND NOT EXISTS (SELECT 1 FROM orders o3 WHERE o3.report_id = r.id)"
+        "  AND NOT EXISTS (SELECT 1 FROM orders o3 WHERE o3.report_id = r.id) "
+        "  AND (SELECT count(*) FROM reports r2 "
+        "       WHERE r2.chart_id = o.chart_id "
+        "         AND NOT EXISTS (SELECT 1 FROM orders o4 WHERE o4.report_id = r2.id)) = 1"
     ))
 
 
