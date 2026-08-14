@@ -34,6 +34,7 @@ def test_retry_includes_qa_feedback(monkeypatch):
     async def _run():
         class R(_FakeRouter):
             async def complete(self, prompt, **kw):
+                calls.append(prompt)
                 attempt["n"] += 1
                 if attempt["n"] < 3:
                     return _FakeRes()
@@ -53,4 +54,28 @@ def test_retry_includes_qa_feedback(monkeypatch):
     assert metrics["qa_failures"] >= 2  # every domain retried at least once
     assert metrics["calls"] >= 3
     # F-27c: at least the retry prompt after a rejection carries the reasons
+    assert any("رد شد" in p for p in calls[:5])
+
+
+def test_debug_calls(monkeypatch):
+    calls = []
+
+    class _FakeRes:
+        ok = True
+        text = '{"insights": [{"insight": "کوتاه"}]}'
+        usage = type("U", (), {"total": 0, "prompt_tokens": 0, "completion_tokens": 0})()
+        cost = 0.0
+        provider = "f"
+        model = "f"
+        error = None
+
+    class R:
+        async def complete(self, prompt, **kw):
+            calls.append(prompt)
+            return _FakeRes()
+
+    import asyncio
+    sec, m = asyncio.run(w.generate_sections_async(
+        R(), {}, max_tokens=4096, report_id="r", plan_key="full", user_id="u"))
+    assert len(calls) == m["calls"] == m["qa_failures"] >= 13 * 3
     assert any("رد شد" in p for p in calls[:5])
