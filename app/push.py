@@ -18,6 +18,28 @@ VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:admin@zayche.io")
 VAPID_CLAIMS = {"sub": VAPID_SUBJECT}
 
 
+def _vapid_raw_keys(pem: str) -> tuple[str, str]:
+    """Convert a PEM keypair to the RAW base64url forms both consumers need:
+    browser pushManager.subscribe wants the 65-byte uncompressed public point;
+    pywebpush's Vapid.from_string wants the 32-byte raw private scalar."""
+    import base64
+    from cryptography.hazmat.primitives import serialization
+    key = serialization.load_pem_private_key(pem.encode(), password=None)
+    raw_priv = key.private_numbers().private_value.to_bytes(32, "big")
+    pub = key.public_key()
+    x, y = pub.public_numbers().x, pub.public_numbers().y
+    raw_pub = b"\x04" + x.to_bytes(32, "big") + y.to_bytes(32, "big")
+    b64 = lambda b: base64.urlsafe_b64encode(b).rstrip(b"=").decode()  # noqa: E731
+    return b64(raw_pub), b64(raw_priv)
+
+
+if VAPID_PRIVATE_KEY and not VAPID_PRIVATE_KEY.lstrip().startswith("-----"):
+    # .env already holds raw keys — nothing to convert
+    pass
+elif VAPID_PRIVATE_KEY:
+    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY = _vapid_raw_keys(VAPID_PRIVATE_KEY)
+
+
 def vapid_configured() -> bool:
     return bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY)
 
