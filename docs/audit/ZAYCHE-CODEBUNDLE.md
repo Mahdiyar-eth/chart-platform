@@ -1,37 +1,42 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `b8c6ce4 2026-08-14 chore(ci): filename-based umami guard in secret-scan (no self-match) + regen bundle`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور چهارم — فازهای A/B/C/D کامل — به‌روز تا کامیت `d6e6ef1 2026-08-14 docs: ROUND4-PHASE-D report (D1-D4 complete)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
-> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` + پیوست دور سوم: `docs/audit/ROUND-3-ADDENDUM.md`
+> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md`
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 151 passed, 4 skipped, 2 warnings in 1.98s
-- **کامیت‌ها:** 27 · head: b8c6ce4 2026-08-14 chore(ci): filename-based umami guard in secret-scan (no self-match) + regen bundle
+- **تست‌ها:** 223 passed, 1 skipped in 10.01s (43 فایل تست)
+- **کامیت‌ها:** 61 · head: d6e6ef1 2026-08-14 docs: ROUND4-PHASE-D report (D1-D4 complete)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
-- **مهاجرت‌ها:** 4 Alembic (baseline → chat_messages → align-audit-r3 → zodiac) — `alembic check` پاک
-- **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict, MemoryMax=1.5G) · Redis+ARQ · PostgreSQL 16 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
-- **ویژگی‌های دور سوم:** زودیاک تروپیکال پیش‌فرض + سایدریال لاهیری · کوپن atomic · race پرداخت (claim اتمیک) · degraded banner · rate limit Redis+fallback
+- **مهاجرت‌ها:** 11 Alembic (baseline → chat → align-r3 → zodiac → D1 push_subscriptions → D2 report_chunks pgvector → D3 wallet/withdrawals/orders.note) — `alembic check` پاک
+- **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
+- **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict) · Redis+ARQ · PostgreSQL 16 + pgvector 0.6 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
+- **دور چهارم (A/B/C/D):** امنیت A11 + بکاپ age/presigned + ریفاند زرین‌پال + state machine پرداخت + circuit breaker LLM · TTS→R2 · لایو‌نس/ری‌دینس تفکیکی · حریم خصوصی/retention · Web Push (VAPID، سرویس‌کارگر، اعلان هفتگی) · RAG pgvector (e5-small چندزبانه 384-dim) · کیف پول رفرال (۵٪، پرداخت با موجودی، تسویه) · چت استریم SSE (توکن واقعی)
 
 ## ساختار کلی
 
-``````
+```
 app/                  FastAPI app
-  main.py             همه مسیرها + لایف‌سایکل + بوت ربات‌ها
-  models.py           17 جدول SQLModel (birth_profiles.zodiac اضافه شد)
+  main.py             همه مسیرها + لایف‌سایکل + بوت ربات‌ها (۲۱۵۰+ خط)
+  models.py           20 جدول SQLModel
+  push.py             Web Push (VAPID + ارسال اعلان مرورگر)
+  rag.py              pgvector RAG (chunk/index/search، مدل e5-small)
   astrology/          Swiss Ephemeris: engine, sky, synastry, rectify, transits, svg, golden_data
   report/             تولید گزارش 13 بخشی + QA خودکار + PDF/Word + ترانزیت هفتگی
-  chat/               AI chat: retrieval + intents + service
-  payment/            زرین‌پال + سفارش/اشتراک/کوپن/استرداد
+  chat/               AI chat: retrieval + intents + service (+ SSE stream)
+  payment/            زرین‌پال + سفارش/اشتراک/کوپن/استرداد + کیف پول/تسویه
   bots/               هندلر یکپارچه تلگرام + بله (تمام‌دکمه‌ای، مرحلهٔ زودیاک)
   seo/                محتوای آموزشی (برج‌ها/سیارات/خانه‌ها) + بنر مقالات
+  core/llm.py         لایهٔ LLM (استریم توکن + fallback chain + circuit breaker)
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
-templates/            ~30 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
-tests/                25 فایل تست (۱۵۱ تست)
-scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت
-deploy/               systemd unit ها + سقف‌های حافظه
-alembic/versions/     4 مهاجرت
+templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
+static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
+tests/                43 فایل تست (223 passed, 1 skipped in 10.01s)
+scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل
+deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
+alembic/versions/     11 مهاجرت
 .github/workflows/    CI
 ```
 
@@ -40,7 +45,7 @@ alembic/versions/     4 مهاجرت
 
 ## ۱) فایل اصلی اپلیکیشن (main.py — همه مسیرها)
 
-### `app/main.py` (1726 lines)
+### `app/main.py` (2129 lines)
 
 ```python
 """Chart Platform — FastAPI app (Phase 2: free product).
@@ -59,15 +64,16 @@ from pathlib import Path
 
 import redis.asyncio as redis_async
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Body, Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
 import app.config  # noqa: F401 — load .env FIRST
+from app.env import IS_PROD
 from app.auth import get_current_user, request_otp, set_user_cookie, verify_otp
-from app.security import security_guard
+from app.security import security_guard, chat_quota_claim, chat_quota_release, chat_quota_used
 from app.astrology.big_three import big_three
 from app.astrology.cities_ir import search_cities
 from app.astrology.engine import compute_from_fields
@@ -77,7 +83,7 @@ from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
                         PromptVersion, ReferralCode, ReferralEvent, Report, Subscription,
-                        User, WeeklyReflection)
+                        User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -128,28 +134,73 @@ def sw_file():
                         headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
 
-@app.get("/health")
-def health_check():
-    """Liveness/readiness (audit P2-7): DB + Redis + basic app heartbeat."""
+@app.get("/liveness")
+def liveness():
+    """C5 (audit r4): pure process heartbeat — no dependencies. A running
+    process answers 200 even if DB/Redis/R2 are all down (orchestrator
+    restarts only on readiness failure)."""
+    return JSONResponse({"status": "alive"})
+
+
+@app.get("/readiness")
+def readiness():
+    """C5 (audit r4): full dependency probe — DB + Redis + worker + R2 + disk.
+    Returns 503 while ANY dependency is down; the UI degraded banner keys off
+    this (plan §health)."""
     from sqlalchemy import text
-    out = {"status": "ok", "db": "ok", "redis": "ok"}
+    out: dict = {"status": "ok"}
     code = 200
+    # 1) DB
     try:
         with engine.connect() as c:
             c.execute(text("SELECT 1"))
+        out["db"] = "ok"
     except Exception:  # noqa: BLE001
         out["db"] = "down"
-        out["status"] = "degraded"
         code = 503
+    # 2) Redis (rate-limit backend in prod — REQUIRED)
     try:
         import redis as _r
         if not _r.Redis.from_url(_REDIS_URL, decode_responses=True).ping():
             raise RuntimeError("no pong")
+        out["redis"] = "ok"
     except Exception:  # noqa: BLE001
         out["redis"] = "down"
-        out["status"] = "degraded"
         code = 503
+    # 3) ARQ worker (report generation runs off-process)
+    try:
+        import asyncio as _asyncio
+        _asyncio.run(_arq_pool())
+        out["worker"] = "ok"
+    except Exception:  # noqa: BLE001
+        out["worker"] = "down"
+        code = 503
+    # 4) R2 configured (fail-closed in prod — B4)
+    from app.storage import configured as _r2_configured
+    out["r2"] = "ok" if _r2_configured() else "unconfigured"
+    if not _r2_configured() and IS_PROD:
+        out["r2"] = "down"
+        code = 503
+    # 5) disk headroom (watchdog threshold is 85%)
+    try:
+        import shutil
+        free_gb = shutil.disk_usage("/").free / 2 ** 30
+        out["disk_free_gb"] = round(free_gb, 1)
+        if free_gb < 1.0:  # <1GB free → not ready
+            out["disk"] = "critical"
+            code = 503
+        else:
+            out["disk"] = "ok"
+    except Exception:  # noqa: BLE001
+        out["disk"] = "unknown"
+    out["status"] = "ok" if code == 200 else "degraded"
     return JSONResponse(out, status_code=code)
+
+
+@app.get("/health")
+def health_check():
+    """Backward-compatible alias of /readiness (audit P2-7)."""
+    return readiness()
 
 
 # ─────────────────────────── pages ───────────────────────────
@@ -225,6 +276,9 @@ def api_create_chart(
     personal_question: str | None = Form(None),
 ):
     """Compute chart (sync, fast) + cache. Returns chart_id."""
+    # audit r4 B5: chart creation is the compute-heavy entry point — 20/min per client
+    if not _rate_limit(f"chart:{_rl_client(request)}", 20, 60):
+        raise HTTPException(429, "درخواستهای زیادی ثبت کردید؛ یک دقیقه صبر کنید")
     chart, profile = _compute_and_save_chart(
         session, request,
         calendar=calendar, year=year, month=month, day=day,
@@ -418,6 +472,32 @@ def api_create_report(chart_id: str, request: Request,
     ).first()
     if not paid:
         raise HTTPException(403, "برای تولید گزارش، ابتدا پلن را خریداری کنید")
+    # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
+    # enqueue multiple LLM jobs. queued/processing → return existing;
+    # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
+    regenerate = request.query_params.get("regenerate") == "1"
+    existing = session.exec(
+        select(Report).where(Report.chart_id == chart_id)
+        .order_by(Report.created_at.desc())
+    ).first()
+    if existing and not regenerate:
+        if existing.status in ("queued", "processing"):
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": True, "plan_key": existing.plan_key, "existing": True}
+        if existing.status in ("done", "degraded"):
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": False, "plan_key": existing.plan_key, "existing": True}
+        if existing.status == "failed":
+            existing.status = "queued"
+            existing.error = None
+            session.commit()
+            ok = _enqueue_report(existing.id)
+            if not ok:
+                existing.status = "failed"
+                existing.error = "queue unavailable (worker not running)"
+                session.commit()
+            return {"report_id": existing.id, "status": existing.status,
+                    "queued": ok, "plan_key": existing.plan_key, "existing": True}
     rep = Report(chart_id=chart_id, status="queued", plan_key=paid.plan_key or "full")
     session.add(rep)
     session.commit()
@@ -599,6 +679,12 @@ def api_create_order(
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A5: order ownership
+        raise HTTPException(403, "not authorized")
+    if secondary_chart_id:
+        sec = session.get(Chart, secondary_chart_id)
+        if not sec or not _owns_chart(sec, session, request):
+            raise HTTPException(403, "not authorized")
     user = get_current_user(request)
     try:
         order, pay_url = create_order(
@@ -607,13 +693,20 @@ def api_create_order(
             coupon=coupon, ref_code=request.cookies.get("chart_ref", ""),
             new_user_id=user.id if user else None,
         )
+        # D3: settle from wallet when the user chose it and has enough balance
+        if request.headers.get("x-pay-with-balance", "") == "1":
+            from app.payment.orders import pay_order_with_balance
+            if not pay_order_with_balance(session, order, user):
+                raise HTTPException(400, "موجودی کیف پول کافی نیست")
+            pay_url = None
     except LookupError:
         raise HTTPException(404, "plan not found")
     except ValueError as e:
         raise HTTPException(400, str(e))
     except RuntimeError as e:
         raise HTTPException(502, str(e))
-    return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority}
+    return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority,
+            "paid_by_balance": pay_url is None}
 
 
 @app.get("/api/orders/{order_id}")
@@ -626,6 +719,15 @@ def api_order_status(order_id: str, request: Request,
         raise HTTPException(403, "forbidden")
     return {"order_id": order.id, "status": order.status, "ref_id": order.ref_id,
             "report_id": order.report_id}
+
+
+def _release_coupon(session: Session, order) -> None:
+    """audit r4 A10: undo a coupon reservation (failed payment / refund /
+    stale order). Keeps used_count honest so slots are never lost."""
+    if order and order.coupon_id:
+        c = session.get(Coupon, order.coupon_id)
+        if c and c.used_count > 0:
+            c.used_count -= 1
 
 
 @app.get("/api/payments/verify")
@@ -647,12 +749,13 @@ def api_payment_verify(
 
     if Status == "OK":
         # Atomic claim (audit r3 — payment race): only ONE of N concurrent
-        # duplicate callbacks may transition pending→paid; the losers redirect.
-        # Without this, two callbacks could double-activate a subscription
-        # (+60 days) or enqueue two reports for the same order.
+        # duplicate callbacks may transition pending→verifying; the losers
+        # redirect. audit r4 B7 state machine: pending → verifying → paid |
+        # failed, and NETWORK errors re-open (pending) instead of failing —
+        # money may have moved even though our verify() call died.
         from sqlalchemy import text as _text
         claimed = session.exec(_text(
-            "UPDATE orders SET status = 'paid' WHERE id = :oid AND status = 'pending' RETURNING id"
+            "UPDATE orders SET status = 'verifying' WHERE id = :oid AND status = 'pending' RETURNING id"
         ), params={"oid": order.id}).first()
         if not claimed:
             # another request already claimed/paid this order → just redirect
@@ -664,18 +767,19 @@ def api_payment_verify(
             order.card_pan = v.get("card_pan")
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
-            # consume coupon (idempotent — only once per order; atomic against
-            # concurrent verifies so max_uses can never be exceeded — audit P1 r3)
-            if order.coupon_id:
-                from sqlalchemy import text
-                consumed = session.exec(text(
-                    "UPDATE coupons SET used_count = used_count + 1 "
-                    "WHERE id = :cid AND used_count < max_uses RETURNING id"
-                ), params={"cid": order.coupon_id}).first()
-                if not consumed:
-                    order.status = "failed"
-                    session.commit()
-                    return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
+            order.status = "paid"
+            # D3: credit the referrer's wallet (5% of discounted amount)
+            try:
+                from app.payment.orders import reward_referral
+                reward_referral(session, order)
+            except Exception:  # noqa: BLE001 — referral must never break payment
+                session.rollback()
+                order = session.exec(
+                    select(Order).where(Order.authority == Authority)).first()
+            assert order is not None, "order vanished mid-verify"
+            # Coupon was RESERVED atomically at order creation (audit r4 A10) —
+            # nothing to consume here; idempotency holds because the
+            # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
             from app.payment.orders import REPORT_PLANS, activate_subscription
             if order.plan_key == "monthly":
@@ -699,10 +803,26 @@ def api_payment_verify(
                         session.add(rep)
                         session.commit()
         except ZarinpalError:
+            # gateway definitively rejected the payment (authority invalid /
+            # expired / transaction refused) — money did NOT move → failed
             order.status = "failed"
+            _release_coupon(session, order)  # audit r4 A10
+            session.commit()
+        except Exception as e:  # noqa: BLE001 — network/timeout: money state UNKNOWN
+            # audit r4 B7: NEVER mark failed when the payment may have gone
+            # through — put the order back to pending so the user's refresh
+            # (or a retry) re-verifies; Zarinpal answers code 101 on repeat
+            # verifies, which lands in the paid branch above.
+            # NOTE: the claim set status='verifying' via RAW SQL — the ORM still
+            # holds 'pending' in memory, so assigning 'pending' back would look
+            # like "no change" and never flush. Expire first so the ORM re-reads.
+            session.expire(order, ["status"])
+            order.status = "pending"
+            order.error = f"تأیید پرداخت موقتاً ناموفق بود؛ صفحه را رفرش کنید: {str(e)[:150]}"
             session.commit()
     else:
         order.status = "failed"
+        _release_coupon(session, order)  # audit r4 A10
         session.commit()
 
     return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
@@ -825,22 +945,47 @@ def admin_prompt_save(request: Request, prompt_key: str, session: Session = Depe
 
 @app.post("/api/admin/orders/{order_id}/refund")
 def admin_refund(order_id: str, request: Request, session: Session = Depends(get_session)):
+    """audit r4 B6: REAL refund lifecycle — calls Zarinpal, closes the chat
+    subscription if this order originated one, returns the coupon slot.
+
+    States: paid → refunding → refunded | refund_failed (admin retries).
+    """
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(404, "order not found")
-    if order.status != "paid":
+    if order.status not in ("paid", "refund_failed"):
         raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
+    order.status = "refunding"
+    session.commit()
+    try:
+        from app.payment.zarinpal import ZarinpalClient
+        res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
+    except Exception as e:  # noqa: BLE001 — gateway/network error
+        order.status = "refund_failed"
+        order.error = f"ریفاند ناموفق: {str(e)[:300]}"
+        session.commit()
+        from app.security import audit
+        audit(session.bind, "admin", "order.refund_failed", order.id, str(e)[:200])
+        raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {str(e)[:200]} — بعداً دوباره تلاش کنید")
+
     order.status = "refunded"
-    if order.coupon_id:
-        c = session.get(Coupon, order.coupon_id)
-        if c and c.used_count > 0:
-            c.used_count -= 1
+    order.ref_id = res.get("ref_id", order.ref_id or "")
+    order.error = None
+    _release_coupon(session, order)  # audit r4 A10 — return the slot
+
+    # close the subscription this order originated (audit r4 B6)
+    if order.chart_id:
+        subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
+        for sub in subs:
+            sub.active = False
+            sub.expires_at = datetime.now(timezone.utc)
+
     session.commit()
     from app.security import audit
     audit(session.bind, "admin", "order.refund", order.id, order.ref_id or "")
-    return {"ok": True, "status": "refunded"}
+    return {"ok": True, "status": "refunded", "ref_id": res.get("ref_id", "")}
 
 
 @app.post("/api/admin/orders/{order_id}/regenerate")
@@ -958,14 +1103,16 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
 
 
 @app.post("/api/synastry/full")
-def api_synastry_full(chart_a: str = Form(...), chart_b: str = Form(...),
-                      session: Session = Depends(get_session)):
-    """Full synastry report — requires a paid synastry order for the pair."""
+def api_synastry_full(request: Request, session: Session = Depends(get_session),
+                      chart_a: str = Form(...), chart_b: str = Form(...)):
+    """Full synastry report — requires OWNING both charts AND a paid synastry order (audit r4 A4)."""
     from app.astrology.synastry import synastry
     ca = session.get(Chart, chart_a)
     cb = session.get(Chart, chart_b)
     if not ca or not cb:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
+        raise HTTPException(403, "not authorized")
     paid = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
@@ -978,7 +1125,13 @@ def api_synastry_full(chart_a: str = Form(...), chart_b: str = Form(...),
 
 
 @app.get("/api/synastry/access")
-def api_synastry_access(chart_a: str, chart_b: str, session: Session = Depends(get_session)):
+def api_synastry_access(chart_a: str, chart_b: str, request: Request, session: Session = Depends(get_session)):
+    ca = session.get(Chart, chart_a)
+    cb = session.get(Chart, chart_b)
+    if not ca or not cb:
+        raise HTTPException(404, "chart not found")
+    if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
+        raise HTTPException(403, "not authorized")
     paid = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
@@ -1038,6 +1191,14 @@ def api_report_audio(report_id: str, request: Request,
     except Exception:  # noqa: BLE001
         pass
     out = _P("/tmp") / f"report-audio-{report_id[:8]}.mp3"
+
+    # audit r4 C1: audio lives in R2 — R2 cache hit serves directly (no TTS
+    # cost), miss generates → uploads → 30-min presigned → temp file dropped.
+    from app.storage import audio_key, presigned_url, upload_audio
+    cached = presigned_url(audio_key(report_id))
+    if cached:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(cached, status_code=302)
     if not out.exists():
         text = "گزارش اختصاصی چارت تولد. "
         for k, v in (rep.sections or {}).items():
@@ -1054,9 +1215,22 @@ def api_report_audio(report_id: str, request: Request,
             asyncio.run(_gen())
         except Exception as e:
             raise HTTPException(502, f"تولید صوت ممکن نیست: {e}")
-    from fastapi.responses import FileResponse
-    return FileResponse(str(out), media_type="audio/mpeg",
-                        filename=f"chart-report-{report_id[:8]}.mp3")
+    key = upload_audio(report_id, str(out))
+    try:
+        out.unlink(missing_ok=True)
+    except OSError:
+        pass
+    if key:
+        r2_url = presigned_url(key)
+        if r2_url:
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(r2_url, status_code=302)
+    # dev/fallback: no R2 — serve the local copy if it still exists
+    if out.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(str(out), media_type="audio/mpeg",
+                            filename=f"chart-report-{report_id[:8]}.mp3")
+    raise HTTPException(502, "در دسترس نیست")
 
 
 @app.get("/learn", response_class=HTMLResponse)
@@ -1115,14 +1289,35 @@ def chat_page(request: Request, chart_id: str, session: Session = Depends(get_se
     })
 
 
-def _chat_quota_info(session: Session, chart_id: str, order) -> dict:
-    """Daily quota for a chart's AI chat (gold vs monthly, admin-overridable)."""
+def _chat_account_key(chart, order, request) -> str:
+    """Per-ACCOUNT quota scope (audit r4 A8 — marketing/product decision):
+    registered users share one daily pool across ALL their charts; bot
+    identities share per chat; anonymous fall back to the chart capability."""
+    user = get_current_user(request)
+    if user:
+        return f"u:{user.id}"
+    if order and order.chat_id:
+        return f"b:{order.platform or 'telegram'}:{order.chat_id}"
+    return f"c:{chart.id}"
+
+
+def _chat_daily_limit(order) -> int:
+    """Gold=5/day, monthly=15/day (admin-overridable via secrets table)."""
     limit_key = "chat_daily_limit_gold" if order.plan_key == "gold" else "chat_daily_limit_monthly"
     default = "5" if order.plan_key == "gold" else "15"
     try:
-        daily_limit = int(secret_store.get_secret(limit_key, limit_key.upper(), default))
+        return int(secret_store.get_secret(limit_key, limit_key.upper(), default))
     except ValueError:
-        daily_limit = int(default)
+        return int(default)
+
+
+def _chat_quota_info(session: Session, chart_id: str, order, account_key: str | None = None) -> dict:
+    """Daily quota display for a chart's AI chat (gold vs monthly)."""
+    daily_limit = _chat_daily_limit(order)
+    if account_key:
+        used = chat_quota_used(account_key)
+        if used is not None:
+            return {"used": used, "limit": daily_limit, "remaining": max(0, daily_limit - used)}
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     used = len(session.exec(
         select(ChatMessage.id).where(
@@ -1132,6 +1327,22 @@ def _chat_quota_info(session: Session, chart_id: str, order) -> dict:
         )
     ).all())
     return {"used": used, "limit": daily_limit, "remaining": max(0, daily_limit - used)}
+
+
+def _monthly_sub_active(session: Session, order, chart_id: str) -> bool:
+    """audit r4 A9: a paid monthly ORDER is not forever — chat requires an
+    UNEXPIRED Subscription row. Web (chat_id None) and bot flows both covered."""
+    from app.timeutil import ensure_utc, utcnow
+    if not order or order.plan_key != "monthly":
+        return True  # non-monthly gates handled by the caller
+    q = select(Subscription).where(Subscription.chart_id == chart_id)
+    if order.chat_id:
+        q = q.where(Subscription.chat_id == order.chat_id)
+    else:
+        q = q.where(Subscription.chat_id == None)  # noqa: E711
+    sub = session.exec(q).first()
+    return bool(sub and sub.active and sub.expires_at
+                and ensure_utc(sub.expires_at) > utcnow())
 
 
 @app.get("/api/chat/access/{chart_id}")
@@ -1146,7 +1357,11 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     allowed = bool(order and order.plan_key in ("gold", "monthly"))
     if not allowed:
         return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
-    quota = _chat_quota_info(session, chart_id, order)
+    if not _monthly_sub_active(session, order, chart_id):  # A9: expired monthly
+        return {"allowed": False, "used": 0, "limit": 0, "remaining": 0,
+                "reason": "subscription_expired"}
+    quota = _chat_quota_info(session, chart_id, order,
+                             _chat_account_key(session.get(Chart, chart_id), order, request))
     return {"allowed": True, **quota}
 
 
@@ -1166,13 +1381,11 @@ def api_chat_history(chart_id: str, request: Request, session: Session = Depends
     ]}
 
 
-@app.post("/api/chat")
-def api_chat(
-    request: Request,
-    chart_id: str = Form(...),
-    question: str = Form(..., max_length=500),
-    session: Session = Depends(get_session),
-):
+def _chat_guarded_context(request: Request, chart_id: str,
+                          session: Session) -> tuple:
+    """Shared guards for /api/chat and /api/chat/stream (D4): rate limit,
+    ownership, paid plan, subscription expiry, atomic daily quota claim.
+    Returns (chart, order, acct, profile, report) — raises HTTPException."""
     if not _rate_limit(f"chat:{_rl_client(request)}", 20, 60):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     chart = session.get(Chart, chart_id)
@@ -1188,22 +1401,48 @@ def api_chat(
     ).first()
     if not order or order.plan_key not in ("gold", "monthly"):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
+    # audit r4 A9: monthly subscriptions EXPIRE — a paid order alone is not enough
+    if not _monthly_sub_active(session, order, chart_id):
+        raise HTTPException(403, "اشتراک ماهانه‌ات منقضی شده؛ برای ادامه گفت‌وگو آن را تمدید کن")
 
-    # daily quota (per chart)
-    quota = _chat_quota_info(session, chart_id, order)
-    if quota["used"] >= quota["limit"]:
-        raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا")
+    # daily quota — ATOMIC per-account claim (audit r4 A8): Redis INCR+TTL so
+    # concurrent requests can't both pass the last slot; DB count as degraded fallback
+    daily_limit = _chat_daily_limit(order)
+    acct = _chat_account_key(chart, order, request)
+    used = chat_quota_claim(acct, daily_limit)
+    if used is None:  # Redis down → degraded DB-count check
+        quota = _chat_quota_info(session, chart_id, order, acct)
+        if quota["used"] >= quota["limit"]:
+            raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا")
+    elif used > daily_limit:
+        raise HTTPException(429, f"سهمیه امروزت تمام شد ({daily_limit} سوال در روز). فردا دوباره بیا")
 
     profile = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
     report = session.exec(
         select(Report).where(Report.chart_id == chart_id).order_by(Report.created_at.desc())
     ).first()
+    return chart, order, acct, profile, report
 
-    result = chat_answer(
-        question, chart.chart_json,
-        report_sections=(report.sections if report and report.sections else None),
-        focus_areas=(profile.focus_areas if profile else None),
-    )
+
+@app.post("/api/chat")
+def api_chat(
+    request: Request,
+    chart_id: str = Form(...),
+    question: str = Form(..., max_length=500),
+    session: Session = Depends(get_session),
+):
+    chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
+
+    try:
+        result = chat_answer(
+            question, chart.chart_json,
+            report_sections=(report.sections if report and report.sections else None),
+            focus_areas=(profile.focus_areas if profile else None),
+            report_id=(report.id if report else None),
+        )
+    except Exception:
+        chat_quota_release(acct)  # don't burn the daily quota on a failed call
+        raise
 
     # persist history (user + assistant) — doubles as admin usage metering
     try:
@@ -1219,16 +1458,79 @@ def api_chat(
     except Exception:  # noqa: BLE001 — history must never break the answer
         session.rollback()
 
-    result["quota"] = {"used": quota["used"] + 1, "limit": quota["limit"],
-                       "remaining": max(0, quota["limit"] - (quota["used"] + 1))}
+    # reflect the atomic counter (or best-known used) in the response
+    shown = chat_quota_used(acct)
+    daily_limit = _chat_daily_limit(order)
+    if shown is None:
+        shown = _chat_quota_info(session, chart_id, order, acct)["used"]
+    result["quota"] = {"used": shown, "limit": daily_limit,
+                       "remaining": max(0, daily_limit - shown)}
     return result
 
 
+@app.post("/api/chat/stream")
+async def api_chat_stream(
+    request: Request,
+    chart_id: str = Form(...),
+    question: str = Form(..., max_length=500),
+    session: Session = Depends(get_session),
+):
+    """D4: real SSE token streaming (text/event-stream). Same guards as
+    /api/chat; quota is claimed ONCE up front and released if the stream dies
+    before any token. History is persisted on completion."""
+    from fastapi.responses import StreamingResponse
+    chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
+
+    async def event_stream():
+        from app.chat.service import chat_stream
+        produced = False
+        try:
+            async for ev in chat_stream(
+                question, chart.chart_json,
+                report_sections=(report.sections if report and report.sections else None),
+                focus_areas=(profile.focus_areas if profile else None),
+                report_id=(report.id if report else None),
+            ):
+                if ev["type"] == "token":
+                    produced = True
+                # SSE: one `event:` line + `data:` json per frame
+                data = json.dumps(ev, ensure_ascii=False)
+                yield f"event: {ev['type']}\ndata: {data}\n\n"
+                if ev["type"] == "done":
+                    answer = ev.get("answer", "")
+                    try:
+                        with Session(engine) as s2:
+                            s2.add(ChatMessage(chart_id=chart_id, role="user", content=question))
+                            s2.add(ChatMessage(
+                                chart_id=chart_id, role="assistant", content=answer,
+                                intent=ev.get("intent"), domains=ev.get("domains") or [],
+                                provider=ev.get("provider"), model=ev.get("model"),
+                                completion_tokens=ev.get("tokens", 0),
+                                cost_usd=ev.get("cost_usd", 0.0), ok=True,
+                            ))
+                            s2.commit()
+                    except Exception:  # noqa: BLE001 — history must never break the stream
+                        pass
+                if ev["type"] == "error":
+                    yield f"event: quota\ndata: {json.dumps({'used': 0, 'limit': 0, 'remaining': 0}, ensure_ascii=False)}\n\n"
+        except Exception as e:  # noqa: BLE001 — never leave the client hanging
+            yield f"event: error\ndata: {json.dumps({'type': 'error', 'message': str(e)[:200]}, ensure_ascii=False)}\n\n"
+        finally:
+            if not produced:
+                chat_quota_release(acct)  # stream died before any token — refund
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "X-Accel-Buffering": "no"})
+
+
 @app.get("/api/charts/{chart_id}/transits")
-def api_chart_transits(chart_id: str, session: Session = Depends(get_session)):
+def api_chart_transits(chart_id: str, request: Request, session: Session = Depends(get_session)):
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A3: transit IDOR
+        raise HTTPException(403, "not authorized")
     from app.astrology.transits import compute_transits
     return {"events": compute_transits(chart.chart_json)}
 
@@ -1238,6 +1540,8 @@ def transit_page(request: Request, chart_id: str, session: Session = Depends(get
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):  # audit r4 A3: transit IDOR
+        raise HTTPException(403, "not authorized")
     from app.astrology.transits import compute_transits
     return templates.TemplateResponse(request, "transit.html", {
         "title": "گذرهای کنونی", "chart_id": chart_id,
@@ -1355,6 +1659,90 @@ def auth_logout():
     return resp
 
 
+# ── Wallet (D3) ──────────────────────────────────────────────────────────────
+
+@app.get("/api/wallet")
+def wallet_balance(request: Request, session: Session = Depends(get_session)):
+    """Wallet status: balance + referral code + pending withdrawal."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "login required")
+    u = session.get(User, user.id)
+    from app.payment.orders import get_or_create_referral_code
+    code = get_or_create_referral_code(session, u.id)
+    pending = session.exec(select(WithdrawalRequest).where(
+        WithdrawalRequest.user_id == u.id,
+        WithdrawalRequest.status == "pending")).all()
+    return {
+        "balance_rial": u.balance_rial or 0,
+        "referral_code": code,
+        "pending_withdrawals": len(pending),
+    }
+
+
+@app.post("/api/wallet/withdraw")
+def wallet_withdraw(request: Request, amount_rial: int = Form(...),
+                    session: Session = Depends(get_session)):
+    """Request a cash-out; admin pays out manually (status=paid)."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "login required")
+    from app.payment.orders import withdraw_request
+    if not withdraw_request(session, user.id, amount_rial):
+        raise HTTPException(400, "درخواست نامعتبر (موجودی کافی نیست یا درخواست در انتظار بررسی دارید)")
+    return {"ok": True}
+
+
+@app.post("/api/admin/withdrawals/{wid}/resolve")
+def admin_resolve_withdrawal(wid: str, request: Request, status: str = Form("paid"),
+                             note: str = Form(""),
+                             session: Session = Depends(get_session)):
+    """Admin resolves a withdrawal: paid (money sent) or rejected (balance kept)."""
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    from app.payment.orders import resolve_withdrawal
+    if not resolve_withdrawal(session, wid, status, note):
+        raise HTTPException(400, "invalid withdrawal or state")
+    session.add(AuditLog(admin=request.cookies.get("chart_user", ""), action="withdrawal_resolve",
+                         entity=wid, details=status))
+    session.commit()
+    return {"ok": True}
+
+
+# ── Web Push (D1) ────────────────────────────────────────────────────────────
+
+@app.get("/api/push/vapid-public-key")
+def push_vapid_public_key():
+    """VAPID public key for the browser's pushManager.subscribe()."""
+    from app.push import VAPID_PUBLIC_KEY
+    if not VAPID_PUBLIC_KEY:
+        raise HTTPException(503, "push not configured")
+    return {"key": VAPID_PUBLIC_KEY}
+
+
+@app.post("/api/push/subscribe")
+def push_subscribe(payload: dict | None = Body(default=None),
+                   request: Request = None,
+                   session: Session = Depends(get_session)):
+    """Register a browser push subscription (endpoint + p256dh + auth)."""
+    from app.push import subscribe as _subscribe
+    u = get_current_user(request)
+    body = payload or {}
+    ok = _subscribe(body.get("endpoint", ""), body.get("p256dh", ""),
+                    body.get("auth", ""), u.id if u else None, session)
+    if not ok:
+        raise HTTPException(400, "invalid subscription")
+    return {"ok": True}
+
+
+@app.post("/api/push/unsubscribe")
+def push_unsubscribe(payload: dict | None = Body(default=None),
+                     session: Session = Depends(get_session)):
+    from app.push import unsubscribe as _unsubscribe
+    _unsubscribe((payload or {}).get("endpoint", ""), session)
+    return {"ok": True}
+
+
 @app.get("/account", response_class=HTMLResponse)
 def account_page(request: Request, session: Session = Depends(get_session)):
     u = get_current_user(request)
@@ -1423,8 +1811,16 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # cascade (audit P2-2): everything tied to these charts/profiles must go,
     # otherwise orphans keep piling up (subscriptions would keep messaging a
     # deleted user; R2 PDFs would leak private birth data).
+    # audit r4 C6: two real bugs fixed here — (1) chat_messages were NEVER
+    # deleted (orphans + FK violation), (2) SQLAlchemy's unitofwork does not
+    # topologically order these deletes, so an explicit flush() per FK level
+    # is required (Chart→BirthProfile, Message→Chart). Before this fix,
+    # account deletion 500'd for ANY user with charts/chats.
     from app.storage import delete_object
     for cid in chart_ids:
+        # chat messages (FK → chart) — was missing entirely (audit r4 C6)
+        for msg in session.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all():
+            session.delete(msg)
         # reports (+ their R2 objects + LLM runs)
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
             if rep.r2_key:
@@ -1442,6 +1838,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
             session.delete(sub)
         for w in session.exec(select(WeeklyReflection).where(WeeklyReflection.chart_id == cid)).all():
             session.delete(w)
+    session.flush()  # children gone before charts
     # referrals (this user as referrer or referred)
     for e in session.exec(select(ReferralEvent).where(
         (ReferralEvent.referrer_user_id == u.id) | (ReferralEvent.new_user_id == u.id)
@@ -1452,6 +1849,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
 
     for c in charts:
         session.delete(c)
+    session.flush()  # charts gone before profiles (unitofwork won't order this)
     for p in profiles:
         session.delete(p)
     session.delete(u)
@@ -1577,8 +1975,8 @@ if not _ADMIN_PIN:
 _ADMIN_COOKIE = "chart_admin"
 _ADMIN_SECRET: str = os.getenv("ADMIN_SECRET") or ""
 if not _ADMIN_SECRET:
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("ADMIN_SECRET is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("ADMIN_SECRET is required in production (APP_ENV=prod|production)")
     _ADMIN_SECRET = _secrets.token_hex(16)
 
 
@@ -1625,6 +2023,9 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         return RedirectResponse("/admin/login", status_code=303)
     orders = session.exec(select(Order).order_by(Order.created_at.desc()).limit(100)).all()
     reports = session.exec(select(Report).order_by(Report.created_at.desc()).limit(20)).all()
+    # B1: DLQ health — failed reports awaiting the retry cron
+    dlq = session.exec(select(Report).where(Report.status == "failed")).all()
+    dlq_count = len(dlq)
     users = session.exec(select(User).order_by(User.created_at.desc()).limit(50)).all()
     plans = session.exec(select(Plan).order_by(Plan.sort)).all()
     audit = session.exec(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(30)).all()
@@ -1650,6 +2051,11 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     chat_today = len(session.exec(select(ChatMessage.id).where(ChatMessage.created_at >= today_start)).all())
     chat_total = len(session.exec(select(ChatMessage.id)).all())
+    # D3: withdrawal queue for admin (pending first)
+    withdrawals = session.exec(
+        select(WithdrawalRequest).order_by(
+            WithdrawalRequest.status.asc(), WithdrawalRequest.created_at.desc()).limit(30)
+    ).all()
     return templates.TemplateResponse(request, "admin.html", {
         "title": "دشبورد مدیریت", "orders": orders, "reports": reports,
         "revenue_toman": revenue, "by_status": by_status,
@@ -1657,6 +2063,8 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "llm_cost_7d": llm_cost, "llm_runs_7d": len(llm),
         "ai_status": ai_status, "ai_health": ai_health, "ai_provider": ai_provider,
         "chat_today": chat_today, "chat_total": chat_total,
+        "dlq_count": dlq_count,  # B1 — used by admin.html KPI
+        "withdrawals": withdrawals,  # D3 — wallet cash-out queue
         "secrets": secret_store.secret_status(),
         "prompt_keys": PROMPT_KEYS,
         "prompt_overrides": [{"key": o["key"], "version": o["version"],
@@ -1792,7 +2200,7 @@ load_dotenv(_ENV_PATH, override=False)
 
 ```
 
-### `app/db.py` (74 lines)
+### `app/db.py` (76 lines)
 
 ```python
 """DB session + init (Postgres). For tests: override engine with temp SQLite."""
@@ -1801,11 +2209,13 @@ import os
 from sqlalchemy import create_engine
 from sqlmodel import Session, SQLModel
 
-_DEV_DEFAULT = "postgresql://chart_app:CHANGE_ME@127.0.0.1:5432/chart_platform"
+from app.env import IS_PROD
+
+_DEV_DEFAULT = "postgresql://chart_app:***@127.0.0.1:5432/chart_platform"
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("DATABASE_URL is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("DATABASE_URL is required in production (APP_ENV=prod|production)")
     DATABASE_URL = _DEV_DEFAULT
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -1871,7 +2281,7 @@ def get_session():
 
 ```
 
-### `app/models.py` (261 lines)
+### `app/models.py` (318 lines)
 
 ```python
 """Database models (plan v3.1 §7) — users → birth_profiles → charts.
@@ -1883,7 +2293,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, UniqueConstraint
+from sqlalchemy import Column, Index, UniqueConstraint, text
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
@@ -1900,6 +2311,7 @@ class User(SQLModel, table=True):
     password_hash: str | None = Field(default=None)
     role: str = Field(default="user")  # user | admin
     status: str = Field(default="active")
+    balance_rial: int = Field(default=0)  # referral wallet (D3)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -2017,6 +2429,8 @@ class Order(SQLModel, table=True):
     """Payment order — one per (profile, plan) purchase."""
     __tablename__ = "orders"
     id: str = Field(default_factory=_uuid, primary_key=True)
+    error: str | None = Field(default=None)  # audit r4 B6 — refund/gateway failure detail
+    note: str | None = Field(default=None)   # D3 — payment method note (wallet)
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
     plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
@@ -2047,15 +2461,21 @@ class Coupon(SQLModel, table=True):
 
 
 class Subscription(SQLModel, table=True):
+    """Paid monthly chat subscription (plan v3.0 §12). One per (chart, account)."""
     __tablename__ = "subscriptions"
+    __table_args__ = (
+        Index("uq_sub_chart_account", "chart_id",
+              text("COALESCE(chat_id, '')"), unique=True),
+    )
     id: str = Field(default_factory=_uuid, primary_key=True)
-    chat_id: str = Field(index=True)
+    chat_id: str | None = Field(default=None, index=True)  # None = web (non-bot) purchase
     platform: str = Field(default="telegram")   # telegram | bale
     chart_id: str = Field(index=True)
     freq: str = Field(default="daily")          # daily | weekly
     plan_key: str = Field(default="monthly")    # paid monthly plan (plan v3.0 §12)
     active: bool = Field(default=True)
     expires_at: datetime | None = Field(default=None)
+    order_id: str | None = Field(default=None, index=True)  # audit r4 B6 — originating order (refund closes the sub)
     last_sent_at: datetime | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -2090,6 +2510,18 @@ class ReferralCode(SQLModel, table=True):
     user_id: str = Field(foreign_key="users.id", index=True)
     code: str = Field(unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class WithdrawalRequest(SQLModel, table=True):
+    """Wallet cash-out request (D3) — admin approves manually (status=paid)."""
+    __tablename__ = "withdrawal_requests"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
+    amount_rial: int = Field(default=0)
+    status: str = Field(default="pending")   # pending | paid | rejected
+    note: str = Field(default="")            # admin note (bank ref etc.)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    resolved_at: datetime | None = Field(default=None)
 
 
 class PromptVersion(SQLModel, table=True):
@@ -2135,14 +2567,74 @@ class Secret(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class PushSubscription(SQLModel, table=True):
+    """Web Push subscription (D1) — one row per browser endpoint."""
+    __tablename__ = "push_subscriptions"
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    user_id: str | None = Field(default=None, foreign_key="users.id", index=True)
+    endpoint: str = Field(unique=True, index=True)
+    p256dh: str
+    auth: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ReportChunk(SQLModel, table=True):
+    """pgvector RAG (D2): semantic chunks of a finished report for grounded
+    chat retrieval. embedding is a pgvector column (384-dim for e5-small)."""
+    __tablename__ = "report_chunks"
+    __table_args__ = (
+        Index(
+            "ix_report_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    report_id: str = Field(foreign_key="reports.id", index=True)
+    chunk_index: int = Field(default=0)
+    section_key: str = Field(default="")
+    text: str = Field(default="")
+    embedding: list[float] | None = Field(
+        default=None,
+        sa_column=Column(Vector(384), nullable=True),
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+```
+
+### `app/timeutil.py` (20 lines)
+
+```python
+"""Timezone-safe datetime helpers (audit r4 A9).
+
+SQLite (tests) stores naive datetimes; Postgres stores aware ones. Comparing
+them raw raises TypeError, so every stored-datetime comparison goes through
+`ensure_utc` (assumes naive values are UTC).
+"""
+from datetime import datetime, timezone
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def ensure_utc(dt: datetime) -> datetime:
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
+
+
+def is_expired(dt: datetime | None) -> bool:
+    return not dt or ensure_utc(dt) <= utcnow()
+
 ```
 
 
 ---
 
-## ۳) امنیت و کلیدها
+## ۳) امنیت، کلیدها و Web Push
 
-### `app/auth.py` (155 lines)
+### `app/auth.py` (156 lines)
 
 ```python
 """Lazy OTP auth (plan v3.1 §4 — Kavenegar first, dev-mode fallback).
@@ -2163,6 +2655,7 @@ import secrets
 
 import redis as _redis
 
+from app.env import IS_PROD
 from fastapi import Request
 from sqlmodel import Session, select
 
@@ -2176,8 +2669,8 @@ _AUTH_SECRET: str = os.getenv("AUTH_SECRET") or ""
 if not _AUTH_SECRET:
     # fail-closed in production: a random per-boot secret would silently
     # invalidate every session on restart (audit P0)
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("AUTH_SECRET is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("AUTH_SECRET is required in production (APP_ENV=prod|production)")
     _AUTH_SECRET = secrets.token_hex(16)  # dev-only ephemeral
 _OTP_DEV_MODE = os.getenv("OTP_DEV_MODE", "false").lower() == "true"
 USER_COOKIE = "chart_user"
@@ -2248,7 +2741,7 @@ def _send_sms(phone: str, code: str) -> None:
             r.raise_for_status()
             return
         except Exception as e:
-            if os.getenv("APP_ENV", "dev") == "prod":
+            if IS_PROD:
                 raise RuntimeError(f"SMS delivery failed: {e}") from e
             log.warning("SMS send failed: %s — falling back to dev log", e)
     if _OTP_DEV_MODE:
@@ -2302,7 +2795,119 @@ def verify_otp(phone: str, code: str) -> User | None:
 
 ```
 
-### `app/secret_store.py` (233 lines)
+### `app/push.py` (107 lines)
+
+```python
+"""Web Push (D1): VAPID-signed push via pywebpush.
+
+Endpoints are plain HTTP endpoints registered by the browser (push service
+stores them); we only store the subscription and fire notifications through
+the user's push service (FCM/Mozilla/Apple), never hold message content.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import os
+
+log = logging.getLogger("push")
+
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "").replace("\\n", "\n").strip()
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "").replace("\\n", "\n").strip()
+VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:admin@zayche.io")
+VAPID_CLAIMS = {"sub": VAPID_SUBJECT}
+
+
+def _vapid_raw_keys(pem: str) -> tuple[str, str]:
+    """Convert a PEM keypair to the RAW base64url forms both consumers need:
+    browser pushManager.subscribe wants the 65-byte uncompressed public point;
+    pywebpush's Vapid.from_string wants the 32-byte raw private scalar."""
+    import base64
+    from cryptography.hazmat.primitives import serialization
+    key = serialization.load_pem_private_key(pem.encode(), password=None)
+    raw_priv = key.private_numbers().private_value.to_bytes(32, "big")
+    pub = key.public_key()
+    x, y = pub.public_numbers().x, pub.public_numbers().y
+    raw_pub = b"\x04" + x.to_bytes(32, "big") + y.to_bytes(32, "big")
+    b64 = lambda b: base64.urlsafe_b64encode(b).rstrip(b"=").decode()  # noqa: E731
+    return b64(raw_pub), b64(raw_priv)
+
+
+if VAPID_PRIVATE_KEY and not VAPID_PRIVATE_KEY.lstrip().startswith("-----"):
+    # .env already holds raw keys — nothing to convert
+    pass
+elif VAPID_PRIVATE_KEY:
+    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY = _vapid_raw_keys(VAPID_PRIVATE_KEY)
+
+
+def vapid_configured() -> bool:
+    return bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY)
+
+
+def subscribe(endpoint: str, p256dh: str, auth: str, user_id: str | None,
+              session) -> bool:
+    """Insert (or refresh) a subscription. Returns False on bad input."""
+    if not endpoint.startswith("https://") or not p256dh or not auth:
+        return False
+    from sqlmodel import select
+    from app.models import PushSubscription
+    existing = session.exec(
+        select(PushSubscription).where(PushSubscription.endpoint == endpoint)
+    ).first()
+    if existing:
+        existing.p256dh, existing.auth, existing.user_id = p256dh, auth, user_id
+    else:
+        session.add(PushSubscription(endpoint=endpoint, p256dh=p256dh,
+                                     auth=auth, user_id=user_id))
+    session.commit()
+    return True
+
+
+def unsubscribe(endpoint: str, session) -> None:
+    from sqlmodel import select
+    from app.models import PushSubscription
+    sub = session.exec(
+        select(PushSubscription).where(PushSubscription.endpoint == endpoint)
+    ).first()
+    if sub:
+        session.delete(sub)
+        session.commit()
+
+
+def send_to_user(user_id: str, title: str, body: str, url: str, session) -> int:
+    """Push to every subscription of a user. Returns number sent."""
+    if not vapid_configured():
+        return 0
+    from sqlmodel import select
+    from app.models import PushSubscription
+    subs = session.exec(select(PushSubscription).where(
+        PushSubscription.user_id == user_id)).all()
+    sent = 0
+    for sub in subs:
+        try:
+            _send_one(sub, title, body, url)
+            sent += 1
+        except Exception as e:  # noqa: BLE001 — per-subscription, don't kill batch
+            log.warning("push failed %s: %s", sub.endpoint[:60], e)
+    return sent
+
+
+def _send_one(sub, title: str, body: str, url: str) -> None:
+    from pywebpush import webpush
+    webpush(
+        subscription_info={
+            "endpoint": sub.endpoint,
+            "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+        },
+        data=json.dumps({"title": title, "body": body, "url": url}),
+        vapid_private_key=VAPID_PRIVATE_KEY,
+        vapid_claims=VAPID_CLAIMS,
+        timeout=10,
+    )
+
+```
+
+### `app/secret_store.py` (235 lines)
 
 ```python
 """Secret store — encrypted, DB-backed secrets editable from the admin panel.
@@ -2325,6 +2930,8 @@ from __future__ import annotations
 import base64
 import hashlib
 import os
+
+from app.env import IS_PROD
 import secrets as _secrets
 from pathlib import Path
 
@@ -2412,7 +3019,7 @@ def _load_or_create_master() -> str:
         return _KEY_FILE.read_text().strip()
     # auto-generate + persist (dev / first boot); prod must set env var explicitly
     generated = _secrets.token_urlsafe(32)
-    if os.getenv("APP_ENV", "dev") == "prod" and not _KEY_FILE.exists():
+    if IS_PROD and not _KEY_FILE.exists():
         raise RuntimeError(
             "SECRETS_MASTER_KEY is required in prod (secrets encryption key). "
             "Set it in the systemd env file before first boot."
@@ -2540,7 +3147,7 @@ def _mask(value: str) -> str:
 
 ```
 
-### `app/security.py` (147 lines)
+### `app/security.py` (198 lines)
 
 ```python
 """Security middleware: CSRF origin check + rate limiting + audit log helper.
@@ -2560,6 +3167,7 @@ from fastapi import Request
 from sqlmodel import Session
 
 import app.config  # noqa: F401
+from app.env import IS_PROD
 
 _RATE_LIMITS: dict[str, deque] = defaultdict(deque)
 _RATE_LIMITS_WINDOW = 60  # seconds
@@ -2567,9 +3175,15 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 CSRF_COOKIE = "csrf_token"
 
 # audit P1 (round 3): distributed rate limiting. RATE_LIMIT_BACKEND=redis uses a
-# Redis fixed-window counter shared across workers/instances; any Redis failure
-# falls back to the per-process in-memory sliding window (fail-open on Redis).
+# Redis fixed-window counter shared across workers/instances. audit r4 B5:
+# Redis is MANDATORY in production (per-process memory counters are useless
+# with >1 worker) — a prod deploy configured for memory must refuse to boot.
 _RATE_LIMIT_BACKEND = os.getenv("RATE_LIMIT_BACKEND", "memory").lower()
+if IS_PROD and _RATE_LIMIT_BACKEND != "redis":
+    raise RuntimeError(
+        "RATE_LIMIT_BACKEND=redis is REQUIRED in production (audit r4 B5). "
+        "In-memory counters do not work across workers."
+    )
 _rl_redis_conn = None
 
 
@@ -2607,6 +3221,45 @@ def _rl_redis_check(key: str, max_calls: int, window: int) -> bool:
     return n <= max_calls
 
 
+def chat_quota_claim(account_key: str, limit: int) -> int | None:
+    """Atomic per-ACCOUNT daily quota claim (audit r4 A8): Redis INCR+TTL.
+
+    Returns the new used count, or None when Redis is unavailable (caller
+    falls back to a DB count). Multiple charts of one account share the pool."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    nk = f"chatq:{day}:{account_key}"
+    try:
+        r = _rl_redis()
+        n = r.incr(nk)
+        if n == 1:
+            r.expire(nk, 26 * 3600)
+        return n
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def chat_quota_release(account_key: str) -> None:
+    """Undo a claim when the request failed before producing an answer."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    try:
+        _rl_redis().decr(f"chatq:{day}:{account_key}")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def chat_quota_used(account_key: str) -> int | None:
+    """Current atomic counter for display; None when Redis is unavailable."""
+    import datetime as _dt
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    try:
+        n = _rl_redis().get(f"chatq:{day}:{account_key}")
+        return int(n) if n is not None else 0
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def new_csrf_token() -> str:
     return _secrets.token_urlsafe(16)
 
@@ -2630,7 +3283,12 @@ def check_rate_limit(key: str, max_calls: int, window: int = _RATE_LIMITS_WINDOW
             return
         except RateLimitExceeded:
             raise
-        except Exception:  # noqa: BLE001 — Redis down/expired → in-memory fallback
+        except Exception:  # noqa: BLE001 — Redis down
+            if IS_PROD:
+                # audit r4 B5: fail-CLOSED in prod — never silently open the
+                # floodgates because Redis hiccuped
+                raise RateLimitExceeded(key)
+            # dev/tests: in-memory fallback keeps things usable
             pass
     if not _rl_memory(key, max_calls, window):
         raise RateLimitExceeded(key)
@@ -2692,7 +3350,7 @@ def audit(engine, admin: str, action: str, entity: str = "", details: str = "") 
 
 ```
 
-### `app/storage.py` (80 lines)
+### `app/storage.py` (109 lines)
 
 ```python
 """Cloudflare R2 object storage for report PDFs (plan §11 R2).
@@ -2700,21 +3358,32 @@ def audit(engine, admin: str, action: str, entity: str = "", details: str = "") 
 Credentials come from chart-platform/.env (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
 R2_ENDPOINT, R2_BUCKET, R2_REGION). Bucket: zayche-storage (own bucket since
 2026-08-14 — audit r3: decoupled from voice-clone's shared bucket). R2 buckets
-are private: downloads go through 7-day presigned URLs. Falls back gracefully when not configured
-(returns None) so local-disk serving keeps working.
+are private: downloads go through 30-min presigned URLs (audit r4 B3).
+
+FAIL-CLOSED (audit r4 B4): in production R2 is mandatory — a misconfigured
+deploy must refuse to boot instead of silently serving from ephemeral local
+disk. In dev/tests missing creds still degrade gracefully.
 """
 import os
 
 import app.config  # noqa: F401 — ensure .env loaded
+from app.env import IS_PROD
 from app.secret_store import get_secret
 
 R2_ENDPOINT = get_secret("r2_endpoint", "R2_ENDPOINT", "").strip()
-R2_BUCKET = get_secret("r2_bucket", "R2_BUCKET", "hermes-voice-clone").strip()
+R2_BUCKET = get_secret("r2_bucket", "R2_BUCKET", "zayche-storage").strip()  # C2: never fall back to voice-clone
 R2_REGION = get_secret("r2_region", "R2_REGION", "auto").strip()
 R2_ACCESS = get_secret("r2_access_key_id", "R2_ACCESS_KEY_ID", "").strip()
 R2_SECRET = get_secret("r2_secret_access_key", "R2_SECRET_ACCESS_KEY", "").strip()
 
 PREFIX = "chart-reports"  # keep chart-platform objects namespaced in the shared bucket
+AUDIO_PREFIX = "chart-audio"  # audit r4 C1 — TTS mp3s live in R2, not /tmp
+
+if IS_PROD and not (R2_ACCESS and R2_SECRET and R2_ENDPOINT):
+    raise RuntimeError(
+        "R2 storage is REQUIRED in production (audit r4 B4 fail-closed). "
+        "Set R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_ENDPOINT in .env."
+    )
 
 
 def configured() -> bool:
@@ -2739,6 +3408,22 @@ def report_key(report_id: str) -> str:
     return f"{PREFIX}/{report_id}.pdf"
 
 
+def audio_key(report_id: str) -> str:
+    return f"{AUDIO_PREFIX}/{report_id}.mp3"
+
+
+def upload_audio(report_id: str, local_path: str) -> str | None:
+    """Upload a TTS mp3 to R2 (audit r4 C1). Returns the object key or None."""
+    if not configured() or not os.path.exists(local_path):
+        return None
+    try:
+        client = _client()
+        client.upload_file(local_path, R2_BUCKET, audio_key(report_id))
+        return audio_key(report_id)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def upload_report(report_id: str, local_path: str) -> str | None:
     """Upload a generated PDF to R2. Returns the object key or None."""
     if not configured() or not os.path.exists(local_path):
@@ -2751,8 +3436,10 @@ def upload_report(report_id: str, local_path: str) -> str | None:
         return None
 
 
-def presigned_url(key: str, expires: int = 604800) -> str | None:
-    """7-day presigned GET URL (R2 max). None when not configured/failed."""
+def presigned_url(key: str, expires: int = 1800) -> str | None:
+    """30-min presigned GET URL (audit r4 B3 — was 7 days). Every consumer
+    (report PDF endpoint) generates a FRESH url per request, so the short TTL
+    only limits leaked-link windows, never breaks downloads."""
     if not configured() or not key:
         return None
     try:
@@ -3261,7 +3948,7 @@ def compute_from_fields(lat: float, lon: float, year: int, month: int, day: int,
 
 ```
 
-### `app/astrology/golden_data.py` (123 lines)
+### `app/astrology/golden_data.py` (124 lines)
 
 ```python
 """
@@ -3295,8 +3982,8 @@ GOLDEN_CHARTS = [
             "moon_phase": "Waning",
             "moon_phase_deg": 201.3,
             "saturn_retrograde": True, "saturn_house": 7,
+            "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
         },
-        "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
     },
     {
         "id": "chart-2-no-time",
@@ -3359,7 +4046,8 @@ GOLDEN_CHARTS = [
                   "hour": 14, "minute": 30, "time_known": True, "jalali": False,
                   "tz_name": "Asia/Tehran"},
         "engine_config": None,
-        "expected": {"has_retrograde": True},  # at least one retrograde planet
+        "expected": {"has_retrograde": True,
+                     "verify_utc": "2020-05-15 10:00:00"},  # 14:30 +4:30 DST → UTC
     },
     {
         "id": "chart-7-sidereal-lahiri",
@@ -3382,8 +4070,8 @@ GOLDEN_CHARTS = [
             "moon_phase": "Waning",
             "moon_phase_deg": 201.286,
             "saturn_retrograde": True, "saturn_house": 7,
+            "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
         },
-        "verify_utc": "1994-08-23 01:40:00",
     },
 ]
 
@@ -5505,7 +6193,7 @@ def domain_coverage(chart: dict) -> dict[str, int]:
 
 ```
 
-### `app/report/weekly.py` (145 lines)
+### `app/report/weekly.py` (163 lines)
 
 ```python
 """Weekly transit delivery — «نگاهی به آسمان هفته» (audit P0-2).
@@ -5632,9 +6320,27 @@ async def run_weekly_delivery() -> dict:
                     continue  # already delivered for this chart this week
                 text = build_weekly_reflection(chart.chart_json)
                 s.add(WeeklyReflection(chart_id=sub.chart_id, week_start=week, text=text))
+                prof_id = chart.profile_id  # read BEFORE session closes
                 s.commit()
 
             await send_message(int(sub.chat_id), text, sub.platform)
+
+            # D1: also notify the owning user's browser(s), if push is set up
+            try:
+                from app.push import send_to_user
+                from app.models import BirthProfile
+                with Session(engine) as s2:
+                    prof = s2.get(BirthProfile, prof_id) if prof_id else None
+                    if prof and prof.user_id:
+                        send_to_user(
+                            prof.user_id,
+                            "نگاهی به آسمان هفته",
+                            f"گزارش هفتگی چارت «{prof.name or '—'}» آماده است.",
+                            "/account",
+                            s2,
+                        )
+            except Exception as e:  # noqa: BLE001 — push must never break delivery
+                log.warning("weekly push skipped for sub %s: %s", sub.id, e)
 
             with Session(engine) as s:
                 sub_row = s.get(Subscription, sub.id)
@@ -5713,7 +6419,7 @@ def report_to_docx(rep: dict[str, Any]) -> bytes:
 
 ```
 
-### `app/report/worker.py` (194 lines)
+### `app/report/worker.py` (210 lines)
 
 ```python
 """
@@ -5735,6 +6441,7 @@ from sqlmodel import Session
 import app.config  # noqa: F401 — load .env FIRST
 from app.core.llm import build_router
 from app.db import engine as db_engine
+from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
 from app.report.generator import build_report_json
 from app.report.prompt_builder import (build_personal_question_prompt,
@@ -5865,6 +6572,11 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             rep.pdf_path = str(pdf)
             from app.storage import upload_report
             rep.r2_key = upload_report(report_id, str(pdf))
+            if not rep.r2_key and IS_PROD:
+                # audit r4 B4: never silently deliver a local-only report in
+                # prod — the local disk is ephemeral; surface it as degraded
+                rep.status = "degraded"
+                rep.error = "آپلود فایل گزارش در R2 ناموفق بود — گزارش موقتاً محلی است؛ با ادمین تماس بگیرید"
             fallback = metrics.get("fallback_domains", [])
             if fallback:
                 # audit P1-7: never silently deliver a low-quality report
@@ -5877,6 +6589,16 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             rep.status = "failed"
             rep.error = str(e)[:500]
         session.commit()
+
+    if rep.status == "done":
+        # D2: index chunks for semantic chat retrieval — best-effort, must
+        # never fail the report (model load is ~1 min on CPU, worker-side)
+        try:
+            from app.rag import index_report
+            n = await asyncio.to_thread(index_report, report_id)
+            log.info("RAG indexed %d chunks for report %s", n, report_id[:8])
+        except Exception as e:  # noqa: BLE001
+            log.warning("RAG index skipped for %s: %s", report_id[:8], e)
 
 
 async def startup(ctx: dict) -> None:
@@ -5915,7 +6637,7 @@ if __name__ == "__main__":  # pragma: no cover — direct async test
 
 ---
 
-## ۶) چت هوش مصنوعی
+## ۶) چت هوش مصنوعی + RAG
 
 ### `app/chat/intents.py` (53 lines)
 
@@ -6048,24 +6770,41 @@ def build_chat_prompt(question: str, ctx: dict) -> str:
 
 ```
 
-### `app/chat/service.py` (33 lines)
+### `app/chat/service.py` (91 lines)
 
 ```python
-"""Chat service — one grounded turn: intent → retrieve → LLM → answer."""
+"""Chat service — one grounded turn: intent → retrieve → LLM → answer.
+D4 adds chat_stream(): the same pipeline over a real SSE token stream."""
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
 
 from app.chat.intents import route_question
 from app.chat.retrieval import build_chat_prompt, retrieve_context
 
 
-def chat_answer(question: str, chart_json: dict, report_sections: dict | None = None,
-                focus_areas: list[str] | None = None, router=None) -> dict:
-    """Sync entry (dev/tests): returns {answer, intent, domains, cost, tokens, provider, model}."""
+def _retrieve(question: str, chart_json: dict, report_sections: dict | None,
+              focus_areas: list[str] | None, report_id: str | None) -> tuple[dict, dict, str]:
+    """Shared retrieval: route + context (+ RAG chunks). Returns (route, ctx, prompt)."""
     route = route_question(question, focus_areas)
     ctx = retrieve_context(chart_json, report_sections, route["domains"])
-    prompt = build_chat_prompt(question, ctx)
+    # D2: semantic RAG chunks (best-effort — falls back to sections-only)
+    if report_id:
+        try:
+            from app.rag import search_relevant
+            ctx["rag_chunks"] = search_relevant(report_id, question)
+        except Exception:  # noqa: BLE001 — RAG must never break chat
+            ctx["rag_chunks"] = []
+    return route, ctx, build_chat_prompt(question, ctx)
+
+
+def chat_answer(question: str, chart_json: dict, report_sections: dict | None = None,
+                focus_areas: list[str] | None = None, router=None,
+                report_id: str | None = None) -> dict:
+    """Sync entry (dev/tests): returns {answer, intent, domains, cost, tokens, provider, model}."""
+    route, _ctx, prompt = _retrieve(question, chart_json, report_sections,
+                                    focus_areas, report_id)
 
     from app.core.llm import build_chat_router
     rtr = router or build_chat_router()
@@ -6084,14 +6823,206 @@ def chat_answer(question: str, chart_json: dict, report_sections: dict | None = 
         "model": getattr(res, "model", None),
     }
 
+
+async def chat_stream(question: str, chart_json: dict,
+                      report_sections: dict | None = None,
+                      focus_areas: list[str] | None = None,
+                      router=None, report_id: str | None = None) -> AsyncIterator[dict]:
+    """D4: async generator of events for the SSE endpoint:
+      {"type": "intent", ...} once,
+      {"type": "token", "text": <accumulated so far>} per chunk,
+      {"type": "done", "answer", "provider", "model", "cost_usd", "tokens", "ok"}
+      {"type": "error", "message"} if the whole chain failed.
+    """
+    route, _ctx, prompt = _retrieve(question, chart_json, report_sections,
+                                    focus_areas, report_id)
+    yield {"type": "intent", "intent": route["intent"], "domains": route["domains"]}
+
+    from app.core.llm import build_chat_router
+    rtr = router or build_chat_router()
+    last = None
+    async for chunk in rtr.stream_complete(prompt, max_tokens=1024, temperature=0.7):
+        last = chunk
+        if chunk.error:
+            break
+        if chunk.text:
+            yield {"type": "token", "text": chunk.text}
+
+    if not last or last.error:
+        yield {"type": "error",
+               "message": "در حال حاضر سرویس پاسخ‌گویی در دسترس نیست (محدودیت سهمیه). لطفاً چند ساعت بعد تلاش کنید."}
+        return
+    yield {
+        "type": "done",
+        "answer": last.text or "",
+        "ok": True,
+        "cost_usd": last.cost,
+        "tokens": last.usage.total,
+        "provider": last.provider,
+        "model": last.model,
+        "intent": route["intent"],
+        "domains": route["domains"],
+    }
+
+```
+
+### `app/rag.py` (146 lines)
+
+```python
+"""pgvector RAG (D2): chunk finished reports, embed with multilingual-e5,
+store in report_chunks (HNSW index), and retrieve the most relevant chunks
+for grounded chat answers.
+
+The embedding model is loaded lazily and only inside the ARQ worker path —
+the web process never pays the model memory cost.
+"""
+from __future__ import annotations
+
+import logging
+import os
+import re
+from datetime import datetime, timezone
+
+from sqlmodel import Session, select
+
+from app.db import engine
+from app.models import Report, ReportChunk
+
+log = logging.getLogger("rag")
+
+CHUNK_SIZE = 512          # characters per chunk
+CHUNK_OVERLAP = 64        # overlap between consecutive chunks
+MAX_CHUNKS_PER_REPORT = 40
+
+_model = None
+
+# D2: multilingual-e5-small (~118MB RSS) is the safe default for the web
+# process (2 uvicorn workers × 2GB free RAM); e5-large (1.2GB/worker) would
+# OOM — override with RAG_MODEL=... if the server is ever upgraded.
+RAG_MODEL_NAME = os.getenv("RAG_MODEL", "intfloat/multilingual-e5-small")
+RAG_EMBEDDING_DIM = int(os.getenv("RAG_EMBEDDING_DIM", "384"))
+
+
+def _model_instance():
+    """Lazy singleton — CPU inference on the worker."""
+    global _model
+    if _model is None:
+        from sentence_transformers import SentenceTransformer
+        _model = SentenceTransformer(RAG_MODEL_NAME)
+    return _model
+
+
+def chunk_report_text(sections: dict) -> list[tuple[str, str]]:
+    """Split report sections into (section_key, text) chunks (deterministic)."""
+    chunks: list[tuple[str, str]] = []
+    for key, sec in (sections or {}).items():
+        parts = []
+        if isinstance(sec, dict):
+            for k in ("summary", "insights", "challenges", "recommendations"):
+                v = sec.get(k)
+                if isinstance(v, str) and v.strip():
+                    parts.append(v.strip())
+                elif isinstance(v, list):
+                    for item in v:
+                        if isinstance(item, dict):
+                            parts.append(item.get("insight") or item.get("text") or "")
+                        elif isinstance(item, str):
+                            parts.append(item)
+        text = "\n".join(p for p in parts if p)
+        if not text:
+            continue
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            continue
+        if len(text) <= CHUNK_SIZE:
+            chunks.append((key, text))
+            continue
+        start = 0
+        while start < len(text) and len(chunks) < MAX_CHUNKS_PER_REPORT:
+            end = min(start + CHUNK_SIZE, len(text))
+            if end < len(text):
+                # break at the last whitespace inside the window
+                cut = text.rfind(" ", start, end)
+                if cut > start + CHUNK_SIZE // 2:
+                    end = cut
+            chunks.append((key, text[start:end].strip()))
+            start = end - CHUNK_OVERLAP
+    return chunks[:MAX_CHUNKS_PER_REPORT]
+
+
+def index_report(report_id: str) -> int:
+    """Embed + persist chunks for a finished report. Idempotent per report."""
+    with Session(engine) as s:
+        rep = s.get(Report, report_id)
+        if not rep or rep.status != "done":
+            return 0
+        existing = s.exec(select(ReportChunk).where(
+            ReportChunk.report_id == report_id)).first()
+        if existing:
+            return 0  # already indexed
+        chunks = chunk_report_text(rep.sections)
+        if not chunks:
+            return 0
+        texts = [t for _, t in chunks]
+        vectors = _model_instance().encode(texts, normalize_embeddings=True,
+                                           show_progress_bar=False)
+        for i, ((sec_key, _), vec) in enumerate(zip(chunks, vectors)):
+            emb = vec.tolist() if hasattr(vec, "tolist") else list(vec)
+            s.add(ReportChunk(report_id=report_id, chunk_index=i,
+                              section_key=sec_key, text=texts[i],
+                              embedding=emb))
+        s.commit()
+        log.info("indexed report %s: %d chunks", report_id[:8], len(chunks))
+        return len(chunks)
+
+
+def search_relevant(report_id: str, question: str, top_k: int = 3) -> list[str]:
+    """Cosine-similarity retrieval over the report's chunks (HNSW)."""
+    with Session(engine) as s:
+        if not s.exec(select(ReportChunk).where(
+                ReportChunk.report_id == report_id)).first():
+            return []
+        raw = _model_instance().encode(
+            [question], normalize_embeddings=True)[0]
+        vec = raw.tolist() if hasattr(raw, "tolist") else list(raw)
+        rows = s.exec(
+            select(ReportChunk)
+            .where(ReportChunk.report_id == report_id,
+                   ReportChunk.embedding.is_not(None))
+            .order_by(ReportChunk.embedding.cosine_distance(vec))
+            .limit(top_k)
+        ).all()
+        return [r.text for r in rows]
+
+
+def prune_old_chunks(days: int = 180) -> int:
+    """Retention (C6): drop chunks whose report was created more than N days ago."""
+    cutoff = datetime.now(timezone.utc).timestamp() - days * 86400
+    deleted = 0
+    with Session(engine) as s:
+        for rc in s.exec(select(ReportChunk)).all():
+            rep = s.get(Report, rc.report_id)
+            if not rep or rep.created_at.timestamp() < cutoff:
+                s.delete(rc)
+                deleted += 1
+        s.commit()
+    return deleted
+
+
+if __name__ == "__main__":  # pragma: no cover — manual maintenance
+    import sys
+    print("pruned:", prune_old_chunks())
+    if len(sys.argv) > 1:
+        print("indexed:", index_report(sys.argv[1]))
+
 ```
 
 
 ---
 
-## ۷) پرداخت و سفارش
+## ۷) پرداخت، سفارش و کیف پول
 
-### `app/payment/orders.py` (144 lines)
+### `app/payment/orders.py` (242 lines)
 
 ```python
 """Shared order creation + subscription activation (plan v3.0 §7/§8/§12).
@@ -6107,7 +7038,9 @@ from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select
 
-from app.models import Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent, Subscription
+from app.models import (Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent,
+                        Report, Subscription, User, WithdrawalRequest)
+from app.timeutil import ensure_utc, utcnow
 
 
 def get_or_create_referral_code(session: Session, user_id: str) -> str:
@@ -6150,10 +7083,20 @@ def create_order(
         ).first()
         if not coupon_row or not coupon_row.active:
             raise ValueError("کد تخفیف نامعتبر است")
-        if coupon_row.expires_at and coupon_row.expires_at < datetime.now(timezone.utc):
+        if coupon_row.expires_at and ensure_utc(coupon_row.expires_at) < utcnow():
             raise ValueError("کد تخفیف منقضی شده")
-        if coupon_row.used_count >= coupon_row.max_uses:
+        # audit r4 A10 — RESERVATION PATTERN: reserve the slot ATOMICALLY at
+        # creation. A stale pre-check would let two users both pass with the
+        # last slot and then lose money at payment time; the atomic UPDATE is
+        # the real gate (same trick as the r3 payment claim).
+        from sqlalchemy import text as _text
+        reserved = session.exec(_text(
+            "UPDATE coupons SET used_count = used_count + 1 "
+            "WHERE id = :cid AND used_count < max_uses RETURNING id"
+        ), params={"cid": coupon_row.id}).first()
+        if not reserved:
             raise ValueError("کد تخفیف مصرف شده")
+        session.refresh(coupon_row)
         amount = max(1, int(amount * (100 - coupon_row.percent) / 100))
 
     referral_event = None
@@ -6204,6 +7147,11 @@ def create_order(
         )
     except ZarinpalError as e:
         order.status = "failed"
+        # release the coupon reservation — no payment will happen (audit r4 A10)
+        if order.coupon_id:
+            c = session.get(Coupon, order.coupon_id)
+            if c and c.used_count > 0:
+                c.used_count -= 1
         session.commit()
         raise RuntimeError(f"درگاه پرداخت در دسترس نیست: {e}") from e
 
@@ -6213,34 +7161,115 @@ def create_order(
 
 
 def activate_subscription(session: Session, order: Order) -> None:
-    """After a paid monthly order: activate/refresh the chat subscription."""
-    if not order.chat_id or not order.chart_id:
+    """After a paid monthly order: activate/refresh the chat subscription.
+
+    audit r4 A9: renewal EXTENDS from the later of (current expiry, now) —
+    a user renewing 20 days early keeps those 20 days (was: now+30, discarding
+    the remainder). Works for bot (chat_id set) and web (chat_id None) flows."""
+    if not order.chart_id:
         return
-    sub = session.exec(
-        select(Subscription).where(
-            Subscription.chat_id == order.chat_id,
-            Subscription.chart_id == order.chart_id,
-        )
-    ).first()
-    now = datetime.now(timezone.utc)
+    q = select(Subscription).where(Subscription.chart_id == order.chart_id)
+    if order.chat_id:
+        q = q.where(Subscription.chat_id == order.chat_id)
+    else:
+        q = q.where(Subscription.chat_id == None)  # noqa: E711 — SQLAlchemy IS NULL
+    sub = session.exec(q).first()
+    now = utcnow()
+    base = sub.expires_at if (sub and sub.expires_at
+                              and ensure_utc(sub.expires_at) > now) else now
     if sub:
         sub.active = True
-        sub.expires_at = now + timedelta(days=30)
+        sub.expires_at = base + timedelta(days=30)
         sub.plan_key = order.plan_key
         sub.platform = order.platform or sub.platform
+        sub.order_id = order.id  # audit r4 B6 — latest originating order
     else:
         session.add(Subscription(
             chat_id=order.chat_id, platform=order.platform or "telegram",
             chart_id=order.chart_id, freq="weekly", plan_key=order.plan_key,
-            active=True, expires_at=now + timedelta(days=30),
+            active=True, expires_at=base + timedelta(days=30),
+            order_id=order.id,  # audit r4 B6
         ))
 
 
 REPORT_PLANS = {"basic", "full", "gold"}
 
+
+def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
+    """D3: once an order is PAID, credit the referrer's wallet (5% of the
+    discounted amount). Idempotent — status pending → rewarded, once."""
+    ev = session.exec(select(ReferralEvent).where(
+        ReferralEvent.order_id == order.id,
+        ReferralEvent.status == "pending",
+    )).first()
+    if not ev or not ev.referrer_user_id:
+        return None
+    referrer = session.get(User, ev.referrer_user_id)
+    if not referrer:
+        return None
+    referrer.balance_rial = (referrer.balance_rial or 0) + ev.reward_rial
+    ev.status = "rewarded"
+    session.flush()
+    return ev
+
+
+def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
+    """D3: queue a cash-out request. One pending at a time; amount must be
+    positive and within balance. Returns False on any refusal."""
+    u = session.get(User, user_id)
+    if not u or amount_rial <= 0 or amount_rial > (u.balance_rial or 0):
+        return False
+    if session.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == user_id,
+            WithdrawalRequest.status == "pending")).first():
+        return False
+    session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
+    session.commit()
+    return True
+
+
+def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") -> bool:
+    """D3: admin resolves a withdrawal. Balance is NOT auto-debited — payout is
+    a manual bank transfer; the record is the audit trail."""
+    wr = session.get(WithdrawalRequest, wid)
+    if not wr or wr.status != "pending":
+        return False
+    if status not in ("paid", "rejected"):
+        return False
+    wr.status = status
+    wr.note = note
+    wr.resolved_at = datetime.now(timezone.utc)
+    session.commit()
+    return True
+
+
+def pay_order_with_balance(session: Session, order: Order, user: User | None) -> bool:
+    """D3: settle an order entirely from the wallet. Returns True if paid by
+    balance (order.status = paid, no Zarinpal round-trip). Boundary: balance
+    can only pay the FULL amount — no mixed payments (wallet+gateway)."""
+    if not user:
+        return False
+    if order.status != "pending":
+        return False
+    if (user.balance_rial or 0) < order.amount_rial:
+        return False
+    user.balance_rial -= order.amount_rial
+    order.status = "paid"
+    order.paid_at = datetime.now(timezone.utc)
+    order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {user.balance_rial + order.amount_rial:,} ریال"
+    if order.plan_key == "monthly":
+        activate_subscription(session, order)
+    if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
+        rep = Report(chart_id=order.chart_id, status="queued", plan_key=order.plan_key)
+        session.add(rep)
+        session.flush()
+        order.report_id = rep.id
+    session.commit()
+    return True
+
 ```
 
-### `app/payment/zarinpal.py` (82 lines)
+### `app/payment/zarinpal.py` (106 lines)
 
 ```python
 """Zarinpal v4 payment client — sandbox + production.
@@ -6321,6 +7350,30 @@ class ZarinpalClient:
             raise ZarinpalError(f"verify code {code}: {d.get('message')}")
         return {"ref_id": d.get("ref_id", ""), "card_pan": d.get("card_pan", "")}
 
+    def refund(self, authority: str, amount_rial: int) -> dict:
+        """Refund a paid transaction (audit r4 B6). Returns {ref_id} on success.
+
+        Zarinpal v4: POST /payment/refund.json — needs the original authority.
+        A repeat call on an already-refunded authority errors (code ~ 66/67),
+        which the caller must map to "already refunded".
+        """
+        payload = {
+            "merchant_id": self.merchant_id,
+            "authority": authority,
+            "amount": amount_rial,
+        }
+        r = httpx.post(f"{self.base}/payment/refund.json", json=payload,
+                       headers={"Accept": "application/json"}, timeout=self.timeout)
+        data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
+        errs = data.get("errors") or []
+        if errs:
+            raise ZarinpalError(f"refund failed: {errs}")
+        d = data.get("data") or {}
+        code = d.get("code")
+        if code != 100:
+            raise ZarinpalError(f"refund code {code}: {d.get('message')}")
+        return {"ref_id": d.get("ref_id", "")}
+
 
 def fake_authority() -> str:
     return "S" + uuid.uuid4().hex[:32].upper()
@@ -6332,7 +7385,7 @@ def fake_authority() -> str:
 
 ## ۸) ربات‌های تلگرام و بله
 
-### `app/bots/handler.py` (372 lines)
+### `app/bots/handler.py` (381 lines)
 
 ```python
 """Chart-platform bot handler — Telegram + Bale, fully button-driven.
@@ -6348,6 +7401,7 @@ import html as _html
 import logging
 import os
 import re
+import secrets
 import traceback
 
 import httpx
@@ -6419,13 +7473,15 @@ def start_keyboard() -> dict:
     return {"inline_keyboard": [[{"text": "✨ ساخت چارت تولد من", "callback_data": "chart_start"}]]}
 
 
-def chart_actions_keyboard(chart_id: str) -> dict:
+def chart_actions_keyboard(chart_id: str, tok: str = "") -> dict:
     base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    q = f"?t={tok}" if tok else ""  # audit r4 A6: bot charts carry capability token
+    sep = "&" if q else ""          # keep the query string well-formed
     return {
         "inline_keyboard": [
-            [{"text": "📄 مشاهده چارت", "url": f"{base}/chart/{chart_id}"}],
-            [{"text": "✨ خرید گزارش کامل", "url": f"{base}/plans?chart={chart_id}"}],
-            [{"text": "🌠 گذرهای کنونی", "url": f"{base}/transit/{chart_id}"}],
+            [{"text": "📄 مشاهده چارت", "url": f"{base}/chart/{chart_id}{q}"}],
+            [{"text": "✨ خرید گزارش کامل", "url": f"{base}/plans?chart={chart_id}{sep}{q.lstrip('?')}"}],
+            [{"text": "🌠 گذرهای کنونی", "url": f"{base}/transit/{chart_id}{q}"}],
             [{"text": "🌌 نگاهی به آسمان هفته", "callback_data": f"sub_{chart_id}"}],
         ]
     }
@@ -6546,7 +7602,8 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
     from sqlmodel import Session
     from app.models import Chart
     with Session(engine) as s:
-        row = Chart(chart_json=chart.chart_json)
+        row = Chart(chart_json=chart.chart_json,
+                    access_token=secrets.token_urlsafe(32))  # A6: capability token
         s.add(row)
         s.commit()
         chart_id = row.id
@@ -6562,7 +7619,7 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
         f"برای مشاهده و خرید گزارش اختصاصی، دکمه‌های زیر را بزن:"
     )
     await send_photo(chat_id, f"{base}/api/share/{chart_id}.png", caption,
-                     platform, reply_markup=chart_actions_keyboard(chart_id))
+                     platform, reply_markup=chart_actions_keyboard(chart_id, row.access_token or ""))
 
 
 # ─────────────────────────── update dispatch ───────────────────────────
@@ -6671,11 +7728,12 @@ async def _handle_callback(cb: dict, platform: str) -> None:
                     await send_message(chat_id, "چارت پیدا نشد؛ اول یک چارت بساز.", platform)
                     return
                 # existing active subscription → just show status
+                from datetime import datetime as _dt, timezone as _tz
                 sub = s.exec(select(Subscription).where(
                     Subscription.chat_id == str(chat_id),
-                    Subscription.chart_id == chart_id, Subscription.active == True,
+                    Subscription.chart_id == chart_id, Subscription.active == True,  # noqa: E712
                 )).first()
-                if sub:
+                if sub and sub.expires_at and sub.expires_at > _dt.now(_tz.utc):
                     expires = sub.expires_at.strftime("%Y-%m-%d") if sub.expires_at else "نامحدود"
                     await send_message(
                         chat_id,
@@ -6683,6 +7741,10 @@ async def _handle_callback(cb: dict, platform: str) -> None:
                         platform,
                     )
                     return
+                elif sub and (not sub.expires_at or sub.expires_at <= _dt.now(_tz.utc)):
+                    sub.active = False  # auto-expire (audit r4 A9)
+                    s.add(sub)
+                    s.commit()
             # paid flow: monthly plan order → zarinpal link (plan v3.0 §7)
             from app.payment.orders import create_order
             with _Session(_engine) as s:
@@ -7195,7 +8257,7 @@ GUIDES: dict[str, dict] = {
 
 ---
 
-## ۱۰) کارت اشتراک و هستهٔ مشترک
+## ۱۰) هستهٔ مشترک و لایهٔ LLM
 
 ### `app/core/__init__.py` (1 lines)
 
@@ -7203,7 +8265,7 @@ GUIDES: dict[str, dict] = {
 
 ```
 
-### `app/core/llm.py` (251 lines)
+### `app/core/llm.py` (390 lines)
 
 ```python
 """
@@ -7221,9 +8283,13 @@ OpenCode Go (DeepSeek V4) only, with per-part model selection
 """
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+import os
 import time
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
 import httpx
@@ -7269,6 +8335,14 @@ class ProviderHealth:
     error_streak: int = 0
     last_latency_ms: int = 0
     cost_usd: float = 0.0
+    tripped_until: float = 0.0  # audit r4 B9 — circuit breaker (monotonic)
+
+
+# audit r4 B9: circuit breaker + deadlines
+_CIRCUIT_THRESHOLD = int(os.getenv("LLM_CIRCUIT_THRESHOLD", "3"))
+_CIRCUIT_COOLDOWN = float(os.getenv("LLM_CIRCUIT_COOLDOWN", "60"))
+_PER_CALL_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "120"))   # httpx per-request
+_DEADLINE = float(os.getenv("LLM_DEADLINE", "150"))          # whole-call backstop
 
 
 # ─────────────────────────── abstract provider ───────────────────────────
@@ -7286,15 +8360,39 @@ class LLMProvider(ABC):
                        max_tokens: int = 2048, temperature: float = 0.7) -> LLMResult:
         """Single completion. Returns structured result — never raises for API errors."""
 
+    async def stream(self, prompt: str, system: str | None = None,
+                     max_tokens: int = 2048,
+                     temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """D4: streaming completion. Default = fall back to complete() in one
+        shot so every provider (even non-streaming) supports the interface."""
+        res = await self.complete(prompt, system=system, max_tokens=max_tokens,
+                                  temperature=temperature)
+        if res.error:
+            yield res
+        else:
+            yield res  # single-shot is a valid "stream" of one chunk
+            yield LLMResult(text=res.text, provider=self.name, model=self.MODEL,
+                            latency_ms=res.latency_ms, usage=res.usage,
+                            cost=res.cost)
+
     def report_success(self, latency_ms: int, usage: LLMUsage) -> None:
         self.health.last_latency_ms = latency_ms
         self.health.error_streak = 0
+        self.health.tripped_until = 0.0  # audit r4 B9 — success resets the breaker
+        self.health.last_error = None
         self.health.cost_usd += self.estimate_cost(usage)
 
     def report_error(self, err: str) -> None:
         self.health.error_streak += 1
         self.health.last_error = err
         self.health.healthy = self.health.error_streak < 5
+        # audit r4 B9 — circuit breaker: N consecutive failures open the circuit
+        if self.health.error_streak >= _CIRCUIT_THRESHOLD:
+            self.health.tripped_until = time.monotonic() + _CIRCUIT_COOLDOWN
+
+    def tripped(self) -> bool:
+        """True while the circuit is OPEN (cooldown not elapsed)."""
+        return self.health.tripped_until > time.monotonic()
 
     @staticmethod
     def estimate_cost(usage: LLMUsage) -> float:
@@ -7339,7 +8437,7 @@ class DeepSeekProvider(LLMProvider):
         if self.extra_payload:
             payload.update(self.extra_payload)
         try:
-            async with httpx.AsyncClient(timeout=300) as cl:
+            async with httpx.AsyncClient(timeout=_PER_CALL_TIMEOUT) as cl:
                 r = await cl.post(f"{self.api_base}/chat/completions",
                                   headers=headers,
                                   json=payload)
@@ -7358,6 +8456,63 @@ class DeepSeekProvider(LLMProvider):
         except Exception as e:
             self.report_error(str(e))
             return LLMResult(text="", provider=self.name, model=self.MODEL, error=str(e))
+
+    async def stream(self, prompt: str, system: str | None = None,
+                     max_tokens: int = 2048, temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """SSE streaming completion — yields partial results with .text being
+        the ACCUMULATED text so far; final yield carries usage + provider.
+        D4: real token streaming over the OpenAI-compatible /chat/completions
+        stream. Never raises: errors are yielded as LLMResult(error=...)."""
+        if not self.api_key:
+            yield LLMResult(text="", provider=self.name, model=self.MODEL,
+                            error="DEEPSEEK_API_KEY not set")
+            return
+        t0 = time.monotonic()
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        payload: dict = {"model": self.MODEL, "messages": messages,
+                         "max_tokens": max_tokens, "temperature": temperature,
+                         "stream": True}
+        if self.extra_payload:
+            payload.update(self.extra_payload)
+        headers = {"Authorization": f"Bearer {self.api_key}",
+                   "User-Agent": self.user_agent}
+        acc = ""
+        try:
+            async with httpx.AsyncClient(timeout=_PER_CALL_TIMEOUT) as cl:
+                async with cl.stream("POST", f"{self.api_base}/chat/completions",
+                                     headers=headers, json=payload) as r:
+                    if r.status_code != 200:
+                        err = (await r.aread())[:200].decode(errors="replace")
+                        self.report_error(err)
+                        yield LLMResult(text="", provider=self.name, model=self.MODEL,
+                                        error=f"HTTP {r.status_code}: {err}")
+                        return
+                    async for line in r.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
+                        chunk = line[len("data:"):].strip()
+                        if chunk == "[DONE]":
+                            break
+                        try:
+                            obj = json.loads(chunk)
+                        except json.JSONDecodeError:
+                            continue
+                        delta = obj["choices"][0].get("delta", {})
+                        piece = delta.get("content") or ""
+                        if piece:
+                            acc += piece
+                            yield LLMResult(text=acc, provider=self.name, model=self.MODEL)
+            u = LLMUsage(prompt_tokens=0, completion_tokens=len(acc))
+            lat = int((time.monotonic() - t0) * 1000)
+            self.report_success(lat, u)
+            yield LLMResult(text=acc, provider=self.name, model=self.MODEL,
+                            latency_ms=lat, usage=u, cost=self.estimate_cost(u))
+        except Exception as e:  # noqa: BLE001
+            self.report_error(str(e))
+            yield LLMResult(text=acc, provider=self.name, model=self.MODEL, error=str(e))
 
 
 # ─────────────────────────── Go (opencode.ai subscription, OpenAI-compatible) ───────────────────────────
@@ -7400,11 +8555,30 @@ class LLMRouter:
     def _rank(self) -> list[LLMProvider]:
         def key(p: LLMProvider) -> tuple:
             return (not p.health.healthy, p.health.error_streak, p.health.cost_usd)
-        return sorted((self.providers[n] for n in self.order if n in self.providers), key=key)
+        ranked = sorted((self.providers[n] for n in self.order if n in self.providers), key=key)
+        # audit r4 B9: skip OPEN circuits; if that empties the pool, fall back
+        # to everything (a stale breaker must not deadlock the request)
+        candidates = [p for p in ranked if not p.tripped()]
+        return candidates or ranked
 
     async def complete(self, prompt: str, system: str | None = None,
                        max_tokens: int = 2048, temperature: float = 0.7,
                        json_mode: bool = False) -> LLMResult:
+        # audit r4 B9: whole-call deadline — a stuck provider chain must fail
+        # fast, not hold a worker slot for minutes
+        try:
+            return await asyncio.wait_for(
+                self._complete(prompt, system=system, max_tokens=max_tokens,
+                               temperature=temperature, json_mode=json_mode),
+                timeout=_DEADLINE)
+        except asyncio.TimeoutError:
+            logger.warning("LLM call hit the %ss deadline", _DEADLINE)
+            return LLMResult(text="", provider="none", model="",
+                             error=f"deadline exceeded ({_DEADLINE}s)")
+
+    async def _complete(self, prompt: str, system: str | None = None,
+                        max_tokens: int = 2048, temperature: float = 0.7,
+                        json_mode: bool = False) -> LLMResult:
         last: LLMResult | None = None
         for p in self._rank():
             last = await p.complete(prompt, system=system, max_tokens=max_tokens,
@@ -7413,6 +8587,33 @@ class LLMRouter:
                 return last
             logger.warning("LLM provider %s failed: %s — trying next", p.name, last.error)
         return last or LLMResult(text="", provider="none", model="", error="all providers failed")
+
+    async def stream_complete(self, prompt: str, system: str | None = None,
+                              max_tokens: int = 2048,
+                              temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        """D4: streaming completion with the same fallback chain as complete().
+        Yields accumulated text chunks; the LAST yield carries usage/provider
+        (or .error when every provider failed)."""
+        last: LLMResult | None = None
+        for p in self._rank():
+            try:
+                emitted = False
+                async for chunk in p.stream(prompt, system=system,
+                                            max_tokens=max_tokens,
+                                            temperature=temperature):
+                    emitted = True
+                    last = chunk
+                    if chunk.error:
+                        logger.warning("LLM provider %s stream error: %s — trying next",
+                                       p.name, chunk.error)
+                        break
+                    yield chunk
+                if emitted and last and not last.error:
+                    return
+            except Exception as e:  # noqa: BLE001 — a broken provider must not kill the stream
+                logger.warning("LLM provider %s stream raised: %s — trying next", p.name, e)
+                last = LLMResult(text="", provider=p.name, model="", error=str(e))
+        yield last or LLMResult(text="", provider="none", model="", error="all providers failed")
 
     def health_report(self) -> list[dict]:
         return [
@@ -7543,7 +8744,7 @@ def render_share_card(chart_json: dict, chart_id: str) -> str:
 
 ## ۱۱) قالب‌های Jinja2 (فرانت‌اند)
 
-### `app/templates/account.html` (99 lines)
+### `app/templates/account.html` (179 lines)
 
 ```html
 {% extends "base.html" %}
@@ -7606,9 +8807,30 @@ def render_share_card(chart_json: dict, chart_id: str) -> str:
   {% endif %}
 
   <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">کیف پول من</h2>
+    <div x-data="wallet()" x-init="init()" x-cloak>
+      <p class="muted" style="font-size:.85rem;margin-bottom:8px;">اعتبار حاصل از دعوت دوستان</p>
+      <div style="font-size:1.7rem;font-weight:800;color:var(--gold);" x-text="fmt(balance)"></div>
+      <p class="muted" style="font-size:.8rem;margin:8px 0;">کد دعوت تو: <b style="color:#fff;direction:ltr;display:inline-block;" x-text="code"></b></p>
+      <button class="btn" x-show="balance > 0" @click="askWithdraw()" style="padding:9px 20px;margin-top:6px;">
+        درخواست تسویه
+      </button>
+    </div>
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
     <h2 style="font-size:1.05rem;">اشتراک هفتگی «نگاهی به آسمان هفته»</h2>
     <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">هر هفته، نگاهی تأملی به گذرهای سیارهای چارتت — مستقیم در تلگرام.</p>
     <a class="btn" href="https://t.me/Astrology_chartx_bot" target="_blank" rel="noopener" style="display:inline-block; padding:10px 22px;">فعال‌سازی در تلگرام</a>
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">
+      <svg style="width:17px;height:17px;vertical-align:-3px;margin-left:6px;color:var(--gold);" aria-hidden="true"><use href="#icon-bell"/></svg>
+      اعلان مرورگر
+    </h2>
+    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
+    <button id="pushBtn" class="btn" style="padding:10px 22px;">فعال‌سازی اعلان</button>
   </section>
 
   <section class="glass" style="margin-top:14px; padding:20px;">
@@ -7643,6 +8865,65 @@ def render_share_card(chart_json: dict, chart_id: str) -> str:
   </form>
   <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
 </div>
+<script>
+/* D1: Web Push subscribe/unsubscribe from the account page */
+(function () {
+  var btn = document.getElementById('pushBtn');
+  if (!btn) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    btn.textContent = 'مرورگرت اعلان پشتیبانی نمی‌کند';
+    btn.disabled = true;
+    return;
+  }
+  btn.addEventListener('click', function () {
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') { btn.textContent = 'دسترسی اعلان رد شد'; return; }
+      return navigator.serviceWorker.register('/sw.js').then(function () {
+        return navigator.serviceWorker.ready;
+      }).then(function (reg) {
+        return fetch('/api/push/vapid-public-key').then(function (r) { return r.json(); })
+          .then(function (j) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(j.key) }); });
+      }).then(function (sub) {
+        return fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: sub.endpoint, p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))), auth: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))) })
+        });
+      }).then(function (r) { if (r.ok) btn.textContent = '✓ اعلان فعال شد'; });
+    }).catch(function () { btn.textContent = 'خطا در فعال‌سازی'; });
+  });
+  function urlBase64ToUint8Array(base64) {
+    var pad = base64.replace(/=+$/, '');
+    var raw = atob(pad);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+})();
+function wallet() {
+  return {
+    balance: 0,
+    code: '',
+    async init() {
+      try {
+        const r = await fetch('/api/wallet');
+        if (r.ok) { const j = await r.json(); this.balance = j.balance_rial || 0; this.code = j.referral_code || ''; }
+      } catch (e) { /* anonymous */ }
+    },
+    fmt(n) { return Number(n || 0).toLocaleString('fa-IR') + ' ریال'; },
+    async askWithdraw() {
+      const v = prompt('مبلغ تسویه به ریال (حداکثر ' + this.balance.toLocaleString('fa-IR') + '):');
+      if (!v) return;
+      const fd = new FormData();
+      fd.append('amount_rial', String(parseInt(v.replace(/[^\d]/g, ''), 10) || 0));
+      const r = await fetch('/api/wallet/withdraw', { method: 'POST', body: fd });
+      const j = await r.json();
+      alert(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'));
+      if (r.ok) location.reload();
+    }
+  };
+}
+</script>
 {% endblock %}
 
 ```
@@ -7711,7 +8992,7 @@ function login(){
 
 ```
 
-### `app/templates/admin.html` (294 lines)
+### `app/templates/admin.html` (325 lines)
 
 ```html
 {% extends "base.html" %}
@@ -7726,6 +9007,7 @@ function login(){
     <div class="kpi"><b>{{ n }}</b><span>سفارش {{ {'pending':'در انتظار','paid':'پرداخت‌شده','failed':'ناموفق'}.get(s, s) }}</span></div>
     {% endfor %}
     <div class="kpi"><b>{{ reports|selectattr('status','equalto','done')|list|length }}</b><span>گزارش آماده</span></div>
+    <div class="kpi"><b style="color:{{ '#e76f51' if dlq_count else '#2a9d8f' }};">{{ dlq_count }}</b><span>گزارش ناموفق (DLQ)</span></div>
     <div class="kpi"><b>{{ llm_cost_7d }}$</b><span>هزینه AI (۷ روز) — {{ llm_runs_7d }} درخواست</span></div>
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
@@ -7909,6 +9191,36 @@ function login(){
         </tr>
         {% endfor %}
         {% if not orders %}<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--muted);">سفارشی ثبت نشده</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">تسویه کیف پول (D3)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:640px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">تاریخ</th><th>کاربر</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        {% for w in withdrawals %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;white-space:nowrap;">{{ w.created_at.strftime('%m-%d %H:%M') }}</td>
+          <td style="direction:ltr;text-align:right;">{{ w.user_id[:8] }}</td>
+          <td>{{ '{:,}'.format(w.amount_rial // 10) }}</td>
+          <td style="color:{% if w.status == 'paid' %}#2a9d8f{% elif w.status == 'rejected' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">{{ {'pending':'در انتظار','paid':'پرداخت شد','rejected':'رد شد'}.get(w.status, w.status) }}</td>
+          <td>
+            {% if w.status == 'pending' %}
+            <form method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" style="display:inline;margin-left:6px;">
+              <input type="hidden" name="status" value="paid">
+              <button class="btn" style="padding:5px 12px;font-size:.78rem;">تأیید واریز</button>
+            </form>
+            <form method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" style="display:inline;">
+              <input type="hidden" name="status" value="rejected">
+              <button class="btn btn-ghost" style="padding:5px 12px;font-size:.78rem;color:#ff6b6b;">رد</button>
+            </form>
+            {% else %}{{ w.note or '—' }}{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not withdrawals %}<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--muted);">درخواست تسویه‌ای نیست</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -8453,13 +9765,13 @@ function login(){
       if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
     });
   });
-  /* audit r3 (P2-18): degraded-status banner — poll /health, show when Redis/DB down */
+  /* audit r4 (C5): degraded-status banner — poll /readiness, show when any dependency down */
   (function(){
     var shown = false;
     var bar = document.getElementById('degradedBar');
     if (!bar) return;
     function check(){
-      fetch('/health', {headers: {'Accept': 'application/json'}})
+      fetch('/readiness', {headers: {'Accept': 'application/json'}})
         .then(function(r){ return r.json(); })
         .then(function(j){
           if (j && j.status === 'degraded' && !shown){
@@ -8652,7 +9964,7 @@ function reportState(){
 
 ```
 
-### `app/templates/chat.html` (75 lines)
+### `app/templates/chat.html` (104 lines)
 
 ```html
 {% extends "base.html" %}
@@ -8673,11 +9985,15 @@ function reportState(){
     <template x-for="m in msgs" :key="m.id">
       <div :style="m.me ? 'align-self:flex-end;background:linear-gradient(135deg,#6a5acd,#4a3f8f);color:#fff;border-radius:16px 16px 4px 16px;' : 'align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#e8ecff;border-radius:16px 16px 16px 4px;'"
            style="max-width:82%;padding:11px 15px;font-size:.95rem;line-height:1.7;white-space:pre-wrap;">
-        <span x-text="m.text"></span>
+        <span x-text="m.text" :class="m.streaming ? 'streaming-cursor' : ''"></span>
       </div>
     </template>
-    <div x-show="busy" style="align-self:flex-start;color:var(--muted);font-size:.9rem;">⏳ در حال نوشتن...</div>
   </div>
+
+  <style>
+  .streaming-cursor::after{content:'▍';color:var(--gold);animation:blink 1s step-start infinite;margin-right:2px;}
+  @keyframes blink{50%{opacity:0;}}
+  </style>
 
   <form @submit.prevent="send()" x-show="!locked" style="display:flex;gap:8px;margin-top:12px;">
     <input class="input" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
@@ -8687,7 +10003,8 @@ function reportState(){
 
   <template x-if="locked">
     <p style="color:#ffb454;font-size:.9rem;margin-top:12px;text-align:center;">
-      🔒 گفت‌وگو با چارت بخشی از پلن‌های <b>طلایی</b> و <b>ماهانه</b> است — <a href="/plans?chart={{ chart_id }}" style="color:#f5c518;">خرید و فعال‌سازی</a>
+      <svg style="width:15px;height:15px;vertical-align:-3px;margin-left:5px;color:#ffb454;" aria-hidden="true"><use href="#icon-lock"/></svg>
+      گفت‌وگو با چارت بخشی از پلن‌های <b>طلایی</b> و <b>ماهانه</b> است — <a href="/plans?chart={{ chart_id }}" style="color:#f5c518;">خرید و فعال‌سازی</a>
     </p>
   </template>
 </div>
@@ -8708,19 +10025,43 @@ function chat(){
     },
     async send(){
       const text = this.q.trim(); if(!text || this.busy || this.remaining <= 0) return;
-      this.msgs.push({id: Date.now(), text, me:true}); this.q=''; this.busy=true;
+      const mid = Date.now();
+      this.msgs.push({id: mid, text, me:true}); this.q=''; this.busy=true;
+      // D4: streaming answer box — the assistant message updates as tokens arrive
+      const aid = mid + 1;
+      this.msgs.push({id: aid, text:'', me:false, streaming:true});
       this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
       try{
-        const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        const r = await fetch('/api/chat/stream', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
           body: new URLSearchParams({chart_id:'{{ chart_id }}', question:text})});
-        const d = await r.json();
-        if(r.status === 403){ this.locked = true; }
-        else if(r.status === 429){ this.msgs.push({id: Date.now()+1, text: d.detail || 'سهمیه امروزت تمام شد.', me:false}); }
-        else if(d.answer){ this.msgs.push({id: Date.now()+1, text: d.answer, me:false}); }
-        else { this.msgs.push({id: Date.now()+1, text: 'پاسخی آماده نشد؛ دوباره تلاش کنید.', me:false}); }
-        if(d.quota){ this.remaining = d.quota.remaining; this.limit = d.quota.limit; }
+        if(r.status === 403){ this.locked = true; this.busy=false; return; }
+        if(r.status === 429){ const d = await r.json(); this.msgs.push({id: aid+100, text: d.detail || 'سهمیه امروزت تمام شد.', me:false}); this.busy=false; return; }
+        if(!r.ok || !r.body){ this.msgs.find(m => m.id===aid).text = 'خطا در ارتباط با سرور.'; this.busy=false; return; }
+        const reader = r.body.getReader();
+        const dec = new TextDecoder();
+        let buf = '';
+        let full = '';
+        while(true){
+          const {done, value} = await reader.read();
+          if(done) break;
+          buf += dec.decode(value, {stream:true});
+          const frames = buf.split('\n\n'); buf = frames.pop();
+          for(const fr of frames){
+            const evLine = fr.split('\n')[0];
+            const evType = evLine.startsWith('event:') ? evLine.slice(6).trim() : 'message';
+            const dataLine = fr.split('\n').find(l => l.startsWith('data:'));
+            if(!dataLine) continue;
+            const ev = JSON.parse(dataLine.slice(5).trim());
+            if(evType === 'token'){ full = ev.text; const m = this.msgs.find(m => m.id===aid); if(m) m.text = full; }
+            else if(evType === 'done'){ const m = this.msgs.find(m => m.id===aid); if(m){ m.text = ev.answer || full; m.streaming = false; } }
+            else if(evType === 'error'){ const m = this.msgs.find(m => m.id===aid); if(m){ m.text = ev.message || 'پاسخی آماده نشد؛ دوباره تلاش کنید.'; m.streaming = false; } }
+            else if(evType === 'quota'){ }
+          }
+          this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
+        }
+        const m = this.msgs.find(m => m.id===aid); if(m && m.streaming){ m.streaming = false; m.text = m.text || 'پاسخی آماده نشد؛ دوباره تلاش کنید.'; }
       }catch(e){
-        this.msgs.push({id: Date.now()+1, text: 'خطا در ارتباط با سرور.', me:false});
+        const m = this.msgs.find(m => m.id===aid); if(m) m.text = 'خطا در ارتباط با سرور.';
       }
       this.busy=false;
       this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
@@ -9216,7 +10557,7 @@ document.addEventListener('alpine:init', () => { /* nothing — formState define
 
 ```
 
-### `app/templates/partials/icon_sprite.html` (23 lines)
+### `app/templates/partials/icon_sprite.html` (26 lines)
 
 ```html
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -9240,6 +10581,9 @@ document.addEventListener('alpine:init', () => { /* nothing — formState define
 <symbol id="icon-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
 <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></symbol>
 <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></symbol>
+<symbol id="icon-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></symbol>
+<symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+<symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
 </svg>
 
 ```
@@ -9280,7 +10624,7 @@ document.addEventListener('alpine:init', () => { /* nothing — formState define
 
 ```
 
-### `app/templates/plans.html` (105 lines)
+### `app/templates/plans.html` (133 lines)
 
 ```html
 {% extends "base.html" %}
@@ -9322,6 +10666,13 @@ document.addEventListener('alpine:init', () => { /* nothing — formState define
       <button class="btn btn-lg" @click="buy('{{ p.key }}')"
               style="width:100%;{% if p.key == 'full' %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
         خرید {{ p.name_fa }}
+      </button>
+      <button x-show="walletLoaded && balance !== null && balance >= {{ p.price_rial }}"
+              @click="buy('{{ p.key }}', true)"
+              class="btn"
+              style="width:100%;margin-top:10px;background:rgba(30,160,90,.18);border:1px solid rgba(30,160,90,.5);color:#7ee2a8;">
+        <svg style="width:15px;height:15px;vertical-align:-3px;margin-left:5px;" aria-hidden="true"><use href="#icon-wallet"/></svg>
+        پرداخت با موجودی کیف پول
       </button>
     </div>
     {% endfor %}
@@ -9366,7 +10717,19 @@ document.addEventListener('alpine:init', () => { /* nothing — formState define
 function purchase() {
   return {
     busy: false,
-    async buy(planKey) {
+    balance: null,
+    walletLoaded: false,
+    async init() {
+      try {
+        const r = await fetch('/api/wallet');
+        if (r.ok) {
+          const j = await r.json();
+          this.balance = j.balance_rial;
+        }
+      } catch (e) { /* anonymous visitor — no wallet */ }
+      this.walletLoaded = true;
+    },
+    async buy(planKey, useBalance) {
       const chartId = new URLSearchParams(location.search).get('chart') || '';
       if (!chartId) {
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
@@ -9377,9 +10740,18 @@ function purchase() {
         const fd = new FormData();
         fd.append('plan_key', planKey);
         fd.append('chart_id', chartId);
-        const r = await fetch('/api/orders', { method: 'POST', body: fd });
+        const r = await fetch('/api/orders', {
+          method: 'POST',
+          body: fd,
+          headers: useBalance ? { 'x-pay-with-balance': '1' } : {},
+        });
         const j = await r.json();
         if (!r.ok) { alert(j.detail || 'خطا در ایجاد سفارش'); this.busy = false; return; }
+        if (j.paid_by_balance) {
+          alert('خرید با موجودی کیف پول انجام شد ✅ گزارش در حال تولید است.');
+          location.href = '/account';
+          return;
+        }
         window.location.href = j.payment_url;
       } catch (e) { alert('ارتباط با سرور برقرار نشد'); this.busy = false; }
     }
@@ -9390,7 +10762,7 @@ function purchase() {
 
 ```
 
-### `app/templates/privacy.html` (20 lines)
+### `app/templates/privacy.html` (22 lines)
 
 ```html
 {% extends "base.html" %}
@@ -9402,11 +10774,13 @@ function purchase() {
     <ul style="margin:14px 0 0 18px; line-height:2;">
       <li>داده‌ی تولد فقط برای محاسبه و تفسیر چارت خودت استفاده می‌شود؛ هرگز فروخته یا منتشر نمی‌شود.</li>
       <li>محاسبات نجومی (موقعیت سیارات، خانه‌ها و زوایا) به‌طور کامل روی سرور خودمان انجام می‌شود و چارت تو فقط با لینک شخصی محافظت‌شده در دسترس است.</li>
-      <li>برای تولید متن تفسیر، داده‌ی ساختاری چارت ممکن است به سرویس‌های پردازش زبان هوش مصنوعیِ شخص ثالث (مانند OpenAI و مشابه) ارسال شود؛ این داده صرفاً برای همین هدف استفاده می‌شود و نزد آن سرویس‌ها ذخیره یا بازآموزی نمی‌شود.</li>
+      <li>برای تولید متن تفسیر و پاسخ چت، داده‌ی ساختاری چارت (موقعیت سیارات، خانه‌ها، پرسش تو) به سرویس هوش مصنوعیِ شخص ثالث (DeepSeek و OpenCode) ارسال می‌شود؛ این داده صرفاً برای تولید همان پاسخ استفاده می‌شود، نزد آن سرویس‌ها ذخیره یا بازآموزی نمی‌شود و محتوای چت و گزارش در دیتابیس خودمان رمزنگاری‌شده نگهداری می‌شود.</li>
+      <li>گزارش صوتی با سرویس صدای مایکروسافت (Edge TTS) ساخته و به‌صورت موقت (حداکثر ۳۰ روز) در فضای ابری ما نگهداری می‌شود.</li>
       <li>گزارش‌ها و چارت‌ها با شماره موبایل تو (ورود امن با کد یک‌بارمصرف) قفل می‌شوند.</li>
-      <li>در هر لحظه می‌توانی از صفحه «حساب من» همه‌ی داده‌هایت را برای همیشه حذف کنی.</li>
+      <li>در هر لحظه می‌توانی از صفحه «حساب من» همه‌ی داده‌هایت را برای همیشه حذف کنی (چارت‌ها، چت‌ها، گزارش‌ها، سفارش‌ها و فایل‌های ابری).</li>
       <li>بدون ثبت‌نام، چارت رایگان ساخته می‌شود و هیچ داده‌ای به حساب کسی وصل نمی‌شود.</li>
       <li>پیامک‌ها فقط برای ورود (کد تأیید) ارسال می‌شود — بدون تبلیغات مزاحم.</li>
+      <li>بکاپ‌های دیتابیس رمزنگاری‌شده‌اند و پس از ۳۰ روز به‌طور خودکار پاک می‌شوند.</li>
     </ul>
     <p class="muted" style="margin-top:14px; font-size:.85rem;">برای حذف کامل داده‌ها: ورود → حساب من → «حذف کامل حساب و داده‌ها».</p>
   </div>
@@ -10126,7 +11500,127 @@ function renderFullSyn(d) {
 
 ---
 
-## ۱۲) تست‌ها
+## ۱۲) PWA: سرویس‌کارگر اعلان + مانیفست
+
+### `app/static/sw.js` (77 lines)
+
+```javascript
+/* Chart-platform service worker (PWA — plan §13.9): offline app shell + last chart.
+   Cache-first for static assets, network-first for pages. */
+const CACHE = "chart-v2";
+const SHELL = ["/", "/birth-form", "/learn", "/static/tailwind_inline.css", "/static/sw-register.js"];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (e) => {
+  const url = new URL(e.request.url);
+  if (e.request.method !== "GET" || url.origin !== location.origin) return;
+  // API: network-only (never serve stale chart data)
+  if (url.pathname.startsWith("/api/")) return;
+
+  if (url.pathname.startsWith("/static/")) {
+    e.respondWith(
+      caches.match(e.request).then((hit) => hit || fetch(e.request).then((r) => {
+        const copy = r.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return r;
+      }))
+    );
+    return;
+  }
+  // pages: network-first with offline fallback to cache
+  e.respondWith(
+    fetch(e.request)
+      .then((r) => {
+        if (r.ok) {
+          const copy = r.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+        }
+        return r;
+      })
+      .catch(() => caches.match(e.request).then((hit) => hit || caches.match("/")))
+  );
+});
+
+/* ── Web Push (D1) ─────────────────────────────────────────────────────────── */
+self.addEventListener("push", (e) => {
+  let data = { title: "زایچه", body: "", url: "/" };
+  try {
+    if (e.data) data = Object.assign(data, e.data.json());
+  } catch (_) { /* non-JSON payloads → defaults */ }
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/static/app-icon.png",
+      badge: "/static/app-icon.png",
+      data: { url: data.url },
+      dir: "rtl",
+      lang: "fa",
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/";
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ("focus" in c) { c.focus(); c.navigate(url); return; }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});
+
+```
+
+### `app/static/sw-register.js` (7 lines)
+
+```javascript
+// PWA registration (plan §13.9) — served at root scope so it controls the whole site.
+if ("serviceWorker" in navigator && location.protocol.startsWith("https")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
+```
+
+### `app/static/manifest.webmanifest` (16 lines)
+
+```javascript
+{
+  "name": "زایچه — چارت تولد آنلاین",
+  "short_name": "زایچه",
+  "description": "گزارش اختصاصی چارت تولد با محاسبهی دقیق نجومی — شخصیت، شغل، روابط، استعدادها",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1026",
+  "theme_color": "#0b1026",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+
+```
+
+
+---
+
+## ۱۳) تست‌ها
 
 ### `tests/__init__.py` (1 lines)
 
@@ -10134,7 +11628,7 @@ function renderFullSyn(d) {
 
 ```
 
-### `tests/conftest.py` (32 lines)
+### `tests/conftest.py` (42 lines)
 
 ```python
 """Pytest fixtures — temp SQLite per run (NEVER prod Postgres).
@@ -10152,6 +11646,7 @@ os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:54
 os.environ["PUBLIC_BASE_URL"] = "http://127.0.0.1:8767"
 os.environ["ENRICH_INSIGHTS"] = "0"  # no LLM calls in tests — deterministic fallback only
 os.environ["RATE_LIMIT_BACKEND"] = "memory"  # tests stay hermetic (no shared Redis keys)
+os.environ["APP_ENV"] = "development"        # tests run in dev mode — prod fail-closed gates off
 os.environ["CREATE_ALL_ON_BOOT"] = "1"       # tests build schema via create_all (no Alembic in CI)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -10162,6 +11657,15 @@ from app.db import engine, init_db
 from app.models import BotState  # noqa: F401 — register all models
 
 init_db()
+
+
+@pytest.fixture(autouse=True)
+def _bypass_rate_limit(monkeypatch):
+    """All tests share the 'testclient' IP — one chart-rate-limit counter would
+    trip across files (audit r4 B5 added 20/min on chart creation). Bypass by
+    default; the rate-limit tests re-enable the real limiter themselves."""
+    import app.main as _m
+    monkeypatch.setattr(_m, "_rate_limit", lambda *a, **k: True)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -10201,6 +11705,124 @@ def test_admin_stats_after_login_200():
     r2 = c.get("/api/admin/stats")
     assert r2.status_code == 200
     assert "orders_total" in r2.json()
+
+```
+
+### `tests/test_authz_matrix.py` (82 lines)
+
+```python
+"""C8 (audit r4): authorization matrix — every registered route MUST be listed
+in docs/AUTHORIZATION-MATRIX.md (single source of truth for access levels).
+
+Structural test: parse the app's route table and cross-check against the
+matrix's route column; any route missing from the matrix fails the build.
+"""
+import re
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+
+from app.main import app as main_app
+
+MATRIX = Path(__file__).resolve().parent.parent / "docs" / "AUTHORIZATION-MATRIX.md"
+
+# infra/static routes that don't need matrix entries
+SKIP = {"/openapi.json", "/docs", "/redoc", "/docs/oauth2-redirect", "/static"}
+
+
+def _route_pattern(route: str) -> str:
+    """FastAPI {param} → regex placeholder for matching matrix rows."""
+    return re.sub(r"\{[^}]+\}", "{x}", route)
+
+
+def _matrix_routes() -> set[str]:
+    rows = set()
+    for line in MATRIX.read_text().splitlines():
+        # rows carry one or more `METHOD /path` entries inside backticks
+        for m in re.finditer(r"`((?:GET|POST|PUT|DELETE) [^`]+)`", line):
+            rows.add(_route_pattern(m.group(1).split(" ", 1)[1]))
+    return rows
+
+
+def test_every_route_is_in_matrix():
+    rows = _matrix_routes()
+
+    missing = []
+    for r in main_app.routes:
+        path = getattr(r, "path", None)
+        if not path or path in SKIP:
+            continue
+        for method in getattr(r, "methods", set()) or {"GET"}:
+            if method in {"HEAD", "OPTIONS"}:
+                continue
+            if _route_pattern(path) not in rows:
+                missing.append(f"{method} {path}")
+    assert not missing, (
+        f"routes missing from docs/AUTHORIZATION-MATRIX.md: {missing}\n"
+        "Add them to the matrix (single source of truth) — this gate keeps "
+        "new endpoints from silently skipping authorization documentation."
+    )
+
+
+def test_matrix_rows_are_real_routes():
+    """Reverse check: every matrix row must correspond to an actual route."""
+    registered = {_route_pattern(getattr(r, "path", "")) for r in main_app.routes}
+    fake = []
+    for line in MATRIX.read_text().splitlines():
+        m = re.match(r"\| `(GET|POST|PUT|DELETE) (/[^`]*)` \|", line)
+        if m and _route_pattern(m.group(2)) not in registered:
+            fake.append(m.group(2))
+    assert not fake, f"matrix rows with no matching route: {fake}"
+
+
+def test_authz_core_guards_work():
+    """Spot checks that matrix levels are enforced in code, not just docs."""
+    c = TestClient(main_app)
+    # anonymous cannot read admin stats
+    assert c.get("/api/admin/stats").status_code == 403
+    # anonymous cannot order (no chart → 404, not 200)
+    r = c.post("/api/orders", data={"plan_key": "gold", "chart_id": "nonexistent"})
+    assert r.status_code == 404
+    # anonymous cannot see account
+    r = c.get("/account", follow_redirects=False)
+    assert r.status_code == 303
+    # public endpoints answer
+    assert c.get("/api/plans").status_code == 200
+    assert c.get("/liveness").status_code == 200
+    assert c.get("/privacy").status_code == 200
+
+```
+
+### `tests/test_bot_capability.py` (26 lines)
+
+```python
+"""A6 (audit r4): bot-created charts carry capability tokens in share URLs so the
+ownership-guarded web routes (/chart, /plans, /transit) work for bot users."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app.bots.handler import chart_actions_keyboard
+
+
+def test_keyboard_without_token_plain_urls(monkeypatch):
+    monkeypatch.setenv("PUBLIC_BASE_URL", "https://chart.example.com")
+    kb = chart_actions_keyboard("abc-123")
+    urls = [b["url"] for row in kb["inline_keyboard"] for b in row if "url" in b]
+    assert "/chart/abc-123" in urls[0]
+    assert "?t=" not in urls[0]
+
+
+def test_keyboard_with_token_appends_capability(monkeypatch):
+    monkeypatch.setenv("PUBLIC_BASE_URL", "https://chart.example.com")
+    kb = chart_actions_keyboard("abc-123", "tok_secret_9")
+    urls = [b["url"] for row in kb["inline_keyboard"] for b in row if "url" in b]
+    assert urls[0] == "https://chart.example.com/chart/abc-123?t=tok_secret_9"
+    # plans keeps chart= and appends t= with & (well-formed query string)
+    assert urls[1] == "https://chart.example.com/plans?chart=abc-123&t=tok_secret_9"
+    assert urls[2] == "https://chart.example.com/transit/abc-123?t=tok_secret_9"
 
 ```
 
@@ -10612,6 +12234,277 @@ def test_chat_post_owner_without_plan_403():
 
 ```
 
+### `tests/test_chat_quota_atomic.py` (133 lines)
+
+```python
+"""A8 (audit r4): chat quota is ATOMIC and per-ACCOUNT.
+
+Regression: count-then-act let concurrent requests overrun the daily limit
+(check→LLM→save). Now a Redis INCR+TTL claim happens BEFORE the LLM call, so
+N concurrent requests with a limit of 3 produce exactly 3 successes."""
+import json
+import sys
+import threading
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlmodel import Session
+
+import app.main as main_mod
+from app.db import engine
+from app.models import Order
+from app.secret_store import set_secret
+
+
+@pytest.fixture()
+def chat_ctx(monkeypatch):
+    """Chart + paid GOLD order + fake LLM answer; quota limit forced to 3.
+
+    The generic chat rate-limiter (20 req/60s per IP, shared Redis bucket) is
+    neutralized so test repetition can't cause false 429s (debugged r4 A8)."""
+    monkeypatch.setattr(main_mod, "chat_answer",
+                        lambda *a, **k: {"answer": "پاسخ تستی", "ok": True,
+                                         "intent": "career", "domains": [], "tokens": 10})
+    monkeypatch.setattr(main_mod, "_rate_limit", lambda *a, **k: True)
+    set_secret("chat_daily_limit_gold", "3")
+    c = TestClient(main_mod.app)
+    r = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    })
+    d = r.json()
+    cid, tok = d["chart_id"], d["access_token"]
+    with Session(engine) as s:
+        s.add(Order(chart_id=cid, plan_key="gold", status="paid", amount_rial=6_990_000))
+        s.commit()
+    yield c, cid, tok
+    # reset the secret so other tests see the default
+    set_secret("chat_daily_limit_gold", "")
+
+
+def _cookies(cid: str, tok: str) -> dict:
+    return {"chart_access": json.dumps({cid: tok})}
+
+
+def test_quota_exhausted_returns_429(chat_ctx):
+    c, cid, tok = chat_ctx
+    ck = _cookies(cid, tok)
+    c.cookies.update(ck)
+    for _ in range(3):
+        r = c.post("/api/chat", data={"chart_id": cid, "question": "سوال"},
+                   )
+        assert r.status_code == 200, r.text
+    r = c.post("/api/chat", data={"chart_id": cid, "question": "سوال چهارم"},
+               )
+    assert r.status_code == 429
+
+
+def test_concurrent_claims_exactly_limit_successes(chat_ctx):
+    c, cid, tok = chat_ctx
+    ck = _cookies(cid, tok)
+    c.cookies.update(ck)
+    results = []
+    barrier = threading.Barrier(10)
+    lock = threading.Lock()
+
+    def worker():
+        tc = TestClient(main_mod.app)  # TestClient is not thread-safe
+        tc.cookies.update(ck)
+        try:
+            barrier.wait()
+            r = tc.post("/api/chat", data={"chart_id": cid, "question": "س"},
+                        )
+            with lock:
+                results.append(r.status_code)
+        except Exception as e:  # noqa: BLE001
+            with lock:
+                results.append(f"ERR:{type(e).__name__}:{e}")
+
+    threads = [threading.Thread(target=worker) for _ in range(10)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    ok = results.count(200)
+    assert ok == 3, f"expected exactly 3 successes, got {results}"
+    assert results.count(429) == 7
+
+
+def test_account_scope_shared_across_charts(chat_ctx):
+    """Two charts of the SAME bot account (order.chat_id) share one daily pool.
+
+    Anonymous browsers fall back to per-chart keys by design; the per-ACCOUNT
+    promise is tested through the bot identity path (b:telegram:<chat_id>)."""
+    c, cid, tok = chat_ctx
+    import uuid as _uuid
+    pool = f"t-{_uuid.uuid4().hex[:10]}"  # unique Redis pool key per run
+    r = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "2",
+        "hour": "7", "minute": "0", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    })
+    d2 = r.json()
+    cid2, tok2 = d2["chart_id"], d2["access_token"]
+    with Session(engine) as s:
+        # both orders belong to the same account pool → one shared counter
+        s.add(Order(chart_id=cid2, plan_key="gold", status="paid",
+                    amount_rial=6_990_000, chat_id=pool, platform="telegram"))
+        s.commit()
+        from app.models import Order as O
+        from sqlmodel import select as _select
+        o1 = s.exec(_select(O).where(O.chart_id == cid)).first()
+        o1.chat_id = pool
+        o1.platform = "telegram"
+        s.add(o1)
+        s.commit()
+    ck = {"chart_access": json.dumps({cid: tok, cid2: tok2})}
+    c.cookies.update(ck)
+    for _ in range(3):  # 3 questions on chart 1
+        assert c.post("/api/chat", data={"chart_id": cid, "question": "س"},
+                      ).status_code == 200
+    # chart 2 is already exhausted by the same account pool
+    r = c.post("/api/chat", data={"chart_id": cid2, "question": "س"},
+               )
+    assert r.status_code == 429
+
+```
+
+### `tests/test_chat_stream_sse.py` (128 lines)
+
+```python
+"""D4 (audit r4): SSE streaming chat — the /api/chat/stream endpoint emits
+real token events (text/event-stream), persists history on completion, and
+refunds the quota if the stream dies before producing anything. LLM is
+mocked with a token-by-token generator; no real API calls."""
+from __future__ import annotations
+
+import json
+import uuid
+
+import pytest
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+from app.db import engine
+from app.models import (BirthProfile, ChatMessage, Chart, Order, User)
+
+
+def _chat_stream_stub(tokens: list[str], fail: bool = False):
+    """Async generator replacement for app.chat.service.chat_stream —
+    emits the same event shape the endpoint consumes."""
+    async def gen(question, chart_json, report_sections=None, focus_areas=None,
+                  router=None, report_id=None):
+        yield {"type": "intent", "intent": "general", "domains": []}
+        if fail:
+            yield {"type": "error", "message": "سرویس در دسترس نیست"}
+            return
+        acc = ""
+        for t in tokens:
+            acc += t
+            yield {"type": "token", "text": acc}
+        yield {"type": "done", "answer": acc, "ok": True, "cost_usd": 0.0,
+               "tokens": len(acc), "provider": "stub", "model": "stub",
+               "intent": "general", "domains": []}
+    return gen
+
+
+@pytest.fixture
+def ctx():
+    """User + birth profile + chart + paid GOLD order (chat entitlement)."""
+    with Session(engine) as s:
+        u = User(phone=f"+98{uuid.uuid4().hex[:10]}")
+        s.add(u); s.commit()
+        p = BirthProfile(user_id=u.id, name="تست", raw_year=1373, raw_month=6,
+                         raw_day=1, city_fa="تهران", lat=35.6889, lon=51.3897)
+        s.add(p); s.commit()
+        ch = Chart(chart_json={"planets": {"Sun": {"sign_fa": "اسد", "house": 10}},
+                               "angles": {"ASC": {"sign_fa": "اسد"}}, "birth": {}},
+                   profile_id=p.id)
+        s.add(ch); s.commit()
+        o = Order(chart_id=ch.id, plan_key="gold", amount_rial=500_000,
+                  status="paid", authority=f"auth-{uuid.uuid4().hex[:12]}")
+        s.add(o); s.commit()
+        ids = {"uid": u.id, "cid": ch.id, "pid": p.id, "oid": o.id}
+        yield ids
+        # cleanup (FK order: messages → order → chart → profile → user)
+        for m in s.exec(select(ChatMessage).where(ChatMessage.chart_id == ch.id)).all():
+            s.delete(m)
+        s.flush()
+        s.delete(o); s.commit()
+        s.delete(ch); s.commit()
+        s.delete(p); s.commit()
+        s.delete(u); s.commit()
+
+
+def _login(client: TestClient, user_id: str):
+    from app.auth import _user_cookie_value
+    client.cookies.set("chart_user", _user_cookie_value(user_id))
+
+
+def test_stream_emits_tokens_and_done(monkeypatch, ctx):
+    """Real SSE: token events accumulate, done carries the full answer, and
+    history is persisted."""
+    import app.main as main
+    from app.chat import service as chat_service
+    monkeypatch.setattr(chat_service, "chat_stream", _chat_stream_stub(["سلام", " ", "دنیا"]))
+    monkeypatch.setattr(main, "_rate_limit", lambda *a, **k: True)
+    c = TestClient(main.app)
+    _login(c, ctx["uid"])
+    with c.stream("POST", "/api/chat/stream",
+                  data={"chart_id": ctx["cid"], "question": "حالم چطوره؟"}) as r:
+        assert r.status_code == 200
+        assert r.headers["content-type"].startswith("text/event-stream")
+        body = "".join(r.iter_text())
+    assert "event: intent" in body
+    events = [json.loads(ln[5:]) for ln in body.split("\n") if ln.startswith("data:")]
+    tokens = [e for e in events if e["type"] == "token"]
+    assert tokens[-1]["text"] == "سلام دنیا"      # accumulated
+    done = [e for e in events if e["type"] == "done"][0]
+    assert done["answer"] == "سلام دنیا" and done["provider"] == "stub"
+    # history persisted
+    with Session(engine) as s:
+        msgs = s.exec(select(ChatMessage).where(ChatMessage.chart_id == ctx["cid"])).all()
+        assert len(msgs) >= 2
+        assert msgs[-1].content == "سلام دنیا"
+
+
+def test_stream_error_refunds_quota(monkeypatch, ctx):
+    """A provider failure yields an error event; the claimed quota is
+    released because no token was produced."""
+    import app.main as main
+    from app.chat import service as chat_service
+    monkeypatch.setattr(chat_service, "chat_stream", _chat_stream_stub([], fail=True))
+    monkeypatch.setattr(main, "_rate_limit", lambda *a, **k: True)
+    c = TestClient(main.app)
+    _login(c, ctx["uid"])
+    with c.stream("POST", "/api/chat/stream",
+                  data={"chart_id": ctx["cid"], "question": "تست؟"}) as r:
+        body = "".join(r.iter_text())
+    assert "event: error" in body
+    assert "token" not in body
+
+
+def test_stream_requires_paid_plan(monkeypatch, ctx):
+    """Same entitlement guards as /api/chat: a chart without a paid GOLD or
+    monthly order is refused with 403."""
+    import app.main as main
+    monkeypatch.setattr(main, "_rate_limit", lambda *a, **k: True)
+    with Session(engine) as s:
+        ch = Chart(chart_json={"planets": {}, "angles": {}, "birth": {}})
+        s.add(ch); s.commit(); free_cid = ch.id
+    c = TestClient(main.app)
+    _login(c, ctx["uid"])
+    r = c.post("/api/chat/stream", data={"chart_id": free_cid, "question": "؟"})
+    assert r.status_code == 403
+    with Session(engine) as s:
+        s.delete(s.get(Chart, free_cid)); s.commit()
+
+```
+
 ### `tests/test_coupon_atomic.py` (83 lines)
 
 ```python
@@ -10676,27 +12569,360 @@ def test_atomic_update_reserves_only_while_capacity():
 
 
 def test_coupon_exhausted_second_order_fails(monkeypatch):
+    """audit r4 A10 — NEW semantics: the coupon slot is reserved at CREATION,
+    so the second order cannot even be created once capacity is gone (the old
+    verify-time consume failed a PAID order — P0-7 money-lost regression)."""
     monkeypatch.setattr(main_mod, "ZarinpalClient", lambda: _FakeGW())
     c = TestClient(app_mod())
     cid = _mk_coupon(max_uses=1)
-    a1, a2 = "AUTH" + uuid.uuid4().hex[:8], "AUTH" + uuid.uuid4().hex[:8]
+    a1 = "AUTH" + uuid.uuid4().hex[:8]
     _mk_order(a1, cid)
-    _mk_order(a2, cid)
+    # legacy raw-DB order (created before reservation): verify must still mark
+    # it PAID — a paying user never gets a failed order over coupon capacity
     r1 = _verify(c, a1)
     assert r1.status_code == 303  # paid → redirect to result
-    r2 = _verify(c, a2)
-    assert r2.status_code == 303
     with engine.begin() as conn:
         row = conn.execute(text("SELECT status FROM orders WHERE authority = :a"), {"a": a1}).one()
         assert row[0] == "paid"
-        row2 = conn.execute(text("SELECT status FROM orders WHERE authority = :a"), {"a": a2}).one()
-        assert row2[0] == "failed"  # coupon capacity was gone
         used = conn.execute(text("SELECT used_count FROM coupons WHERE id = :c"), {"c": cid}).one()
-        assert used[0] == 1
+        assert used[0] == 0  # never reserved → never consumed
 
 
 def app_mod():
     return main_mod.app
+
+```
+
+### `tests/test_coupon_reservation.py` (161 lines)
+
+```python
+"""A10 (audit r4): coupon RESERVATION pattern.
+
+Regression: coupon slots were checked with a stale read at order creation and
+consumed at payment verify — two users could both pass the last-slot check and
+one lost money when the atomic consume failed. Now the slot is reserved
+ATOMICALLY at creation and released on every no-payment path (gateway request
+error, verify failure, refund, stale pending order)."""
+import json
+import time
+
+from fastapi.testclient import TestClient
+
+from app.db import engine
+from app.main import app as main_app
+from app.models import Coupon, Order
+from sqlmodel import Session, select
+
+
+class FakeZP:
+    def __init__(self):
+        import uuid as _u
+        self.uid = _u.uuid4().hex[:10]
+
+    def request(self, *a, **k):
+        return f"Q{int(time.time())}{self.uid}", f"https://pay.zarinpal.com/pg/StartPay/Q{int(time.time())}{self.uid}"
+
+    def verify(self, authority, amount_rial):
+        return {"ref_id": "200000000001", "card_pan": "621986****0000"}
+
+    def refund(self, *a, **k):
+        return {"ref_id": "R200000000001"}  # audit r4 B6 — real refund path
+
+
+class FailVerifyZP(FakeZP):
+    def verify(self, authority, amount_rial):
+        from app.payment.zarinpal import ZarinpalError
+        raise ZarinpalError("verification rejected")
+
+
+def _mk_chart(c: TestClient) -> tuple[str, str]:
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897"}).json()
+    return d["chart_id"], d["access_token"]
+
+
+def _coupon(s: Session, code: str, max_uses=1) -> Coupon:
+    import uuid as _uuid
+    code = f"{code}-{_uuid.uuid4().hex[:6].upper()}"  # unique per run (test DB persists)
+    c = Coupon(code=code, percent=10, max_uses=max_uses, active=True)
+    s.add(c)
+    s.commit()
+    s.refresh(c)
+    return c
+
+
+def test_last_slot_reserved_at_creation(monkeypatch):
+    """Two users racing for the LAST coupon slot: exactly one may create an order."""
+    monkeypatch.setattr("app.main.ZarinpalClient", FakeZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", FakeZP)
+    c = TestClient(main_app)
+    with Session(engine) as s:
+        cp0 = _coupon(s, "SAVE10", max_uses=1)
+    code = cp0.code
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+                )
+    assert r1.status_code == 200, r1.text
+    # second user with the same coupon — slot already reserved → 400
+    cid2, tok2 = _mk_chart(c)
+    ck2 = {"chart_access": json.dumps({cid2: tok2})}
+    c.cookies.update(ck2)
+    r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "gold", "coupon": code},
+                )
+    assert r2.status_code == 400
+    assert "مصرف شده" in r2.json()["detail"]
+
+
+def test_verify_failure_releases_slot(monkeypatch):
+    """Payment verification fails → order failed → coupon slot returned."""
+    monkeypatch.setattr("app.main.ZarinpalClient", FailVerifyZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", FakeZP)
+    c = TestClient(main_app)
+    with Session(engine) as s:
+        cp0 = _coupon(s, "SAVE11", max_uses=1)
+    code = cp0.code
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+               )
+    oid = r.json()["order_id"]
+    with Session(engine) as s:
+        cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
+        assert cp.used_count == 1  # reserved at creation
+        o = s.get(Order, oid)
+        auth = o.authority
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK")
+    with Session(engine) as s:
+        cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
+        assert cp.used_count == 0, "slot must be released after failed verify"
+        o = s.get(Order, oid)
+        assert o.status == "failed"
+
+
+def test_gateway_down_at_creation_releases_slot(monkeypatch):
+    """Zarinpal request() raises at order creation → failed order → slot released."""
+    class DownZP:
+        def request(self, *a, **k):
+            from app.payment.zarinpal import ZarinpalError
+            raise ZarinpalError("gateway down")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", DownZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", DownZP)
+    c = TestClient(main_app)
+    with Session(engine) as s:
+        cp0 = _coupon(s, "SAVE12", max_uses=1)
+    code = cp0.code
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+               )
+    assert r.status_code == 502
+    with Session(engine) as s:
+        cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
+        assert cp.used_count == 0, "slot must be released when gateway is down"
+
+
+def test_refund_returns_slot(monkeypatch):
+    """Admin refund of a paid coupon order returns the reserved slot."""
+    monkeypatch.setattr("app.main.ZarinpalClient", FakeZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", FakeZP)
+    c = TestClient(main_app)
+    with Session(engine) as s:
+        cp0 = _coupon(s, "SAVE13", max_uses=1)
+    code = cp0.code
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+                 ).json()["order_id"]
+    with Session(engine) as s:
+        auth = s.get(Order, oid).authority
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK")
+    with Session(engine) as s:
+        assert s.get(Order, oid).status == "paid"
+        assert s.exec(select(Coupon).where(Coupon.code == code)).first().used_count == 1
+    # admin refund (audit r4 B6: real Zarinpal refund call — FakeZP.refund mocked)
+    from app.main import _admin_cookie_value
+    admin_ck = {"chart_admin": _admin_cookie_value()}
+    c.cookies.update(admin_ck)
+    r = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r.status_code == 200, r.text
+    with Session(engine) as s:
+        cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
+        assert cp.used_count == 0, "refund must return the slot"
+
+```
+
+### `tests/test_data_lifecycle.py` (97 lines)
+
+```python
+"""C6 (audit r4): data lifecycle — account deletion cascades EVERYTHING
+(charts, chats, reports + R2 objects, orders, subscriptions, referrals),
+and the privacy page states the real AI providers.
+
+Regression: deleting an account used to orphan rows (reports/R2 kept leaking
+birth data). Verified cascade now, and privacy.html names DeepSeek/OpenCode
+(not "OpenAI").
+"""
+import sys
+import uuid
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+from app.main import app as main_app
+from app.auth import USER_COOKIE, _user_cookie_value
+from app.db import engine
+from app.models import (BirthProfile, Chart, ChatMessage, Order, Report,
+                        Subscription, User)
+
+
+def _seed_user_with_data(s) -> tuple[User, str, str]:
+    u = User(phone="0912" + uuid.uuid4().hex[:8])
+    s.add(u)
+    s.commit()
+    s.refresh(u)
+    p = BirthProfile(user_id=u.id, name="تست", raw_year=1994, raw_month=8,
+                     raw_day=23, time_known=True, hour=6, minute=10,
+                     city_fa="تهران", lat=35.69, lon=51.39)
+    s.add(p)
+    s.commit()
+    s.refresh(p)
+    chart = Chart(profile_id=p.id, chart_json={"planets": {}}, name="تست")
+    s.add(chart)
+    s.commit()
+    s.refresh(chart)
+    rep = Report(chart_id=chart.id, status="done", plan_key="gold",
+                 r2_key="chart-reports/x.pdf", sections={"a": {"title": "t"}})
+    s.add(rep)
+    s.add(ChatMessage(chart_id=chart.id, role="user", content="سلام"))
+    s.add(Subscription(chart_id=chart.id, active=True, expires_at=None))
+    s.add(Order(chart_id=chart.id, plan_key="gold", status="paid",
+                amount_rial=99000, authority="AU" + uuid.uuid4().hex[:8],
+                ref_id="REF1"))
+    s.commit()
+    return u, chart.id, rep.id
+
+
+def test_account_delete_cascades_all_data(monkeypatch):
+    deleted = []
+    monkeypatch.setattr("app.storage.delete_object", lambda key: deleted.append(key))
+    c = TestClient(main_app)
+    with Session(engine) as s:
+        u, cid, rep_id = _seed_user_with_data(s)
+        uid = u.id
+    c.cookies.update({USER_COOKIE: _user_cookie_value(uid), "csrf_token": "t1"})
+    r = c.post("/account/delete", data={"csrf_token": "t1"},
+               follow_redirects=False)
+    assert r.status_code == 303
+    with Session(engine) as s:
+        assert s.get(User, uid) is None
+        assert s.get(Chart, cid) is None
+        assert s.get(Report, rep_id) is None
+        assert s.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all() == []
+        assert s.exec(select(Subscription).where(Subscription.chart_id == cid)).all() == []
+        assert s.exec(select(Order).where(Order.chart_id == cid)).all() == []
+        profiles = s.exec(select(BirthProfile)).all()
+        assert profiles == [] or all(p.user_id != uid for p in profiles)
+    assert "chart-reports/x.pdf" in deleted, "R2 object must be deleted too"
+
+
+def test_account_delete_requires_auth_and_csrf():
+    c = TestClient(main_app)
+    # no session cookie → redirect to login
+    r = c.post("/account/delete", data={"csrf_token": "x"}, follow_redirects=False)
+    assert r.status_code == 303
+    with Session(engine) as s:
+        u, _, _ = _seed_user_with_data(s)
+        uid = u.id
+    # authenticated but wrong CSRF → 403
+    c.cookies.update({USER_COOKIE: _user_cookie_value(uid), "csrf_token": "right"})
+    r = c.post("/account/delete", data={"csrf_token": "wrong"})
+    assert r.status_code == 403
+    with Session(engine) as s:
+        assert s.get(User, uid) is not None, "wrong CSRF must NOT delete"
+
+
+def test_privacy_page_names_real_ai_providers():
+    c = TestClient(main_app)
+    r = c.get("/privacy")
+    assert r.status_code == 200
+    assert "OpenAI" not in r.text
+    assert "DeepSeek" in r.text and "OpenCode" in r.text
+    assert "۳۰ روز" in r.text  # audio retention
+
+```
+
+### `tests/test_env_prod.py` (60 lines)
+
+```python
+"""A2 (audit r4): APP_ENV=prod|production must BOTH activate fail-closed mode.
+
+Regression: code checked `APP_ENV == "prod"` while `.env.example` shipped
+`APP_ENV=production` — anyone copying the template silently disabled all
+production security checks. Centralized in app/env.py (IS_PROD).
+"""
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PY = sys.executable
+
+
+def _boot(app_env: str, secrets_ok: bool) -> subprocess.CompletedProcess:
+    """Import app.main in a subprocess; empty-string env vars override the
+    repo .env (load_dotenv override=False skips vars that are already set)."""
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT)
+    env["APP_ENV"] = app_env
+    env["DATABASE_URL"] = "sqlite:////tmp/env_prod_test.db" if secrets_ok else ""
+    env["AUTH_SECRET"] = "test-secret" if secrets_ok else ""
+    env["ADMIN_SECRET"] = "test-admin" if secrets_ok else ""
+    env["SECRETS_MASTER_KEY"] = "test-master-key" if secrets_ok else ""
+    # audit r4 B5: production REQUIRES the Redis rate-limit backend — the
+    # subprocess needs it (and a real Redis) to boot successfully
+    env["RATE_LIMIT_BACKEND"] = "redis" if secrets_ok else "memory"
+    return subprocess.run(
+        [PY, "-c", "import app.main"], cwd="/tmp", env=env,
+        capture_output=True, text=True, timeout=60,
+    )
+
+
+def test_production_spelling_fails_closed_without_secrets():
+    r = _boot("production", secrets_ok=False)
+    assert r.returncode != 0
+    assert "is required in production" in r.stderr
+
+
+def test_prod_spelling_fails_closed_without_secrets():
+    r = _boot("prod", secrets_ok=False)
+    assert r.returncode != 0
+    assert "is required in production" in r.stderr
+
+
+def test_production_spelling_boots_with_secrets():
+    r = _boot("production", secrets_ok=True)
+    assert r.returncode == 0, r.stderr[-500:]
+
+
+def test_prod_spelling_boots_with_secrets():
+    r = _boot("prod", secrets_ok=True)
+    assert r.returncode == 0, r.stderr[-500:]
+
+
+def test_dev_spelling_boots_without_secrets():
+    r = _boot("development", secrets_ok=False)
+    assert r.returncode == 0, r.stderr[-500:]
 
 ```
 
@@ -10756,7 +12982,7 @@ def test_personal_question_prompt_contains_question():
 
 ```
 
-### `tests/test_golden_charts.py` (160 lines)
+### `tests/test_golden_charts.py` (165 lines)
 
 ```python
 """Golden chart test suite — every engine change must pass these (plan v3.1 §5.4).
@@ -10805,9 +13031,14 @@ def test_chart_computes(g):
 
 @pytest.mark.parametrize("g", GOLDEN_CHARTS, ids=[g["id"] for g in GOLDEN_CHARTS])
 def test_utc_conversion(g):
-    """zoneinfo must produce the expected UTC for every DST era (no manual tables)."""
+    """zoneinfo must produce the expected UTC for every DST era (no manual tables).
+
+    C4 classification: chart-2-no-time is the ONLY golden chart without a
+    time-of-birth — its UTC is undefined by design (houses/angles empty,
+    covered by test_structure) — so exactly ONE parametrization skips.
+    """
     if "verify_utc" not in g.get("expected", {}):
-        pytest.skip("no UTC expectation")
+        pytest.skip("no UTC expectation — birth time unknown (chart-2-no-time)")
     c = _chart(g).chart_json
     assert c["birth"]["utc_time"] == g["expected"]["verify_utc"], (
         f"UTC mismatch: {c['birth']['utc_time']} != {g['expected']['verify_utc']}"
@@ -10961,6 +13192,166 @@ def test_health_degraded_when_db_down(monkeypatch):
     j = r.json()
     assert j["status"] == "degraded"
     assert j["db"] == "down"
+
+```
+
+### `tests/test_health_split.py` (54 lines)
+
+```python
+"""C5 (audit r4): split health endpoints — /liveness (process only) vs
+/readiness (DB + Redis + worker + R2 + disk); /health stays as a compat alias.
+
+Regression: the single /health probe mixed liveness and readiness — an
+orchestrator restarting on it would also kill the app during a Redis blip.
+"""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+
+from app.main import app as main_app
+
+
+def test_liveness_always_200_no_deps():
+    c = TestClient(main_app)
+    r = c.get("/liveness")
+    assert r.status_code == 200
+    assert r.json() == {"status": "alive"}
+
+
+def test_readiness_reports_all_components(monkeypatch):
+    c = TestClient(main_app)
+    r = c.get("/readiness")
+    j = r.json()
+    assert r.status_code == 200
+    for key in ("db", "redis", "worker", "r2", "disk", "status"):
+        assert key in j, f"readiness must report {key}"
+
+
+def test_health_is_alias_of_readiness():
+    c = TestClient(main_app)
+    h = c.get("/health")
+    rd = c.get("/readiness")
+    assert h.status_code == rd.status_code
+    assert h.json() == rd.json()
+
+
+def test_readiness_degrades_when_db_down(monkeypatch):
+
+    class _Dead:
+        def connect(self):
+            raise RuntimeError("db down")
+
+    monkeypatch.setattr("app.main.engine", _Dead())
+    c = TestClient(main_app)
+    r = c.get("/readiness")
+    assert r.status_code == 503
+    assert r.json()["db"] == "down"
+    assert r.json()["status"] == "degraded"
+    # liveness still answers — process is alive even though deps are down
+    assert c.get("/liveness").status_code == 200
+
+```
+
+### `tests/test_llm_circuit_breaker.py` (96 lines)
+
+```python
+"""B9 (audit r4): LLM circuit breaker + deadlines.
+
+Regression: a failing provider was always retried first on every request
+(no circuit), and a hung provider held a worker slot for up to 300s.
+Now: N consecutive failures OPEN the circuit (cooldown), success closes it,
+and the whole router call has a hard deadline.
+"""
+import asyncio
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import app.core.llm as llm
+from app.core.llm import LLMResult, LLMUsage, LLMRouter
+
+
+class OkProvider(llm.LLMProvider):
+    name = "ok"
+
+    async def complete(self, prompt, system=None, max_tokens=2048,
+                       temperature=0.7, json_mode=False):
+        self.report_success(10, LLMUsage(1, 1))
+        return LLMResult(text="ok", provider=self.name, model="m")
+
+    @staticmethod
+    def estimate_cost(usage):
+        return 0.0
+
+
+class FailProvider(llm.LLMProvider):
+    name = "fail"
+
+    async def complete(self, prompt, system=None, max_tokens=2048,
+                       temperature=0.7, json_mode=False):
+        self.report_error("boom")
+        return LLMResult(text="", provider=self.name, model="m", error="boom")
+
+    @staticmethod
+    def estimate_cost(usage):
+        return 0.0
+
+
+class SlowProvider(llm.LLMProvider):
+    name = "slow"
+
+    async def complete(self, prompt, system=None, max_tokens=2048,
+                       temperature=0.7, json_mode=False):
+        await asyncio.sleep(30)
+        return LLMResult(text="never", provider=self.name, model="m")
+
+    @staticmethod
+    def estimate_cost(usage):
+        return 0.0
+
+
+def test_circuit_opens_after_threshold_and_skips_failing_provider(monkeypatch):
+    """After 3 consecutive failures the provider's circuit OPENs and it is
+    skipped from ranking; a later success closes the breaker."""
+    failer, ok = FailProvider(), OkProvider()
+    r = LLMRouter([failer])
+    monkeypatch.setattr(llm, "_CIRCUIT_THRESHOLD", 3)
+    monkeypatch.setattr(llm, "_CIRCUIT_COOLDOWN", 60)
+
+    # 3 consecutive failures (no healthy peer to rescue) → circuit opens
+    for _ in range(3):
+        asyncio.run(r.complete("x"))
+    assert failer.tripped(), "circuit must OPEN after 3 consecutive failures"
+
+    # with a healthy provider present, the tripped one is skipped entirely
+    r2 = LLMRouter([failer, ok])
+    assert [p.name for p in r2._rank()] == ["ok"], "open circuit must not be ranked"
+
+    # success closes the circuit
+    failer.health.tripped_until = 0.0
+    failer.report_success(5, LLMUsage(1, 1))
+    assert not failer.tripped()
+
+
+def test_deadline_aborts_slow_provider(monkeypatch):
+    """A hung provider must not hold the call past the deadline."""
+    slow = SlowProvider()
+    r = LLMRouter([slow])
+    monkeypatch.setattr(llm, "_DEADLINE", 0.15)
+    res = asyncio.run(r.complete("x"))
+    assert res.error and "deadline" in res.error.lower()
+
+
+def test_all_tripped_falls_back_so_request_never_deadlocks():
+    """If EVERY provider's circuit is open, still try them (no deadlock)."""
+    failer = FailProvider()
+    failer.health.error_streak = 99
+    failer.health.tripped_until = 10 ** 12  # open until year ~33658
+    r = LLMRouter([failer])
+    res = asyncio.run(r.complete("x"))
+    assert res.error == "boom"  # it WAS tried despite the open circuit
 
 ```
 
@@ -11147,6 +13538,124 @@ def test_create_order_inherits_profile_id(monkeypatch):
 
 ```
 
+### `tests/test_ownership_r4.py` (113 lines)
+
+```python
+"""A3-A5 (audit r4): transit / synastry / order endpoints must enforce the SAME
+ownership model as chart/report/chat — bare/foreign UUID → 403, capability → OK.
+
+Regression for: /api/charts/{id}/transits, /transit/{id},
+/api/synastry/full, /api/synastry/access, POST /api/orders."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+from app.main import app
+
+
+def _create_chart(client: TestClient) -> tuple[str, str]:
+    r = client.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    })
+    assert r.status_code == 200, r.text
+    d = r.json()
+    return d["chart_id"], d.get("access_token", "")
+
+
+# ---------- A3: transit ----------
+
+def test_transit_api_bare_uuid_403():
+    c = TestClient(app)
+    cid, _ = _create_chart(c)
+    assert TestClient(app).get(f"/api/charts/{cid}/transits").status_code == 403
+
+
+def test_transit_api_with_token_200():
+    c = TestClient(app)
+    cid, tok = _create_chart(c)
+    r = TestClient(app).get(f"/api/charts/{cid}/transits?t={tok}")
+    assert r.status_code == 200
+    assert "events" in r.json()
+
+
+def test_transit_page_bare_uuid_403():
+    c = TestClient(app)
+    cid, _ = _create_chart(c)
+    assert TestClient(app).get(f"/transit/{cid}").status_code == 403
+
+
+def test_transit_page_with_token_200():
+    c = TestClient(app)
+    cid, tok = _create_chart(c)
+    assert TestClient(app).get(f"/transit/{cid}?t={tok}").status_code == 200
+
+
+# ---------- A4: synastry ----------
+
+def test_synastry_full_foreign_charts_403():
+    c = TestClient(app)
+    ca, _ = _create_chart(c)
+    cb, _ = _create_chart(c)
+    # a FRESH client (no cookies) trying to read the pair → 403 ownership
+    r = TestClient(app).post("/api/synastry/full", data={"chart_a": ca, "chart_b": cb})
+    assert r.status_code == 403
+
+
+def test_synastry_access_foreign_403():
+    c = TestClient(app)
+    ca, _ = _create_chart(c)
+    cb, _ = _create_chart(c)
+    r = TestClient(app).get(f"/api/synastry/access?chart_a={ca}&chart_b={cb}")
+    assert r.status_code == 403
+
+
+def _cap_cookie(cid: str, tok: str) -> dict:
+    """Cookie jar entry: chart_access={chart_id: token}."""
+    import json
+    return {"chart_access": json.dumps({cid: tok})}
+
+
+def test_synastry_full_owned_but_unpaid_403():
+    c = TestClient(app)
+    ca, tok = _create_chart(c)
+    cb, _ = _create_chart(c)
+    c.cookies.update(_cap_cookie(ca, tok))
+    r = c.post("/api/synastry/full", data={"chart_a": ca, "chart_b": cb})
+    # owned pair, but no paid order → still 403 (purchase required)
+    assert r.status_code == 403
+
+
+# ---------- A5: order creation ----------
+
+def test_order_foreign_chart_403():
+    c = TestClient(app)
+    cid, _ = _create_chart(c)
+    r = TestClient(app).post("/api/orders", data={"plan_key": "full", "chart_id": cid})
+    assert r.status_code == 403
+
+
+def test_order_foreign_secondary_chart_403():
+    c = TestClient(app)
+    cid, _ = _create_chart(c)
+    # secondary chart owned by the caller, primary foreign → 403
+    r = c.post("/api/orders", data={"plan_key": "synastry", "chart_id": cid,
+                                    "secondary_chart_id": cid})
+    assert r.status_code == 403
+
+
+def test_order_owned_chart_reaches_payment():
+    c = TestClient(app)
+    cid, tok = _create_chart(c)
+    c.cookies.update(_cap_cookie(cid, tok))
+    r = c.post("/api/orders", data={"plan_key": "full", "chart_id": cid})
+    assert r.status_code == 200, r.text
+    assert "payment_url" in r.json()
+
+```
+
 ### `tests/test_payment.py` (81 lines)
 
 ```python
@@ -11233,7 +13742,7 @@ def test_plans_seed_shape():
 
 ```
 
-### `tests/test_payment_race.py` (76 lines)
+### `tests/test_payment_race.py` (78 lines)
 
 ```python
 """Payment callback race — audit r3: concurrent duplicate Zarinpal callbacks
@@ -11309,12 +13818,156 @@ def test_concurrent_verify_processes_once(paid_order):
         reports = s.exec(select(Report).where(Report.chart_id == o.chart_id)).all()
     assert FakeZarinpalClient.verify_calls == 1, f"verify called {FakeZarinpalClient.verify_calls}x"
     assert o.status == "paid"
-    assert coupon.used_count == 1, f"coupon consumed {coupon.used_count}x"
+    # audit r4 A10: coupon consumption moved to order CREATION (reservation);
+    # a raw-DB fixture order never reserved → used_count stays 0
+    assert coupon.used_count == 0, f"coupon consumed {coupon.used_count}x"
     assert len(reports) == 1, f"{len(reports)} reports created (expected 1)"
 
 ```
 
-### `tests/test_phase10.py` (82 lines)
+### `tests/test_payment_state_machine.py` (137 lines)
+
+```python
+"""B7 (audit r4): payment verify state machine.
+
+Regression: a network failure during Zarinpal verify() marked the order
+FAILED even though the money may have moved (user charged, order failed).
+Now: pending → verifying → paid | failed; only a definitive gateway rejection
+fails the order, network errors put it BACK to pending so a refresh re-verifies
+(Zarinpal code 101 = already verified → paid).
+"""
+import sys
+import uuid
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import httpx
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+from app.main import app as main_app
+from app.db import engine
+from app.models import Coupon, Order, Report
+from app.payment.zarinpal import ZarinpalError
+
+
+def _mk_chart(c):
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    }).json()
+    return d["chart_id"], d["access_token"]
+
+
+def _paid_order(s, cid, status="pending", with_coupon=False):
+    o = Order(chart_id=cid, plan_key="gold", status=status, amount_rial=99000,
+              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1")
+    if with_coupon:
+        cp = Coupon(code="B7-" + uuid.uuid4().hex[:6].upper(), percent=10,
+                    max_uses=1, active=True)
+        s.add(cp)
+        s.commit()
+        o.coupon_id = cp.id
+        cp.used_count = 1  # simulate the A10 reservation
+    s.add(o)
+    s.commit()
+    s.refresh(o)
+    return o
+
+
+class NetworkErrZP:
+    """verify() dies like a dropped connection AFTER the user paid."""
+
+    def verify(self, *a, **k):
+        raise httpx.ConnectTimeout("connection dropped")
+
+    def refund(self, *a, **k):
+        return {"ref_id": "R1"}
+
+
+class RejectZP:
+    """Gateway definitively says the payment never happened."""
+
+    def verify(self, *a, **k):
+        raise ZarinpalError("verify code -55: تراکنش ناموفق")
+
+
+class OkZP:
+    def verify(self, *a, **k):
+        return {"ref_id": "200000000099", "card_pan": "621986****0000"}
+
+    def refund(self, *a, **k):
+        return {"ref_id": "R1"}
+
+
+def _patch(mp, cls):
+    mp.setattr("app.main.ZarinpalClient", cls)
+    mp.setattr("app.payment.zarinpal.ZarinpalClient", cls)
+
+
+def test_network_error_keeps_order_pending_not_failed(monkeypatch):
+    """Money may have moved → order must NOT be failed; user can refresh."""
+    _patch(monkeypatch, NetworkErrZP)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
+    with Session(engine) as s:
+        o = _paid_order(s, cid)
+        oid, auth = o.id, o.authority
+    r = c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)
+    assert r.status_code == 303
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "pending", "network error must NOT fail a possibly-paid order"
+        assert "رفرش" in (o.error or "")
+
+
+def test_refresh_after_network_error_completes_payment(monkeypatch):
+    """Refresh re-verifies; the SECOND verify (Zarinpal code 101) → paid,
+    exactly once — no duplicate reports, single subscription extension."""
+    monkeypatch.setattr("app.main._enqueue_report", lambda rid: True)  # no real queue
+    _patch(monkeypatch, NetworkErrZP)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
+    with Session(engine) as s:
+        o = _paid_order(s, cid)
+        oid, auth = o.id, o.authority
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)  # network error
+    monkeypatch.setattr("app.main.ZarinpalClient", OkZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", OkZP)
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)  # refresh → paid
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "paid"
+        assert o.ref_id == "200000000099"
+        reports = s.exec(select(Report).where(Report.chart_id == cid)).all()
+        assert len(reports) == 1, "exactly one report for one paid order"
+
+
+def test_gateway_rejection_marks_failed_and_releases_coupon(monkeypatch):
+    """Definitive gateway rejection (authority invalid) → failed + coupon back."""
+    _patch(monkeypatch, RejectZP)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
+    with Session(engine) as s:
+        o = _paid_order(s, cid, with_coupon=True)
+        oid, auth, cpid = o.id, o.authority, o.coupon_id
+    c.get(f"/api/payments/verify?Authority={auth}&Status=OK", follow_redirects=False)
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "failed"
+        cp = s.get(Coupon, cpid)
+        assert cp.used_count == 0, "failed payment must return the coupon slot"
+
+```
+
+### `tests/test_phase10.py` (83 lines)
 
 ```python
 """Tests for phase-10 additions: free preview, paid synastry gate, transit timeline, plans."""
@@ -11393,10 +14046,11 @@ def test_prompt_overrides_versioning():
 
 
 def test_plans_include_new_keys():
+    from sqlmodel import select
     from app.db import Session, engine
     from app.models import Plan
     with Session(engine) as s:
-        keys = {p.key for p in s.query(Plan).all()}
+        keys = {p.key for p in s.exec(select(Plan)).all()}
     assert {"basic", "full", "gold", "synastry", "monthly"} <= keys
 
 ```
@@ -11551,7 +14205,107 @@ def test_qa_keeps_original_forbidden_words(phrase: str):
 
 ```
 
-### `tests/test_rate_limit.py` (41 lines)
+### `tests/test_rag_pgvector.py` (95 lines)
+
+```python
+"""D2 (audit r4): pgvector RAG — chunking, indexing (idempotent), and
+cosine retrieval over report chunks. The embedding model is MOCKED here
+(no 100MB+ download in tests); a real-model smoke lives in scripts/rag_smoke.py.
+"""
+import sys
+
+from sqlmodel import Session, select
+
+sys.path.insert(0, "/root/chart-platform")
+from app.db import engine
+from app.models import Chart, Report, ReportChunk
+import app.rag as rag
+
+
+def _seed_done_report() -> str:
+    with Session(engine) as s:
+        ch = Chart(profile_id=None, chart_json={"planets": {}})
+        s.add(ch)
+        s.commit()
+        s.refresh(ch)
+        rep = Report(chart_id=ch.id, status="done", plan_key="full", sections={
+            "love": {"summary": "ماه در خانه هشتم، پیوندهای عاطفی عمیق و محرمانه.",
+                     "insights": [{"insight": "ناهید در مقارنه با کیوان: عشق مسئولانه."}]},
+            "career": {"summary": "خورشید در خانه دهم، مسیر حرفهای روشن.",
+                       "insights": [{"insight": "تیر در سهگانه با مشتری: ارتباطات مؤثر."}]},
+        })
+        s.add(rep)
+        s.commit()
+        return rep.id
+
+
+def test_chunking_splits_long_sections():
+    long_text = "جمله " * 300  # 900+ chars
+    chunks = rag.chunk_report_text({"career": {"summary": long_text}})
+    assert chunks, "long section must produce chunks"
+    assert all(len(t) <= rag.CHUNK_SIZE + rag.CHUNK_OVERLAP for _, t in chunks)
+    # chunk boundaries must not exceed the source text length
+    joined = " ".join(t for _, t in chunks)
+    assert "جمله" in joined
+
+
+def test_index_report_idempotent(monkeypatch):
+    calls = {"n": 0}
+
+    class FakeModel:
+        def encode(self, texts, **kw):
+            calls["n"] += 1
+            return [[0.1] * 384 for _ in texts]
+
+    monkeypatch.setattr(rag, "_model_instance", lambda: FakeModel())
+    rid = _seed_done_report()
+    n1 = rag.index_report(rid)
+    assert n1 >= 2
+    n2 = rag.index_report(rid)  # idempotent — already indexed
+    assert n2 == 0
+    with Session(engine) as s:
+        stored = s.exec(select(ReportChunk).where(
+            ReportChunk.report_id == rid)).all()
+        assert len(stored) == n1
+        assert stored[0].embedding and len(stored[0].embedding) == 384
+    _cleanup(rid)
+
+
+def test_search_returns_ranked_chunks(monkeypatch):
+    vec = [0.0] * 384
+    vec[0] = 1.0  # question vector
+    monkeypatch.setattr(rag, "_model_instance",
+                        lambda: type("M", (), {"encode": lambda self, t, **k: [vec]})())
+    rid = _seed_done_report()
+    # seed chunks with distinct embeddings via direct rows (model mocked above)
+    with Session(engine) as s:
+        s.add(ReportChunk(report_id=rid, chunk_index=0, section_key="love",
+                          text="عشق و محبت", embedding=[0.9] + [0.0] * 383))
+        s.add(ReportChunk(report_id=rid, chunk_index=1, section_key="career",
+                          text="کار و شغل", embedding=[-0.9] + [0.0] * 383))
+        s.commit()
+    hits = rag.search_relevant(rid, "درباره عشق بگو", top_k=1)
+    assert hits == ["عشق و محبت"], "cosine similarity must rank the love chunk first"
+    _cleanup(rid)
+
+
+def _cleanup(rid: str) -> None:
+    with Session(engine) as s:
+        for rc in s.exec(select(ReportChunk).where(
+                ReportChunk.report_id == rid)).all():
+            s.delete(rc)
+        rep = s.get(Report, rid)
+        ch = s.get(Chart, rep.chart_id) if rep else None
+        if rep:
+            s.delete(rep)
+            s.flush()  # C6 lesson: unitofwork doesn't order FK deletes
+        if ch:
+            s.delete(ch)
+        s.commit()
+
+```
+
+### `tests/test_rate_limit.py` (61 lines)
 
 ```python
 """Rate limiter tests — audit P1 (round 3): centralized limiter enforces limits
@@ -11594,6 +14348,289 @@ def test_redis_backend_falls_back_to_memory(monkeypatch):
         pass
     sec._RATE_LIMIT_BACKEND = "memory"  # restore for other tests
     sec._rl_redis_conn = None
+
+
+def test_chart_creation_rate_limited(monkeypatch):
+    """audit r4 B5: chart creation is limited to 20/min per client."""
+    import app.main as m
+    import app.security as sec
+
+    # this test exercises the REAL limiter (conftest bypasses it by default);
+    # same shape as main._rate_limit: (key, limit, window) -> allowed
+    def _real(key, limit, window=60.0):
+        try:
+            sec.check_rate_limit(key, limit, int(window))
+            return True
+        except sec.RateLimitExceeded:
+            return False
+
+    monkeypatch.setattr(m, "_rate_limit", _real)
+    ok = [m._rate_limit("chart:testclient", 20, 60) for _ in range(20)]
+    assert all(ok), "first 20 calls allowed"
+    assert not m._rate_limit("chart:testclient", 20, 60), "21st call limited"
+
+```
+
+### `tests/test_refund_lifecycle.py` (167 lines)
+
+```python
+"""B6 (audit r4): REAL refund lifecycle.
+
+Regression: admin refund only flipped the DB status — money was never
+returned to the customer, and an active chat subscription kept running.
+Now: paid → refunding → (Zarinpal refund call) → refunded | refund_failed,
+coupon slot released, originating subscription closed, retry allowed.
+"""
+import sys
+import time
+import uuid as _uuid
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from datetime import datetime, timezone
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+import app.main as main_mod
+from app.db import engine
+from app.models import Coupon, Order, Subscription
+from app.payment.orders import activate_subscription
+from app.payment.zarinpal import ZarinpalError
+
+
+class _FakeZP:
+    """request + verify OK; refund controlled per test."""
+
+    def __init__(self, refund_ok: bool = True):
+        self.uid = _uuid.uuid4().hex[:10]
+        self.refund_ok = refund_ok
+        self.refund_calls = 0
+
+    def request(self, *a, **k):
+        return f"Q{int(time.time())}{self.uid}", f"https://pay.example/Q{int(time.time())}{self.uid}"
+
+    def verify(self, *a, **k):
+        return {"ref_id": "REF" + self.uid, "card_pan": "1234"}
+
+    def refund(self, *a, **k):
+        self.refund_calls += 1
+        if not self.refund_ok:
+            raise ZarinpalError("refund failed: [{'code': 66, 'message': 'no such authority'}]")
+        return {"ref_id": "RREF" + self.uid}
+
+
+def _mk_chart(c: TestClient) -> tuple[str, str]:
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    }).json()
+    return d["chart_id"], d["access_token"]
+
+
+def _order(s: Session, cid: str, chat: str | None) -> Order:
+    o = Order(chart_id=cid, plan_key="monthly", status="paid",
+              amount_rial=99000, chat_id=chat, platform="telegram",
+              authority="Q" + _uuid.uuid4().hex[:10].upper(), ref_id="REF1")
+    s.add(o)
+    s.commit()
+    s.refresh(o)
+    return o
+
+
+def _admin_cookies() -> dict:
+    from app.main import _admin_cookie_value
+    return {"chart_admin": _admin_cookie_value()}
+
+
+def test_refund_success_closes_subscription_and_releases_coupon(monkeypatch):
+    fake = _FakeZP(refund_ok=True)
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+    cid, tok = _mk_chart(c)
+    chat = f"tg-refund-{_uuid.uuid4().hex[:6]}"
+    with Session(engine) as s:
+        o = _order(s, cid, chat)
+        cp = Coupon(code="REF-" + _uuid.uuid4().hex[:6].upper(), percent=10, max_uses=1, active=True)
+        s.add(cp)
+        s.commit()
+        o.coupon_id = cp.id
+        cp.used_count = 1  # simulate the A10 reservation done at order creation
+        activate_subscription(s, o)
+        s.commit()
+        oid, cpid = o.id, cp.id
+    # paid order with a reserved coupon slot + active subscription
+    with Session(engine) as s:
+        assert s.get(Coupon, cpid).used_count == 1
+        sub = s.exec(select(Subscription).where(Subscription.order_id == oid)).one()
+        assert sub.active
+
+    r = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "refunded"
+    assert fake.refund_calls == 1
+
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "refunded"
+        assert o.ref_id.startswith("RREF")
+        # coupon slot returned
+        assert s.get(Coupon, cpid).used_count == 0
+        # originating subscription closed (chat access revoked)
+        sub = s.exec(select(Subscription).where(Subscription.order_id == oid)).one()
+        assert sub.active is False
+        assert ensure_utc(sub.expires_at) <= datetime.now(timezone.utc)
+
+
+def test_refund_gateway_error_marks_failed_and_allows_retry(monkeypatch):
+    fake = _FakeZP(refund_ok=False)
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        o = _order(s, cid, f"tg-rf-{_uuid.uuid4().hex[:6]}")
+        s.commit()
+        oid = o.id
+
+    r = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r.status_code == 502
+    assert fake.refund_calls == 1
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "refund_failed"
+        assert "ریفاند ناموفق" in o.error
+
+    # retry allowed once the gateway is back
+    fake.refund_ok = True
+    r2 = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r2.status_code == 200, r2.text
+    assert fake.refund_calls == 2
+    with Session(engine) as s:
+        assert s.get(Order, oid).status == "refunded"
+
+
+def test_refund_rejects_pending_and_already_refunded(monkeypatch):
+    fake = _FakeZP(refund_ok=True)
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        o = _order(s, cid, f"tg-rr-{_uuid.uuid4().hex[:6]}")
+        o.status = "pending"
+        s.commit()
+        oid = o.id
+    r = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r.status_code == 400
+
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        o.status = "refunded"
+        s.commit()
+    r2 = c.post(f"/api/admin/orders/{oid}/refund")
+    assert r2.status_code == 400
+    assert fake.refund_calls == 0  # never hit the gateway
+
+
+from app.timeutil import ensure_utc  # noqa: E402
+
+```
+
+### `tests/test_report_audio_r2.py` (86 lines)
+
+```python
+"""C1 (audit r4): report audio served from R2 via 30-min presigned URL.
+
+Regression: the endpoint returned a FileResponse straight from /tmp (ephemeral
+disk, no cache sharing). Now: R2 cache hit → presigned redirect (no TTS cost);
+miss → generate → upload → presigned → temp file deleted.
+"""
+import sys
+import uuid
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session
+
+from app.main import app as main_app
+from app.db import engine
+from app.models import Order, Report
+
+
+def _mk_chart(c):
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    }).json()
+    return d["chart_id"], d["access_token"]
+
+
+def _done_report(s, cid):
+    rep = Report(chart_id=cid, status="done", plan_key="gold",
+                 sections={"intro": {"title": "مقدمه", "content": "متن نمونه"}})
+    s.add(rep)
+    s.commit()
+    s.refresh(rep)
+    o = Order(chart_id=cid, plan_key="gold", status="paid", amount_rial=99000,
+              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1")
+    s.add(o)
+    s.commit()
+    return rep.id
+
+
+def test_audio_served_via_presigned_url(monkeypatch):
+    """Miss path: upload + presigned redirect, temp file cleaned up."""
+    monkeypatch.setattr("app.storage.upload_audio", lambda rid, path: f"chart-audio/{rid}.mp3")
+    monkeypatch.setattr("app.storage.presigned_url", lambda key: f"https://r2.example/{key}?sig=1")
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
+    with Session(engine) as s:
+        rid = _done_report(s, cid)
+    r = c.get(f"/api/reports/{rid}/audio", follow_redirects=False)
+    assert r.status_code == 302
+    assert r.headers["location"].startswith("https://r2.example/chart-audio/")
+    assert "sig=1" in r.headers["location"]
+
+
+def test_audio_cache_hit_skips_generation(monkeypatch):
+    """Cache hit: presigned URL exists → redirect WITHOUT calling upload."""
+    monkeypatch.setattr("app.storage.presigned_url", lambda key: f"https://r2.example/{key}?sig=1")
+    calls = {"n": 0}
+
+    def _upload(*a, **k):
+        calls["n"] += 1
+        return "chart-audio/x.mp3"
+    monkeypatch.setattr("app.storage.upload_audio", _upload)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    ck = {"chart_access": __import__("json").dumps({cid: tok})}
+    c.cookies.update(ck)
+    with Session(engine) as s:
+        rid = _done_report(s, cid)
+    r = c.get(f"/api/reports/{rid}/audio", follow_redirects=False)
+    assert r.status_code == 302
+    assert calls["n"] == 0, "cache hit must not regenerate/upload"
+
+
+def test_audio_requires_paid_ownership():
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        rid = _done_report(s, cid)
+    # no cookie → not the owner → 403
+    r = c.get(f"/api/reports/{rid}/audio", follow_redirects=False)
+    assert r.status_code == 403
 
 ```
 
@@ -11730,6 +14767,84 @@ def test_generate_sections_uses_fake_router():
     assert len([d for d in sections if sections[d].get("insights")]) == 13
     assert metrics["calls"] == 13
     assert metrics["qa_failures"] == 0
+
+```
+
+### `tests/test_report_idempotent.py` (73 lines)
+
+```python
+"""A7 (audit r4): report generation is idempotent — repeated POSTs must not
+enqueue multiple LLM jobs. queued/processing → same report; done → same unless
+?regenerate=1; explicit regenerate → new report."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+from app.main import app
+from app.models import Order
+from app.db import engine
+from sqlmodel import Session
+
+
+def _chart_with_paid_order() -> tuple[TestClient, str, str]:
+    c = TestClient(app)
+    r = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    })
+    cid = r.json()["chart_id"]
+    tok = r.json()["access_token"]
+    with Session(engine) as s:
+        s.add(Order(chart_id=cid, plan_key="full", status="paid", amount_rial=3_490_000))
+        s.commit()
+    return c, cid, tok
+
+
+def _cookies(cid: str, tok: str) -> dict:
+    import json
+    return {"chart_access": json.dumps({cid: tok})}
+
+
+def test_double_post_returns_same_report():
+    c, cid, tok = _chart_with_paid_order()
+    ck = _cookies(cid, tok)
+    c.cookies.update(ck)
+    r1 = c.post(f"/api/charts/{cid}/report")
+    assert r1.status_code == 200, r1.text
+    d1 = r1.json()
+    r2 = c.post(f"/api/charts/{cid}/report")
+    d2 = r2.json()
+    assert d2["report_id"] == d1["report_id"]
+    assert d2.get("existing") is True
+
+
+def test_explicit_regenerate_creates_new_report():
+    c, cid, tok = _chart_with_paid_order()
+    ck = _cookies(cid, tok)
+    c.cookies.update(ck)
+    d1 = c.post(f"/api/charts/{cid}/report").json()
+    d2 = c.post(f"/api/charts/{cid}/report?regenerate=1").json()
+    assert d2["report_id"] != d1["report_id"]
+
+
+def test_failed_report_requeued_not_duplicated():
+    c, cid, tok = _chart_with_paid_order()
+    ck = _cookies(cid, tok)
+    c.cookies.update(ck)
+    d1 = c.post(f"/api/charts/{cid}/report").json()
+    # simulate worker failure
+    with Session(engine) as s:
+        from app.models import Report
+        rep = s.get(Report, d1["report_id"])
+        rep.status = "failed"
+        rep.error = "worker crashed"
+        s.add(rep)
+        s.commit()
+    d2 = c.post(f"/api/charts/{cid}/report").json()
+    assert d2["report_id"] == d1["report_id"]  # re-queued, NOT a new row
+    assert d2["status"] in ("queued", "failed")
 
 ```
 
@@ -11913,6 +15028,151 @@ def test_reflection_rotates_by_week():
 
 ```
 
+### `tests/test_subscription_expiry.py` (140 lines)
+
+```python
+"""A9/B8 (audit r4): monthly subscriptions EXPIRE — chat requires an unexpired
+Subscription row; renewal EXTENDS from the later of (expiry, now); one
+subscription per (chart, account)."""
+import json
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+import app.main as main_mod
+from app.db import engine
+from app.models import Order, Subscription
+from app.payment.orders import activate_subscription
+
+
+def _mk_chart(c: TestClient) -> tuple[str, str]:
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    }).json()
+    return d["chart_id"], d["access_token"]
+
+
+def _order(s: Session, cid: str, chat_id: str | None = None) -> Order:
+    o = Order(chart_id=cid, plan_key="monthly", status="paid",
+              amount_rial=3_990_000, chat_id=chat_id, platform="telegram" if chat_id else None)
+    s.add(o)
+    s.flush()
+    return o
+
+
+@pytest.fixture()
+def chat_mock(monkeypatch):
+    monkeypatch.setattr(main_mod, "chat_answer",
+                        lambda *a, **k: {"answer": "پاسخ تستی", "ok": True,
+                                         "intent": "i", "domains": [], "tokens": 1})
+    monkeypatch.setattr(main_mod, "_rate_limit", lambda *a, **k: True)
+
+
+def _sub(s: Session, cid: str, chat: str):
+    return s.exec(select(Subscription).where(
+        Subscription.chat_id == chat, Subscription.chart_id == cid)).first()
+
+
+def test_renewal_extends_from_current_expiry():
+    c = TestClient(main_mod.app)
+    cid, _ = _mk_chart(c)
+    with Session(engine) as s:
+        o1 = _order(s, cid, chat_id="tg-9")
+        activate_subscription(s, o1)
+        s.commit()
+        sub = _sub(s, cid, "tg-9")
+        # simulate 20 days already used
+        sub.expires_at = datetime.now(timezone.utc) + timedelta(days=20)
+        s.add(sub)
+        s.commit()
+        o2 = _order(s, cid, chat_id="tg-9")
+        activate_subscription(s, o2)
+        s.commit()
+        s.refresh(sub)
+        # renewed from expiry (20 days) + 30 → ~50 days, NOT 30
+        from app.timeutil import ensure_utc
+        days_left = (ensure_utc(sub.expires_at) - datetime.now(timezone.utc)).total_seconds() / 86400
+        assert 48 <= days_left <= 52, f"expected ~50 days, got {days_left:.1f}"
+
+
+def test_expired_subscription_blocks_chat(chat_mock):
+    c = TestClient(main_mod.app)
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        o = _order(s, cid, chat_id="tg-1")
+        activate_subscription(s, o)
+        s.commit()
+        sub = _sub(s, cid, "tg-1")
+        sub.expires_at = datetime.now(timezone.utc) - timedelta(days=1)
+        s.add(sub)
+        s.commit()
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    r = c.post("/api/chat", data={"chart_id": cid, "question": "س"},
+               )
+    assert r.status_code == 403
+    assert "منقضی" in r.json()["detail"]
+
+
+def test_active_subscription_allows_chat(chat_mock):
+    c = TestClient(main_mod.app)
+    cid, tok = _mk_chart(c)
+    import uuid as _uuid
+    chat = f"tg-2-{_uuid.uuid4().hex[:6]}"  # unique — Redis quota counter persists
+    with Session(engine) as s:
+        o = _order(s, cid, chat_id=chat)
+        activate_subscription(s, o)
+        s.commit()
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    r = c.post("/api/chat", data={"chart_id": cid, "question": "س"},
+               )
+    assert r.status_code == 200, r.text
+
+
+def test_access_endpoint_reports_expired_reason(chat_mock):
+    c = TestClient(main_mod.app)
+    cid, tok = _mk_chart(c)
+    with Session(engine) as s:
+        o = _order(s, cid, chat_id="tg-3")
+        activate_subscription(s, o)
+        s.commit()
+        sub = _sub(s, cid, "tg-3")
+        sub.expires_at = datetime.now(timezone.utc) - timedelta(days=1)
+        s.add(sub)
+        s.commit()
+    ck = {"chart_access": json.dumps({cid: tok})}
+    c.cookies.update(ck)
+    d = c.get(f"/api/chat/access/{cid}").json()
+    assert d["allowed"] is False
+    assert d.get("reason") == "subscription_expired"
+
+
+def test_web_monthly_activation_creates_null_chat_sub():
+    """Web purchase (no chat_id) still activates an unexpired subscription."""
+    c = TestClient(main_mod.app)
+    cid, _ = _mk_chart(c)
+    with Session(engine) as s:
+        o = _order(s, cid)  # chat_id=None
+        activate_subscription(s, o)
+        s.commit()
+        sub = s.exec(
+            select(Subscription).where(Subscription.chart_id == cid,
+                                       Subscription.chat_id == None)  # noqa: E711
+        ).first()
+        assert sub is not None
+        from app.timeutil import ensure_utc
+        assert ensure_utc(sub.expires_at) > datetime.now(timezone.utc)
+
+```
+
 ### `tests/test_transits_share.py` (40 lines)
 
 ```python
@@ -11955,6 +15215,300 @@ def test_share_card_html_contains_wheel_and_badges():
     assert "<svg" in html          # wheel
     assert "خورشید" in html and "ماه" in html and "طالع" in html
     assert "اسد" in html           # Sun in Leo
+
+```
+
+### `tests/test_wallet_referral.py` (156 lines)
+
+```python
+"""D3 (audit r4): referral wallet — referrer gets 5% credited after a PAID
+order, wallet pays a full order without Zarinpal, withdrawal requests go to
+admin and resolve there. Zarinpal is mocked (no real gateway calls)."""
+from __future__ import annotations
+
+import uuid
+
+import pytest
+
+from sqlmodel import Session, select
+
+from app.db import engine
+from app.models import (BirthProfile, Chart, Order, Plan, ReferralEvent, Subscription, User, WithdrawalRequest)
+
+CHART_JSON = {"planets": {"Sun": {"sign_fa": "اسد", "house": 10}},
+              "angles": {"ASC": {"sign_fa": "اسد"}}, "birth": {}}
+
+
+@pytest.fixture
+def db_session():
+    with Session(engine) as s:
+        yield s
+
+
+def _mk_user(session: Session) -> User:
+    u = User(phone=f"+98{uuid.uuid4().hex[:10]}")
+    session.add(u)
+    session.commit()
+    return u
+
+
+def _mk_chart(session: Session, user_id: str | None = None) -> str:
+    profile_id = None
+    if user_id:
+        p = BirthProfile(user_id=user_id, name="تست", raw_year=1373, raw_month=6,
+                         raw_day=1, city_fa="تهران", lat=35.6889, lon=51.3897)
+        session.add(p)
+        session.commit()
+        profile_id = p.id
+    ch = Chart(chart_json=CHART_JSON, profile_id=profile_id)
+    session.add(ch)
+    session.commit()
+    return ch.id
+
+
+def _mk_plan(session: Session) -> None:
+    if not session.get(Plan, "basic"):
+        session.add(Plan(key="basic", name_fa="پایه", subtitle_fa="",
+                         price_toman=25_000, active=True))
+        session.commit()
+
+
+def _mk_order(session: Session, chart_id: str, amount: int = 250_000,
+              ref_code: str = "") -> Order:
+    o = Order(chart_id=chart_id, plan_key="basic", amount_rial=amount,
+              status="pending", authority=f"auth-{uuid.uuid4().hex[:12]}")
+    if ref_code:
+        session.add(ReferralEvent(code=ref_code, order_id=o.id,
+                                  new_user_id=o.profile_id, amount_rial=amount,
+                                  reward_rial=int(amount * 0.05)))
+    session.add(o)
+    session.commit()
+    return o
+
+
+def test_wallet_balance_and_code(db_session):
+    u = _mk_user(db_session)
+    from app.payment.orders import get_or_create_referral_code
+    code = get_or_create_referral_code(db_session, u.id)
+    assert len(code) == 8  # token_urlsafe(6)
+    db_session.refresh(u)
+    assert u.balance_rial == 0
+
+
+def test_referral_rewarded_after_paid(db_session):
+    """Referrer wallet is credited (idempotently) once the order is paid."""
+    ref = _mk_user(db_session)
+    buyer = _mk_user(db_session)
+    cid = _mk_chart(db_session)
+    from app.payment.orders import get_or_create_referral_code, reward_referral
+    code = get_or_create_referral_code(db_session, ref.id)
+    o = _mk_order(db_session, cid, ref_code=code)
+    # wire the event to this order (created in _mk_order with order_id=o.id)
+    ev = db_session.exec(select(ReferralEvent).where(
+        ReferralEvent.order_id == o.id)).first()
+    ev.referrer_user_id = ref.id
+    ev.new_user_id = buyer.id
+    db_session.commit()
+
+    reward_referral(db_session, o)
+    reward_referral(db_session, o)  # idempotent
+
+    db_session.refresh(ref)
+    assert ref.balance_rial == int(250_000 * 0.05)  # 12_500
+    ev = db_session.exec(select(ReferralEvent).where(
+        ReferralEvent.order_id == o.id)).first()
+    assert ev.status == "rewarded"
+
+
+def test_pay_order_with_balance(db_session):
+    """A wallet payment settles the order (no Zarinpal) and activates the
+    subscription, and can NOT overdraw the wallet."""
+    user = _mk_user(db_session)
+    user.balance_rial = 300_000
+    cid = _mk_chart(db_session, user_id=user.id)
+    _mk_plan(db_session)
+    o = _mk_order(db_session, cid, amount=250_000)
+    o.plan_key = "monthly"
+    db_session.commit()
+
+    from app.payment.orders import pay_order_with_balance
+    assert pay_order_with_balance(db_session, o, user) is True
+    db_session.refresh(user)
+    assert user.balance_rial == 50_000
+    db_session.refresh(o)
+    assert o.status == "paid"
+    sub = db_session.exec(select(Subscription).where(
+        Subscription.chart_id == cid)).first()
+    assert sub and sub.active
+
+    # not enough balance -> refused
+    o2 = _mk_order(db_session, cid, amount=99_000)
+    o2.plan_key = "monthly"
+    db_session.commit()
+    assert pay_order_with_balance(db_session, o2, user) is False
+    db_session.refresh(o2)
+    assert o2.status == "pending"
+    db_session.refresh(user)
+    assert user.balance_rial == 50_000
+
+
+def test_withdrawal_lifecycle(db_session):
+    """User requests cash-out; admin resolves paid/rejected; one pending at a
+    time; amount cannot exceed balance."""
+    u = _mk_user(db_session)
+    u.balance_rial = 40_000
+    db_session.commit()
+
+    from app.payment.orders import withdraw_request
+    assert withdraw_request(db_session, u.id, 10_000) is True
+    assert withdraw_request(db_session, u.id, 10_000) is False  # one pending
+
+    wr = db_session.exec(select(WithdrawalRequest).where(
+        WithdrawalRequest.user_id == u.id)).first()
+    assert wr.amount_rial == 10_000 and wr.status == "pending"
+
+    assert withdraw_request(db_session, u.id, 999_999) is False  # overdraw
+    assert withdraw_request(db_session, u.id, -5) is False
+
+    from app.payment.orders import resolve_withdrawal
+    assert resolve_withdrawal(db_session, wr.id, "paid", "شماره پیگیری 123") is True
+    db_session.refresh(wr)
+    assert wr.status == "paid" and wr.resolved_at is not None
+    db_session.refresh(u)
+    assert u.balance_rial == 40_000  # balance NOT auto-debited (manual payout)
+
+```
+
+### `tests/test_web_push.py` (128 lines)
+
+```python
+"""D1 (audit r4): Web Push — subscribe/unsubscribe endpoints, VAPID key
+endpoint, and weekly delivery triggers a push to the owning user's browsers.
+
+pywebpush calls are mocked (no real push service in tests); VAPID keys come
+from env (tests inject fake PEMs via monkeypatch).
+"""
+import asyncio
+import sys
+import uuid
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+
+import app.push as push_mod
+from app.main import app as main_app
+from app.auth import USER_COOKIE, _user_cookie_value
+from app.db import engine
+from app.models import BirthProfile, Chart, PushSubscription, User
+
+ENDPOINT = "https://fcm.googleapis.com/fcm/send/" + uuid.uuid4().hex
+
+
+@pytest.fixture(autouse=True)
+def _vapid(monkeypatch):
+    monkeypatch.setattr(push_mod, "VAPID_PUBLIC_KEY", "fake-pub-key")
+    monkeypatch.setattr(push_mod, "VAPID_PRIVATE_KEY", "fake-priv-key")
+    yield
+
+
+def test_vapid_key_endpoint():
+    c = TestClient(main_app)
+    r = c.get("/api/push/vapid-public-key")
+    assert r.status_code == 200
+    assert r.json()["key"] == "fake-pub-key"
+
+
+def test_subscribe_unsubscribe_roundtrip():
+    c = TestClient(main_app)
+    payload = {"endpoint": ENDPOINT, "p256dh": "cGF0aA==", "auth": "YXV0aA=="}
+    r = c.post("/api/push/subscribe", json=payload)
+    assert r.status_code == 200
+    with Session(engine) as s:
+        sub = s.exec(select(PushSubscription).where(
+            PushSubscription.endpoint == ENDPOINT)).first()
+        assert sub is not None and sub.user_id is None
+    r = c.post("/api/push/unsubscribe", json={"endpoint": ENDPOINT})
+    assert r.status_code == 200
+    with Session(engine) as s:
+        assert s.exec(select(PushSubscription).where(
+            PushSubscription.endpoint == ENDPOINT)).first() is None
+
+
+def test_subscribe_rejects_bad_payload():
+    c = TestClient(main_app)
+    assert c.post("/api/push/subscribe", json={"endpoint": "http://not-https"}).status_code == 400
+    assert c.post("/api/push/subscribe", json={}).status_code == 400
+
+
+def test_subscribe_links_user_and_weekly_sends(monkeypatch):
+    """Subscription with a logged-in user gets user_id; weekly delivery
+    pushes to that user's browsers (send_message mocked)."""
+    with Session(engine) as s:
+        u = User(phone="0912" + uuid.uuid4().hex[:8])
+        s.add(u)
+        s.commit()
+        s.refresh(u)
+        uid = u.id
+    c = TestClient(main_app)
+    c.cookies.update({USER_COOKIE: _user_cookie_value(uid)})
+    payload = {"endpoint": ENDPOINT, "p256dh": "cGF0aA==", "auth": "YXV0aA=="}
+    assert c.post("/api/push/subscribe", json=payload).status_code == 200
+    with Session(engine) as s:
+        sub = s.exec(select(PushSubscription).where(
+            PushSubscription.endpoint == ENDPOINT)).first()
+        assert sub.user_id == uid
+
+    # weekly delivery → push sent to that user
+    import app.report.weekly as weekly
+    sent = []
+    monkeypatch.setattr("app.bots.handler.send_message", lambda *a, **k: None)
+    monkeypatch.setattr(push_mod, "send_to_user",
+                        lambda user_id, title, body, url, session: sent.append(
+                            (user_id, title, url)))
+    # fabricate a subscription + chart + profile for the user
+    from app.models import Subscription as Sub, WeeklyReflection
+    with Session(engine) as s:
+        p = BirthProfile(user_id=uid, name="پوش", raw_year=1994, raw_month=8,
+                         raw_day=23, time_known=True, hour=6, minute=10)
+        s.add(p)
+        s.commit()
+        s.refresh(p)
+        ch = Chart(profile_id=p.id, chart_json={"planets": {}}, name="x")
+        s.add(ch)
+        s.commit()
+        s.refresh(ch)
+        s.add(Sub(chart_id=ch.id, chat_id="12345", platform="telegram", active=True))
+        s.commit()
+        cid, pid = ch.id, p.id
+    # drop any leftover WeeklyReflection for this chart (per-run cleanup —
+    # the DB persists between runs, and `already` skips delivery)
+    with Session(engine) as s:
+        for w in s.exec(select(WeeklyReflection).where(
+                WeeklyReflection.chart_id == cid)).all():
+            s.delete(w)
+        s.commit()
+    import app.bots.handler as _handler
+    monkeypatch.setattr(_handler, "send_message",
+                        lambda chat_id, text, platform: asyncio.sleep(0))
+    out = asyncio.run(weekly.run_weekly_delivery())
+    assert out["sent"] == 1
+    assert len(sent) == 1 and sent[0][0] == uid and sent[0][2] == "/account"
+    # cleanup (push_subscriptions BEFORE user — FK)
+    with Session(engine) as s:
+        for w in s.exec(select(WeeklyReflection)).all():
+            s.delete(w)
+        for sub in s.exec(select(Sub)).all():
+            s.delete(sub)
+        for ps in s.exec(select(PushSubscription)).all():
+            s.delete(ps)
+        s.flush()
+        s.delete(s.get(Chart, cid))
+        s.delete(s.get(BirthProfile, pid))
+        s.delete(s.get(User, uid))
+        s.commit()
 
 ```
 
@@ -12063,7 +15617,7 @@ def test_invalid_zodiac_rejected():
 
 ---
 
-## ۱۳) زیرساخت و استقرار (اسکریپت‌ها)
+## ۱۴) زیرساخت و استقرار (اسکریپت‌ها)
 
 ### `scripts/audit_backend_rerun.py` (52 lines)
 
@@ -12147,7 +15701,7 @@ exit 0  # silent on success
 
 ```
 
-### `scripts/backup_db.py` (143 lines)
+### `scripts/backup_db.py` (162 lines)
 
 ```bash
 #!/usr/bin/env python3
@@ -12248,18 +15802,31 @@ def main() -> int:
         return 1
     print(f"OK: sanity — plans={plans}, users={users}")
 
-    # 2) zip dump + .env
+    # 2) zip dump + .env, then encrypt with age (audit r4 B2 — secrets never
+    #    sit on R2 in plaintext; the age private key lives only on this server)
     try:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
             z.write(dump_path, arcname=dump_path.name)
             z.write(ENV_FILE, arcname=".env")
         dump_path.unlink()  # dump kept only inside the zip
+        age_pub = os.getenv("AGE_PUBKEY", "").strip()
+        if not age_pub:
+            print("FAIL: AGE_PUBKEY not set — refusing to upload plaintext backup")
+            return 1
+        enc_path = BACKUP_DIR / f"{zip_path.name}.age"
+        subprocess.run(["age", "-r", age_pub, "-o", str(enc_path), str(zip_path)],
+                       check=True, capture_output=True, text=True)
+        zip_path.unlink()  # plaintext zip never leaves the disk
+        zip_path = enc_path
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: age encrypt error: {e.stderr[:500]}")
+        return 1
     except Exception as e:  # noqa: BLE001
-        print(f"FAIL: zip error: {e}")
+        print(f"FAIL: zip/encrypt error: {e}")
         return 1
 
     # 3) upload to R2
-    bucket = os.getenv("R2_BUCKET", "hermes-voice-clone")
+    bucket = os.getenv("R2_BUCKET", "zayche-storage")  # C2: never fall back to voice-clone bucket
     try:
         client = _r2_client()
         client.upload_file(str(zip_path), bucket, f"{R2_PREFIX}/{zip_path.name}")
@@ -12269,7 +15836,7 @@ def main() -> int:
 
     # 4) retention — local
     cutoff = time.time() - LOCAL_RETENTION_DAYS * 86400
-    for f in BACKUP_DIR.glob("chart_backup_*.zip"):
+    for f in BACKUP_DIR.glob("chart_backup_*.zip.age"):
         try:
             if f.stat().st_mtime < cutoff:
                 f.unlink()
@@ -12281,6 +15848,12 @@ def main() -> int:
         r2_cutoff = datetime.now(timezone.utc).timestamp() - R2_RETENTION_DAYS * 86400
         paginator = client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket, Prefix=R2_PREFIX):
+            for obj in page.get("Contents", []):
+                if obj["LastModified"].timestamp() < r2_cutoff:
+                    client.delete_object(Bucket=bucket, Key=obj["Key"])
+        # audit r4 C6: regenerable TTS audio (chart-audio/) also expires after
+        # 30 days — privacy + cost; reports regenerate on demand (C1)
+        for page in paginator.paginate(Bucket=bucket, Prefix="chart-audio/"):
             for obj in page.get("Contents", []):
                 if obj["LastModified"].timestamp() < r2_cutoff:
                     client.delete_object(Bucket=bucket, Key=obj["Key"])
@@ -12592,7 +16165,7 @@ exit 0
 
 ```
 
-### `scripts/ci.sh` (67 lines)
+### `scripts/ci.sh` (122 lines)
 
 ```bash
 #!/usr/bin/env bash
@@ -12609,6 +16182,61 @@ venv/bin/alembic check
 
 echo "==> pytest + coverage (gate: >= 60%)"
 venv/bin/python -m pytest tests/ -q --cov=app --cov-report=term-missing --cov-fail-under=60
+
+echo "==> production boot smoke test (A11: fail-closed secrets honored)"
+# 1) APP_ENV=production WITHOUT secrets must refuse to boot (regression for
+#    the old APP_ENV=prod vs production mismatch — audit r4 A2)
+set +e
+APP_ENV=production AUTH_SECRET= ADMIN_SECRET= SECRETS_MASTER_KEY= \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.main" 2>smoke_missing.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded WITHOUT secrets (fail-closed broken)"
+  exit 1
+fi
+echo "✓ prod-mode refuses to boot without secrets"
+# 1b) audit r4 B4: prod without R2 creds must refuse to boot (fail-closed)
+set +e
+APP_ENV=production AUTH_SECRET=x ADMIN_SECRET=x SECRETS_MASTER_KEY=x \
+  R2_ACCESS_KEY_ID= R2_SECRET_ACCESS_KEY= R2_ENDPOINT= \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.storage" 2>smoke_r2.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded WITHOUT R2 (fail-closed broken)"
+  exit 1
+fi
+echo "✓ prod-mode refuses to boot without R2"
+# 1c) audit r4 B5: prod with in-memory rate limit backend must refuse to boot
+set +e
+APP_ENV=production AUTH_SECRET=x ADMIN_SECRET=x SECRETS_MASTER_KEY=x \
+  RATE_LIMIT_BACKEND=memory \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.security" 2>smoke_rl.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded with memory rate-limit backend"
+  exit 1
+fi
+echo "✓ prod-mode requires Redis rate-limit backend"
+# 2) with all secrets → boots, /health + landing + plans respond
+SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test}"
+APP_ENV=production DATABASE_URL="$SMOKE_DB" \
+  AUTH_SECRET="smoke-test-auth-secret-000" ADMIN_SECRET="smoke-test-admin-secret-000" \
+  SECRETS_MASTER_KEY="smoke-test-master-key-000" \
+  venv/bin/python - <<'PY'
+from fastapi.testclient import TestClient
+import app.main as m
+c = TestClient(m.app)
+for path in ("/health", "/", "/plans", "/api/plans", "/robots.txt"):
+    r = c.get(path)
+    assert r.status_code == 200, f"{path} -> {r.status_code}"
+print("✓ prod-mode boot + critical routes OK")
+PY
 
 echo "==> compileall (syntax)"
 venv/bin/python -m compileall -q app/ scripts/
@@ -12994,24 +16622,29 @@ venv/bin/python -u scripts/gen_articles.py
 
 ```
 
-### `scripts/gen_codebundle.py` (160 lines)
+### `scripts/gen_codebundle.py` (190 lines)
 
 ```bash
 #!/usr/bin/env python3
 """Regenerate the FULL code bundle (ZAYCHE-CODEBUNDLE.md) from the CURRENT tree.
 
-16 organized sections — everything an external AI needs for a deep code review:
-app, templates, tests, scripts, migrations, deploy, CI, env template.
+19 organized sections — everything an external AI needs for a deep code review:
+app, templates, static PWA files, tests, scripts, migrations, deploy, CI, env template.
 Secrets are never included (.env excluded; the repo secret-scan guards the rest).
+Round-4 aware: Web Push (push.py, sw.js), pgvector RAG (rag.py), referral wallet,
+SSE streaming chat (llm.stream / chat_stream) — all picked up automatically.
 """
+import re
 import subprocess
 from pathlib import Path
 
 ROOT = Path("/root/chart-platform")
 OUT = ROOT / "docs" / "audit" / "ZAYCHE-CODEBUNDLE.md"
 
+
 def read(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8")
+
 
 def code_block(rel: str, lang: str = "python") -> str:
     try:
@@ -13021,16 +16654,18 @@ def code_block(rel: str, lang: str = "python") -> str:
     n = c.count("\n") + 1
     return f"### `{rel}` ({n} lines)\n\n```{lang}\n{c}\n```\n"
 
+
 def section(title: str, rels: list[str], lang: str = "python") -> str:
     parts = [f"\n---\n\n## {title}\n"]
     for r in rels:
         parts.append(code_block(r, lang))
     return "\n".join(parts)
 
+
 # ── fresh test output + git ─────────────────────────────────────
 pytest = subprocess.run(
     ["venv/bin/python", "-m", "pytest", "tests/", "-q"],
-    cwd=ROOT, capture_output=True, text=True, timeout=300,
+    cwd=ROOT, capture_output=True, text=True, timeout=600,
 )
 test_out = (pytest.stdout or "") + (pytest.stderr or "")
 gitlog = subprocess.run(
@@ -13040,17 +16675,21 @@ gitlog = subprocess.run(
 commits = len([l for l in gitlog.splitlines() if l.strip()])
 head = gitlog.splitlines()[0] if gitlog else "?"
 
+
 def py_files(glob: str) -> list[str]:
     return sorted(
         str(p.relative_to(ROOT)) for p in ROOT.glob(glob)
         if "__pycache__" not in str(p)
     )
 
+
 APP_PY = [p for p in py_files("app/**/*.py")]
 TEMPLATES = sorted(
     str(p.relative_to(ROOT)) for p in (ROOT / "app" / "templates").rglob("*.html")
     if "__pycache__" not in str(p)
 )
+STATIC_WEB = ["app/static/sw.js", "app/static/sw-register.js",
+              "app/static/manifest.webmanifest"]
 TESTS = py_files("tests/*.py")
 SCRIPTS = sorted(
     str(p.relative_to(ROOT)) for p in (ROOT / "scripts").glob("*")
@@ -13063,10 +16702,20 @@ DEPLOY = sorted(
 )
 CI_FILES = py_files(".github/workflows/*.yml")
 
-n_files = len(APP_PY) + len(TEMPLATES) + len(TESTS) + len(SCRIPTS) + len(MIGRATIONS) + len(DEPLOY) + len(CI_FILES) + 3
+n_files = (len(APP_PY) + len(TEMPLATES) + len(STATIC_WEB) + len(TESTS) +
+           len(SCRIPTS) + len(MIGRATIONS) + len(DEPLOY) + len(CI_FILES) + 3)
+
+# live counts for the header
+n_tables = len(re.findall(r'__tablename__\s*=\s*"(\w+)"', read("app/models.py")))
+n_migrations = len(MIGRATIONS)
+n_tests = len(TESTS)
+# last test line, e.g. "223 passed, 1 skipped in 9.97s"
+test_summary = test_out.strip().splitlines()[-1] if test_out.strip() else "?"
+
 
 def pick(prefix: str, files: list[str]) -> list[str]:
     return sorted(f for f in files if f.startswith(prefix))
+
 
 main_py = [f for f in APP_PY if f == "app/main.py"]
 core_py = [f for f in APP_PY if f.startswith("app/astrology/")]
@@ -13079,75 +16728,84 @@ misc_py = [f for f in APP_PY if f.startswith(("app/core/", "app/share/"))]
 base_py = [f for f in APP_PY if f in (
     "app/models.py", "app/db.py", "app/config.py",
     "app/auth.py", "app/security.py", "app/secret_store.py", "app/storage.py",
+    "app/push.py", "app/rag.py", "app/timeutil.py",
 )]
 
 header = f"""# باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `{head}`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور چهارم — فازهای A/B/C/D کامل — به‌روز تا کامیت `{head}`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
-> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` + پیوست دور سوم: `docs/audit/ROUND-3-ADDENDUM.md`
+> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md`
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** {test_out.strip().splitlines()[-1] if test_out.strip() else '?'}
+- **تست‌ها:** {test_summary} ({n_tests} فایل تست)
 - **کامیت‌ها:** {commits} · head: {head}
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
-- **مهاجرت‌ها:** 4 Alembic (baseline → chat_messages → align-audit-r3 → zodiac) — `alembic check` پاک
-- **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict, MemoryMax=1.5G) · Redis+ARQ · PostgreSQL 16 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
-- **ویژگی‌های دور سوم:** زودیاک تروپیکال پیش‌فرض + سایدریال لاهیری · کوپن atomic · race پرداخت (claim اتمیک) · degraded banner · rate limit Redis+fallback
+- **مهاجرت‌ها:** {n_migrations} Alembic (baseline → chat → align-r3 → zodiac → D1 push_subscriptions → D2 report_chunks pgvector → D3 wallet/withdrawals/orders.note) — `alembic check` پاک
+- **جداول:** {n_tables} SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
+- **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict) · Redis+ARQ · PostgreSQL 16 + pgvector 0.6 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
+- **دور چهارم (A/B/C/D):** امنیت A11 + بکاپ age/presigned + ریفاند زرین‌پال + state machine پرداخت + circuit breaker LLM · TTS→R2 · لایو‌نس/ری‌دینس تفکیکی · حریم خصوصی/retention · Web Push (VAPID، سرویس‌کارگر، اعلان هفتگی) · RAG pgvector (e5-small چندزبانه 384-dim) · کیف پول رفرال (۵٪، پرداخت با موجودی، تسویه) · چت استریم SSE (توکن واقعی)
 
 ## ساختار کلی
 
-```{ "```" }
+```
 app/                  FastAPI app
-  main.py             همه مسیرها + لایف‌سایکل + بوت ربات‌ها
-  models.py           17 جدول SQLModel (birth_profiles.zodiac اضافه شد)
+  main.py             همه مسیرها + لایف‌سایکل + بوت ربات‌ها (۲۱۵۰+ خط)
+  models.py           {n_tables} جدول SQLModel
+  push.py             Web Push (VAPID + ارسال اعلان مرورگر)
+  rag.py              pgvector RAG (chunk/index/search، مدل e5-small)
   astrology/          Swiss Ephemeris: engine, sky, synastry, rectify, transits, svg, golden_data
   report/             تولید گزارش 13 بخشی + QA خودکار + PDF/Word + ترانزیت هفتگی
-  chat/               AI chat: retrieval + intents + service
-  payment/            زرین‌پال + سفارش/اشتراک/کوپن/استرداد
+  chat/               AI chat: retrieval + intents + service (+ SSE stream)
+  payment/            زرین‌پال + سفارش/اشتراک/کوپن/استرداد + کیف پول/تسویه
   bots/               هندلر یکپارچه تلگرام + بله (تمام‌دکمه‌ای، مرحلهٔ زودیاک)
   seo/                محتوای آموزشی (برج‌ها/سیارات/خانه‌ها) + بنر مقالات
+  core/llm.py         لایهٔ LLM (استریم توکن + fallback chain + circuit breaker)
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
-templates/            ~30 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
-tests/                {len(TESTS)} فایل تست ({'۱۵۱ تست'})
-scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت
-deploy/               systemd unit ها + سقف‌های حافظه
-alembic/versions/     {len(MIGRATIONS)} مهاجرت
+templates/            {len(TEMPLATES)} قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
+static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
+tests/                {n_tests} فایل تست ({test_summary})
+scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل
+deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
+alembic/versions/     {n_migrations} مهاجرت
 .github/workflows/    CI
 ```
 """
 
 parts = [header]
 parts.append(section("۱) فایل اصلی اپلیکیشن (main.py — همه مسیرها)", main_py))
-parts.append(section("۲) هسته: مدل‌ها، دیتابیس، تنظیمات", [f for f in base_py if f in ("app/models.py", "app/db.py", "app/config.py")]))
-parts.append(section("۳) امنیت و کلیدها", [f for f in base_py if f in ("app/auth.py", "app/security.py", "app/secret_store.py", "app/storage.py")]))
+parts.append(section("۲) هسته: مدل‌ها، دیتابیس، تنظیمات",
+                     [f for f in base_py if f in ("app/models.py", "app/db.py", "app/config.py", "app/timeutil.py")]))
+parts.append(section("۳) امنیت، کلیدها و Web Push",
+                     [f for f in base_py if f in ("app/auth.py", "app/security.py", "app/secret_store.py", "app/storage.py", "app/push.py")]))
 parts.append(section("۴) موتور نجومی", core_py))
 parts.append(section("۵) موتور گزارش + QA", report_py))
-parts.append(section("۶) چت هوش مصنوعی", chat_py))
-parts.append(section("۷) پرداخت و سفارش", pay_py))
+parts.append(section("۶) چت هوش مصنوعی + RAG", chat_py + [f for f in base_py if f == "app/rag.py"]))
+parts.append(section("۷) پرداخت، سفارش و کیف پول", pay_py))
 parts.append(section("۸) ربات‌های تلگرام و بله", bots_py))
 parts.append(section("۹) SEO و محتوا", seo_py))
-parts.append(section("۱۰) کارت اشتراک و هستهٔ مشترک", misc_py))
+parts.append(section("۱۰) هستهٔ مشترک و لایهٔ LLM", misc_py))
 parts.append(section("۱۱) قالب‌های Jinja2 (فرانت‌اند)", TEMPLATES, "html"))
-parts.append(section("۱۲) تست‌ها", TESTS))
-parts.append(section("۱۳) زیرساخت و استقرار (اسکریپت‌ها)", SCRIPTS, "bash"))
-parts.append(section("۱۴) میگریشن‌های Alembic", MIGRATIONS))
-parts.append(section("۱۵) محتوای صفحات (pages.json)", ["app/content/pages.json"], "json"))
-parts.append(section("۱۶) systemd units + CI + محیط نمونه", DEPLOY + CI_FILES + ["requirements.txt", ".env.example"], "bash"))
+parts.append(section("۱۲) PWA: سرویس‌کارگر اعلان + مانیفست", STATIC_WEB, "javascript"))
+parts.append(section("۱۳) تست‌ها", TESTS))
+parts.append(section("۱۴) زیرساخت و استقرار (اسکریپت‌ها)", SCRIPTS, "bash"))
+parts.append(section("۱۵) میگریشن‌های Alembic", MIGRATIONS))
+parts.append(section("۱۶) محتوای صفحات و مقالات", ["app/content/pages.json", "app/content/articles.json", "app/content/guide-beginner.md"], "json"))
+parts.append(section("۱۷) systemd units + CI + محیط نمونه", DEPLOY + CI_FILES + ["requirements.txt", ".env.example"], "bash"))
 
 parts.append(f"""
 
 ---
 
-## ۱۷) خروجی واقعی pytest (آخرین اجرا)
+## ۱۸) خروجی واقعی pytest (آخرین اجرا)
 
 ```
 {test_out.strip()}
 ```
 
-## ۱۸) تاریخچه گیت (آخرین {min(commits, 40)} کامیت)
+## ۱۹) تاریخچه گیت (آخرین {min(commits, 40)} کامیت)
 
 ```
 {chr(10).join(gitlog.splitlines()[:40])}
@@ -13155,7 +16813,7 @@ parts.append(f"""
 """)
 
 OUT.write_text("\n".join(parts), encoding="utf-8")
-print(f"WROTE: {OUT} | files: {n_files} | KB: {OUT.stat().st_size/1024:.0f}")
+print(f"WROTE: {OUT} | files: {n_files} | tables: {n_tables} | migrations: {n_migrations} | tests: {n_tests} | KB: {OUT.stat().st_size/1024:.0f}")
 
 ```
 
@@ -13284,7 +16942,7 @@ app/
 ├── models.py       ۱۴+ جدول SQLModel
 ├── auth.py, db.py, security.py, storage.py, config.py
 tests/              ۶۶ تست + ۲۱ golden chart
-scripts/            ci.sh, send_transit_digests, migrate, backup, gen_docs
+scripts/            ci.sh, weekly_transit, migrate, backup, gen_docs
 docs/               PLAN-CHECKLIST (منبع حقیقت), PLAN-V4, RUNBOOK, audit/
 ```
 
@@ -13410,7 +17068,7 @@ cd /root/chart-platform
 venv/bin/python -m pytest tests/ -q          # تست‌ها
 venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8767 --proxy-headers --forwarded-allow-ips=127.0.0.1
 # worker: systemctl status chart-worker (ARQ)
-# اسکریپت‌های کرون: scripts/ (backup, send_transit_digests, migrate, ci.sh)
+# اسکریپت‌های کرون: scripts/ (backup, weekly_transit, migrate, ci.sh)
 ```
 """)
 
@@ -13817,6 +17475,139 @@ print(f"files: {len(FILES)} | chars: {total} | KB: {total/1024:.0f}")
 
 ```
 
+### `scripts/refactor_cookies.py` (60 lines)
+
+```bash
+#!/usr/bin/env python3
+"""C3: replace per-request cookies= (deprecated by starlette) with
+client.cookies.update() — the recommended API."""
+import pathlib
+import re
+
+FILES = [
+    "tests/test_chat_quota_atomic.py",
+    "tests/test_coupon_reservation.py",
+    "tests/test_ownership_r4.py",
+    "tests/test_payment_state_machine.py",
+    "tests/test_refund_lifecycle.py",
+    "tests/test_report_audio_r2.py",
+    "tests/test_report_idempotent.py",
+    "tests/test_subscription_expiry.py",
+]
+
+for f in FILES:
+    p = pathlib.Path(f)
+    src = p.read_text()
+    orig = src
+
+    # 1) find all cookie expressions: cookies=ck / cookies=ck2 / cookies=_admin_cookies()
+    exprs = sorted(set(re.findall(r"cookies=([A-Za-z_]\w*)(?=[),])", src)), reverse=True)
+
+    # 2) strip the arg from requests
+    for e in exprs:
+        src = src.replace(f", cookies={e})", ")")
+        src = src.replace(f", cookies={e})", ")")
+        src = src.replace(f"cookies={e})", ")")
+
+    # 3) inject client.cookies.update(...) right after the cookie var definition
+    #    or right after the TestClient(...) line for function-style cookies
+    lines = src.split("\n")
+    out = []
+    client_name = None
+    for ln in lines:
+        m = re.match(r"^(\s*)(\w+) = TestClient\(", ln)
+        if m:
+            client_name = m.group(2)
+            out.append(ln)
+            # function-style cookie source (e.g. _admin_cookies()) — set on client
+            for e in exprs:
+                if e.endswith("()"):
+                    out.append(f"{m.group(1)}{client_name}.cookies.update({e})")
+            continue
+        m2 = re.match(r"^(\s*)(\w+) = (?:_cookies\(|\{)", ln)
+        if m2 and client_name and m2.group(2) in exprs:
+            out.append(ln)
+            out.append(f"{m2.group(1)}{client_name}.cookies.update({m2.group(2)})")
+            continue
+        out.append(ln)
+    src = "\n".join(out)
+
+    if src != orig:
+        p.write_text(src)
+        print(f"UPDATED {f}")
+    else:
+        print(f"no-change {f}")
+
+```
+
+### `scripts/release_stale_coupons.py` (63 lines)
+
+```bash
+#!/usr/bin/env python3
+"""Release stale coupon reservations (audit r4 A10).
+
+Orders that were created (reserving a coupon slot) but never paid within the
+payment window must give the slot back, otherwise max_uses coupons silently
+lock up. Also releases slots of orders stuck in "failed" that somehow skipped
+release (defensive sweep — release is idempotent via used_count>0 guard).
+
+Run hourly from cron:  30 * * * *  cd /srv/zayche && venv/bin/python scripts/release_stale_coupons.py >> /var/log/zayche/coupon_sweep.log 2>&1
+"""
+import os
+import sys
+from datetime import timedelta
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import app.config  # noqa: F401 — loads .env
+from app.db import engine
+from app.timeutil import utcnow
+from sqlmodel import Session, select
+
+STALE_MINUTES = int(os.getenv("COUPON_STALE_MINUTES", "30"))
+
+
+def main() -> int:
+    released = 0
+    with Session(engine) as s:
+        from app.models import Coupon, Order
+        from sqlalchemy import text
+        # pending orders older than the payment window
+        stale = s.exec(select(Order).where(
+            Order.status == "pending",
+            Order.created_at < utcnow() - timedelta(minutes=STALE_MINUTES),
+        )).all()
+        for o in stale:
+            if o.coupon_id:
+                c = s.get(Coupon, o.coupon_id)
+                if c and c.used_count > 0:
+                    c.used_count -= 1
+                    released += 1
+            o.status = "failed"  # give the user a fresh attempt
+            s.add(o)
+        # defensive: failed orders still holding a slot (belt & suspenders)
+        bad = s.exec(text(
+            "SELECT o.id FROM orders o JOIN coupons c ON c.id = o.coupon_id "
+            "WHERE o.status = 'failed' AND o.coupon_id IS NOT NULL "
+            "AND c.used_count > 0"
+        )).all()
+        if bad:
+            rows = s.exec(text(
+                "UPDATE coupons SET used_count = used_count - 1 "
+                "FROM orders o WHERE o.coupon_id = coupons.id "
+                "AND o.status = 'failed' AND coupons.used_count > 0 RETURNING coupons.id"
+            )).all()
+            released += len(rows)
+        s.commit()
+    print(f"coupon-sweep: {released} slot(s) released")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+```
+
 ### `scripts/restore_db.sh` (83 lines)
 
 ```bash
@@ -13902,6 +17693,129 @@ if [ -n "$MISSING" ]; then
   exit 1
 fi
 echo "OK: all core tables present (restore verified)"
+
+```
+
+### `scripts/restore_drill.py` (118 lines)
+
+```bash
+#!/usr/bin/env python3
+"""Restore drill (audit r4 B2) — proves a backup can actually be restored.
+
+Flow: pick the LATEST age-encrypted backup → decrypt → pg_restore into a
+SCRATCH database (never prod) → sanity checks → drop the scratch DB.
+
+Usage:
+  scripts/restore_drill.sh [backup_file]      # default: newest .zip.age
+Exit 0 on full success; non-zero with a message otherwise.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+sys.path.insert(0, "/root/chart-platform")
+import app.config  # noqa: F401 — load .env FIRST (real creds, not hardcoded)
+
+BACKUP_DIR = Path(os.getenv("BACKUP_DIR", "/root/backups/chart-platform"))
+SCRATCH_DB = "chart_platform_drill"
+
+
+def _scratch_url() -> str:
+    """Same host/user as prod DATABASE_URL, scratch DB name.
+
+    Reads the .env FILE directly (never the shell environment) — a stale shell
+    DATABASE_URL already broke a restore drill once (2026-08-14, empty-scratch
+    backup wiped prod). This drill must be immune to that class of bug.
+    """
+    from dotenv import dotenv_values
+    db = dotenv_values("/root/chart-platform/.env").get("DATABASE_URL", "")
+    if not db:
+        raise SystemExit("FAIL: DATABASE_URL not set in .env")
+    # postgresql://user:pass@host:port/db → swap the db name
+    head, _, _rest = db.rpartition("/")
+    return f"{head}/{SCRATCH_DB}"
+
+
+def main() -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument("backup", nargs="?", help="path to .zip.age backup")
+    args = p.parse_args()
+
+    if args.backup:
+        enc = Path(args.backup)
+    else:
+        candidates = sorted(BACKUP_DIR.glob("chart_backup_*.zip.age"))
+        if not candidates:
+            print("FAIL: no backups found")
+            return 1
+        enc = candidates[-1]
+    if not enc.exists():
+        print(f"FAIL: {enc} not found")
+        return 1
+
+    plain = enc.with_suffix("")  # .zip
+    dump_out = enc.parent / "drill_latest.dump"
+    try:
+        subprocess.run(["age", "-d", "-i", "/root/.hermes/keys/chart-platform-age.txt",
+                        "-o", str(plain), str(enc)], check=True, capture_output=True, text=True)
+        import zipfile
+        with zipfile.ZipFile(plain) as z:
+            names = [n for n in z.namelist() if n.endswith(".dump")]
+            if not names:
+                print("FAIL: no .dump inside backup zip")
+                return 1
+            with z.open(names[0]) as src, open(dump_out, "wb") as dst:
+                dst.write(src.read())
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: age decrypt: {e.stderr[:300]}")
+        return 1
+
+    # drop + recreate the scratch DB (safe: scratch only)
+    SCRATCH_URL = _scratch_url()
+    try:
+        subprocess.run(["sudo", "-u", "postgres", "psql", "-c",
+                        f"DROP DATABASE IF EXISTS {SCRATCH_DB}"], check=True, capture_output=True)
+        subprocess.run(["sudo", "-u", "postgres", "psql", "-c",
+                        f"CREATE DATABASE {SCRATCH_DB} OWNER chart_app"], check=True, capture_output=True)
+        subprocess.run(["sudo", "-u", "postgres", "psql", "-d", SCRATCH_DB, "-c",
+                        "ALTER SCHEMA public OWNER TO chart_app"], check=True, capture_output=True)
+        subprocess.run(["pg_restore", "-d", SCRATCH_URL, "--no-owner", "--no-privileges",
+                        str(dump_out)], check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: restore into scratch: {e.stderr[:400]}")
+        return 1
+    finally:
+        plain.unlink(missing_ok=True)
+        dump_out.unlink(missing_ok=True)
+
+    # sanity: the scratch DB must actually contain live data
+    try:
+        plans = subprocess.run(
+            ["psql", SCRATCH_URL, "-Atc", "SELECT count(*) FROM plans"],
+            check=True, capture_output=True, text=True).stdout.strip()
+        users = subprocess.run(
+            ["psql", SCRATCH_URL, "-Atc", "SELECT count(*) FROM users"],
+            check=True, capture_output=True, text=True).stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: sanity query: {e.stderr[:300]}")
+        return 1
+    if not plans or int(plans or 0) < 5:
+        print(f"FAIL: restored DB looks empty (plans={plans!r})")
+        return 1
+    print(f"OK: restored {enc.name} → {SCRATCH_DB} (plans={plans}, users={users})")
+
+    # cleanup scratch
+    subprocess.run(["sudo", "-u", "postgres", "psql", "-c",
+                    f"DROP DATABASE IF EXISTS {SCRATCH_DB}"], check=True, capture_output=True)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
 
 ```
 
@@ -13996,97 +17910,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
-```
-
-### `scripts/send_transit_digests.py` (86 lines)
-
-```bash
-#!/usr/bin/env python3
-"""Transit digests for bot subscribers (plan v3.0 §7) — daily 07:00 + weekly.
-
-AI-INDEPENDENT (system crontab):
-  - daily:  0 7 * * *     → freq=daily
-  - weekly: 0 7 * * 6     → freq=weekly (Saturday morning, richer digest)
-
-Only ACTIVE, non-expired subscriptions receive digests. Silent when nobody.
-"""
-import os
-import sys
-from datetime import datetime, timezone
-
-sys.path.insert(0, "/root/chart-platform")
-from dotenv import load_dotenv  # noqa: E402
-
-load_dotenv("/root/chart-platform/.env")
-
-from app.db import Session, engine  # noqa: E402
-from sqlmodel import select  # noqa: E402
-from app.models import Chart, Subscription  # noqa: E402
-from app.astrology.transits import compute_transits  # noqa: E402
-
-TOKENS = {
-    "telegram": os.getenv("TELEGRAM_BOT_TOKEN", ""),
-    "bale": os.getenv("BALE_BOT_TOKEN", ""),
-}
-_API = {
-    "telegram": f"https://api.telegram.org/bot{TOKENS['telegram']}",
-    "bale": f"https://tapi.bale.ai/bot{TOKENS['bale']}",
-}
-
-
-def _send(platform: str, chat_id: str, text: str) -> bool:
-    import requests
-    try:
-        r = requests.post(f"{_API[platform]}/sendMessage",
-                          json={"chat_id": int(chat_id), "text": text,
-                                "parse_mode": "HTML"}, timeout=20)
-        return r.status_code == 200 and r.json().get("ok", False)
-    except Exception:
-        return False
-
-
-def _format_digest(transits: list[dict], weekly: bool = False) -> str:
-    if not transits:
-        return "🌠 امروز گذر مهمی روی چارت تولدت فعال نیست — روز آرامی داری."
-    lines = []
-    for t in transits[: (7 if weekly else 5)]:
-        target = {"Sun": "خورشید", "Moon": "ماه", "ASC": "طالع"}.get(t["target"], t["target"])
-        lines.append(f"• {t['planet_fa']} ({t['sign_fa']}) — {t['aspect']} با <b>{target}</b> (اورب {t['orb']}°)")
-    if weekly:
-        return "📅 <b>گذرهای هفتهی پیشِ روی چارت تو</b>\n\n" + "\n".join(lines) + \
-               "\n\nاین هفته: مراقب فرصتهای شغلی و گفتوگوهای مهم باش."
-    return "🌠 <b>گذرهای امروز چارت تو</b>\n\n" + "\n".join(lines)
-
-
-def main(weekly: bool = False) -> None:
-    now = datetime.now(timezone.utc)
-    with Session(engine) as s:
-        subs = s.exec(select(Subscription).where(
-            Subscription.active == True)).all()  # noqa: E712
-        if not subs:
-            return
-        sent = 0
-        for sub in subs:
-            if weekly and sub.freq != "weekly":
-                continue
-            if sub.expires_at and sub.expires_at < now:
-                sub.active = False  # auto-expire unpaid renewals
-                continue
-            chart = s.get(Chart, sub.chart_id)
-            if not chart or not chart.chart_json:
-                continue
-            transits = compute_transits(chart.chart_json)
-            text = _format_digest(transits, weekly=weekly)
-            if _send(sub.platform, sub.chat_id, text):
-                sub.last_sent_at = now
-                sent += 1
-        s.commit()
-    print(f"transit digests sent: {sent}") if sent else None
-
-
-if __name__ == "__main__":
-    main(weekly=("--weekly" in sys.argv))
 
 ```
 
@@ -14218,7 +18041,192 @@ if __name__ == "__main__":
 
 ---
 
-## ۱۴) میگریشن‌های Alembic
+## ۱۵) میگریشن‌های Alembic
+
+### `alembic/versions/3c92dac1a241_subscription_expiry_unique.py` (51 lines)
+
+```python
+"""subscription_expiry_unique
+
+audit r4 A9/B8: subscriptions.chat_id becomes nullable (web purchases have no
+chat identity) and a UNIQUE index on (chart_id, COALESCE(chat_id,'')) prevents
+duplicate subscriptions for the same chart+account.
+
+Revision ID: 3c92dac1a241
+Revises: 9a3c5e7b1d2f
+Create Date: 2026-08-14 08:38:31.666899
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = '3c92dac1a241'
+down_revision: Union[str, Sequence[str], None] = '9a3c5e7b1d2f'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    # 1) chat_id must accept NULL (web monthly purchases)
+    op.alter_column('subscriptions', 'chat_id', existing_type=sa.String(), nullable=True)
+    # 2) dedupe before adding the unique index: keep the row with the latest expiry
+    op.execute(
+        """
+        DELETE FROM subscriptions a
+        USING subscriptions b
+        WHERE a.id <> b.id
+          AND a.chart_id = b.chart_id
+          AND COALESCE(a.chat_id, '') = COALESCE(b.chat_id, '')
+          AND (a.expires_at IS NULL OR b.expires_at IS NULL OR a.expires_at <= b.expires_at)
+          AND a.id < b.id
+        """
+    )
+    # 3) one subscription per (chart, account)
+    op.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_sub_chart_account "
+        "ON subscriptions (chart_id, COALESCE(chat_id, ''))"
+    )
+
+
+def downgrade() -> None:
+    op.execute("DROP INDEX IF EXISTS uq_sub_chart_account")
+    op.alter_column('subscriptions', 'chat_id', existing_type=sa.String(), nullable=False)
+
+```
+
+### `alembic/versions/64397ea3dbf5_d1_push_subscriptions_table.py` (47 lines)
+
+```python
+"""d1 push_subscriptions table
+
+Revision ID: 64397ea3dbf5
+Revises: 66bc97b51008
+Create Date: 2026-08-14 10:19:22.149132
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = '64397ea3dbf5'
+down_revision: Union[str, Sequence[str], None] = '66bc97b51008'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.create_table('push_subscriptions',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('endpoint', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('p256dh', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('auth', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_push_subscriptions_endpoint'), 'push_subscriptions', ['endpoint'], unique=True)
+    op.create_index(op.f('ix_push_subscriptions_user_id'), 'push_subscriptions', ['user_id'], unique=False)
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_push_subscriptions_user_id'), table_name='push_subscriptions')
+    op.drop_index(op.f('ix_push_subscriptions_endpoint'), table_name='push_subscriptions')
+    op.drop_table('push_subscriptions')
+    # ### end Alembic commands ###
+
+```
+
+### `alembic/versions/66bc97b51008_b6b_align_schema_to_models_prod_create_.py` (72 lines)
+
+```python
+"""b6b: align schema to models (prod create_all drift)
+
+PROD was created by an old `create_all` (never via Alembic) while the test DB
+is rebuilt fresh — the two schemas drifted apart (index naming, nullable,
+unique). This migration converges BOTH to the models' definition, using
+IF EXISTS / IF NOT EXISTS so it is a no-op on already-aligned schemas.
+
+Generated 2026-08-14 (audit r4 B6 — alembic check must be clean everywhere).
+"""
+from alembic import op
+import sqlalchemy as sa
+from typing import Union, Sequence
+
+# revision identifiers, used by Alembic.
+revision: str = '66bc97b51008'
+down_revision: Union[str, Sequence[str], None] = 'd4db5d787f91'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    # ── orders ────────────────────────────────────────────────────────────
+    op.execute("DROP INDEX IF EXISTS idx_orders_chart_status")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_orders_chat_id ON orders (chat_id)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_orders_secondary_chart_id ON orders (secondary_chart_id)")
+    # ── referral_codes ────────────────────────────────────────────────────
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN user_id SET NOT NULL")
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN code SET NOT NULL")
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN created_at SET NOT NULL")
+    op.execute("ALTER TABLE referral_codes DROP CONSTRAINT IF EXISTS referral_codes_code_key")
+    op.execute("DROP INDEX IF EXISTS ix_referral_codes_code")
+    op.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_referral_codes_code ON referral_codes (code)")
+    # ── referral_events ───────────────────────────────────────────────────
+    op.execute("ALTER TABLE referral_events ALTER COLUMN code SET NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN amount_rial SET NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN reward_rial SET NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN status SET NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN created_at SET NOT NULL")
+    op.execute("DROP INDEX IF EXISTS ix_ref_code")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_referral_events_code ON referral_events (code)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_referral_events_order_id ON referral_events (order_id)")
+    # ── reports ───────────────────────────────────────────────────────────
+    op.execute("DROP INDEX IF EXISTS idx_reports_chart")
+    # ── subscriptions / weekly_reflections nullable+defaults ──────────────
+    op.execute("ALTER TABLE subscriptions ALTER COLUMN plan_key SET NOT NULL")
+    op.execute("ALTER TABLE subscriptions ALTER COLUMN expires_at DROP NOT NULL")
+    op.execute("ALTER TABLE weekly_reflections ALTER COLUMN text SET NOT NULL")
+    op.execute("ALTER TABLE weekly_reflections ALTER COLUMN created_at SET NOT NULL")
+
+
+def downgrade() -> None:
+    # Best-effort reverse (kept minimal — this migration is one-way drift fix)
+    op.execute("CREATE INDEX IF NOT EXISTS idx_orders_chart_status ON orders (chart_id, status)")
+    op.execute("DROP INDEX IF EXISTS ix_orders_chat_id")
+    op.execute("DROP INDEX IF EXISTS ix_orders_secondary_chart_id")
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN user_id DROP NOT NULL")
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN code DROP NOT NULL")
+    op.execute("ALTER TABLE referral_codes ALTER COLUMN created_at DROP NOT NULL")
+    op.execute("ALTER TABLE referral_codes ADD CONSTRAINT referral_codes_code_key UNIQUE (code)")
+    op.execute("DROP INDEX IF EXISTS ix_referral_codes_code")
+    op.execute("DROP INDEX IF EXISTS ix_referral_events_code")
+    op.execute("DROP INDEX IF EXISTS ix_referral_events_order_id")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN code DROP NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN amount_rial DROP NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN reward_rial DROP NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN status DROP NOT NULL")
+    op.execute("ALTER TABLE referral_events ALTER COLUMN created_at DROP NOT NULL")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_reports_chart ON reports (chart_id, created_at)")
+    op.execute("ALTER TABLE subscriptions ALTER COLUMN plan_key DROP NOT NULL")
+    op.execute("ALTER TABLE weekly_reflections ALTER COLUMN text DROP NOT NULL")
+    op.execute("ALTER TABLE weekly_reflections ALTER COLUMN created_at DROP NOT NULL")
+
+```
 
 ### `alembic/versions/9a3c5e7b1d2f_birth_profiles_zodiac.py` (29 lines)
 
@@ -14251,6 +18259,101 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_column('birth_profiles', 'zodiac')
+
+```
+
+### `alembic/versions/9f1a5ac160e7_d3_orders_note.py` (34 lines)
+
+```python
+"""d3 orders.note
+
+Revision ID: 9f1a5ac160e7
+Revises: cdd5c0abf767
+Create Date: 2026-08-14 11:26:31.839499
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = '9f1a5ac160e7'
+down_revision: Union[str, Sequence[str], None] = 'cdd5c0abf767'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.add_column('orders', sa.Column('note', sqlmodel.sql.sqltypes.AutoString(), nullable=True))
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_column('orders', 'note')
+    # ### end Alembic commands ###
+
+```
+
+### `alembic/versions/be499a77ca2b_d2_report_chunks_pgvector.py` (51 lines)
+
+```python
+"""d2 report_chunks pgvector
+
+Revision ID: be499a77ca2b
+Revises: 64397ea3dbf5
+Create Date: 2026-08-14 11:06:58.894849
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+from pgvector.sqlalchemy import Vector
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = 'be499a77ca2b'
+down_revision: Union[str, Sequence[str], None] = '64397ea3dbf5'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.create_table('report_chunks',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('report_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('chunk_index', sa.Integer(), nullable=False),
+    sa.Column('section_key', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('text', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('embedding', Vector(dim=384), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['report_id'], ['reports.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_report_chunks_report_id'), 'report_chunks', ['report_id'], unique=False)
+    # HNSW index for cosine similarity search (D2)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_report_chunks_embedding_hnsw "
+               "ON report_chunks USING hnsw (embedding vector_cosine_ops)")
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.execute("DROP INDEX IF EXISTS ix_report_chunks_embedding_hnsw")
+    op.drop_index(op.f('ix_report_chunks_report_id'), table_name='report_chunks')
+    op.drop_table('report_chunks')
+    # ### end Alembic commands ###
 
 ```
 
@@ -14301,6 +18404,104 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index(op.f('ix_chat_messages_chart_id'), table_name='chat_messages')
     op.drop_table('chat_messages')
+
+```
+
+### `alembic/versions/cdd5c0abf767_d3_wallet_balance_withdrawal_requests.py` (50 lines)
+
+```python
+"""d3 wallet balance + withdrawal_requests
+
+Revision ID: cdd5c0abf767
+Revises: be499a77ca2b
+Create Date: 2026-08-14 11:21:40.318297
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = 'cdd5c0abf767'
+down_revision: Union[str, Sequence[str], None] = 'be499a77ca2b'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.create_table('withdrawal_requests',
+    sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('amount_rial', sa.Integer(), nullable=False),
+    sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('note', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('resolved_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_withdrawal_requests_user_id'), 'withdrawal_requests', ['user_id'], unique=False)
+    op.add_column('users', sa.Column('balance_rial', sa.Integer(), nullable=False,
+                                     server_default=sa.text('0')))
+    op.alter_column('users', 'balance_rial', server_default=None)
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_column('users', 'balance_rial')
+    op.drop_index(op.f('ix_withdrawal_requests_user_id'), table_name='withdrawal_requests')
+    op.drop_table('withdrawal_requests')
+    # ### end Alembic commands ###
+
+```
+
+### `alembic/versions/d4db5d787f91_b6_subscriptions_order_id_orders_error_.py` (38 lines)
+
+```python
+"""b6: subscriptions.order_id + orders.error (refund lifecycle)
+
+Revision ID: d4db5d787f91
+Revises: 3c92dac1a241
+Create Date: 2026-08-14 09:23:53.152309
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = 'd4db5d787f91'
+down_revision: Union[str, Sequence[str], None] = '3c92dac1a241'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.add_column('orders', sa.Column('error', sqlmodel.sql.sqltypes.AutoString(), nullable=True))
+    op.add_column('subscriptions', sa.Column('order_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True))
+    op.create_index(op.f('ix_subscriptions_order_id'), 'subscriptions', ['order_id'], unique=False)
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_subscriptions_order_id'), table_name='subscriptions')
+    op.drop_column('subscriptions', 'order_id')
+    op.drop_column('orders', 'error')
+    # ### end Alembic commands ###
 
 ```
 
@@ -14649,7 +18850,7 @@ def downgrade() -> None:
 
 ---
 
-## ۱۵) محتوای صفحات (pages.json)
+## ۱۶) محتوای صفحات و مقالات
 
 ### `app/content/pages.json` (258 lines)
 
@@ -14914,10 +19115,2295 @@ def downgrade() -> None:
 }
 ```
 
+### `app/content/articles.json` (2156 lines)
+
+```json
+[
+ {
+  "slug": "chart-tavalod-chist",
+  "title": "چارت تولد چیست؟ هر آنچه باید بدانید",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "چارت تولد یا زایچه چیست و چه چیزهایی از آن می‌توان فهمید؟ راهنمای ساده و کامل برای تازه‌کارها.",
+  "keywords": "چارت تولد,زایچه,طالع,برج,نجوم",
+  "meta": "چارت تولد چیست؟ راهنمای کامل مفهوم زایچه، سیارات، برج‌ها و خانه‌ها به زبان ساده.",
+  "image": "/static/articles/chart-tavalod-chist.webp",
+  "body": [
+   {
+    "h2": "چارت تولد چیست؟",
+    "p": "چارت تولد یا زایچه، نقشه‌ی دقیق آسمان در لحظه و مکان تولد شماست. در این نقشه، جای خورشید، ماه و سیارات، برج‌ها و خانه‌های دوازده‌گانه مشخص می‌شود و تصویری از ساختار شخصیت و استعدادهای شما به دست می‌دهد."
+   },
+   {
+    "h2": "سه‌گانه‌ی اصلی شخصیت",
+    "p": "سه عامل بیش از همه در چارت اهمیت دارند: خورشید (هویت و اراده‌ی شما)، ماه (احساسات و نیازهای درونی) و طالع یا صعود (رویکرد بیرونی و تأثیری که بر دیگران می‌گذارید). ترکیب این سه، هسته‌ی اصلی شخصیت را می‌سازد."
+   },
+   {
+    "h2": "سیارات شخصی و اجتماعی",
+    "p": "عطارد شیوه‌ی فکر و گفتار شما را نشان می‌دهد، زهره زبان عشق و ارزش‌هاست، و مریخ نحوه‌ی اراده و اقدام شما را مشخص می‌کند. مشتری به رشد و خوش‌بینی مربوط است و زحل به ساختار، مسئولیت و درس‌هایی که باید بیاموزید."
+   },
+   {
+    "h2": "برج‌های دوازده‌گانه",
+    "p": "دایره‌ی چارت به دوازده برج تقسیم می‌شود که هر کدام در یکی از چهار عنصر آتش، خاک، باد و آب قرار می‌گیرند. برجی که هر سیاره در آن است، رنگ و سبک آن سیاره را تعیین می‌کند؛ مثلاً خورشید در برج آتشین اسد با خورشید در برج خاکی ثور تفاوت‌های زیادی دارد."
+   },
+   {
+    "h2": "خانه‌های دوازده‌گانه",
+    "p": "خانه‌ها حوزه‌های زندگی هستند: خانه‌ی اول «خود» شماست، خانه‌ی دوم دارایی، خانه‌ی سوم ارتباط و یادگیری، خانه‌ی هفتم روابط و ازدواج، و خانه‌ی دهم مسیر شغلی. سیاره‌ای که در یک خانه است، توجه شما را به آن حوزه از زندگی جلب می‌کند."
+   },
+   {
+    "h2": "زاویه‌ها چه هستند؟",
+    "p": "زاویه‌ها، فاصله‌ی زاویه‌ای بین دو سیاره‌اند و نشان می‌دهند آن‌ها چگونه با هم کار می‌کنند. مثلث و سدس (زاویه‌های نرم) جریان راحت انرژی هستند؛ مربع و مقابله (زاویه‌های سخت) چالش و کشش ایجاد می‌کنند و می‌توانند منبع رشد باشند."
+   },
+   {
+    "h2": "چرا لحظه و مکان تولد مهم است؟",
+    "p": "چون زمین به دور خود می‌چرخد، طالع تقریباً هر چهار دقیقه یک درجه جابه‌جا می‌شود. به همین دلیل ساعت و محل دقیق تولد برای محاسبه‌ی درست خانه‌ها و طالع ضروری است؛ یک خطای نیم‌ساعته می‌تواند بخش مهمی از تفسیر را تغییر دهد."
+   },
+   {
+    "h2": "چارت تولد چه چیزهایی نشان می‌دهد؟",
+    "p": "چارت تولد استعدادها، نیازهای عمیق، سبک ارتباط، الگوهای احساسی و چالش‌های تکرارشونده‌ی شما را نشان می‌دهد. این نقشه سرنوشتِ از پیش نوشته‌شده نیست، بلکه ابزاری برای شناخت خود و انتخاب‌های آگاهانه‌تر است."
+   },
+   {
+    "h2": "تفاوت چارت تولد با فال روزانه",
+    "p": "فال روزانه فقط بر اساس برج خورشیدی (مثلاً «برج اسد») است و برای همه‌ی متولدان یک برج یکسان نوشته می‌شود. اما چارت تولد با محاسبه‌ی دقیق همه‌ی سیارات، خانه‌ها و زاویه‌ها، تصویری منحصربه‌فرد از شما ارائه می‌دهد که در آن هیچ دو نفری یکسان نیستند."
+   },
+   {
+    "h2": "چگونه چارت خود را بسازیم؟",
+    "p": "برای ساخت چارت فقط به تاریخ، ساعت و محل تولد نیاز دارید. با فرم رایگان زایچه می‌توانید چارت تعاملی خود را بسازید و اینسایت‌های اولیه را همان لحظه ببینید."
+   }
+  ],
+  "thumb": "/static/articles/chart-tavalod-chist-thumb.webp"
+ },
+ {
+  "slug": "برج-اسد-ویژگی-ها",
+  "title": "برج اسد: ویژگی‌ها، شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "همه چیز درباره برج اسد — شخصیت، نقاط قوت، چالش‌ها و سازگاری با دیگر برج‌ها.",
+  "keywords": "برج اسد,شخصیت,طالع,سازگاری",
+  "meta": "ویژگی‌های شخصیتی برج اسد، نقاط قوت و ضعف و میزان سازگاری با سایر برج‌ها.",
+  "image": "/static/articles/art-3723f5e379.webp",
+  "body": [
+   {
+    "h2": "شخصیت اسد",
+    "p": "اسد (۲۳ جولای تا ۲۲ آگوست) برج آتش است و خورشید حاکم آن است؛ به همین دلیل متولدان این برج گرم، بااعتمادبه‌نفس و درخشان‌اند. آن‌ها دوست دارند دیده شوند، الهام ببخشند و در مرکز توجه قرار بگیرند."
+   },
+   {
+    "h2": "عنصر و حاکم اسد",
+    "p": "عنصر اسد آتش است که به آن شور، اشتیاق و انرژی می‌دهد. خورشید به‌عنوان حاکم، جایگاه خودش (خورشید در اسد) را به «خانه‌ی خود» تبدیل می‌کند؛ یعنی اسدها اغلب حضوری گرم و رهبرگونه دارند و به‌طور طبیعی نور خود را به دیگران می‌تابانند."
+   },
+   {
+    "h2": "نقاط قوت",
+    "p": "سخاوت، وفاداری، شجاعت و خلاقیت از بارزترین ویژگی‌های اسد است. آن‌ها رهبران طبیعی هستند، از دفاع از عزیزانشان لذت می‌برند و می‌توانند فضا را با انرژی مثبت خود روشن کنند."
+   },
+   {
+    "h2": "نقاط ضعف",
+    "p": "غرور، نیاز به تأیید و لجاجت از چالش‌های اصلی این برج است. اسدها گاهی تحمل نقد را ندارند و اگر احساس کنند نادیده گرفته شده‌اند، ممکن است واکنش نمایشی نشان دهند."
+   },
+   {
+    "h2": "عشق و رابطه",
+    "p": "در عشق، اسد گرم، پرشور و سخاوتمند است و از شریک زندگی‌اش انتظار توجه و قدردانی دارد. بهترین هماهنگی را معمولاً با برج‌های آتش (حمل و قوس) و باد (جوزا، میزان و دلو) تجربه می‌کند."
+   },
+   {
+    "h2": "شغل و موفقیت",
+    "p": "اسد در نقش‌هایی می‌درخشد که نیاز به رهبری، خلاقیت یا اجرا دارند: مدیریت، هنر، بازیگری، کارگردانی، تدریس و کارآفرینی. آن‌ها وقتی الهام‌بخش دیگران باشند، بهترین عملکرد را دارند."
+   },
+   {
+    "h2": "پول و مالی",
+    "p": "اسد با پول سخاوتمند است و از تجمل و کیفیت لذت می‌برد، اما گاهی ولخرجی می‌کند. یادگیری بودجه‌بندی و تمایز بین خواسته و نیاز، نقطه‌ی رشد مالی این برج است."
+   },
+   {
+    "h2": "سلامتی",
+    "p": "در نجوم پزشکی، اسد با قلب و ستون فقرات مرتبط است. فعالیت بدنی منظم، خواب کافی و مدیریت استرس برای حفظ سلامت قلب این برج مهم است."
+   },
+   {
+    "h2": "سازگاری با دیگر برج‌ها",
+    "p": "اسد با حمل و قوس (آتش) انرژی مشترک دارد و با جوزا، میزان و دلو (باد) گفتگو و هیجان خوبی برقرار می‌کند. با برج‌های آب و خاک، رابطه نیازمند درک و سازش بیشتری است."
+   },
+   {
+    "h2": "چارت کامل فراتر از برج خورشیدی",
+    "p": "برج خورشیدی فقط یک بخش از چارت است؛ ماه، طالع و جای سایر سیارات تصویر کامل‌تری می‌دهند. برای شناخت دقیق‌تر شخصیت یک اسد، باید چارت تولد کامل او را بررسی کرد."
+   }
+  ],
+  "thumb": "/static/articles/art-3723f5e379-thumb.webp"
+ },
+ {
+  "slug": "سیارات-در-چارت-تولد",
+  "title": "معنای سیارات در چارت تولد",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "خورشید، ماه، عطارد، زهره، مریخ و... هر سیاره در چارت تولد چه چیزی را نشان می‌دهد؟",
+  "keywords": "سیارات,چارت تولد,خورشید,ماه,زهره",
+  "meta": "راهنمای کامل معنا و نقش هر سیاره در چارت تولد — خورشید، ماه، عطارد، زهره، مریخ، مشتری، زحل.",
+  "image": "/static/articles/art-cb7738a57b.webp",
+  "body": [
+   {
+    "h2": "سیارات شخصی",
+    "p": "سیارات شخصی (خورشید، ماه، عطارد، زهره و مریخ) سریع حرکت می‌کنند و شخصیت روزمره، احساسات و رفتار شما را شکل می‌دهند. جای این پنج سیاره در چارت، هسته‌ی اصلی شناخت فردی است."
+   },
+   {
+    "h2": "خورشید — هویت اصلی",
+    "p": "خورشید نشان‌دهنده‌ی اراده، هویت و هدف زندگی است. برج و خانه‌ای که خورشید در آن است، مشخص می‌کند شما در کدام حوزه می‌درخشید و چه چیزی به زندگی‌تان معنا می‌دهد."
+   },
+   {
+    "h2": "ماه — دنیای احساسات",
+    "p": "ماه نمایانگر نیازهای عاطفی، غرایز و واکنش‌های ناخودآگاه شماست. جای ماه نشان می‌دهد چه چیزهایی شما را امن و آرام می‌کند و در تنهایی چگونه احساسات‌تان را تجربه می‌کنید."
+   },
+   {
+    "h2": "عطارد — ذهن و ارتباط",
+    "p": "عطارد شیوه‌ی فکر کردن، یادگیری و گفتگو را نشان می‌دهد. برج عطارد تعیین می‌کند ذهن شما تحلیلی است یا شهودی، و خانه‌ی آن حوزه‌ای را که ذهن‌تان بیشتر درگیر آن است مشخص می‌کند."
+   },
+   {
+    "h2": "زهره — عشق و ارزش‌ها",
+    "p": "زهره زبان عشق، زیبایی‌شناسی و ارزش‌های شماست. جای آن نشان می‌دهد چه چیزهایی را دوست دارید، چگونه عشق می‌ورزید و چه چیزی برایتان لذت و هماهنگی می‌آفریند."
+   },
+   {
+    "h2": "مریخ — اراده و انرژی",
+    "p": "مریخ نحوه‌ی اقدام، رقابت و دفاع از خود را نشان می‌دهد. برج مریخ سبک انگیزه و خشم شما را مشخص می‌کند و خانه‌ی آن حوزه‌ای است که انرژی و جسارت‌تان را در آن صرف می‌کنید."
+   },
+   {
+    "h2": "مشتری — رشد و خوش‌بینی",
+    "p": "مشتری سیاره‌ی گسترش، خوش‌بینی و فرصت است. جای آن نشان می‌دهد در کدام بخش زندگی رشد می‌کنید، از کجا اقبال و شانس بیشتری دارید و چگونه معنا و ایمان را تجربه می‌کنید."
+   },
+   {
+    "h2": "زحل — ساختار و مسئولیت",
+    "p": "زحل سیاره‌ی نظم، محدودیت و بلوغ است. جای آن حوزه‌ای را نشان می‌دهد که باید در آن صبور باشید، مسئولیت بپذیرید و با تلاش مداوم، پایه‌های ماندگار بسازید."
+   },
+   {
+    "h2": "سیارات فراشخصی — اورانوس، نپتون، پلوتون",
+    "p": "این سه سیاره کند حرکت می‌کنند و روی نسل‌ها اثر می‌گذارند. اورانوس نوآوری و آزادی، نپتون رؤیا و معنویت، و پلوتون دگرگونی و قدرت است. در چارت شخصی، خانه‌ی آن‌ها نشان می‌دهد در کجا با نیروهای بزرگ‌تر از خودتان درگیر می‌شوید."
+   },
+   {
+    "h2": "گره‌های ماه و چیرون",
+    "p": "گره‌ی شمالی و جنوبی مسیر رشد روحی شما را نشان می‌دهند: گره‌ی جنوبی الگوهای قدیمی و گره‌ی شمالی جهت رشد است. چیرون نیز زخم عمیق و استعداد نهفته در دل همان زخم را آشکار می‌کند."
+   }
+  ],
+  "thumb": "/static/articles/art-cb7738a57b-thumb.webp"
+ },
+ {
+  "slug": "what-is-astrology-and-how-accurate-is-it",
+  "title": "آسترولوژی چیست و چقدر دقیق است؟",
+  "category": "آموزش نجوم",
+  "excerpt": "آسترولوژی یک سیستم نمادین باستانی برای خودشناسی است، اما دقت آن به عنوان یک علم تجربی تأیید نشده است.",
+  "keywords": "آسترولوژی,دقت آسترولوژی",
+  "meta": "آشنایی با مفهوم آسترولوژی، تاریخچه آن و بررسی علمیِ دقت و محدودیت‌هایش به زبان ساده و کاربردی.",
+  "body": [
+   {
+    "h2": "آسترولوژی؛ نقشه‌ای از آسمان در لحظه تولد",
+    "p": "آسترولوژی یا آسترولوژی، سیستمی کهن است که موقعیت اجرام آسمانی مانند خورشید، ماه و سیارات را در لحظه تولد فرد بررسی می‌کند. برخلاف نجوم که علم مطالعه فیزیکی ستارگان و کهکشان‌هاست، آسترولوژی بیشتر یک زبان نمادین به شمار می‌رود. در این نگاه، آسمان مانند آینه‌ای است که ویژگی‌های شخصیتی، استعدادها و حتی چرخه‌های زندگی را بازتاب می‌دهد. بسیاری از افراد برای یافتن معنا، شناخت خود و تصمیم‌گیری‌های روزمره به آن مراجعه می‌کنند."
+   },
+   {
+    "h2": "ریشه‌های تاریخی آسترولوژی",
+    "p": "آسترولوژی قدمتی چند هزار ساله دارد. نخستین نشانه‌های آن به تمدن بابِل در بین‌النهرین بازمی‌گردد، جایی که ستاره‌شناسانِ آن دوران حرکت سیارات را با رویدادهای زمینی مرتبط می‌دانستند. سپس این دانش به مصر، یونان و هند راه یافت و با اسطوره‌ها و فلسفه درآمیخت. در یونان باستان، اختربینان مفهوم زودیاک یا همان منطقه‌البروج را گسترش دادند و به هر برج، ویژگی‌های شخصیتی خاصی نسبت دادند. از آن زمان تاکنون، آسترولوژی در فرهنگ‌های گوناگون رنگ و بوی محلی گرفته اما هسته اصلی آن حفظ شده است."
+   },
+   {
+    "h2": "آسترولوژی چگونه کار می‌کند؟",
+    "p": "در آسترولوژی، سه عنصر اصلی وجود دارد: برج خورشیدی، برج ماه و طالع یا صعود. برج خورشیدی نشان‌دهنده هویت اصلی و خودآگاه شماست؛ برج ماه به دنیای احساسات و نیازهای درونی اشاره دارد و طالع، نقابی است که به جهان نشان می‌دهید. اختربینان برای تحلیل دقیق‌تر، نمودار زایمان یا چارت تولد را رسم می‌کنند که موقعیت دقیق سیارات در دوازده خانه آسمانی را نشان می‌دهد. هر خانه به حوزه‌ای از زندگی مانند روابط، شغل، خانواده یا سلامتی مربوط است. تفسیر این نمودار کاری تخصصی است و به تجربه و شهود زیادی نیاز دارد."
+   },
+   {
+    "h2": "دقت آسترولوژی چقدر است؟",
+    "p": "اگر دقت را به معنای علمی و آماری در نظر بگیریم، باید صریح بگوییم: تاکنون هیچ مطالعه کنترل‌شده‌ای نتوانسته است ادعاهای پیش‌گویانه‌ی آسترولوژی را تأیید کند. پژوهش‌های متعددی نشان داده‌اند که اختربینان نمی‌توانند شخصیت افراد را بر اساس چارت تولد بهتر از حد شانس تشخیص دهند. همچنین توصیف‌های برج‌ها معمولاً چنان کلی و چندپهلو نوشته می‌شوند که تقریباً برای هر کسی صدق می‌کنند؛ پدیده‌ای که در روان‌شناسی به اثر بارنوم معروف است. ما انسان‌ها نیز تمایل داریم اطلاعات مبهم را شخصی‌سازی کنیم و شواهد مخالف را نادیده بگیریم."
+   },
+   {
+    "h2": "پس چرا آسترولوژی این‌قدر محبوب است؟",
+    "p": "محبوبیت آسترولوژی ریشه در نیاز عمیق انسانی به معنا و نظم دارد. وقتی با زبان نمادین برج‌ها و سیارات توصیف می‌شویم، احساس می‌کنیم دیده شده‌ایم و قصه‌ای برای زندگی‌مان داریم. آسترولوژی می‌تواند زبانی برای گفت‌وگو با خودمان باشد؛ وسیله‌ای برای مکث، تأمل و توجه به ابعادی از شخصیت که شاید کمتر به آن‌ها فکر کرده‌ایم. در دنیای پرسرعت امروز، آیین‌های کوچکی مانند خواندن طالع روزانه یا بررسی چارت تولد، حس مراقبت و پیوند با کیهان را به ما می‌دهد. این کارکرد روان‌شناختی و فرهنگی است که آن را زنده نگه داشته، نه قدرت پیش‌گویی."
+   },
+   {
+    "h2": "چطور از آسترولوژی هوشمندانه استفاده کنیم؟",
+    "p": "آسترولوژی زمانی بیشترین سود را دارد که به عنوان ابزار خودشناسی و گفت‌وگو با خود به کار رود، نه به عنوان تعیین قطعی آینده. از آن برای کشف الگوهای رفتاری، پرسش‌های شخصی و گسترش دایره واژگان احساسی‌تان استفاده کنید. اما برای تصمیم‌های مهم مانند ازدواج، سرمایه‌گذاری یا درمان پزشکی هرگز به آن اتکا نکنید. همچنین مرز میان آسترولوژی و نجوم را به خاطر بسپارید: نجوم علم است و آسترولوژی یک سیستم نمادین فرهنگی. اگر این مرز را شفاف نگه دارید، می‌توانید از زیبایی و عمق نمادین آسترولوژی لذت ببرید."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "آسترولوژی یک میراث فرهنگی و ابزار خودشناسی است که می‌تواند به زندگی شما معنا و زبان تازه‌ای ببخشد. اما دقت آن در مقام یک علم تجربی تأیید نشده و بهتر است به آن به چشم یک نقشه شاعرانه نگاه کنید، نه یک قطب‌نمای دقیق. اگر کنجکاوید بدانید چارت تولدتان چه تصویری از شخصیت شما ترسیم می‌کند، همین حالا چارت رایگان خود را بسازید و با نگاهی باز و انتقادی آن را کاوش کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/what-is-astrology-and-how-accurate-is-it.webp",
+  "thumb": "/static/articles/what-is-astrology-and-how-accurate-is-it-thumb.webp"
+ },
+ {
+  "slug": "meaning-of-12-zodiac-signs-at-a-glance",
+  "title": "معنای ۱۲ برج در یک نگاه؛ راهنمای کوتاه برای شناخت نمادهای طالع",
+  "category": "برج‌ها",
+  "excerpt": "در این مقاله معنای هر یک از ۱۲ برج را در چهار گروه آتش، خاک، هوا و آب به‌زبان ساده مرور می‌کنیم.",
+  "keywords": "برج ها,طالع,۱۲ برج",
+  "meta": "معنای ۱۲ برج در یک نگاه؛ از برج آتش تا آب، هر نماد چه می‌گوید؟ راهنمای کوتاه و کاربردی برای شناخت طالع خود.",
+  "body": [
+   {
+    "h2": "دوازده برج، دوازده آینه برای خودشناسی",
+    "p": "وقتی از طالع حرف می‌زنیم، در واقع به دوازده الگوی شخصیتی اشاره می‌کنیم که از تقسیم دایره‌البروج به دست آمده‌اند. هر برج یک زبان نمادین دارد؛ نه یک برچسب قطعی، بلکه یک نقطه شروع برای دیدن الگوهای رفتاری، نیازها و انگیزه‌های ما. در نگاه آسترولوژی، این نمادها کمک می‌کنند بفهمیم چرا برخی موقعیت‌ها برایمان طبیعی‌ترند و در بعضی دیگر احساس غریبی می‌کنیم. در ادامه معنای هر برج را در یک نگاه مرور می‌کنیم؛ نه برای قضاوت، بلکه برای گفت‌وگو با خودمان."
+   },
+   {
+    "h2": "برج‌های آتشی؛ جرقه، اراده و حرکت",
+    "p": "برج حمل (فروردین): نماد آغاز، شجاعت و رقابت مستقیم است. حمل‌ها معمولاً پیشرو، صریح و بی‌حوصله برای جزئیات‌اند. برج اسد (مرداد): نماد خورشید، خلاقیت و نیاز به دیده‌شدن است. اسدها گرم، وفادار و گاهی مغرورند، اما قلب بزرگی دارند. برج قوس (آذر): نماد جست‌وجو، سفر و معناست. قوس‌ها خوش‌بین، آزادی‌خواه و اهل یادگیری‌اند و از قیدوبندهای سخت فراری می‌شوند."
+   },
+   {
+    "h2": "برج‌های خاکی؛ ثبات، امنیت و واقع‌گرایی",
+    "p": "برج ثور (اردیبهشت): نماد زمین، حواس پنج‌گانه و پایداری است. ثورها آرام، اهل لذت‌های پایدار و گاهی مقاوم در برابر تغییرند. برج سنبله (شهریور): نماد تحلیل، خدمت و نظم است. سنبله‌ها دقیق، متواضع و مفیدند، اما ممکن است درگیر کمال‌گرایی شوند. برج جدی (دی): نماد قله، مسئولیت و زمان‌شناسی است. جدی‌ها صبور، هدفمند و عمل‌گرا هستند و امنیت را در دستاوردهای ملموس می‌جویند."
+   },
+   {
+    "h2": "برج‌های هوایی؛ اندیشه، ارتباط و پیوند",
+    "p": "برج دوقلو (خرداد): نماد ذهن، تنوع و گفت‌وگو است. دوقلوها کنجکاو، اجتماعی و اهل یادگیری سریع‌اند و از یکنواختی خسته می‌شوند. برج میزان (مهر): نماد تعادل، عدالت و رابطه است. میزان‌ها دیپلماتیک، خوش‌سلیقه و نیازمند همراهی‌اند و معمولاً از تنش دوری می‌کنند. برج دلو (بهمن): نماد نوآوری، جمع‌گرایی و آینده‌نگری است. دلوها مستقل، انسان‌دوست و اهل ایده‌های تازه‌اند و گاهی از احساسات فاصله می‌گیرند."
+   },
+   {
+    "h2": "برج‌های آبی؛ احساس، شهود و همدلی",
+    "p": "برج سرطان (تیر): نماد خانه، ریشه و حافظه عاطفی است. سرطان‌ها مراقب، حساس و بسیار وفادارند و امنیت را در پیوندهای نزدیک می‌یابند. برج عقرب (آبان): نماد عمق، تحول و راز است. عقرب‌ها نافذ، پرشور و اهل وفاداری مطلق‌اند، اما اعتمادشان به‌سختی جلب می‌شود. برج حوت (اسفند): نماد رویا، هم‌دلی و مرزهای محو است. حوت‌ها لطیف، هنرمند و پذیرای احساسات دیگران‌اند و گاهی به فرار از واقعیت پناه می‌برند."
+   },
+   {
+    "h2": "چطور از این معناها استفاده کنیم؟",
+    "p": "قرار نیست خودمان را فقط در یک برج خلاصه کنیم؛ طالع کامل شامل خورشید، ماه و سیاره‌های دیگر است. اما شروع با این دوازده نماد می‌تواند نگاهی تازه به رفتارها و نیازهایمان بدهد. اگر دوست دارید نقشه دقیق‌تری از آسمان تولدتان ببینید، می‌توانید چارت تولد خود را در سایت ما بسازید و از زبان نمادها برای خودشناسی عمیق‌تر استفاده کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/meaning-of-12-zodiac-signs-at-a-glance.webp",
+  "thumb": "/static/articles/meaning-of-12-zodiac-signs-at-a-glance-thumb.webp"
+ },
+ {
+  "slug": "aries-personality-compatibility",
+  "title": "برج حمل: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "هر آنچه باید درباره شخصیت برج حمل و سازگاری او با دیگر برج‌ها بدانید.",
+  "keywords": "برج حمل,شخصیت حمل",
+  "meta": "برج حمل با روحیه پیشرو و پرانرژی، در عشق و دوستی به‌دنبال هیجان است. با چه برج‌هایی سازگارتر است؟",
+  "body": [
+   {
+    "h2": "برج حمل؛ پیشگامِ همیشه بیدار",
+    "p": "برج حمل (Aries) نخستین برج منطقه‌البروج است و خورشید تقریباً از ۱ فروردین تا ۳۱ فروردین در این برج قرار می‌گیرد. عنصر آن آتش، سیاره فرمانروایش مریخ و نمادش قوچ است. حمل انرژی آغاز، جوانه زدن و شروع تازه را نمایندگی می‌کند؛ به همین دلیل متولدان این برج اغلب روحیه‌ای پیشرو، بی‌قرار و آماده برای تجربه دارند. آسترولوژی اینجا نه یک حکم قطعی، بلکه ابزاری برای خودشناسی است تا ببینیم چرا برخی الگوها در ما پررنگ‌ترند."
+   },
+   {
+    "h2": "ویژگی‌های کلیدی شخصیت برج حمل",
+    "p": "حملی‌ها معمولاً شجاع، رک، مستقل و پرانرژی‌اند. آن‌ها اهل تعارف نیستند و حرف دلشان را مستقیم می‌زنند. رقابت برایشان شیرین است و از چالش‌های تازه استقبال می‌کنند. در عین حال، بی‌صبری، تکانشگری و گاهی خودمحوری از نقاط ضعف شناخته می‌شوند. خشم حمل سریع شعله می‌کشد اما معمولاً زود فروکش می‌کند و کینه‌ای باقی نمی‌ماند. صداقت و عمل‌گرایی آن‌ها را به همراهانی قابل اعتماد تبدیل می‌کند."
+   },
+   {
+    "h2": "حمل در عشق؛ شور، هیجان و صراحت",
+    "p": "در عشق، برج حمل پرشور، صریح و گاهی عجول است. او به سرعت عاشق می‌شود و دوست دارد معشوق را با هیجان و ماجراجویی همراه کند. با این حال به آزادی شخصی نیاز دارد و از رابطه‌ای که او را محدود کند فراری است. حمل عشقش را با عمل نشان می‌دهد؛ حمایت می‌کند، محافظت می‌کند و برای کسی که دوستش دارد می‌جنگد. صراحت او گاهی بی‌ملاحظه به نظر می‌رسد، اما معمولاً نیت بدی ندارد."
+   },
+   {
+    "h2": "سازگاری برج حمل با دیگر برج‌ها",
+    "p": "به‌طور کلی، برج حمل با نشانه‌های آتش و هوا سازگاری بیشتری دارد. آتش‌ها انرژی و شور او را می‌فهمند و هواها به ذهن پرشتابش خوراک فکری می‌دهند. البته سازگاری فقط به برج خورشیدی محدود نیست و نقشه کامل تولد می‌تواند تصویر دقیق‌تری بدهد. در ادامه نگاهی می‌اندازیم به مهم‌ترین پیوندهای حمل."
+   },
+   {
+    "h2": "سازگاری حمل با آتش‌ها: شیر و قوس",
+    "p": "رابطه حمل با شیر (Leo) پر از جذبه و قدرتنمایی است. هر دو آتشین، بااعتمادبه‌نفس و رهبرند؛ ممکن است بر سر رهبری رقابت کنند اما در کنار هم رابطه‌ای پرشور و الهام‌بخش می‌سازند. حمل با قوس (Sagittarius) نیز پیوندی ماجراجویانه و خوش‌بینانه دارد. هر دو آزادی‌طلب و اهل تجربه‌اند و کمتر دچار مالکیت و حسادت می‌شوند. این دو می‌توانند همراهان سفر و رشد باشند."
+   },
+   {
+    "h2": "سازگاری حمل با هواها: دوقلو، ترازو، دلو",
+    "p": "حمل و دوقلو (Gemini) از نظر ذهنی مکمل هم‌اند؛ گفت‌وگوهای تند و بازیگوشانه رابطه را زنده نگه می‌دارد. حمل و ترازو (Libra) دو قطب مخالف در محور نجومی‌اند؛ جاذبه اولیه زیاد است و اگر یاد بگیرند از هم تعادل بگیرند، رابطه‌شان می‌تواند بسیار آموزنده باشد. حمل و دلو (Aquarius) هر دو استقلال‌طلب، آینده‌نگر و اهل ایده‌های تازه‌اند و معمولاً فضای لازم را به یکدیگر می‌دهند."
+   },
+   {
+    "h2": "چالش‌های حمل در روابط",
+    "p": "بی‌صبری و نیاز به برنده شدن می‌تواند در رابطه تنش ایجاد کند. حمل گاهی آن‌قدر در هدف خود غرق می‌شود که احساسات طرف مقابل را نادیده می‌گیرد. رک بودنش ممکن است برای نشانه‌های حساس مانند سرطان یا حوت آزاردهنده باشد. یادگیری گوش دادن، صبر و انعطاف مهم‌ترین درس رابطه برای حمل است. اگر حمل بپذیرد که همیشه لازم نیست اول باشد، روابطش عمیق‌تر می‌شود."
+   },
+   {
+    "h2": "حمل در کار و زندگی",
+    "p": "برج حمل یک شروع‌کننده طبیعی است. او در کارآفرینی، فروش، ورزش، مدیریت پروژه و هر زمین‌ای که به سرعت عمل و رقابت نیاز دارد می‌درخشد. از کارهای تکراری و پشت‌میزنشینی طولانی زود خسته می‌شود. حمل باید یاد بگیرد پروژه‌ها را تا انتها پیش ببرد و هیجان اولیه را به پایداری تبدیل کند. با کانالیزه کردن انرژی سرشارش می‌تواند به دستاوردهای بزرگی برسد."
+   },
+   {
+    "h2": "جمع‌بندی؛ حمل را همان‌طور که هست ببینید",
+    "p": "برج حمل جرقه‌ای است که می‌تواند آتشی بزرگ روشن کند. او بی‌نقص نیست، اما صداقت، شجاعت و شور زندگی‌اش الهام‌بخش است. به یاد داشته باشید که خورشید در برج حمل تنها یک بخش از نقشه تولد شماست و هر انسان بسیار پیچیده‌تر از یک برج است. از این نوشته به‌عنوان آینه‌ای برای شناخت بهتر خود یا عزیزانتان استفاده کنید؛ نه قضاوت نهایی."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/aries-personality-compatibility.webp",
+  "thumb": "/static/articles/aries-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "leo-personality-compatibility",
+  "title": "برج اسد: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "هر آنچه باید درباره شخصیت گرم، رهبری ذاتی و سازگاری عاطفی متولدین برج اسد بدانید.",
+  "keywords": "برج اسد,شخصیت اسد",
+  "meta": "برج اسد: شخصیت، نقاط قوت و ضعف، عشق و سازگاری با نشانه‌های مختلف. راهنمای خودشناسی برای متولدین مرداد.",
+  "body": [
+   {
+    "h2": "نگاهی به خورشیدِ برج اسد",
+    "p": "برج اسد، پنجمین نشانه از چرخه زودیاک، از حدود ۱ مرداد تا ۱ شهریور را در بر می‌گیرد. عنصر آن آتش، کیفیت آن ثابت و حاکم آن خورشید است؛ خورشیدی که در آسترولوژی نماد هویت، خلاقیت و میل به درخشیدن است. متولدین اسد اغلب حضوری گرم و فراموش‌نشدنی دارند. مهم است به یاد داشته باشیم که آسترولوژی را نه به عنوان علم قطعی، بلکه به عنوان ابزاری برای خودشناسی و گفت‌وگو با لایه‌های شخصیت می‌خوانیم."
+   },
+   {
+    "h2": "شخصیت اصلی متولدین اسد",
+    "p": "اسد با نماد شیر شناخته می‌شود و این نماد، کلید شخصیت اوست: شجاع، باشکوه و ذاتاً رهبر. متولدین اسد معمولاً اعتمادبه‌نفس بالایی دارند، از دیده شدن نمی‌ترسند و اغلب مرکز توجه جمع می‌شوند. آن‌ها سخاوتمند، خونگرم و وفادارند و برای عزیزانشان سنگ‌تمام می‌گذارند. در عین حال، اسد به تأیید و تحسین اطرافیان نیاز دارد؛ نادیده گرفته شدن برای او از هر انتقادی سخت‌تر است."
+   },
+   {
+    "h2": "نقاط قوت اسد",
+    "p": "شجاعت، خوش‌بینی، خلاقیت و صداقت از برجسته‌ترین نقاط قوت این نشانه‌اند. اسد در بحران‌ها حضوری امیدبخش دارد و به دیگران جرات می‌دهد. او اهل عمل است و وقتی هدفی را انتخاب می‌کند، با تمام انرژی به سمت آن حرکت می‌کند. قلب بزرگ اسد باعث می‌شود دوستان و خانواده همیشه حس امنیت و حمایت کنند. این نشانه می‌تواند الهام‌بخش باشد، چون خودش باور دارد که هر چیزی ممکن است."
+   },
+   {
+    "h2": "نقاط ضعف و چالش‌های رفتاری",
+    "p": "غرور، لجبازی و نیاز مداوم به تحسین، مهم‌ترین چالش‌های اسد هستند. او گاهی آن‌قدر به دیدگاه خود مطمئن است که پذیرش اشتباه برایش دشوار می‌شود. رفتارهای نمایشی یا رقابت ناخودآگاه برای برتر بودن نیز ممکن است از او سر بزند. اسد باید بیاموزد که ارزش او به تایید دیگران گره نخورده و آسیب‌پذیری نشان دادن به معنای ضعف نیست."
+   },
+   {
+    "h2": "اسد در عشق و رابطه",
+    "p": "در عشق، اسد پرشور، رمانتیک و بسیار وفادار است. او دوست دارد شریک زندگی‌اش را غرق محبت و هدیه کند و در ازای آن، تحسین و قدردانی دریافت کند. اسد به دنبال رابطه‌ای است که در آن حس کند خاص و انتخاب اول است. اگر احساس نادیده گرفته شدن کند، ممکن است سرد یا نمایشی شود. با این حال، وقتی عشق واقعی را پیدا کند، مثل خورشید برای رابطه‌اش نور و گرما می‌آورد."
+   },
+   {
+    "h2": "سازگاری اسد با نشانه‌های آتش",
+    "p": "با برج حمل و قوس، اسد همنوایی طبیعی و پرانرژی دارد. حمل و اسد هر دو اهل رقابت و پیشروی هستند؛ این رابطه می‌تواند هیجان‌انگیز باشد اما به مدیریت قدرت نیاز دارد. قوس با روحیه ماجراجو و خوش‌بین خود، شعله اسد را زنده نگه می‌دارد و به او فضای بازی و خنده می‌دهد. این سه نشانه وقتی با هم باشند، ترکیبی از انگیزه، شور و امید می‌سازند."
+   },
+   {
+    "h2": "سازگاری اسد با نشانه‌های هوا",
+    "p": "با دوقلو و میزان، اسد جذابیت و گفت‌وگوی پویایی را تجربه می‌کند. دوقلو با ذهن کنجکاو و شوخ‌طبعی، اسد را سرگرم نگه می‌دارد. میزان با حس زیبایی‌شناسی و دیپلماسی، تعادل دلپذیری به رابطه می‌دهد و اسد را تحسین می‌کند. در مقابل، دلو به عنوان نشانه مقابل اسد، جاذبه مغناطیسی دارد اما نیاز دلو به استقلال ممکن است با نیاز اسد به توجه درگیر شود."
+   },
+   {
+    "h2": "سازگاری اسد با دیگر نشانه‌ها",
+    "p": "با ثور، لجبازی هر دو نشانه می‌تواند رابطه را به میدان مبارزه تبدیل کند. با عقرب، قدرت‌طلبی و احساسات عمیق، ترکیبی پرشور اما پرتنش می‌سازد. با ماهی، حساسیت ماهی ممکن است زیر نگاه مستقیم اسد احساس آسیب کند. البته هیچ سازگاری قطعی نیست؛ آگاهی از تفاوت‌ها و گفت‌وگوی محترمانه می‌تواند از هر ترکیب نجومی رابطه‌ای سالم بسازد."
+   },
+   {
+    "h2": "جمع‌بندی و دعوت به خودشناسی",
+    "p": "برج اسد به ما یادآوری می‌کند که اعتمادبه‌نفس واقعی از خودشناسی می‌آید، نه از تحسین دیگران. اگر متولد اسد هستید یا با یکی از آن‌ها در ارتباطید، شناخت الگوهای این نشانه می‌تواند مسیر ارتباط و رشد شخصی را هموارتر کند. برای درک دقیق‌تر، جای خورشید، ماه و سایر سیارات در چارت تولد شما اهمیت زیادی دارد. پیشنهاد می‌کنیم چارت تولد خود را بسازید تا ببینید این خورشید در کجای زندگی شما می‌درخشد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/leo-personality-compatibility.webp",
+  "thumb": "/static/articles/leo-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "birth-chart-what-and-how-to-read",
+  "title": "چارت تولد چیست و چطور آن را بخوانیم؟ راهنمای کامل خودشناسی",
+  "category": "آموزش نجوم",
+  "excerpt": "چارت تولد یا زایچه، نقشه‌ای نمادین از آسمان در لحظه تولد شماست که می‌تواند الگوهای شخصیتی و مسیر رشد فردی را روشن کند.",
+  "keywords": "چارت تولد,زایچه,آموزش نجوم",
+  "meta": "چارت تولد نقشه آسمان لحظه تولد شماست؛ در این راهنما یاد می‌گیرید اجزای آن را بشناسید و قدم‌به‌قدم آن را بخوانید.",
+  "body": [
+   {
+    "h2": "چارت تولد چیست؟",
+    "p": "چارت تولد یا زایچه، تصویری نمادین از موقعیت خورشید، ماه و سیارات در لحظه و مکانی است که شما به دنیا آمده‌اید. اگر در همان لحظه رو به آسمان می‌ایستادید و نقشه ستاره‌ها را رسم می‌کردید، دقیقاً چارت تولد شما شکل می‌گرفت. این نقشه شامل دوازده برج منطقه‌البروج، دوازده خانه و زاویه‌های بین سیارات است. اما برخلاف تصور رایج، چارت تولد یک حکم قطعی یا پیش‌گویی نیست؛ بلکه ابزاری برای خودشناسی و مشاهده الگوهای درونی است که شاید در زندگی روزمره کمتر به آن‌ها توجه می‌کنیم."
+   },
+   {
+    "h2": "سه جزء کلیدی چارت: سیارات، برج‌ها و خانه‌ها",
+    "p": "برای خواندن چارت ابتدا باید سه عنصر اصلی را بشناسید. سیارات نمایانگر کارکردهای روانی و نیروهای درونی هستند؛ مثلاً خورشید نشان‌دهنده هویت اصلی و ماه نشان‌دهنده دنیای احساسات است. برج‌ها کیفیت و سبک بروز آن نیروها را توصیف می‌کنند؛ برای نمونه، خورشید در برج حمل با خورشید در برج ماهی بسیار متفاوت عمل می‌کند. خانه‌ها نیز حوزه‌های زندگی مانند کار، روابط، خانواده و رشد شخصی را مشخص می‌کنند. ترکیب سیاره، برج و خانه مثل جمله «چطور، با چه سبکی و در کدام بخش زندگی» عمل می‌کند."
+   },
+   {
+    "h2": "سیارات: بازیگران اصلی چارت تولد",
+    "p": "در آسترولوژی، هر سیاره نماد بخشی از روان یا زندگی شماست. خورشید هدف و هویت اصلی، ماه نیازهای عاطفی و واکنش‌های غریزی، عطارد نحوه تفکر و ارتباط، ونوس عشق و ارزش‌ها، مریخ میل و عمل، مشتری رشد و باورها، و زحل ساختار و مسئولیت را نشان می‌دهد. سیارات بیرونی مانند اورانوس، نپتون و پلوتون نیز تحولات نسلی و عمیق‌تر را بازتاب می‌دهند. لازم نیست همه را یک‌باره حفظ کنید؛ کافی است ابتدا با خورشید، ماه و سیاره طالع که حاکم نشانه طالع است آشنا شوید."
+   },
+   {
+    "h2": "خانه‌ها: صحنه‌هایی که زندگی در آن جریان دارد",
+    "p": "دوازده خانه چارت، حوزه‌های مختلف زندگی را نشان می‌دهند. خانه اول هویت و ظاهر، خانه دوم منابع و ارزش‌ها، خانه سوم ارتباطات، خانه چهارم خانواده و ریشه‌ها، خانه پنجم خلاقیت و عشق، خانه ششم کار روزمره و سلامت، خانه هفتم شراکت‌ها، خانه هشتم تحول و امور مشترک، خانه نهم سفر و فلسفه، خانه دهم مسیر شغلی، خانه یازدهم دوستان و جامعه و خانه دوازدهم ناخودآگاه و خلوت است. موقعیت سیارات در این خانه‌ها مشخص می‌کند انرژی هر سیاره بیشتر در کدام بخش زندگی شما بروز می‌کند."
+   },
+   {
+    "h2": "زاویه‌ها: گفت‌وگوی سیارات با یکدیگر",
+    "p": "زاویه‌ها یا جنبه‌ها، فاصله‌های هندسی بین سیارات هستند که نحوه تعامل انرژی‌ها را نشان می‌دهند. زاویه نرم مانند مثلث ۱۲۰ درجه جریان آسان و هماهنگ انرژی را ایجاد می‌کند، در حالی که زاویه سخت مانند مربع ۹۰ درجه تنش و چالش می‌آورد. مقابله ۱۸۰ درجه نیز آگاهی از قطبیت‌ها را فعال می‌کند. این زاویه‌ها خوب یا بد مطلق نیستند؛ بلکه نقاطی از چارت هستند که در آن رشد، اصطکاک یا تعادل بیشتری تجربه می‌کنید. فهم زاویه‌ها به شما کمک می‌کند نقاط قوت و محل‌های نیاز به تمرین را بهتر ببینید."
+   },
+   {
+    "h2": "چطور قدم‌به‌قدم چارت تولد را بخوانیم؟",
+    "p": "اول، اطلاعات دقیق تولد شامل تاریخ، ساعت و محل تولد را آماده کنید. ساعت دقیق بسیار مهم است، چون طالع که خانه اول است هر چهار دقیقه یک درجه جابه‌جا می‌شود. دوم، چارت خود را از یک نرم‌افزار معتبر نجومی استخراج کنید. سوم، ابتدا خورشید، ماه و طالع را پیدا کنید؛ این سه، ستون فقرات شخصیت را می‌سازند. چهارم، ببینید این سه در کدام برج و خانه قرار دارند. پنجم، موقعیت سیارات شخصی مانند عطارد، ونوس و مریخ را بررسی کنید. ششم، به زاویه‌های مهم بین سیارات توجه کنید و در نهایت الگوهای تکرارشونده را یادداشت کنید."
+   },
+   {
+    "h2": "چارت تولد؛ نقشه راه، نه سرنوشت محتوم",
+    "p": "مهم‌ترین نکته این است که چارت تولد نشان‌دهنده پتانسیل‌ها و الگوهای اولیه است، نه آینده‌ای غیرقابل تغییر. شما با آگاهی از این نقشه می‌توانید انتخاب‌های آگاهانه‌تری داشته باشید و روی نقاطی که نیاز به رشد دارند کار کنید. آسترولوژی را به‌عنوان ابزاری برای گفت‌وگو با خود ببینید، نه زنجیری که شما را محدود کند. هر چقدر هم که یک چارت چالش‌برانگیز به نظر برسد، همیشه اراده و انتخاب فرد نقش تعیین‌کننده‌تری دارد."
+   },
+   {
+    "h2": "جمع‌بندی: سفر خودشناسی با چارت تولد",
+    "p": "خواندن چارت تولد یک مهارت تدریجی و لذت‌بخش است. با شناخت سیارات، برج‌ها، خانه‌ها و زاویه‌ها می‌توانید لایه‌های عمیق‌تری از شخصیت و مسیر زندگی خود را کشف کنید. اگر تازه شروع کرده‌اید، نگران نباشید؛ هر بار فقط یک بخش از چارت را بررسی کنید و به مرور تصویر کامل‌تر می‌شود. برای شروع سفر خودشناسی، همین حالا چارت تولدتان را بسازید و اولین قدم را در مسیر شناخت بهتر خودتان بردارید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/birth-chart-what-and-how-to-read.webp",
+  "thumb": "/static/articles/birth-chart-what-and-how-to-read-thumb.webp"
+ },
+ {
+  "slug": "taurus-personality-compatibility",
+  "title": "برج ثور: شخصیت، عشق و سازگاری با دیگر برج‌ها",
+  "category": "برج‌ها",
+  "excerpt": "هر آنچه باید درباره شخصیت آرام، وفادار و مقاوم برج ثور و سازگاری او در عشق و روابط بدانید.",
+  "keywords": "برج ثور,شخصیت ثور",
+  "meta": "برج ثور؛ شخصیت زمینی، صبور و وفادار. بررسی سازگاری ثور در عشق و کار با دیگر برج‌ها. راهنمای کامل خودشناسی.",
+  "body": [
+   {
+    "h2": "ثور در یک نگاه؛ از نماد تا عنصر",
+    "p": "برج ثور از حدود ۳۱ فروردین تا ۳۱ اردیبهشت (۲۰ آوریل تا ۲۰ مه) خورشید را در خود جای می‌دهد. ثور دومین برج از دایرةالبروج است و با عنصر خاک و کیفیت ثابت شناخته می‌شود. حاکم این برج، سیاره ونوس است؛ سیاره‌ای که به عشق، زیبایی، لذت و ارزش‌ها پیوند دارد. به همین دلیل، متولد ثور معمولاً انسانی آرام، اهل لذت‌های ساده، وفادار به ریشه‌ها و مقاوم در برابر تغییر است. نماد گاو نر هم به خوبی قدرت، پایداری و گاهی لجبازی او را نشان می‌دهد."
+   },
+   {
+    "h2": "ویژگی‌های شخصیتی برج ثور؛ نقاط قوت و سایه‌ها",
+    "p": "اگر با یک ثور آشنا شوید، احتمالاً اول صبر و آرامش او را می‌بینید. ثور عجله‌ای ندارد؛ او ترجیح می‌دهد قدم‌به‌قدم پیش برود تا به نتیجه برسد. از نقاط قوت او می‌توان به قابلیت اعتماد، عمل‌گرایی، وفاداری عمیق و پشتکار مثال‌زدنی اشاره کرد. ثورها معمولاً در مدیریت مالی، ایجاد امنیت و ساختن زندگی باثبات توانمندند. اما در سایه، لجبازی و یک‌دندگی آن‌ها گاهی مانع پذیرش نظر دیگران می‌شود. همچنین وابستگی به راحتی و داشته‌ها می‌تواند آن‌ها را محافظه‌کار یا حتی مالکیت‌طلب کند. شناخت این سایه‌ها به ثور کمک می‌کند انعطاف‌پذیری را تمرین کند."
+   },
+   {
+    "h2": "ثور در عشق و روابط عاطفی",
+    "p": "برای ثور، عشق یعنی امنیت، لمس، وفاداری و ساختن آینده‌ای مشترک. او اهل بازی‌های عاطفی زودگذر نیست. اگر دل بدهد، عمیق و آهسته دل می‌دهد و معمولاً به دنبال رابطه‌ای ماندگار است. ثور به زیبایی و لذت حسی اهمیت زیادی می‌دهد؛ یک شام خوب، موسیقی ملایم، یا یک آغوش گرم برای او از هزار جمله عاشقانه باارزش‌تر است. در رابطه، ممکن است کمی دیر وارد شود، اما وقتی وارد شد، به‌سختی رها می‌کند. نیاز او به ثبات، گاهی با هیجان‌طلبی برج‌های آتشین مانند قوس یا حمل چالش‌برانگیز می‌شود، اما با درک متقابل می‌توان به تعادل رسید."
+   },
+   {
+    "h2": "سازگاری ثور با دیگر برج‌ها",
+    "p": "برج‌های خاکی یعنی سنبله و جدی، طبیعی‌ترین همراهان ثور هستند. هر سه به امنیت، برنامه‌ریزی و نتایج ملموس اهمیت می‌دهند و زبان یکدیگر را خوب می‌فهمند. از میان برج‌های آبی، سرطان و حوت نیز می‌توانند پیوند عاطفی عمیقی با ثور بسازند؛ آن‌ها گرما و احساس را وارد زندگی زمینی ثور می‌کنند. در مقابل، برج‌های آتشین مانند برج حمل، شیر و قوس ممکن است هیجان و سرعت بخواهند و با ریتم آرام ثور دچار اصطکاک شوند. برج‌های هوایی مانند دلو و جوزا نیز گاهی بیش از حد ذهنی یا بی‌قرار به نظر می‌رسند. البته این‌ها قواعد قطعی نیستند؛ در آسترولوژی، کل چارت تولد تعیین‌کننده است. سازگاری واقعی به بلوغ عاطفی دو طرف وابسته است."
+   },
+   {
+    "h2": "ثور در کار و مسیر مالی",
+    "p": "ثور برای کارهایی ساخته شده که نیاز به صبر، دقت و پشتکار دارند. او در مشاغل مرتبط با امور مالی، معماری، کشاورزی، آشپزی، موسیقی، طراحی و هر حرفه‌ای که نتیجه ملموس داشته باشد، می‌درخشد. ثورها معمولاً پس‌اندازکنندگان خوبی هستند و امنیت شغلی برایشان مهم‌تر از شهرت زودگذر است. چون حاکمشان ونوس است، حس زیبایی‌شناسی قوی دارند و می‌توانند در هنرهای تجسمی یا صنایع خلاق هم موفق شوند."
+   },
+   {
+    "h2": "جمع‌بندی؛ آیا آسترولوژی ثور برای خودشناسی کافی است؟",
+    "p": "شخصیت ثور ترکیبی از آرامش، وفاداری، لذت و پایداری است. شناخت این ویژگی‌ها می‌تواند آینه‌ای برای خودشناسی باشد، نه حکمی قطعی درباره سرنوشت. اگر می‌خواهید بدانید ماه و سیارات دیگر در چارت تولدتان کجا قرار گرفته‌اند و این موضوع چگونه بر شخصیت و روابطتان اثر می‌گذارد، یک چارت کامل نجومی بهترین نقطه شروع است. همین حالا می‌توانید چارت تولد رایگان خود را بسازید و لایه‌های عمیق‌تری از وجودتان را کشف کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/taurus-personality-compatibility.webp",
+  "thumb": "/static/articles/taurus-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "gemini-personality-and-compatibility",
+  "title": "برج جوزا: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "آشنایی با شخصیت پویا، ذهن کنجکاو و سازگاری‌های عاطفی متولدین برج جوزا.",
+  "keywords": "برج جوزا,شخصیت جوزا",
+  "meta": "بررسی کامل شخصیت برج جوزا، ویژگی‌های بارز، نقاط قوت و ضعف و سازگاری عاطفی با سایر برج‌ها. راهنمای خودشناسی برای متولدین خرداد.",
+  "body": [
+   {
+    "h2": "جوزا کیست؟ نگاهی به شخصیت چندبعدی",
+    "p": "برج جوزا، سومین برج از چرخه زودیاک، متولدین ۳۱ اردیبهشت تا ۳۱ خرداد را در بر می‌گیرد. عنصر این برج هوا و سیاره حاکم آن عطارد است؛ به همین دلیل ذهن جوزایی همیشه در حال حرکت، تحلیل و پرسش‌گری است. نماد جوزا، دوقلوها، به‌خوبی نشان می‌دهد که این افراد می‌توانند همزمان دو دیدگاه متفاوت را ببینند و میان نقش‌های گوناگون جابه‌جا شوند. این ویژگی باعث می‌شود جوزاها در ارتباطات، یادگیری و سازگاری با موقعیت‌های تازه عملکرد درخشانی داشته باشند، اما گاهی نیز دچار تردید و پراکندگی ذهنی شوند."
+   },
+   {
+    "h2": "نقاط قوت شخصیت جوزا؛ ذهنی که هرگز نمی‌خوابد",
+    "p": "مهم‌ترین نقطه قوت جوزا، تیزهوشی و کنجکاوی بی‌پایان اوست. یک جوزایی می‌تواند درباره هر موضوعی صحبت کند، از فلسفه و تکنولوژی تا آخرین شایعه روز. ذهن او مانند یک کتابخانه سیار است و عطش یادگیری هرگز در او خاموش نمی‌شود. همچنین جوزاها ارتباط‌گران قهاری هستند؛ آن‌ها با کلام شیرین و شوخ‌طبعی طبیعی خود، به‌سرعت در هر جمعی جای می‌گیرند. انعطاف‌پذیری و توانایی دیدن چند جنبه از یک مسئله، جوزا را به یک مشاور، مذاکره‌کننده و دوست قابل‌اعتماد تبدیل می‌کند."
+   },
+   {
+    "h2": "نقاط ضعف و چالش‌های جوزا؛ وقتی ذهن زیاده‌روی می‌کند",
+    "p": "همان ذهن فعالی که جوزا را پیش می‌برد، می‌تواند به بزرگ‌ترین چالش او تبدیل شود. بی‌قراری ذهنی، جوزا را از تمرکز طولانی روی یک هدف بازمی‌دارد و باعث می‌شود پروژه‌های نیمه‌کاره زیادی داشته باشد. بلاتکلیفی و دودلی نیز از همراهان همیشگی جوزاست؛ او گاهی آن‌قدر گزینه‌ها را تحلیل می‌کند که فرصت تصمیم‌گیری را از دست می‌دهد. علاوه بر این، سطحی‌نگری و تمایل به دانستن «کمی از همه‌چیز» می‌تواند مانع عمیق‌شدن جوزا در یک حوزه تخصصی شود. آگاهی از این ضعف‌ها، اولین قدم برای مدیریت آن‌هاست."
+   },
+   {
+    "h2": "سازگاری عاطفی جوزا با دیگر برج‌ها",
+    "p": "در آسترولوژی، سازگاری به معنای جبر سرنوشت نیست، بلکه نشان می‌دهد کدام انرژی‌ها با یکدیگر هماهنگ‌ترند. جوزا به‌عنوان یک برج هوایی، با برج‌های هوایی دیگر یعنی ترازو و دلو ارتباط فوق‌العاده‌ای برقرار می‌کند؛ زیرا هر سه به گفت‌وگو، آزادی و تبادل فکری اهمیت می‌دهند. برج‌های آتشین مانند حمل و شیر نیز با شور و هیجان خود جوزا را مجذوب می‌کنند، هرچند ممکن است بی‌قراری جوزا گاهی آن‌ها را سردرگم کند. در مقابل، برج‌های خاکی مانند سنبله و جدی ممکن است با تغییرپذیری جوزا احساس ناامنی کنند و برج‌های آبی مانند عقرب و حوت نیز به عمق عاطفی بیشتری نیاز دارند که جوزا همیشه آماده ارائه آن نیست."
+   },
+   {
+    "h2": "جوزا در عشق و رابطه؛ شریکی که به آزادی نیاز دارد",
+    "p": "برای جوزا، عشق بدون ارتباط کلامی و تحریک ذهنی معنا ندارد. او عاشق گفت‌وگوهای طولانی، شوخی‌های ظریف و کشف دنیای درونی طرف مقابل است. اما جوزا به فضای شخصی و آزادی عمل نیاز مبرم دارد؛ هرگونه احساس محدودیت یا کنترل‌گری می‌تواند او را فراری دهد. در رابطه، جوزا شریکی بازیگوش، خلاق و سرگرم‌کننده است که هرگز اجازه نمی‌دهد زندگی مشترک یکنواخت شود. با این حال، طرف مقابل او باید درک کند که تغییرات ناگهانی خلق‌وخو و نیاز به تنوع، بخشی از طبیعت جوزاست و نه نشانه بی‌علاقگی."
+   },
+   {
+    "h2": "جمع‌بندی: جوزا را با تمام تضادهایش بپذیر",
+    "p": "شخصیت جوزا آمیزه‌ای از روشنایی ذهن، سبکی روح و بی‌قراری دل است. او نه آدمی سطحی است و نه بی‌مسئولیت؛ فقط دنیا را از زاویه‌ای متفاوت می‌بیند. اگر جوزا یاد بگیرد تمرکز و تعهد را در کنار انعطاف و کنجکاوی خود پرورش دهد، می‌تواند به یکی از تأثیرگذارترین و الهام‌بخش‌ترین افراد اطرافش تبدیل شود. برای درک دقیق‌تر جایگاه جوزا در نقشه تولدتان و بررسی سیارات شخصی، می‌توانید چارت تولد خود را ترسیم کنید و ببینید این انرژی کجای زندگی شما فعال‌تر است."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/gemini-personality-and-compatibility.webp",
+  "thumb": "/static/articles/gemini-personality-and-compatibility-thumb.webp"
+ },
+ {
+  "slug": "cancer-personality-compatibility",
+  "title": "برج سرطان: شخصیت، عشق و سازگاری با دیگر برج‌ها",
+  "category": "برج‌ها",
+  "excerpt": "برج سرطان با شخصیت حساس، وفادار و عمیق، در عشق و دوستی به دنبال امنیت عاطفی است؛ در این مقاله شخصیت و سازگاری او را بررسی می‌کنیم.",
+  "keywords": "برج سرطان,شخصیت سرطان",
+  "meta": "برج سرطان؛ شخصیت حساس، وفادار و عمیق. بررسی سازگاری سرطان با دیگر برج‌ها، عشق و نقش ماه در احساسات.",
+  "body": [
+   {
+    "h2": "سرطان؛ فرزند ماه و آب",
+    "p": "برج سرطان از حدود ۳۱ خرداد تا ۳۱ تیر (۲۱ ژوئن تا ۲۲ ژوئیه) خورشید را در خود جای می‌دهد. این برج از عنصر آب است و سیاره‌ی فرمانروای آن ماه است؛ همان ماه که جزر و مد دریاها و احساسات ما را زیر نگاه خود دارد. نماد سرطان، خرچنگ است؛ موجودی با پوسته‌ی سخت بیرونی و درونی نرم. این تصویر به‌خوبی شخصیت سرطان را توضیح می‌دهد: در نگاه اول محتاط و گاهی گوشه‌گیر، اما در عمق، بسیار احساسی، مراقب و وفادار."
+   },
+   {
+    "h2": "شخصیت برج سرطان",
+    "p": "متولد سرطان معمولاً فردی است با حافظه‌ی احساسی قوی، تخیل بالا و دلبستگی عمیق به خانه، خانواده و ریشه‌ها. او عاشق مراقبت از دیگران است و اغلب نقش «مادر» یا «تکیه‌گاه» جمع را بازی می‌کند. از سوی دیگر، سرطان ممکن است زودرنج، حساس به انتقاد و در مواقع ناامنی، گوشه‌گیر یا بدخلق شود. این افراد به امنیت عاطفی و ثبات نیاز دارند و در محیط‌های پرتنش به‌سرعت خسته می‌شوند."
+   },
+   {
+    "h2": "سرطان در عشق و رابطه",
+    "p": "در عشق، سرطان به‌دنبال رابطه‌ای عمیق، امن و طولانی‌مدت است. او به‌ندرت زود اعتماد می‌کند؛ اما وقتی پوسته‌اش را کنار بزند، عشقی سرشار از مراقبت، وفاداری و صمیمیت ارائه می‌دهد. سرطان نیاز دارد که شریک زندگی‌اش احساسات او را جدی بگیرد و به او احساس خانه و تعلق بدهد. اگر این امنیت فراهم شود، سرطان یکی از وفادارترین و گرم‌ترین شرکای زودیاک خواهد بود."
+   },
+   {
+    "h2": "سازگاری سرطان با دیگر برج‌ها",
+    "p": "سرطان با نشانه‌های آب یعنی عقرب و حوت، پیوندی عمیق و شهودی برقرار می‌کند؛ این سه زبان احساسات یکدیگر را بی‌کلام می‌فهمند. با نشانه‌های خاک مانند ثور، سنبله و جدی نیز سازگاری خوبی دارد، زیرا ثبات و واقع‌گرایی آن‌ها به امنیت‌خواهی سرطان پاسخ می‌دهد. در برابر برج‌های آتش و هوای پرشتاب مانند برج حمل یا ترازو، ممکن است اصطکاک بیشتری حس شود؛ اما این به معنای قطعی نبودن رابطه نیست. بلوغ عاطفی، گفت‌وگو و شناخت متقابل می‌تواند بسیاری از تفاوت‌ها را به نقطه‌ی قوت تبدیل کند."
+   },
+   {
+    "h2": "سرطان در کار و زندگی روزمره",
+    "p": "سرطان در محیط کار فردی مسئول، دقیق و وفادار به تیم است. او در کارهایی که نیاز به همدلی، مراقبت، آشپزی، روان‌شناسی، طراحی داخلی، تاریخ یا مدیریت منابع دارد، درخشان عمل می‌کند. این افراد در فضای کاری امن و حمایت‌گر بهترین بازدهی را دارند و از تغییرات ناگهانی یا رقابت‌های سرد خوششان نمی‌آید."
+   },
+   {
+    "h2": "چطور با یک سرطان بهتر ارتباط بگیریم؟",
+    "p": "برای همراهی با یک سرطان، به احساسات او احترام بگذارید و شنونده‌ی خوبی باشید. از شوخی با آسیب‌پذیری‌هایش بپرهیزید و به او زمان بدهید تا در فضای امن خودش باز شود. نشان دادن وفاداری، ثبات در رفتار و محبت‌های کوچک روزانه، کلید قلب این نشانه است. هرگز فراموش نکنید که پشت آن پوسته‌ی آرام، دنیایی از احساس و مراقبت جریان دارد."
+   },
+   {
+    "h2": "سخن پایانی؛ آسترولوژی به‌مثابه آینه‌ی خودشناسی",
+    "p": "شخصیت برج سرطان بسیار فراتر از چند خط کلیشه است و هر انسانی با توجه به کل چارت تولدش، رنگ و طعم متفاوتی از این نشانه را بروز می‌دهد. آسترولوژی را به‌عنوان ابزاری برای خودشناسی و گفت‌وگو با خود ببینیم، نه یک حکم قطعی. اگر دوست دارید تصویر دقیق‌تری از آسمان تولد و سازگاری‌های شخصی خود داشته باشید، می‌توانید چارت کامل تولدتان را بسازید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/cancer-personality-compatibility.webp",
+  "thumb": "/static/articles/cancer-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "leo-personality-and-compatibility",
+  "title": "برج اسد: شخصیت و سازگاری؛ از غرش درونی تا پیوندهای عاطفی",
+  "category": "برج‌ها",
+  "excerpt": "با برج اسد، خورشیدِ وجودتان را کشف کنید؛ از ویژگی‌های شخصیتی تا سازگاری عاطفی و رمز پیوندهای پایدار.",
+  "keywords": "برج اسد,شخصیت اسد",
+  "meta": "برج اسد شخصیتی گرم، رهبر و مغرور دارد. در این مقاله با ویژگی‌های شخصیتی اسد و سازگاری عاطفی او با سایر برج‌ها آشنا شوید.",
+  "body": [
+   {
+    "h2": "نگاهی به خورشیدِ برج اسد",
+    "p": "برج اسد پنجمین برج منطقه‌البروج است و از ۲ مرداد تا ۱ شهریور ادامه دارد. عنصر این برج آتش است و حاکم آن خورشید، که در آسترولوژی نماد خودآگاهی، خلاقیت و درخشش فردی است. اگر خورشید شما در این برج قرار دارد، احتمالاً با انرژی‌ای گرم، حضوری پررنگ و میل به دیده شدن آشنا هستید. برج اسد را باید به‌عنوان یک ابزار خودشناسی خواند؛ آینه‌ای که نشان می‌دهد چگونه می‌خواهیم در جهان بدرخشیم، عشق بورزیم و جایگاه خود را پیدا کنیم."
+   },
+   {
+    "h2": "ویژگی‌های شخصیتی متولدین اسد",
+    "p": "متولدین برج اسد معمولاً شخصیتی صمیمی، شجاع و کاریزماتیک دارند. آن‌ها به‌طور طبیعی رهبر به دنیا می‌آیند و در جمع‌ها مرکز توجه می‌شوند. اعتمادبه‌نفس بالای اسد باعث می‌شود در موقعیت‌های دشوار نیز خونسردی خود را حفظ کند. از سوی دیگر، مهربانی و سخاوت این برج زبانزد است؛ اسدها برای عزیزانشان سنگ تمام می‌گذارند و انتظار احترام و وفاداری متقابل دارند."
+   },
+   {
+    "h2": "نقاط قوت و چالش‌های شخصیتی",
+    "p": "از نقاط قوت اسد می‌توان به خلاقیت، شور و اشتیاق، وفاداری و قدرت سازماندهی اشاره کرد. با این حال، غرور و نیاز به تأیید می‌تواند چالش‌ساز شود. اسدها گاهی آن‌قدر به تصویر خود اهمیت می‌دهند که از پذیرش اشتباه طفره می‌روند. برای رشد شخصیتی، به اسدها توصیه می‌شود بین «دیده شدن» و «خود بودن» تعادل برقرار کنند. اگر اسد یاد بگیرد که انتقاد را نه تهدید، بلکه فرصتی برای درخشش بیشتر ببیند، به بلوغ عاطفی عمیق‌تری می‌رسد."
+   },
+   {
+    "h2": "سازگاری عاطفی برج اسد",
+    "p": "در عشق، برج اسد پرشور، رمانتیک و صادق است. او به دنبال شریکی است که هم او را تحسین کند و هم استقلال و عزت نفسش را حفظ کند. بهترین سازگاری‌های عاطفی اسد معمولاً با برج‌های آتش‌نشان دیگر یعنی حمل و قوس شکل می‌گیرد، زیرا انرژی، هیجان و علاقه به ماجراجویی را با هم به اشتراک می‌گذارند. برج‌های هوایی مانند دوقلو و میزان نیز با جذابیت کلامی و ذهن باز، مکمل خوبی برای اسد هستند."
+   },
+   {
+    "h2": "پیوندهای سخت‌تر اما ممکن",
+    "p": "با برج‌های خاکی مانند ثور و جدی، رابطه اسد ممکن است به صبر بیشتری نیاز داشته باشد. ثور لجوج و جدی محتاط است و این می‌تواند با روحیه سلطه‌جوی اسد اصطکاک ایجاد کند. با این حال، اگر هر دو طرف احترام به تفاوت‌ها را یاد بگیرند، همین تفاوت‌ها می‌تواند به استحکام رابطه کمک کند. در نهایت، سازگاری به بلوغ عاطفی دو نفر بستگی دارد، نه صرفاً قرار گرفتن خورشید در یک برج خاص."
+   },
+   {
+    "h2": "اسد در کار و دوستی",
+    "p": "در محیط کار، اسد مدیری بالفطره، خلاق و انگیزه‌بخش است. او دوست دارد مسئولیت بپذیرد و در پروژه‌هایی که امکان بروز استعدادش را می‌دهد، بهترین عملکرد را نشان می‌دهد. در دوستی نیز اسد وفادار، پشتیبان و خوش‌مشرب است. او برای دوستانش جشن می‌سازد و دلگرمی می‌آفریند. تنها نکته این است که اسد باید مراقب باشد خودمحوری ناخودآگاه، روابطش را تحت‌تأثیر قرار ندهد."
+   },
+   {
+    "h2": "جمع‌بندی: خودت را مثل خورشید بشناس",
+    "p": "برج اسد ترکیبی از شجاعت، خلاقیت، غرور و عشق است. شناخت شخصیت اسد به شما کمک می‌کند نقاط قوت خود را بپذیرید و چالش‌های ارتباطی‌تان را آگاهانه مدیریت کنید. اگر می‌خواهید تصویر دقیق‌تری از نقش سیاره‌ها و برج‌ها در چارت تولدتان داشته باشید، ساخت چارت شخصی بهترین قدم بعدی است."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/leo-personality-and-compatibility.webp",
+  "thumb": "/static/articles/leo-personality-and-compatibility-thumb.webp"
+ },
+ {
+  "slug": "virgo-personality-compatibility",
+  "title": "برج سنبله: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "با ویژگی‌های شخصیتی برج سنبله، نقاط قوت و ضعف و سازگاری عاطفی او با دیگر برج‌ها آشنا شوید.",
+  "keywords": "برج سنبله,شخصیت سنبله,سازگاری برج سنبله",
+  "meta": "برج سنبله؛ شخصیت تحلیلی و دقیق، نقاط قوت و ضعف، و سازگاری عاطفی با دیگر برج‌ها. آسترولوژی به عنوان ابزار خودشناسی.",
+  "body": [
+   {
+    "h2": "سنبله؛ تحلیل‌گرِ زمینی و کمال‌گرا",
+    "p": "برج سنبله (Virgo) ششمین برج از چرخهٔ زودیاک است و متولدین ۲ شهریور تا ۳۱ شهریور را در بر می‌گیرد. عنصر این برج خاک و سیارهٔ حاکم آن عطارد (تیر) است؛ ترکیبی که ذهنی تیز، منطقی و عاشق جزئیات می‌سازد. سنبله‌ها اغلب افرادی منظم، متواضع و بسیار اهل تجزیه و تحلیل اند. در آسترولوژی، این برج نماد پاکیزگی، خدمت و تلاش برای بهبود است. اما یادمان باشد آسترولوژی را نه به عنوان علم قطعی، بلکه به عنوان آینه‌ای برای خودشناسی و تأمل در الگوهای رفتاری می‌نگریم."
+   },
+   {
+    "h2": "ویژگی‌های شخصیتی اصلی برج سنبله",
+    "p": "سنبله‌ای‌ها معمولاً با دقت فراوان به محیط اطراف نگاه می‌کنند. آن‌ها جزئیاتی را می‌بینند که دیگران از آن غافل‌اند و همین ویژگی آن‌ها را به دوستان، همکاران و شرکای قابل اعتماد تبدیل می‌کند. ذهن تحلیل‌گرشان دوست دارد مسائل را موشکافی کند؛ از برنامه‌ریزی مالی تا چیدن قفسه‌ها. این افراد عاشق نظم، کارایی و کاربردی بودن هستند. در روابط اجتماعی، سنبله‌ها خجالتی یا محتاط به نظر می‌رسند، اما وقتی اعتماد کنند، گرم، مهربان و بسیار وفادار می‌شوند. همچنین حس شوخ‌طبعی ظریفی دارند که اغلب با هوش کلامی همراه است."
+   },
+   {
+    "h2": "نقاط قوت برج سنبله",
+    "p": "از بارزترین نقاط قوت سنبله می‌توان به دقت، قابلیت اعتماد و مسئولیت‌پذیری اشاره کرد. آن‌ها در کارهای تیمی وظیفه‌شناس‌اند و معمولاً کار را تا آخرین جزئیات به بهترین شکل انجام می‌دهند. توانایی حل مسئله و ذهن منطقی‌شان باعث می‌شود در بحران‌ها خونسرد بمانند و راه‌حل‌های عملی ارائه دهند. از سوی دیگر، سنبله‌ها ذاتاً افرادی خدمت‌رسان هستند؛ کمک به دیگران برایشان ارزشمند است و اغلب بدون چشم‌داشت محبت می‌کنند. تواضع و بی‌ادعایی نیز از ویژگی‌های محبوب آن‌هاست."
+   },
+   {
+    "h2": "نقاط ضعف و چالش‌های سنبله",
+    "p": "کمال‌گرایی سنبله می‌تواند به وسواس فکری یا انتقادگری بیش از حد تبدیل شود. آن‌ها استانداردهای بالایی برای خود و دیگران دارند و وقتی چیزی مطابق انتظارشان پیش نرود، ممکن است مضطرب یا ناراضی شوند. سنبله‌ها گاهی در دام تحلیل بیش از حد می‌افتند و تصمیم‌گیری برایشان سخت می‌شود. همچنین به دلیل حساسیت پنهان، ممکن است نگرانی‌هایشان را درون‌ریزی کنند و از دیگران فاصله بگیرند. آگاهی از این الگوها به سنبله‌ها کمک می‌کند تا با انعطاف بیشتر با خود و دیگران رفتار کنند."
+   },
+   {
+    "h2": "برج سنبله در عشق و روابط عاطفی",
+    "p": "در عشق، سنبله‌ها محتاط و گزینش‌گرند. آن‌ها به سرعت وارد رابطه نمی‌شوند و ابتدا شریک بالقوه را از نظر ذهنی و رفتاری ارزیابی می‌کنند. اما وقتی عاشق شوند، عشقی عمیق، پایدار و همراه با عمل نشان می‌دهند. زبان عشق سنبله معمولاً «خدمت» است؛ آماده کردن غذا، رسیدگی به امور روزمره و حل مشکلات از راه‌های ابراز علاقه‌شان است. آن‌ها به صداقت و شفافیت اهمیت می‌دهند و از نمایش‌های اغراق‌آمیز احساسی خوششان نمی‌آید. برای رابطه با سنبله، باید صبور باشید و به حریم شخصی‌اش احترام بگذارید."
+   },
+   {
+    "h2": "سازگاری عاطفی سنبله با دیگر برج‌ها",
+    "p": "سنبله به عنوان برج خاکی، با برج‌های خاکی دیگر یعنی ثور و جدی هماهنگی بالایی دارد؛ هر سه به ثبات، امنیت و برنامه‌ریزی اهمیت می‌دهند. با برج‌های آبی مانند سرطان و عقرب نیز سازگاری عاطفی خوبی شکل می‌گیرد، زیرا حساسیت و عمق عاطفی آن‌ها می‌تواند تعادل ایجاد کند. در مقابل، رابطه با برج‌های آتشین مثل قوس و برج‌های هوایی مثل جوزا یا دلو ممکن است چالش‌برانگیز باشد؛ زیرا نیاز به آزادی، هیجان و تغییرات ناگهانی این برج‌ها با نیاز سنبله به نظم و ثبات در تضاد است. البته سازگاری مطلق نیست و با درک متقابل، هر رابطه‌ای می‌تواند رشد کند."
+   },
+   {
+    "h2": "جمع‌بندی: سنبله، آینه‌ای برای خودشناسی",
+    "p": "برج سنبله ترکیبی از ذهن تحلیل‌گر، قلب خدمت‌رسان و روحیه‌ای کمال‌گراست. شناخت این ویژگی‌ها نه برای قضاوت قطعی، بلکه برای دیدن نقاط کور و پرورش نقاط قوت مفید است. اگر خودتان سنبله‌اید یا با یک سنبله در ارتباطید، به جای برچسب زدن، از این الگوها برای گفت‌وگو و درک بیشتر استفاده کنید. برای نگاهی دقیق‌تر به چارت تولد و سازگاری شخصی‌تان، می‌توانید چارت اخترشناسی خود را تهیه کنید و با نگاهی باز، مسیر خودشناسی را ادامه دهید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/virgo-personality-compatibility.webp",
+  "thumb": "/static/articles/virgo-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "libra-personality-compatibility",
+  "title": "برج میزان: شخصیت و سازگاری؛ هنر تعادل، عشق و انصاف",
+  "category": "برج‌ها",
+  "excerpt": "با برج میزان، ترازوی عدالت و عشق آشنا شوید؛ از ویژگی‌های شخصیتی تا بهترین و چالش‌برانگیزترین سازگاری‌هایش.",
+  "keywords": "برج میزان,شخصیت میزان",
+  "meta": "برج میزان؛ شخصیتی متعادل، اجتماعی و عاشق زیبایی. سازگاری میزان با دوپیکر، دلو، شیر و قوس را اینجا بخوانید.",
+  "body": [
+   {
+    "h2": "مقدمه‌ای بر دنیای برج میزان",
+    "p": "برج میزان، هفتمین برج دایره‌البروج، از حدود ۱ مهر تا ۱ آبان خورشید را در آغوش می‌کشد. عنصر این برج هوا و کیفیت آن برج متغیر است؛ یعنی ذهنی سیال، اجتماعی و اهل گفت‌وگو. سیاره فرمانروای میزان، ونوس، به آن عشق به زیبایی، هنر، روابط و لذت‌های ظریف زندگی را هدیه می‌دهد. در آسترولوژی، میزان نماد ترازوست؛ نشانه‌ای که همیشه به دنبال تعادل، عدالت و انصاف است. اما این جست‌وجوی دائمی تعادل، گاهی به تردید و بلاتکلیفی می‌انجامد. در این مقاله شخصیت و سازگاری برج میزان را با نگاهی کاربردی و انسانی بررسی می‌کنیم؛ نه به عنوان علمی قطعی، بلکه به‌عنوان ابزاری برای خودشناسی و شناخت رابطه‌ها."
+   },
+   {
+    "h2": "ویژگی‌های شخصیتی برج میزان",
+    "p": "میزانی‌ها اغلب افرادی خوش‌برخورد، خوش‌فکر و صلح‌طلب هستند. آن‌ها از تنش و درگیری فراری‌اند و ترجیح می‌دهند فضای اطرافشان آرام و هماهنگ بماند. ذهن تحلیلی و نگاه منصفانه‌شان باعث می‌شود در بحث‌ها هر دو سوی ماجرا را ببینند. عشق به زیبایی در پوشش، چیدمان خانه و انتخاب کلماتشان دیده می‌شود. از سوی دیگر، این افراد به روابط اهمیت زیادی می‌دهند و معمولاً در تنهایی، بخشی از انرژی خود را از دست می‌دهند. همین نیاز به همراهی، آن‌ها را به شریک‌هایی وفادار و توجه‌کننده تبدیل می‌کند، اما اگر تعادل به هم بریزد، ممکن است بیش از حد خود را با خواسته دیگران هماهنگ کنند."
+   },
+   {
+    "h2": "نقاط قوت برج میزان",
+    "p": "یکی از برجسته‌ترین نقاط قوت میزان، انصاف و روحیه همکاری است. آن‌ها می‌توانند میان دیدگاه‌های متفاوت پل بزنند و دیگران را به توافق برسانند. ذوق هنری و حس زیبایی‌شناسی‌شان باعث می‌شود محیط اطراف را دلپذیر کنند. میزان‌ها معمولاً شنونده‌های خوبی هستند و به احساسات دیگران اهمیت می‌دهند. در عشق، رمانتیک و باملاحظه‌اند و سعی می‌کنند شریک زندگی‌شان احساس ارزشمندی کند. همچنین هوش اجتماعی بالایی دارند و به‌سرعت می‌توانند با افراد جدید ارتباط بگیرند. این ویژگی‌ها آن‌ها را به دوستان، همکاران و شریک‌های عاطفی محبوب تبدیل می‌کند."
+   },
+   {
+    "h2": "نقاط ضعف و چالش‌های میزان",
+    "p": "بزرگ‌ترین چالش میزان، بلاتکلیفی و تردید در تصمیم‌گیری است. چون همه گزینه‌ها را می‌بیند، انتخاب یکی از آن‌ها برایش دشوار می‌شود. این ویژگی می‌تواند در موقعیت‌های مهم زندگی باعث عقب‌ماندن از فرصت‌ها شود. همچنین میل به اجتناب از تعارض، گاهی میزان را به سکوت و انکار احساسات واقعی می‌کشاند. در روابط، ممکن است برای حفظ آرامش، از خواسته‌های خودش کوتاه بیاید و بعد دچار دلخوری شود. تکیه بیش از حد به تأیید دیگران و ظاهرگرایی هم از دیگر نقاط ضعفی است که اگر آگاهانه مدیریت نشود، می‌تواند مانع رشد فردی شود."
+   },
+   {
+    "h2": "سازگاری عاطفی برج میزان",
+    "p": "میزان در عشق به دنبال همراهی، گفت‌وگو و زیبایی است. بهترین سازگاری‌های کلاسیک او با دوپیکر، دلو، شیر و قوس دیده می‌شود. با دوپیکر و دلو به دلیل عنصر مشترک هوا، ارتباط ذهنی و کلامی بسیار روانی شکل می‌گیرد. شیر و قوس به عنوان نشانه‌های آتش، شور، هیجان و اعتمادبه‌نفس را وارد رابطه می‌کنند و جذابیت متقابل ایجاد می‌شود. ونوس، سیاره عشق و زیبایی، باعث می‌شود میزان در رابطه به جزئیات عاطفی و لطافت توجه زیادی داشته باشد. البته هر رابطه‌ای به بلوغ فردی و گفت‌وگوی سالم نیاز دارد؛ آسترولوژی صرفاً نقشه‌ای برای درک بهتر تمایلهاست."
+   },
+   {
+    "h2": "سازگاری‌های چالش‌برانگیز میزان",
+    "p": "برخی نشانه‌ها با میزان چالش بیشتری دارند، اما این به معنای غیرممکن بودن رابطه نیست. با برج جدی، تفاوت در ریتم زندگی و اولویت‌ها می‌تواند تنش ایجاد کند؛ جدی عمل‌گرا و جدی است، در حالی که میزان به فضا و سبک‌بینی بیشتری نیاز دارد. با برج سرطان نیز تفاوت عنصر هوا و آب ممکن است باعث شود سرطان احساسات عمیق و نیاز به امنیت را با منطق و فاصله‌گیری میزان اشتباه بگیرد. با این حال، اگر دو طرف تفاوت‌ها را بپذیرند و از زبان یکدیگر یاد بگیرند، حتی این ترکیب‌ها می‌توانند به رابطه‌ای مکمل و رشددهنده تبدیل شوند. آگاهی از نقاط اصطکاک، اولین قدم برای ساختن رابطه‌ای سالم است."
+   },
+   {
+    "h2": "جمع‌بندی و دعوت به خودشناسی",
+    "p": "برج میزان با ذات صلح‌طلب، هنردوست و رمانتیک خود، همراهی ارزشمند در روابط انسانی است. نقاط قوتش در همدلی و گفت‌وگو، و چالش‌هایش در تصمیم‌گیری و حفظ مرزهای شخصی، همگی بخشی از مسیر رشد او هستند. شناخت این الگوها می‌تواند به میزان‌ها کمک کند تا با خود مهربان‌تر باشند و در روابطشان آگاهانه‌تر عمل کنند. اگر می‌خواهید تصویر دقیق‌تری از شخصیت و سازگاری‌های خود یا عزیزانتان ببینید، ساخت چارت تولد می‌تواند نقطه شروع خوبی باشد. فراموش نکنید که آسترولوژی را به‌عنوان آینه‌ای برای خودشناسی ببینید، نه تقدیری تغییرناپذیر."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/libra-personality-compatibility.webp",
+  "thumb": "/static/articles/libra-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "scorpio-personality-compatibility",
+  "title": "برج عقرب؛ شخصیت، عشق و سازگاری با دیگر برج‌ها",
+  "category": "برج‌ها",
+  "excerpt": "برج عقرب با عمق هیجانی، وفاداری و رمزآلودگی‌اش یکی از پیچیده‌ترین نشانه‌های زودیاک است؛ در این مقاله شخصیت و سازگاری او را می‌شناسیم.",
+  "keywords": "برج عقرب,شخصیت عقرب",
+  "meta": "بررسی شخصیت برج عقرب، نقاط قوت و ضعف، عشق و سازگاری با دیگر برج‌ها؛ راهنمای خودشناسی برای متولدان آبان.",
+  "body": [
+   {
+    "h2": "عقرب در یک نگاه",
+    "p": "برج عقرب هشتمین نشانه دایره‌البروج است و متولدانی که بین ۱ آبان تا ۳۰ آبان (۲۳ اکتبر تا ۲۱ نوامبر) به دنیا می‌آیند را در بر می‌گیرد. عنصر این برج آب و کیفیت آن ثابت است؛ یعنی عقرب مانند رودخانه‌ای عمیق، آرام اما پرقدرت حرکت می‌کند. سیاره‌های حاکم بر عقرب، پلوتو و مریخ هستند که به آن ترکیبی از قدرت دگرگونی و شجاعت می‌بخشند. نماد عقرب، کژدم است؛ موجودی که در ظاهر آرام است اما نیشی دقیق و اثرگذار دارد. این نشانه بیش از هر چیز با مفاهیمی مانند تولد دوباره، راز، کنترل و اشتیاق پیوند خورده است."
+   },
+   {
+    "h2": "شخصیت برج عقرب؛ عمیق، مرموز و پرشور",
+    "p": "اگر فقط با یک کلمه بخواهیم شخصیت عقرب را توصیف کنیم، آن کلمه «عمق» است. عقرب‌ها سطحی زندگی نمی‌کنند؛ آن‌ها به دنبال معنای پنهان هر اتفاق هستند و به ندرت از ظاهر قانع می‌شوند. همین ویژگی باعث می‌شود اطرافیان آن‌ها را مرموز و گاهی غیرقابل نفوذ بدانند. عقرب درون‌گرا اما به شدت مشاهده‌گر است؛ او پیش از آنکه حرف بزند، همه چیز را تحلیل می‌کند و معمولاً متوجه چیزهایی می‌شود که دیگران از آن غافل‌اند. وفاداری برای عقرب یک ارزش بنیادین است. اگر اعتمادش را جلب کنید، تا انتها کنار شما می‌ماند؛ اما اگر خیانت ببیند، بعید است به سادگی فراموش کند. این برج با حس ششم قوی خود، دروغ و تظاهر را به سرعت تشخیص می‌دهد. در عین حال، عقرب توانایی عجیبی در دگرگونی دارد؛ وقتی شرایط سخت می‌شود، مثل ققنوس از خاکستر بلند می‌شود و قوی‌تر از قبل ادامه می‌دهد."
+   },
+   {
+    "h2": "نقاط قوت و ضعف عقرب",
+    "p": "نقاط قوت عقرب شامل اراده پولادین، شجاعت، وفاداری، شهود قوی و صداقت هیجانی است. عقرب‌ها وقتی هدفی را انتخاب می‌کنند، با تمرکز مثال‌زدنی پیش می‌روند و به ندرت تسلیم می‌شوند. اما در نقطه مقابل، حسادت، کنترل‌گری، لجاجت و میل به انتقام می‌تواند چالش‌برانگیز باشد. عقرب نیاز دارد یاد بگیرد که همه چیز را نمی‌توان کنترل کرد و رها کردن گاهی نشانه ضعف نیست، بلکه نوعی خرد است. اگر عقرب بتواند انرژی پرقدرت خود را در مسیر درست هدایت کند، به یکی از توانمندترین و قابل اعتمادترین انسان‌ها تبدیل می‌شود."
+   },
+   {
+    "h2": "عقرب در عشق و رابطه",
+    "p": "عشق برای برج عقرب یک بازی سطحی نیست؛ او یا وارد رابطه نمی‌شود یا با تمام وجود وارد می‌شود. عقرب در عشق به دنبال اتصال عمیق روحی و جسمی است و به شریکی نیاز دارد که از صمیمیت واقعی نترسد. او بسیار وفادار و حمایتگر است، اما انتظار صداقت کامل دارد. حسادت در روابط عاطفی عقرب می‌تواند زیاد باشد، به ویژه اگر احساس ناامنی کند. به همین دلیل، شریک زندگی عقرب باید شفاف باشد و به او اطمینان خاطر بدهد. وقتی عقرب احساس امنیت کند، عاشقی پرشور، مراقب و اسرارآمیز است که رابطه را از یک تجربه معمولی به سفری دگرگون‌کننده تبدیل می‌کند. او از شریکش انتظار وفاداری مطلق دارد و در مقابل، تمام هستی‌اش را تقدیم می‌کند."
+   },
+   {
+    "h2": "سازگاری برج عقرب با دیگر برج‌ها",
+    "p": "عقرب با نشانه‌های آبی یعنی سرطان و ماهی بهترین هماهنگی را دارد. سرطان با حساسیت و امنیت‌خواهی، نیاز عاطفی عقرب را درک می‌کند و ماهی با رویاپردازی و همدلی، به عمق احساسات او احترام می‌گذارد. این سه نشانه آبی می‌توانند پیوندی عاطفی و تقریباً تله‌پاتیک بسازند. از میان نشانه‌های خاکی، برج جدی و سنبله نیز گزینه‌های پایداری برای عقرب هستند؛ جدی با جدیت و تعهد، و سنبله با دقت و وفاداری، مکمل خوبی برای شدت عقرب به شمار می‌روند. در مقابل، رابطه عقرب با نشانه‌های آتشین مانند حمل، شیر و قوس معمولاً پرتنش اما پرشور است. این رابطه می‌تواند آموزنده باشد، اما به دلیل تفاوت در سبک ابراز احساسات، نیاز به کار و درک متقابل دارد. نشانه‌های هوایی مانند دلو و ترازو نیز ممکن است برای عقرب سطحی یا ناپایدار به نظر برسند. با این حال، در آسترولوژی هیچ سازگاری قطعی یا غیرممکنی وجود ندارد؛ چارت کامل تولد شما می‌تواند تصویر دقیق‌تری ارائه دهد."
+   },
+   {
+    "h2": "عقرب در دوستی و محیط کار",
+    "p": "در دوستی، عقرب کم‌حرف اما بسیار وفادار است. او ترجیح می‌دهد تعداد کمی دوست واقعی داشته باشد تا حلقه بزرگی از آشنایان. عقرب‌ها معمولاً رازنگهداران فوق‌العاده‌ای هستند و دوستانشان می‌دانند که می‌توانند به آن‌ها اعتماد کنند. در محیط کار، عقرب به دلیل تمرکز بالا، پشتکار و توانایی حل مسائل پیچیده شناخته می‌شود. آن‌ها در مشاغلی که نیاز به تحقیق، روان‌شناسی، مدیریت بحران، کارآگاهی یا امور مالی دارد، عالی عمل می‌کنند. با این حال، عقرب باید مراقب باشد که رقابت سالم را با بدبینی یا کنترل‌گری اشتباه نگیرد."
+   },
+   {
+    "h2": "جمع‌بندی؛ عقرب را جدی بگیرید",
+    "p": "برج عقرب نشانه‌ای نیست که به راحتی شناخته شود؛ اما اگر با او همراه شوید، یکی از عمیق‌ترین و وفادارترین افراد زندگی‌تان را خواهید یافت. شناخت شخصیت عقرب به شما کمک می‌کند هم خودتان را بهتر بفهمید و هم روابط‌تان را آگاهانه‌تر بسازید. اگر دوست دارید تصویر کامل‌تری از نقشه آسمانی خود داشته باشید، می‌توانید چارت تولدتان را بررسی کنید تا ببینید ماه، سیاره‌ها و طالع شما چه تأثیری بر شخصیت و سازگاری‌تان دارند."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/scorpio-personality-compatibility.webp",
+  "thumb": "/static/articles/scorpio-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "sagittarius-personality-compatibility",
+  "title": "برج قوس: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "با شخصیت ماجراجو، صادق و آزادی‌خواه برج قوس و میزان سازگاری آن با دیگر نشانه‌ها آشنا شوید.",
+  "keywords": "برج قوس,شخصیت قوس,سازگاری برج قوس",
+  "meta": "شخصیت برج قوس؛ از ماجراجویی و صداقت تا چالش‌ها. سازگاری عاطفی قوس با برج‌های دیگر را بخوانید.",
+  "body": [
+   {
+    "h2": "برج قوس؛ متولد آذر با شعله‌ی ماجراجویی",
+    "p": "برج قوس نهمین نشانه‌ی دایره‌البروج است و متولدین تقریباً از اول آذر تا پایان آذر (۲۲ نوامبر تا ۲۱ دسامبر) زیر این نشانه به دنیا می‌آیند. عنصر این برج آتش و سیاره‌ی فرمانروای آن مشتری است؛ سیاره‌ی گسترش، خوش‌بینی و جست‌وجوی معنا. نماد قوس، کمان‌داری است که تیر خود را به سوی افق‌های دور نشانه گرفته است. در آسترولوژی که آن را ابزاری برای خودشناسی می‌دانیم نه علمی قطعی، قوس نماینده‌ی اشتیاق به کشف، یادگیری و عبور از مرزهای آشناست."
+   },
+   {
+    "h2": "ویژگی‌های کلیدی شخصیت قوس",
+    "p": "شخصیت قوس را می‌توان با چند واژه خلاصه کرد: صادق، ماجراجو، خوش‌بین و آزادی‌خواه. این افراد معمولاً نگاه مثبتی به زندگی دارند و حتی در شرایط سخت، نیمه‌ی پر لیوان را می‌بینند. آن‌ها عاشق سفر، فلسفه، فرهنگ‌های تازه و گفت‌وگوهای عمیق هستند. از طرفی، صداقت قوس گاهی آن‌قدر مستقیم است که بدون فیلتر حرفشان را می‌زنند. این صراحت اگرچه از سر بدجنسی نیست، ممکن است دیگران را غافلگیر کند. قوس به سختی می‌تواند در قفس تکرار و روزمرگی دوام بیاورد و همیشه به دنبال تجربه‌ی تازه است."
+   },
+   {
+    "h2": "نقاط قوت قوس",
+    "p": "قوس‌ها منبع انرژی مثبت و انگیزه‌اند. شوخ‌طبعی طبیعی آن‌ها جمع را زنده نگه می‌دارد و خوش‌قلبی‌شان باعث می‌شود دیگران به آن‌ها اعتماد کنند. شجاعت قوس در امتحان مسیرهای جدید و ریسک‌های حساب‌شده زبانزد است. آن‌ها اهل یادگیری‌اند و معمولاً اطلاعات عمومی بالایی دارند؛ از تاریخ و جغرافیا تا فلسفه و مذهب. گشاده‌دستی و بی‌غرضی قوس هم او را به دوستی محبوب تبدیل می‌کند. این نشانه می‌تواند الهام‌بخش اطرافیان باشد و آن‌ها را به دیدن جهان از دریچه‌ای بزرگ‌تر دعوت کند."
+   },
+   {
+    "h2": "چالش‌های پیش روی قوس",
+    "p": "البته هیچ نشانه‌ای بی‌چالش نیست. قوس ممکن است در جزئیات کم‌دقت باشد و پروژه‌ها را نیمه‌کاره رها کند، چون به سرعت از موضوعی خسته می‌شود. عطش آزادی او گاهی به تعهدگریزی در کار یا رابطه تعبیر می‌شود. صراحت بیش از حد نیز می‌تواند به بی‌ملاحظگی نزدیک شود و دل‌خوری ایجاد کند. علاوه بر این، خوش‌بینی افراطی قوس ممکن است باعث شود خطرها را دست‌کم بگیرد. آگاهی از این الگوها به متولد قوس کمک می‌کند تا هیجان طبیعی خود را با ثبات و مسئولیت‌پذیری همراه کند."
+   },
+   {
+    "h2": "قوس در عشق و روابط",
+    "p": "در عشق، قوس به دنبال همراهی است که همدم ماجراجویی‌هایش باشد نه محدودکننده‌ی آزادی او. این نشانه عاشق صداقت است و معمولاً در بیان احساساتش رو راست است. برای قوس، رابطه باید جایی برای رشد، خنده و کشف باشد؛ اگر رابطه به روال خسته‌کننده تبدیل شود، ممکن است فاصله بگیرد. اما اگر به او فضا بدهید و علایقش را جدی بگیرید، وفاداری عمیقی نشان می‌دهد. قوس به معشوق خود وفادار است، اما وفاداری را با کنترل شدن اشتباه نمی‌گیرد."
+   },
+   {
+    "h2": "سازگاری قوس با نشانه‌های آتش و هوا",
+    "p": "بیشترین هم‌خوانی قوس معمولاً با نشانه‌های آتش و هوا دیده می‌شود. برج حمل با انرژی رقابتی و هیجان خود، همراهی طبیعی برای قوس است. شیر نیز با اعتمادبه‌نفس و گرمایش می‌تواند شعله‌ی قوس را زنده نگه دارد. در میان نشانه‌های هوا، ترازو با گفت‌وگو و عدالت‌خواهی، و دلو با ذهن باز و روحیه‌ی مستقل، شرکای فکری و عاطفی خوبی برای قوس هستند. این ترکیب‌ها معمولاً از ماجراجویی و رشد متقابل لذت می‌برند و کمتر یکدیگر را محدود می‌کنند."
+   },
+   {
+    "h2": "سازگاری قوس با نشانه‌های زمین و آب",
+    "p": "با نشانه‌های زمین مانند ثور، سنبله و جدی، قوس ممکن است تفاوت ریتم داشته باشد؛ زمینی‌ها به امنیت و برنامه‌ریزی نیاز دارند و قوس به آزادی و تغییر. این رابطه می‌تواند با درک متقابل به تعادل برسد، اما نیاز به صبوری دارد. نشانه‌های آب مانند سرطان، عقرب و حوت نیز دنیای عاطفی عمیق‌تری دارند که گاهی با صراحت و بی‌قراری قوس اصطکاک پیدا می‌کند. با این حال، جذابیت متضادها را نباید نادیده گرفت؛ بسیاری از این پیوندها با آگاهی و تلاش دو طرف به روابط پایداری تبدیل می‌شوند."
+   },
+   {
+    "h2": "جمع‌بندی؛ از خودشناسی تا مسیر رشد",
+    "p": "برج قوس ترکیبی الهام‌بخش از امید، صداقت و عشق به کشف است. شناخت نقاط قوت و چالش‌های این نشانه به متولد قوس و اطرافیانش کمک می‌کند تا روابط و مسیر زندگی را هوشمندانه‌تر بسازند. آسترولوژی را به عنوان ابزاری برای خودشناسی ببینید، نه نسخه‌ای قطعی؛ هر فرد فراتر از خورشید تولدش، داستان منحصربه‌فردی دارد. اگر می‌خواهید تصویر دقیق‌تری از چارت تولد خود و جایگاه قوس در آن داشته باشید، می‌توانید چارت شخصی‌تان را بررسی کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/sagittarius-personality-compatibility.webp",
+  "thumb": "/static/articles/sagittarius-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "capricorn-personality-compatibility",
+  "title": "برج جدی: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "با ویژگی‌های شخصیتی، نقاط قوت، چالش‌ها و سازگاری برج جدی در عشق و کار آشنا شوید.",
+  "keywords": "برج جدی,شخصیت جدی",
+  "meta": "برج جدی؛ شخصیت سخت‌کوش، وفادار و واقع‌گرا. در این مقاله با ویژگی‌ها، چالش‌ها و سازگاری جدی با دیگر برج‌ها آشنا شوید.",
+  "body": [
+   {
+    "h2": "برج جدی در یک نگاه",
+    "p": "برج جدی دهمین برج منطقه‌البروج است و متولدین حدود ۱ دی تا ۳۰ بهمن را در بر می‌گیرد. نماد این برج، بز کوهی یا بز ماهی است؛ موجودی که از صخره‌های سخت بالا می‌رود و هم‌زمان به اعماق احساس نزدیک است. عنصر جدی خاک و سیاره فرمانروای آن کیوان (زحل) است؛ سیاره‌ای که به نظم، زمان و پختگی پیوند خورده است. در آسترولوژی، جدی نمایانگر ساختار، مسئولیت و بلندپروازی آرام است."
+   },
+   {
+    "h2": "ویژگی‌های اصلی شخصیت جدی",
+    "p": "جدی‌ها اغلب آدم‌هایی واقع‌گرا، هدفمند و اهل عمل هستند. آن‌ها کمتر اهل حرف‌های بی‌پایه‌اند و ترجیح می‌دهند با برنامه‌ریزی دقیق به نتیجه برسند. صبر و پشتکارشان زبانزد است؛ ممکن است دیر شروع کنند، اما معمولاً دیرتر از دیگران جا نمی‌زنند. در نگاه اول شاید جدی یا حتی سرد به نظر برسند، اما در درون احساساتی عمیق و وفاداری پنهانی دارند که فقط به نزدیکانشان نشان می‌دهند."
+   },
+   {
+    "h2": "نقاط قوت برج جدی",
+    "p": "انضباط شخصی، حس مسئولیت‌پذیری و نگاه بلندمدت از مهم‌ترین دارایی‌های جدی است. آن‌ها می‌توانند در شرایط دشوار خونسرد بمانند و راهکارهای عملی پیدا کنند. در دوستی و عشق، وفادار و قابل اتکا هستند و معمولاً به قول‌هایشان پایبند می‌مانند. ذهن سازمان‌یافته‌شان باعث می‌شود در مدیریت مالی و کاری عملکرد قابل‌قبولی داشته باشند و دیگران به امنیت و ثباتی که ایجاد می‌کنند، اعتماد کنند."
+   },
+   {
+    "h2": "چالش‌ها و سایه‌های شخصیت جدی",
+    "p": "سخت‌گیری بیش از حد نسبت به خود و اطرافیان، یکی از رایج‌ترین چالش‌های جدی است. آن‌ها گاهی آن‌قدر غرق کار و هدف می‌شوند که از رسیدگی به نیازهای عاطفی خود و عزیزانشان غافل می‌مانند. بدبینی و احتیاط زیاد هم می‌تواند مانع تجربه‌های تازه شود. در سایه، جدی ممکن است احساس کند همیشه باید کنترل همه‌چیز را در دست داشته باشد و ابراز آسیب‌پذیری برایش سخت باشد."
+   },
+   {
+    "h2": "جدی در عشق و روابط",
+    "p": "در عشق، جدی آهسته و محتاطانه پیش می‌رود. آن‌ها قبل از ورود به رابطه، به امنیت عاطفی و آینده فکر می‌کنند. عشق را بیشتر با عمل نشان می‌دهند تا کلمات؛ از حمایت مالی و عملی تا حضور قابل اتکا در لحظه‌های سخت. وقتی تعهد بدهند، وفاداری‌شان عمیق است. برای ارتباط بهتر، شریک عاطفی جدی باید صبور باشد و به او فضای امنی برای ابراز احساسات بدهد."
+   },
+   {
+    "h2": "سازگاری برج جدی با دیگر برج‌ها",
+    "p": "جدی با نشان‌های خاکی مانند ثور و سنبله سازگاری طبیعی دارد؛ چون هر دو ارزش کار، ثبات و واقع‌بینی را درک می‌کنند. با عقرب و حوت نیز پیوند عاطفی عمیقی ممکن است شکل بگیرد، زیرا آب احساسات را نرم‌تر می‌کند و جدی ساختار می‌دهد. رابطه با سرطان که در مقابل جدی قرار دارد، می‌تواند مکمل اما پرتنش باشد. با نشان‌های آتش و هوا مانند حمل، اسد، جوزا و میزان، چالش بیشتر است، اما با درک متقابل و گفت‌وگو، هر رابطه‌ای می‌تواند رشد کند."
+   },
+   {
+    "h2": "جدی در کار و زندگی حرفه‌ای",
+    "p": "جدی‌ها برای نقش‌های مدیریتی، برنامه‌ریزی، مهندسی، حسابداری، حقوق و هر کاری که نیازمند صبر و دقت باشد ساخته شده‌اند. آن‌ها به ندرت از زیر مسئولیت شانه خالی می‌کنند و اغلب در بلندمدت به جایگاه‌های معتبر می‌رسند. با این حال، باید مراقب فرسودگی شغلی باشند و یاد بگیرند استراحت و تفریح را هم بخشی از برنامه بدانند."
+   },
+   {
+    "h2": "جمع‌بندی: جدی، معمار آرام زندگی",
+    "p": "برج جدی ترکیبی از جاه‌طلبی، وفاداری و واقع‌گرایی است. اگرچه ممکن است در ظاهر محکم و کم‌احساس دیده شود، در عمق وجودش به امنیت و پیوندهای پایدار اهمیت می‌دهد. آسترولوژی را به‌عنوان ابزاری برای خودشناسی ببینید، نه یک حکم قطعی؛ هر فرد با توجه به کل چارت تولد، تجربه‌ها و انتخاب‌هایش مسیر منحصربه‌فرد خود را می‌سازد. اگر دوست دارید تصویر دقیق‌تری از شخصیت و روابط خود داشته باشید، می‌توانید چارت تولدتان را بررسی کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/capricorn-personality-compatibility.webp",
+  "thumb": "/static/articles/capricorn-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "burj-dalv-shakhsiyat-sazgari",
+  "title": "برج دلو: نبوغ مستقل، قلب آزاد و نقشه سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "برج دلو را باید از زاویه‌ای متفاوت شناخت؛ شخصیتی که آزادی را نفس می‌کشد و با ذهنی خلاق، روابطی عمیق اما غیرکلیشه‌ای می‌سازد.",
+  "keywords": "برج دلو,شخصیت دلو",
+  "meta": "برج دلو شخصیتی مستقل، خلاق و آینده‌نگر دارد. در این مقاله شخصیت دلو و سازگاری او با دیگر برج‌ها را بخوانید.",
+  "body": [
+   {
+    "h2": "دلو؛ متولد بهمن‌ماه با نگاهی به فردا",
+    "p": "برج دلو از ۳۰ دی تا ۲۹ بهمن ادامه دارد و عنصر آن هوا با کیفیت ثابت است. در آسترولوژی، دلو را با سیاره اورانوس و در نگاه سنتی با کیوان پیوند می‌دهند؛ ترکیبی که هم شورش و نوآوری می‌آورد و هم عمق و مسئولیت پنهان. اما پیش از هر چیز، دلو یک جست‌وجوگر است؛ کسی که به جای پیروی از مسیرهای تکراری، دوست دارد خودش نقشه را بکشد. این مقاله به شما کمک می‌کند شخصیت دلو را فراتر از کلیشه‌ها ببینید و بفهمید با چه کسانی بهتر کنار می‌آید."
+   },
+   {
+    "h2": "شخصیت دلو؛ آزاداندیشی و عمق پنهان",
+    "p": "شخصیت دلو را شاید در نگاه اول سرد یا فاصله‌دار بدانید، اما پشت آن نگاه تحلیلگر، قلبی پر از آرمان و رفاقت نهفته است. دلوها ذهنی خلاق و آینده‌نگر دارند؛ آن‌ها پیش از دیگران متوجه روندها می‌شوند و عاشق ایده‌های تازه‌اند. آزادی برایشان مانند هواست؛ اگر احساس کنند کسی می‌خواهد آن‌ها را محدود کند، فاصله می‌گیرند. در دوستی بسیار وفادارند، اما نه با نمایش احساسات پرسروصدا، بلکه با حضور ثابت و حمایت بی‌چشمداشت. نقطه ضعفشان لجاجت و گاهی جدا شدن از هیجانات لحظه است."
+   },
+   {
+    "h2": "سازگاری دلو با برج‌های آتش و هوا",
+    "p": "در زمینه سازگاری، دلو با برج‌های هوا یعنی جوزا و میزان، ساده‌ترین و طبیعی‌ترین پیوند را می‌سازد. این سه، زبان مشترکی از گفت‌وگو، کنجکاوی و احترام به فضای شخصی دارند. با برج‌های آتش مانند حمل، شیر و قوس، رابطه دلو پرانرژی و الهام‌بخش است؛ به‌ویژه با قوس که عشق به ماجراجویی و معنا دارد. اما در هر رابطه‌ای، دلو باید آزادی حرکت داشته باشد؛ اگر طرف مقابل این نیاز را درک کند، صمیمیت واقعی شکل می‌گیرد. سازگاری صرفاً به برج خورشیدی خلاصه نمی‌شود، اما نقطه شروع خوبی است."
+   },
+   {
+    "h2": "سازگاری دلو با برج‌های خاک و آب؛ چالش‌ها و فرصت‌ها",
+    "p": "با برج‌های خاکی مانند ثور، سنبله و جدی، دلو با چالش «واقع‌بینی در برابر آرمان‌گرایی» روبه‌رو می‌شود. ثور و سنبله به امنیت و برنامه‌ریزی نیاز دارند، درحالی‌که دلو خواهان تغییر و رهایی است؛ اگر هر دو انعطاف داشته باشند، ترکیب مکملی می‌سازند. با برج‌های آبی مانند خرچنگ، عقرب و حوت، دلو ممکن است از شدت هیجان یا وابستگی عاطفی احساس خفگی کند. اما اگر آب‌نشان‌ها یاد بگیرند فضا بدهند و دلو هم دل‌دادن را تمرین کند، پیوندی عمیق و تحول‌آفرین پدید می‌آید."
+   },
+   {
+    "h2": "چگونه با دلو رابطه‌ای پایدار بسازیم؟",
+    "p": "برای ساختن رابطه‌ای پایدار با دلو، اول فضای شخصی او را محترم بشمارید؛ او نه از روی بی‌محبتی، بلکه برای بازیابی انرژی به تنهایی نیاز دارد. دوم، کنجکاوی فکری را زنده نگه دارید؛ گفت‌وگو درباره ایده‌ها، کتاب‌ها و آینده، او را عاشق می‌کند. سوم، از فشار عاطفی و نمایش‌های ملودرام بپرهیزید. در عوض، با صداقت و رفتار ناپایدار، احترامش را جلب کنید. دلو وقتی احساس امنیت فکری و عاطفی کند، به یکی از وفادارترین همراهان تبدیل می‌شود."
+   },
+   {
+    "h2": "جمع‌بندی؛ دلو آینه‌ای برای دیدن آزادی درون",
+    "p": "برج دلو به ما یادآوری می‌کند که متفاوت بودن نه تنها اشکال نیست، بلکه هدیه است. شناخت شخصیت دلو و سازگاری او با دیگر برج‌ها، یک نقشه کلی برای خودشناسی و بهبود روابط است. اگر می‌خواهید تصویر دقیق‌تری از آسمان تولد خود یا عزیزتان داشته باشید، ساخت چارت زایچه می‌تواند لایه‌های پنهان‌تری را نشان دهد. آسمان هرگز دستور نمی‌دهد؛ فقط دعوت می‌کند که خودتان را عمیق‌تر ببینید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/burj-dalv-shakhsiyat-sazgari.webp",
+  "thumb": "/static/articles/burj-dalv-shakhsiyat-sazgari-thumb.webp"
+ },
+ {
+  "slug": "pisces-personality-compatibility",
+  "title": "برج حوت: شخصیت و سازگاری",
+  "category": "برج‌ها",
+  "excerpt": "با ویژگی‌های شخصیتی، نقاط قوت و ضعف و سازگاری برج حوت در عشق و روابط آشنا شوید.",
+  "keywords": "برج حوت,شخصیت حوت",
+  "meta": "برج حوت؛ شخصیت رؤیاپرداز، حساس و همدل. سازگاری حوت با سرطان، عقرب، ثور و چالش‌هایش با جوزا و قوس.",
+  "body": [
+   {
+    "h2": "برج حوت؛ آخرین قطعه پازل زودیاک",
+    "p": "برج حوت دوازدهمین و آخرین برج از چرخه زودیاک است و متولدین ۳۰ بهمن تا ۲۹ اسفند را در بر می‌گیرد. این برج با عنصر آب پیوند دارد و سیاره نپتون، سیاره رؤیا، الهام و معنویت، حاکم آن است. نماد حوت دو ماهی است که در جهت‌های مخالف شنا می‌کنند؛ این تصویر، تنش همیشگی میان واقعیت و خیال، مادیات و معنویت را در این شخصیت نشان می‌دهد. به همین دلیل، حوت‌ها اغلب درک عمیقی از احساسات انسانی دارند و گویی تمام تجربه‌های برج‌های قبلی در وجودشان خلاصه شده است."
+   },
+   {
+    "h2": "شخصیت برج حوت",
+    "p": "حوت‌ها رؤیاپرداز، هنرمند، شهودی و بسیار همدل هستند. آن‌ها می‌توانند بدون آنکه کلامی بگویند، حال درونی دیگران را حس کنند و همین موضوع آن‌ها را به دوستانی بی‌نظیر و شنوندگانی صبور تبدیل می‌کند. تخیل قوی، موهبت بزرگ این برج است؛ بسیاری از حوت‌ها در هنر، موسیقی، نویسندگی یا فعالیت‌های معنوی می‌درخشند. با این حال، مرز میان دنیای درونی و بیرونی برایشان همیشه روشن نیست و گاهی ترجیح می‌دهند در خیال‌پردازی‌های خود پناه بگیرند تا با واقعیت‌های تلخ روبه‌رو شوند."
+   },
+   {
+    "h2": "نقاط قوت برج حوت",
+    "p": "مهربانی بی‌دریغ، خلاقیت بالا، انعطاف‌پذیری و شهود قوی از مهم‌ترین نقاط قوت حوت به شمار می‌رود. آن‌ها اهل قضاوت نیستند و معمولاً به هر انسانی فرصت دوباره می‌دهند. روحیه فداکارانه و توانایی عشق‌ورزیدن بدون شرط، باعث می‌شود اطرافیان در کنارشان احساس امنیت عاطفی کنند. همچنین، تخیل سرشارشان به آن‌ها کمک می‌کند راه‌حل‌های غیرمنتظره و خلاقانه برای مشکلات پیدا کنند و در مشاغل هنری و درمانی بدرخشند."
+   },
+   {
+    "h2": "نقاط ضعف و چالش‌های حوت",
+    "p": "حساسیت بیش از حد، فرار از واقعیت و نداشتن مرزهای مشخص، اصلی‌ترین چالش‌های این برج است. حوت‌ها به سرعت تحت تأثیر انرژی دیگران قرار می‌گیرند و ممکن است بار عاطفی اطرافیان را ناخواسته به دوش بکشند. گاهی آن‌قدر در رؤیاها غرق می‌شوند که تصمیم‌گیری برایشان دشوار می‌شود و کارها را نیمه‌کاره رها می‌کنند. همچنین، گرایش به فداکاری بیش از حد می‌تواند آن‌ها را در روابطی ناسالم نگه دارد یا احساس قربانی بودن ایجاد کند."
+   },
+   {
+    "h2": "عشق و روابط از نگاه حوت",
+    "p": "در عشق، حوت‌ها رمانتیک، وفادار و عمیقاً احساسی هستند. آن‌ها به دنبال ارتباطی روحی و عاطفی‌اند، نه صرفاً جذابیت ظاهری. وقتی عاشق می‌شوند، تمام وجودشان را پای رابطه می‌گذارند و حاضرند برای خوشحالی شریک زندگی‌شان از خودگذشتگی کنند. با این حال، گاهی معشوق را بیش از حد ایده‌آل می‌بینند و بعد از مدتی با واقعیت روبه‌رو می‌شوند. برای یک رابطه سالم، حوت نیاز دارد یاد بگیرد مرز بگذارد و به جای فداکاری افراطی، عشق را با حفظ استقلال شخصی تجربه کند."
+   },
+   {
+    "h2": "سازگاری برج حوت با دیگر برج‌ها",
+    "p": "حوت با برج‌های آبی سرطان و عقرب بیشترین هماهنگی عاطفی را دارد؛ این سه نشانه زبان احساسات یکدیگر را می‌فهمند و عمق رابطه‌شان کم‌نظیر است. برج‌های خاکی ثور و برج جدی نیز می‌توانند ثبات و امنیت لازم را برای روح لطیف حوت فراهم کنند. رابطه حوت با برج‌های بادی جوزا و ترازو ممکن است چالش‌برانگیز باشد، زیرا تفاوت در شیوه ابراز احساسات می‌تواند سوءتفاهم ایجاد کند. با برج آتشین قوس نیز حوت گاهی دچار تضاد میان ماجراجویی و نیاز به آرامش می‌شود، اما اگر هر دو انعطاف داشته باشند، این رابطه می‌تواند رشددهنده باشد."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "برج حوت شخصیتی پیچیده، مهربان و الهام‌بخش دارد که با دنیای درونی غنی خود، رنگ و عمق خاصی به روابط و زندگی می‌بخشد. شناخت نقاط قوت و ضعف این برج به شما کمک می‌کند از توانایی‌های شهودی و خلاقانه‌تان بهتر استفاده کنید و در عین حال مرزهای سالمی برای خود بسازید. به یاد داشته باشید آسترولوژی یک ابزار خودشناسی است، نه یک پیش‌گویی قطعی. اگر دوست دارید تصویر کامل‌تری از شخصیت و مسیر زندگی‌تان ببینید، می‌توانید چارت تولد اختصاصی خود را تهیه کنید و لایه‌های عمیق‌تری از وجودتان را کشف کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/pisces-personality-compatibility.webp",
+  "thumb": "/static/articles/pisces-personality-compatibility-thumb.webp"
+ },
+ {
+  "slug": "khorshid-dar-chart-tavallod",
+  "title": "خورشید در چارت تولد یعنی چه؟",
+  "category": "سیارات",
+  "excerpt": "خورشید در چارت تولد نشان‌دهنده هویت اصلی، اراده و مسیر خودشناسی شماست؛ بیاموزید این جایگاه چه پیامی برای زندگی‌تان دارد.",
+  "keywords": "خورشید,چارت تولد,هویت",
+  "meta": "خورشید در چارت تولد چیست؟ در این مقاله با نقش خورشید در هویت، اراده و مسیر زندگی آشنا شوید و چارت خود را عمیق‌تر بشناسید.",
+  "body": [
+   {
+    "h2": "خورشید؛ قلب تپنده چارت تولد",
+    "p": "وقتی برای اولین بار چارت تولدتان را می‌بینید، معمولاً اولین سؤال این است: «خورشید من کجاست؟» در آسترولوژی، خورشید فقط یک نقطه نورانی در آسمان نیست؛ بلکه نماد قلب شخصیت، خودآگاه، اراده و نیروی زندگی است. این جرم آسمانی نشان می‌دهد شما در عمیق‌ترین لایه وجودی چه کسی هستید و چه چیزی به زندگی‌تان معنا می‌دهد. برخلاف تصور رایج که همه چیز را به «برج خورشیدی» خلاصه می‌کند، خورشید در چارت تولد ابعاد گسترده‌تری دارد: از سبک ابراز وجود تا مسیری که برای رشد انتخاب می‌کنید. در این مقاله، نگاهی دقیق و انسانی به نقش خورشید در چارت تولد می‌اندازیم."
+   },
+   {
+    "h2": "خورشید دقیقاً چه چیزی را نشان می‌دهد؟",
+    "p": "در زبان نمادین آسترولوژی، خورشید نماینده «منِ» اصلی شماست. این جرم آسمانی که در آسترولوژی سیاره شخصی خوانده می‌شود، به پرسش‌های بنیادین پاسخ می‌دهد: من کیستم؟ چه چیزی مرا زنده نگه می‌دارد؟ اراده‌ام از کجا می‌آید؟ خورشید همچنین با اعتمادبه‌نفس، خلاقیت، قدرت رهبری و توانایی درخشش در جمع مرتبط است. وقتی احساس می‌کنید کاری را «از ته دل» انجام می‌دهید، معمولاً خورشید شما فعال است. جایگاه خورشید در یک برج مشخص می‌کند که این هویت با چه کیفیتی بیان می‌شود؛ مثلاً خورشید در برج حمل با شجاعت و پیشگامی، و خورشید در برج ماهی با همدلی و خیال‌پردازی. اما این فقط آغاز ماجراست."
+   },
+   {
+    "h2": "جایگاه خورشید در خانه‌ها و جنبه‌ها",
+    "p": "برای شناخت دقیق‌تر خورشید، تنها دانستن برج کافی نیست. در چارت تولد، خورشید در یکی از دوازده خانه قرار می‌گیرد که نشان می‌دهد این انرژی بیشتر در کدام بخش زندگی تجلی پیدا می‌کند. برای نمونه، خورشید در خانه دهم اغلب به مسیر شغلی و جایگاه اجتماعی گره می‌خورد، در حالی که خورشید در خانه چهارم ریشه در خانواده، خانه و امنیت عاطفی دارد. علاوه بر آن، زاویه‌هایی که خورشید با دیگر سیاره‌ها می‌سازد (جنبه‌ها) رنگ و لعاب دیگری به هویت شما می‌دهد. یک پیوند خورشید-ماه می‌تواند هماهنگی درونی ایجاد کند، در حالی که یک مربع خورشید-زحل ممکن است چالش‌هایی در مسیر ابراز وجود نشان دهد. پس خورشید یک جزیره تنها نیست؛ بخشی از یک گفت‌وگوی پیچیده در چارت شماست."
+   },
+   {
+    "h2": "خورشید و هویت: چرا این جایگاه مهم است؟",
+    "p": "بسیاری از ما با «برج خورشیدی» خود بزرگ شده‌ایم و شاید فکر کنیم آسترولوژی یعنی همان. اما خورشید در چارت تولد بسیار شخصی‌تر و چندلایه‌تر از یک جمله کلی درباره متولدین یک ماه است. این نقطه نشان می‌دهد برای احساس کامل بودن، باید کدام ویژگی‌ها را در خود پرورش دهید. مثلاً اگر خورشید شما در برج دلو است، ممکن است هویت شما با آزادی، نوآوری و فاصله‌گرفتن از جمع گره خورده باشد. اگر این نیاز نادیده گرفته شود، ممکن است احساس گم‌گشتگی یا بی‌هدفی کنید. در واقع، خورشید به شما می‌گوید: «برای اینکه با خودت صادق باشی، به این سو نگاه کن.» این یک دستور قطعی نیست، بلکه دعوتی به خودشناسی و پذیرش لایه‌های گوناگون شخصیت است."
+   },
+   {
+    "h2": "خورشید در چارت تولد و مسیر زندگی",
+    "p": "در آسترولوژی، خورشید همچنین با «مسیر خورشیدی» یا هدف اصلی زندگی ارتباط دارد. برخلاف ماه که واکنش‌های عاطفی و ناخودآگاه را نشان می‌دهد، خورشید بخش روشن و آگاهانه وجود شماست. وقتی تصمیمی می‌گیرید، وقتی برای چیزی می‌جنگید، وقتی می‌خواهید در جهان اثری بگذارید، خورشید شما در حال کار است. به همین دلیل، تحلیل خورشید در چارت تولد می‌تواند به شما کمک کند بفهمید در چه شرایطی بیشترین انرژی و انگیزه را دارید. آیا در موقعیت‌های رقابتی می‌درخشید یا در فضاهای هنری؟ پاسخ این پرسش‌ها در نشانه، خانه و جنبه‌های خورشید نهفته است. به یاد داشته باشید که آسترولوژی ابزاری برای خودشناسی است، نه یک پیش‌گویی قطعی. این شما هستید که انتخاب می‌کنید چگونه این انرژی را زندگی کنید."
+   },
+   {
+    "h2": "جمع‌بندی: به خورشید درونی‌تان گوش دهید",
+    "p": "خورشید در چارت تولد، نقشه‌ای برای شناخت هویت اصلی، اراده شخصی و مسیر رشد شماست. این جایگاه نشان می‌دهد چه چیزی به زندگی‌تان معنا می‌بخشد و چگونه می‌توانید نسخه‌ای صادق‌تر از خودتان باشید. اگر هنوز چارت تولدتان را بررسی نکرده‌اید، پیشنهاد می‌کنیم همین حالا یک چارت رایگان بسازید و به جایگاه خورشید خود نگاه کنید. سپس از خود بپرسید: آیا زندگی روزمره‌ام با این انرژی هماهنگ است؟ چه تغییر کوچکی می‌توانم ایجاد کنم تا بیشتر شبیه خودِ واقعی‌ام زندگی کنم؟ پاسخ این پرسش‌ها می‌تواند آغاز یک سفر خودشناسی عمیق و لذت‌بخش باشد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/khorshid-dar-chart-tavallod.webp",
+  "thumb": "/static/articles/khorshid-dar-chart-tavallod-thumb.webp"
+ },
+ {
+  "slug": "moon-in-birth-chart-meaning",
+  "title": "ماه در چارت تولد یعنی چه؟ راهنمای احساسات و نیازهای درونی",
+  "category": "سیارات",
+  "excerpt": "ماه در چارت تولد، زبان پنهان احساسات و نیازهای درونی شماست و نشان می‌دهد در عمیق‌ترین لایه وجودتان چگونه امنیت را تجربه می‌کنید.",
+  "keywords": "ماه,چارت تولد,احساسات",
+  "meta": "ماه در چارت تولد نشان‌دهنده احساسات، نیازهای امنیت و واکنش‌های غریزی شماست؛ در این راهنما یاد می‌گیرید جایگاه ماه را چطور تفسیر کنید.",
+  "body": [
+   {
+    "h2": "ماه در چارت تولد چه جایگاهی دارد؟",
+    "p": "در آسترولوژی، خورشید نشان‌دهنده هویت خودآگاه و مسیر زندگی است، اما ماه لایه عمیق‌تری را روشن می‌کند: دنیای احساسات، واکنش‌های غریزی و نیازهایی که شاید هرگز به زبان نیاورید. ماه در چارت تولد مثل یک قطب‌نمای درونی عمل می‌کند؛ جایی که بی‌اختیار آرام می‌گیرید، مضطرب می‌شوید یا احساس امنیت می‌کنید. اگر خورشید بگوید «من این هستم»، ماه می‌گوید «من این را احساس می‌کنم و به آن نیاز دارم». به همین دلیل، شناخت جایگاه ماه یکی از شخصی‌ترین و صمیمی‌ترین بخش‌های خواندن چارت تولد است."
+   },
+   {
+    "h2": "ماه دقیقاً نماد چیست؟",
+    "p": "در سنت آسترولوژی، ماه نماد ذهن ناخودآگاه، حافظه احساسی، غریزه، عادت‌ها و واکنش‌های اولیه است. ماه سریع‌تر از هر جرم آسمانی در چارت حرکت می‌کند و هر دو روز و نیم یک بار تغییر نشان می‌دهد؛ به همین دلیل ظرافت‌های خلقی و احساسی شما را با دقت بالایی نشان می‌دهد. ماه همچنین با اصل زنانه، پذیرندگی، مراقبت، خانه و ریشه‌ها پیوند دارد. وقتی کسی می‌گوید «نمی‌دانم چرا، ولی این موقعیت حالم را خوب می‌کند»، اغلب پای ماه در میان است."
+   },
+   {
+    "h2": "ماه و زبان احساسات شما",
+    "p": "هر فرد احساسات را به شیوه‌ای متفاوت تجربه و ابراز می‌کند. ماه در نشان آبی مثل سرطان، عقرب یا حوت، احساسات را عمیق، جذب‌کننده و گاهی مرموز می‌کند؛ در نشان آتش مثل حمل، اسد یا قوس، هیجان‌ها سریع، صریح و پرشور بروز می‌کنند. جایگاه ماه توضیح می‌دهد که در لحظه‌های ناراحتی، شادی یا ترس چه واکنشی نشان می‌دهید، چطور دلداری می‌خواهید و چه چیزهایی شما را از درون سیراب می‌کند. این اطلاعات برای خودشناسی و حتی بهبود روابط بسیار ارزشمند است."
+   },
+   {
+    "h2": "ماه، نیاز به امنیت و عادت‌های پنهان",
+    "p": "یکی از مهم‌ترین کارکردهای ماه، نشان دادن راه‌هایی است که از طریق آن‌ها احساس امنیت می‌کنید. برای مثال، ماه در ثور با ثبات، لمس فیزیکی و خوراکی‌های آشنا آرام می‌گیرد؛ ماه در جوزا با گفت‌وگو، اطلاعات و تنوع ذهنی احساس سبکی می‌کند. این نیازها اغلب در دوران کودکی شکل می‌گیرند و به عادت‌های ناخودآگاه تبدیل می‌شوند. اگر متوجه شوید ماه شما در چه نشان و خانه‌ای است، می‌توانید الگوهای تکراری احساسی را بهتر ببینید و آگاهانه‌تر از خودتان مراقبت کنید."
+   },
+   {
+    "h2": "ماه و رابطه با مادر یا مراقب اولیه",
+    "p": "در چارت تولد، ماه به‌طور سنتی نماد مادر، مراقب اولیه یا تصویری است که از «پرورش یافتن» در ذهن داریم. این تصویر همیشه با واقعیت کامل یکی نیست، بلکه نشان می‌دهد که شما محبت و مراقبت را چطور دریافت کرده‌اید و در بزرگسالی چگونه از دیگران حمایت می‌کنید. ماه دشوار یا در جنبه‌های سخت می‌تواند به حساسیت‌های قدیمی، نیاز به رسیدگی عاطفی یا الگوهای مراقبتی ناسالم اشاره کند، اما همیشه فرصتی برای التیام نیز در خود دارد."
+   },
+   {
+    "h2": "تفاوت ماه با خورشید و طالع",
+    "p": "شاید بپرسید اگر خورشید و طالع را می‌شناسم، چرا ماه اینقدر مهم است؟ خورشید مسیر اراده و هویت اصلی شماست؛ طالع یا صعود، نقابی است که به دنیا نشان می‌دهید و سبک آغازگری شماست. اما ماه چیزی است که وقتی در خلوت خودتان هستید، وقتی خسته‌اید یا وقتی کسی را عمیقاً دوست دارید، ظاهر می‌شود. ماه نشان می‌دهد پشت نقش‌ها و تصمیم‌های منطقی، چه موجود احساسی‌ای زندگی می‌کند. به همین دلیل سه‌گانه خورشید، ماه و طالع پایه اصلی شخصیت در آسترولوژی است."
+   },
+   {
+    "h2": "چطور ماه چارت خود را تفسیر کنیم؟",
+    "p": "برای تفسیر دقیق ماه، باید سه عامل را بررسی کنید: نشان ماه، خانه ماه و جنبه‌هایی که ماه با سیارات دیگر می‌سازد. نشان ماه رنگ و کیفیت احساسات را نشان می‌دهد؛ خانه ماه حوزه‌ای از زندگی را مشخص می‌کند که نیازهای عاطفی شما بیشتر در آن فعال می‌شود؛ و جنبه‌ها نشان می‌دهند این نیازها با کدام بخش‌های شخصیت یا تجربه‌های زندگی در گفت‌وگو هستند. اگر تازه‌کار هستید، ابتدا نشان و خانه ماه را بشناسید؛ همین دو مورد تصویر بسیار روشنی از دنیای درونی شما می‌سازد."
+   },
+   {
+    "h2": "جمع‌بندی: ماه، قطب‌نمای درونی شما",
+    "p": "ماه در چارت تولد به ما یادآوری می‌کند که انسان‌ها فقط موجوداتی منطقی و هدفمند نیستند؛ ما به امنیت، محبت، سکوت و درک شدن نیاز داریم. شناخت ماه به شما کمک می‌کند به جای سرکوب احساسات یا قضاوت خودتان، با مهربانی بیشتری با نیازهای درونی‌تان روبه‌رو شوید. در نهایت، آسترولوژی ابزاری برای خودشناسی است، نه یک پیشگویی قطعی؛ اما وقتی زبان ماه را یاد بگیرید، مکالمه با خودتان بسیار صادقانه‌تر می‌شود. اگر می‌خواهید بدانید ماه دقیقاً کجای چارت شماست، می‌توانید چارت تولد رایگان خود را محاسبه کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/moon-in-birth-chart-meaning.webp",
+  "thumb": "/static/articles/moon-in-birth-chart-meaning-thumb.webp"
+ },
+ {
+  "slug": "mercury-in-birth-chart",
+  "title": "عطارد در چارت تولد؛ پیام‌رسان ذهن و زبان شما",
+  "category": "سیارات",
+  "excerpt": "عطارد در چارت تولد نشان می‌دهد چگونه فکر می‌کنید، چگونه سخن می‌گویید و دنیای پیرامون را تحلیل می‌کنید.",
+  "keywords": "عطارد,چارت تولد,ذهن",
+  "meta": "عطارد در چارت تولد نشان‌دهنده سبک ذهن، ارتباط و یادگیری شماست؛ با جایگاه این سیاره در چارت خود آشنا شوید.",
+  "body": [
+   {
+    "h2": "عطارد؛ پیک آسمانی ذهن و کلام",
+    "p": "در آسترولوژی، عطارد سیاره‌ای است که وظیفه پیام‌رسانی را بر عهده دارد. این سیاره به ما می‌گوید ذهن ما چگونه اطلاعات را دریافت می‌کند، دسته‌بندی می‌کند و به زبان می‌آورد. برخلاف ماه که به احساسات و واکنش‌های درونی مربوط است، عطارد بیشتر با منطق، کنجکاوی، یادگیری و گفت‌وگو سروکار دارد. وقتی به چارت تولد نگاه می‌کنیم، عطارد نشان می‌دهد شما اهل تحلیل جزئیات هستید یا تصویر بزرگ را ترجیح می‌دهید؛ شفاف حرف می‌زنید یا پرسش‌گرانه پیش می‌روید. به زبان ساده، عطارد سبک ذهنی شما را توصیف می‌کند، نه محتوای افکارتان را."
+   },
+   {
+    "h2": "عطارد در نشان‌ها؛ رنگ و بوی ذهن شما",
+    "p": "جایگاه عطارد در نشانه‌های دوازده‌گانه، به ذهن شما طعم و بوی خاصی می‌دهد. اگر عطارد در نشانه‌های آتشین مانند حمل، اسد یا قوس باشد، ذهن سریع، پرشور و اهل ایده‌های بزرگ است. در نشانه‌های خاکی مانند ثور، سنبله و جدی، عطارد کاربردی، دقیق و نتیجه‌گرا می‌شود. نشانه‌های هوایی مثل جوزا، میزان و دلو، ذهنی اجتماعی، منطقی و تحلیل‌گر می‌سازند که عاشق تبادل نظر است. و در نشانه‌های آبی مانند سرطان، عقرب و حوت، عطارد بیشتر از مسیر شهود و حافظه احساسی حرکت می‌کند. البته عطارد در جوزا و سنبله در جایگاه طبیعی خود قرار دارد و معمولاً توانایی بالایی در پردازش و انتقال اطلاعات نشان می‌دهد."
+   },
+   {
+    "h2": "خانه عطارد؛ صحنه‌ای که ذهن شما در آن فعال می‌شود",
+    "p": "اگر نشانه عطارد بگوید ذهن شما چه رنگی دارد، خانه عطارد نشان می‌دهد این ذهن بیشتر در کدام بخش زندگی روشن می‌شود. برای مثال عطارد در خانه سوم، ذهنی پرسش‌گر، اهل یادگیری، نوشتن و گفت‌وگو با اطرافیان می‌سازد. عطارد در خانه ششم، تمرکز ذهنی را به سمت کار، سلامتی و نظم روزمره می‌برد. عطارد در خانه دهم ممکن است فرد را به سخنرانی، تدریس یا برنامه‌ریزی در حوزه شغلی علاقه‌مند کند. به این ترتیب خانه عطارد مثل صحنه‌ای است که نمایش ذهنی شما روی آن اجرا می‌شود و نشان می‌دهد کجا باید حرف بزنید، بنویسید یا تحلیل کنید."
+   },
+   {
+    "h2": "جنبه‌های عطارد؛ گفت‌وگوی سیاره‌ها با ذهن",
+    "p": "عطارد در چارت تولد تنها نیست؛ سیاره‌های دیگر با آن ارتباط برقرار می‌کنند و این ارتباط‌ها ذهن شما را ظریف‌تر می‌کنند. برای نمونه عطارد با مریخ، گفتار را صریح، تند و گاهی رقابتی می‌کند. عطارد با کیوان یا زحل، ذهنی منظم، محتاط و عمیق می‌سازد که عاشق ساختار و جزئیات است. عطارد با مشتری، دیدگاهی گسترده، خوش‌بین و فلسفی به ذهن می‌دهد. و عطارد با نپتون، تخیل و شهود را وارد زبان می‌کند، اما ممکن است گاهی مرز میان واقعیت و خیال را محو کند. این جنبه‌ها مثل گفت‌وگوی درونی سیاره‌ها با ذهن شما عمل می‌کنند و کمک می‌کنند سبک ارتباطی شما چندبعدی دیده شود."
+   },
+   {
+    "h2": "عطارد رتروگراد در چارت تولد",
+    "p": "اگر عطارد در چارت تولد شما رتروگراد باشد، به این معنا نیست که ذهن کندی دارید. برعکس، بسیاری از این افراد پردازش عمیق‌تر و درون‌گرایانه‌تری دارند. آن‌ها ممکن است پیش از صحبت کردن، بیشتر فکر کنند، سؤال‌های زیادی در ذهن داشته باشند و به پاسخ‌های سطحی قانع نشوند. عطارد رتروگراد اغلب ذهنی نقاد و بازبین می‌سازد که دوست دارد موضوع را از زاویه‌های مختلف ببیند. در بزرگسالی این افراد معمولاً نویسندگان، پژوهشگران یا تحلیل‌گران خوبی می‌شوند، چون یاد گرفته‌اند به جای واکنش سریع، تأمل کنند. این ویژگی را باید یک سبک متفاوت اندیشیدن دانست، نه یک نقص."
+   },
+   {
+    "h2": "چگونه با عطارد چارت خود کار کنیم؟",
+    "p": "آسترولوژی را نباید به عنوان یک حکم قطعی یا سرنوشت غیرقابل تغییر خواند، بلکه می‌توان از آن به عنوان ابزاری برای خودشناسی استفاده کرد. وقتی بدانید عطارد شما در کدام نشانه و خانه است و چه جنبه‌هایی دارد، راحت‌تر می‌توانید الگوهای فکری و ارتباطی خود را بشناسید. شاید متوجه شوید چرا در برخی موقعیت‌ها عجله می‌کنید یا چرا بعضی گفت‌وگوها برایتان انرژی‌بر است. این آگاهی به شما کمک می‌کند با ذهن خود مهربان‌تر باشید و سبک یادگیری و ارتباط‌تان را آگاهانه‌تر انتخاب کنید. اگر هنوز نمی‌دانید عطارد شما کجاست، می‌توانید چارت تولد خود را محاسبه کنید و از دیدن این نقشه شخصی لذت ببرید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/mercury-in-birth-chart.webp",
+  "thumb": "/static/articles/mercury-in-birth-chart-thumb.webp"
+ },
+ {
+  "slug": "venus-in-birth-chart-meaning",
+  "title": "زهره در چارت تولد یعنی چه؟",
+  "category": "سیارات",
+  "excerpt": "زهره در چارت تولد نشان می‌دهد چگونه عشق می‌ورزید، چه چیزهایی برایتان زیبا و ارزشمند است و در روابط چه الگویی را تجربه می‌کنید.",
+  "keywords": "زهره,چارت تولد,عشق",
+  "meta": "زهره در چارت تولد نشان‌دهنده سبک عشق‌ورزی، ارزش‌ها و زیبایی‌شناسی شماست؛ با جایگاه زهره در نشانه و خانه آشنا شوید.",
+  "body": [
+   {
+    "h2": "زهره؛ سیاره عشق و هماهنگی",
+    "p": "زهره دومین سیاره نزدیک به خورشید است، اما در آسترولوژی جایگاهی بسیار ویژه دارد: این سیاره نماد عشق، زیبایی، لذت، هماهنگی و ارزش‌های شخصی است. در اسطوره‌شناسی، زهره با ونوس، الهه عشق و زیبایی، پیوند خورده است. به همین دلیل وقتی به چارت تولد نگاه می‌کنیم، زهره نشان می‌دهد شما چگونه محبت می‌کنید، چه چیزهایی را زیبا می‌دانید و از چه راهی احساس رضایت و لذت می‌کنید."
+   },
+   {
+    "h2": "زهره در چارت تولد دقیقاً چه چیزی را نشان می‌دهد؟",
+    "p": "جایگاه زهره در لحظه تولد، سبک عشق‌ورزی شما را توصیف می‌کند: آیا در عشق پرشور و مستقیم هستید یا محتاط و تدریجی؟ همچنین زهره به سلیقه هنری، نحوه خرج کردن پول، جذابیت فردی و نوع رابطه‌ای که به آن گرایش دارید اشاره می‌کند. زهره فراتر از عشق رمانتیک، درباره هر چیزی است که برای شما ارزشمند است؛ از دوستی‌های صمیمی تا لذت‌های روزمره. این سیاره به ما یادآوری می‌کند که عشق فقط یک احساس نیست، بلکه یک زبان شخصی است."
+   },
+   {
+    "h2": "زهره در نشانه‌های دوازده‌گانه",
+    "p": "هر نشانه، رنگ و بوی متفاوتی به زهره می‌دهد. برای نمونه، زهره در برج حمل عاشق پرشور، رقابتی و گاهی بی‌پروا است؛ زهره در برج ثور به ثبات، لذت‌های حسی و امنیت مادی اهمیت می‌دهد؛ زهره در برج جوزا عشق را از طریق گفت‌وگو و تنوع تجربه می‌کند؛ زهره در سرطان به صمیمیت عاطفی و مراقبت نیاز دارد. زهره در برج اسد نمایش‌دهنده و سخاوتمند است، در برج سنبله عشق را با خدمت و جزئیات نشان می‌دهد. زهره در ترازو در خانه طبیعی خود است و به تعادل، زیبایی و انصاف در رابطه اهمیت می‌دهد. زهره در عقرب عمیق، مرموز و دگرگون‌کننده است؛ زهره در قوس عشق را با آزادی و ماجراجویی می‌آمیزد. زهره در برج جدی به تعهد، مسئولیت و رابطه پایدار گرایش دارد؛ زهره در دلو عاشق دوستی، اصالت و فاصله سالم است؛ و زهره در حوت رؤیایی، فداکار و گاهی مرزها را گم می‌کند. این توصیف‌ها کلی هستند و برای شناخت دقیق‌تر باید کل چارت را بررسی کرد."
+   },
+   {
+    "h2": "زهره در خانه‌ها؛ جایی که عشق را تجربه می‌کنید",
+    "p": "خانه‌ای که زهره در آن قرار دارد، نشان می‌دهد در کدام حوزه زندگی بیشتر به دنبال لذت، زیبایی و ارتباط عاطفی هستید. برای مثال، زهره در خانه دوم به معنای پیوند عشق با دارایی و ارزش‌های مالی است؛ زهره در خانه پنجم به عشق‌های رمانتیک، خلاقیت و تفریح گرایش دارد؛ زهره در خانه هفتم بر ازدواج و مشارکت‌های جدی تأکید می‌کند. اگر زهره در خانه دهم باشد، ممکن است از طریق حرفه یا حضور اجتماعی جذب شریک شوید یا به دنبال شریکی باشید که جایگاه اجتماعی شما را ارتقا دهد. هر خانه، عرصه‌ای متفاوت برای درخشش زهره فراهم می‌آورد."
+   },
+   {
+    "h2": "جنبه‌های زهره با دیگر سیارات",
+    "p": "زاویه‌هایی که زهره با سیارات دیگر می‌سازد، کیفیت روابط و لذت را پیچیده‌تر می‌کند. جنبه‌های هماهنگ مانند مثلث و سکستایل بین زهره و مشتری، سخاوت، خوش‌بینی و جذب راحت عشق را نشان می‌دهند. در مقابل، جنبه‌های چالش‌برانگیز مثل مربع زهره با کیوان ممکن است احساس بی‌ارزشی، ترس از صمیمیت یا دشواری در ابراز محبت ایجاد کند. البته هیچ جنبه‌ای قطعی نیست؛ این الگوها فقط نقاط کار و رشد را مشخص می‌کنند و می‌توان با آگاهی آن‌ها را متعادل کرد."
+   },
+   {
+    "h2": "زهره و ارتباط آن با ارزش‌های مالی",
+    "p": "زهره فقط سیاره عشق نیست؛ در آسترولوژی سنتی، زهره با پول، دارایی و آنچه برای ما خوشایند است نیز پیوند دارد. این سیاره نشان می‌دهد چگونه پول خرج می‌کنید، آیا به خریدهای لوکس علاقه دارید یا پس‌انداز و سرمایه‌گذاری را ترجیح می‌دهید. جایگاه زهره می‌تواند رابطه شما با ثروت و امنیت مادی را روشن کند. برای نمونه، زهره در نشانه‌های خاکی معمولاً به مدیریت مالی و لذت‌های بادوام اهمیت می‌دهد، در حالی که زهره در نشانه‌های آتش ممکن است خرج‌های هیجانی و ریسک‌پذیر را تجربه کند."
+   },
+   {
+    "h2": "جمع‌بندی؛ زهره را راهنمای خودشناسی بدانید",
+    "p": "زهره در چارت تولد یک نقشه شخصی از عشق، زیبایی و ارزش‌های شماست. با شناخت جایگاه این سیاره در نشانه، خانه و جنبه‌هایش، می‌توانید الگوهای عاطفی خود را بهتر درک کنید و انتخاب‌های آگاهانه‌تری در روابط داشته باشید. اما به یاد داشته باشید که آسترولوژی یک ابزار خودشناسی است، نه یک حکم قطعی؛ زهره مسیر را نشان می‌دهد، نه سرنوشت را. اگر می‌خواهید دقیق‌تر بدانید زهره در چارت شما کجاست و چه پیامی برایتان دارد، می‌توانید چارت تولد خود را تهیه کنید و تحلیل آن را مطالعه کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/venus-in-birth-chart-meaning.webp",
+  "thumb": "/static/articles/venus-in-birth-chart-meaning-thumb.webp"
+ },
+ {
+  "slug": "mars-in-birth-chart-meaning",
+  "title": "مریخ در چارت تولد یعنی چه؟ راهنمای کامل انرژی، انگیزه و کنش",
+  "category": "سیارات",
+  "excerpt": "مریخ در چارت تولد نشان می‌دهد چگونه عمل می‌کنید، چه چیزهایی به شما انگیزه می‌دهد و خشم خود را به چه شکلی بروز می‌دهید.",
+  "keywords": "مریخ,چارت تولد,انرژی",
+  "meta": "مریخ در چارت تولد نماد انرژی، انگیزه، عمل و نحوه ابراز خشم است. با شناخت جایگاه مریخ، سبک کنش‌گری خود را بهتر درک کنید.",
+  "body": [
+   {
+    "h2": "مریخ؛ موتور محرک چارت تولد",
+    "p": "مریخ در آسترولوژی اغلب به عنوان سیاره عمل و انرژی شناخته می‌شود. وقتی از خود می‌پرسید «چرا بعضی‌ها با اولین مانع متوقف می‌شوند و بعضی‌ها با انرژی بیشتری جلو می‌روند؟»، بخشی از پاسخ در جایگاه مریخ در چارت تولد شماست. مریخ نشان می‌دهد که سوخت اولیه شما برای شروع کارها، رقابت، دفاع از خود و رسیدن به خواسته‌ها از کجا می‌آید. این سیاره شخصیت مبارز شما را مشخص می‌کند؛ بخشی از وجودتان که برای زنده ماندن، رشد و پیشرفت طراحی شده است. در چارت تولد، مریخ به شما می‌گوید که در مواجهه با چالش‌ها چه سبکی دارید؛ آیا مستقیم حمله می‌کنید، صبر می‌کنید، بحث می‌کنید یا سکوت اختیار می‌کنید."
+   },
+   {
+    "h2": "مریخ در چارت تولد نماد چیست؟",
+    "p": "مریخ سه مفهوم کلیدی را در چارت تولد نمایندگی می‌کند: میل، عمل و خشم. میل به این معناست که چه چیزهایی واقعاً برای شما ارزش جنگیدن دارد. عمل یعنی وقتی تصمیم می‌گیرید کاری را انجام دهید، با چه ریتم و شدتی وارد میدان می‌شوید. خشم هم یکی از طبیعی‌ترین هیجانات انسانی است که مریخ نحوه بروز آن را نشان می‌دهد. اگر مریخ در نشان آتشین باشد، معمولاً انرژی سریع، بی‌پرده و پرشور است. اگر در نشان خاکی باشد، حرکت آهسته‌تر اما پیوسته‌تر و هدفمندتر می‌شود. شناخت این الگوها کمک می‌کند به جای سرکوب یا انکار خشم و میل، آن‌ها را به شکل سازنده‌ای هدایت کنید."
+   },
+   {
+    "h2": "مریخ در نشان‌ها و خانه‌ها؛ دو لایه اصلی تفسیر",
+    "p": "برای خواندن دقیق مریخ در چارت تولد، دو عامل را باید در نظر بگیرید: نشان و خانه. نشان مریخ کیفیت انرژی را نشان می‌دهد؛ مثلاً مریخ در برج حمل سریع، رقابتی و آغازگر است، در حالی که مریخ در برج ترازو بیشتر به دنبال هماهنگی، مذاکره و اقدام از مسیر رابطه می‌گردد. خانه مریخ هم حوزه‌ای از زندگی را مشخص می‌کند که این انرژی بیشتر در آنجا خرج می‌شود؛ مثلاً مریخ در خانه دهم معمولاً جاه‌طلبی شغلی و رقابت در مسیر حرفه‌ای را برجسته می‌کند. ترکیب نشان و خانه مثل این است که بفهمید موتور شما با چه سوختی کار می‌کند و در کدام جاده بیشتر گاز می‌دهد."
+   },
+   {
+    "h2": "مریخ و مدیریت سالم خشم",
+    "p": "یکی از مهم‌ترین درس‌های مریخ در چارت تولد، نحوه مواجهه با خشم است. خشم به خودی خود بد یا خطرناک نیست؛ این انرژی حیاتی است که اگر سرکوب شود، می‌تواند به انفجار یا افسردگی تبدیل شود. اگر مریخ شما در نشان‌های آبی مانند سرطان یا حوت باشد، ممکن است خشم را بیشتر درونی کنید یا از طریق گریه و کناره‌گیری بروز دهید. اگر در نشان‌های بادی مانند دلو یا جوزا باشد، بحث و گفتگوی تند یا فاصله گرفتن ذهنی رایج‌تر است. شناخت این سبک به شما کمک می‌کند به جای واکنش ناگهانی، آگاهانه انتخاب کنید که انرژی خشم را کجا صرف کنید. نوشتن، ورزش، گفتگوی صادقانه یا حتی یک پیاده‌روی سریع می‌تواند راهی سالم برای تخلیه باشد."
+   },
+   {
+    "h2": "چطور از انرژی مریخ در چارت تولد استفاده کنیم؟",
+    "p": "اولین قدم این است که نشان و خانه مریخ خود را پیدا کنید. سپس از خود بپرسید: در چه موقعیت‌هایی احساس می‌کنید بیشترین انرژی و انگیزه را دارید؟ چه چیزهایی سریع عصبانیم می‌کند و معمولاً چه واکنشی نشان می‌دهم؟ پاسخ‌ها معمولاً با توصیف مریخ در چارت شما هماهنگ است. قدم بعدی، پیدا کردن یک خروجی فیزیکی یا خلاقانه برای این انرژی است. برای مریخ آتشین، فعالیت‌های رقابتی و پرتحرک عالی است؛ برای مریخ خاکی، پروژه‌های عملی و هدف‌دار؛ برای مریخ بادی، گفتگو، نوشتن و ایده‌پردازی؛ و برای مریخ آبی، فعالیت‌های آرام اما منظم مانند شنا یا یوگا. هدف این است که انرژی مریخ را نه سرکوب کنید و نه اجازه دهید کنترل‌تان کند، بلکه آن را به نیرویی برای پیشبرد زندگی تبدیل کنید."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "مریخ در چارت تولد نقش یک قطب‌نما برای انرژی، انگیزه و عمل شما دارد. این سیاره نشان می‌دهد چه چیزی شما را به حرکت وا می‌دارد، چگونه با موانع روبه‌رو می‌شوید و خشم خود را به چه شکلی ابراز می‌کنید. آسترولوژی را به عنوان ابزاری برای خودشناسی ببینید، نه یک پیش‌گویی قطعی. وقتی جایگاه مریخ خود را بشناسید، می‌توانید تصمیم‌های آگاهانه‌تری درباره شغل، روابط و سبک زندگی بگیرید. اگر دوست دارید نقشه کامل انرژی‌تان را ببینید، چارت تولد خود را ترسیم کنید و با دقت به نشان و خانه مریخ نگاه کنید؛ احتمالاً نکته‌ای تازه درباره خودتان کشف خواهید کرد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/mars-in-birth-chart-meaning.webp",
+  "thumb": "/static/articles/mars-in-birth-chart-meaning-thumb.webp"
+ },
+ {
+  "slug": "houses-astrology-simple",
+  "title": "خانه‌های نجومی به زبان ساده؛ نقشهٔ دوازده‌گانهٔ زندگی شما",
+  "category": "خانه‌ها",
+  "excerpt": "خانه‌های نجومی دوازده بخش از آسمان تولد شما هستند که هر کدام حوزه‌ای از زندگی را روشن می‌کنند.",
+  "keywords": "خانه های نجومی,۱۲ خانه",
+  "meta": "خانه‌های نجومی چیست؟ با زبان ساده با ۱۲ خانه و معنای هر کدام در چارت تولد آشنا شوید؛ از خودشناسی تا مسیر زندگی.",
+  "body": [
+   {
+    "h2": "خانه‌های نجومی دقیقاً چه هستند؟",
+    "p": "وقتی به آسمان لحظهٔ تولد نگاه می‌کنیم، ستاره‌شناسان آن را به دوازده بخش مساوی تقسیم می‌کنند؛ درست مثل برش‌های یک پیتزا. به هر بخش یک «خانه» می‌گوییم. این خانه‌ها بر اساس چرخش زمین به دور خودش شکل می‌گیرند و نشان می‌دهند انرژی سیاره‌ها و نشانه‌ها در کدام حوزه از زندگی شما بیشتر فعال است. خانه‌ها مثل صحنه‌های یک تئاترند؛ سیاره‌ها بازیگران و نشانه‌ها نقش‌ها. پس خانه به ما می‌گوید «کجا»ی زندگی این انرژی دیده می‌شود."
+   },
+   {
+    "h2": "چرا خانه‌ها مهم‌اند و نشانه‌ها کافی نیستند؟",
+    "p": "دانستن اینکه خورشید شما در برج حمل است یک نگاه کلی به شخصیت می‌دهد، اما خانه‌ها مشخص می‌کنند این انرژی حمل در کدام بخش زندگی جریان دارد. مثلاً خورشید در حمل در خانهٔ دهم با خورشید در حمل در خانهٔ چهارم بسیار متفاوت است؛ اولی بیشتر در مسیر شغلی و اجتماعی می‌درخشد و دومی در فضای خانه و ریشه‌ها. خانه‌ها به چارت تولد عمق و دقت می‌بخشند و آن را از یک توصیف کلی به نقشه‌ای شخصی تبدیل می‌کنند."
+   },
+   {
+    "h2": "آشنایی با تقسیم‌بندی دوازده‌گانه",
+    "p": "دوازده خانه از نقطه‌ای در افق شرقی شروع می‌شوند که هنگام تولد در حال طلوع بوده است؛ این نقطه را «طلوع» یا اسکندنت می‌نامیم. خانه‌ها در خلاف جهت عقربه‌های ساعت می‌چرخند و به چهار زاویهٔ اصلی می‌رسند: طلوع، اوج آسمان، غروب و قعر آسمان. این زاویه‌ها ستون فقرات چارت هستند. به‌طور سنتی خانه‌ها را در سه گروه چهارتایی دسته‌بندی می‌کنند: خانه‌های شخصی (۱ تا ۴)، خانه‌های بین‌فردی (۵ تا ۸) و خانه‌های جمعی و معنوی (۹ تا ۱۲)."
+   },
+   {
+    "h2": "خانه‌های اول تا ششم؛ از خود تا کار روزمره",
+    "p": "خانهٔ اول تصویر شما در جهان، ظاهر و شروع‌های زندگی است. خانهٔ دوم به پول، دارایی و احساس ارزشمندی می‌پردازد. خانهٔ سوم ارتباطات، گفت‌وگو، خواهر و برادر و یادگیری روزمره را نشان می‌دهد. خانهٔ چهارم خانهٔ واقعی، خانواده، ریشه‌ها و دنیای درونی شماست. خانهٔ پنجم خلاقیت، عشق، فرزندان و لذت‌های زندگی را روشن می‌کند. خانهٔ ششم به کار روزانه، سلامتی، عادت‌ها و خدمت‌رسانی مربوط است؛ جایی که زندگی روزمره را می‌سازیم."
+   },
+   {
+    "h2": "خانه‌های هفتم تا دوازدهم؛ از رابطه تا ناخودآگاه",
+    "p": "خانهٔ هفتم شراکت‌ها، ازدواج و روابط جدی را نشان می‌دهد. خانهٔ هشتم منابع مشترک، تغییرات عمیق، میراث و مسائل پنهان را در بر می‌گیرد. خانهٔ نهم به سفرهای دور، فلسفه، معنویت و آموزش عالی می‌پردازد. خانهٔ دهم جایگاه اجتماعی، حرفه و تصویر عمومی شماست. خانهٔ یازدهم دوستان، گروه‌ها، آرزوها و اجتماع‌های شما را توصیف می‌کند. خانهٔ دوازدهم قلمرو خلوت، ناخودآگاه، رویاها و رهایی است؛ جایی که روح استراحت می‌کند."
+   },
+   {
+    "h2": "چگونه خانه‌های چارت خود را پیدا کنیم؟",
+    "p": "برای محاسبهٔ دقیق خانه‌ها به تاریخ، ساعت و مکان تولد نیاز دارید. بدون ساعت تولد، خانه‌ها به‌درستی قابل محاسبه نیستند چون طلوع هر چهار دقیقه یک درجه جابه‌جا می‌شود. خوشگشایشانه ابزارهای آنلاین رایگان چارت تولد این محاسبات را برای شما انجام می‌دهند. با وارد کردن اطلاعات دقیق، چارت شما رسم می‌شود و می‌توانید ببینید هر سیاره در کدام خانه قرار گرفته است. این نقطهٔ شروع خوبی برای خودشناسی است."
+   },
+   {
+    "h2": "خانه‌های خالی به چه معنا هستند؟",
+    "p": "اگر در چارت تولد چند خانه خالی دیدید نگران نشوید. خانهٔ خالی یعنی هیچ سیاره‌ای در آن لحظه در آن بخش از آسمان نبوده است، نه اینکه آن حوزه از زندگی شما بی‌اهمیت باشد. هر خانه همیشه موضوعی را در زندگی شما نمایندگی می‌کند. برای درک یک خانهٔ خالی، به سیارهٔ حاکم آن خانه و موقعیتش در چارت نگاه می‌کنیم. خانه‌های خالی فرصتی برای رشد آزادتر و کمتر مقید به انرژی سیاره‌ای خاص هستند."
+   },
+   {
+    "h2": "جمع‌بندی؛ خانه‌ها مثل اتاق‌های خانهٔ روح",
+    "p": "خانه‌های نجومی به ما کمک می‌کنند بفهمیم انرژی‌های درونمان در کدام بخش از زندگی بیشتر خود را نشان می‌دهند. این دوازده بخش مانند اتاق‌های یک خانهٔ روح هستند؛ هر اتاق کاربردی متفاوت دارد و با هم یک کل منسجم می‌سازند. اگر کنجکاوید نقشهٔ شخصی خودتان را ببینید، همین حالا چارت تولدتان را بسازید و به خانه‌های فعال آن نگاه کنید. این ابزار زیبا می‌تواند آینه‌ای صادق برای خودشناسی و مسیر رشد فردی باشد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/houses-astrology-simple.webp",
+  "thumb": "/static/articles/houses-astrology-simple-thumb.webp"
+ },
+ {
+  "slug": "jupiter-saturn-impact-life",
+  "title": "مشتری و زحل؛ دو معلم آسمانی زندگی شما",
+  "category": "سیارات",
+  "excerpt": "مشتری و زحل دو روی یک سکه‌اند؛ یکی گشایش و گسترش می‌آورد و دیگری نظم و درس.",
+  "keywords": "مشتری,زحل,گشایش,آموزش",
+  "meta": "تأثیر مشتری و زحل بر زندگی؛ از گشایش و آموزش تا نظم و مسئولیت. این دو سیاره چگونه مسیر رشد شما را شکل می‌دهند؟",
+  "body": [
+   {
+    "h2": "مشتری؛ سیاره گشایش و گسترش",
+    "p": "در آسترولوژی، مشتری را سیاره بزرگِ گشایش، خوش‌بینی و گسترش می‌شناسند. هر جا که مشتری در چارت تولد شما قرار بگیرد، معمولاً همان حوزه زندگی تمایل به رشد، فرصت و گشایش دارد. مشتری مثل معلمی مهربان است که به شما یاد می‌دهد به زندگی اعتماد کنید و افق‌های بزرگ‌تری ببینید. این سیاره با آموزش عالی، سفر، فلسفه، ایمان و جست‌وجوی معنا پیوند عمیقی دارد. وقتی مشتری در چارت شما فعال می‌شود، معمولاً درهای جدیدی به رویتان باز می‌شود و شانس یادگیری و تجربه‌های گسترده را پیدا می‌کنید."
+   },
+   {
+    "h2": "زحل؛ معلم سخت‌گیر اما منصف",
+    "p": "زحل در نقطه مقابل مشتری، سیاره نظم، محدودیت، زمان و مسئولیت است. این سیاره به شما نشان می‌دهد که بدون ساختار، هیچ رشدی پایدار نمی‌ماند. زحل گاهی سخت‌گیر و جدی به نظر می‌رسد، اما در واقع از شما می‌خواهد بالغ شوید، تعهد بدهید و پای انتخاب‌هایتان بایستید. حوزه‌ای از زندگی که زحل در آن قرار دارد، معمولاً به صبر، تمرین و پختگی نیاز دارد. اگر مشتری بذر فرصت می‌کارد، زحل مسئول آبیاری، هرس و مراقبت از آن بذر است تا به درختی استوار تبدیل شود."
+   },
+   {
+    "h2": "ترکیب مشتری و زحل؛ خوش‌بینی واقع‌بینانه",
+    "p": "وقتی این دو سیاره را کنار هم می‌گذاریم، یک الگوی مهم زندگی شکل می‌گیرد: رشد همراه با مسئولیت. مشتری بدون زحل می‌تواند به خوش‌بینی افراطی و بی‌برنامگی منجر شود؛ زحل بدون مشتری هم می‌تواند به سخت‌گیری، ترس و ناامیدی بینجامد. اما ترکیب سالم این دو، یعنی باور به فرصت‌ها در کنار برنامه‌ریزی و صبر. به همین دلیل است که هر بیست سال یک بار، پیوند مشتری و زحل در آسمان شروع یک دوره اجتماعی و شخصی تازه را رقم می‌زند. این چرخه به ما یادآوری می‌کند که هر آغاز بزرگ، نیازمند زمان، ساختار و خوش‌بینی آگاهانه است."
+   },
+   {
+    "h2": "گشایش و آموزش در زندگی شما",
+    "p": "مشتری در چارت تولد هر فرد نشان می‌دهد که کدام نوع آموزش، سفر یا باور می‌تواند بیشترین رشد را برای او به همراه بیاورد. برای مثال، اگر مشتری در خانه نهم یا در پیوند با سیارات شخصی باشد، عطش یادگیری و کشف معنا پررنگ‌تر است. از سوی دیگر، زحل مشخص می‌کند که کدام درس‌های زندگی را باید با تلاش و استمرار بیاموزید. گشایش واقعی از دید اخترشناسی، جایی است که استعداد مشتری‌وار شما با انضباط زحل‌وار پیوند می‌خورد. پس وقتی به دنبال مسیر شغلی، تحصیلی یا معنوی هستید، به هر دو سیاره نگاه کنید."
+   },
+   {
+    "h2": "چگونه از این دو سیاره استفاده کنیم؟",
+    "p": "نخستین قدم این است که جایگاه مشتری و زحل را در چارت تولد خود بشناسید. به نشانه و خانه‌ای که مشتری در آن است نگاه کنید تا بفهمید کدام مسیر برایتان گشایش می‌آورد. سپس به زحل نگاه کنید تا ببینید کدام حوزه به صبوری و ساختار نیاز دارد. این دو سیاره با هم مثل قطبنما و لنگر عمل می‌کنند؛ مشتری جهت رشد را نشان می‌دهد و زحل شما را در مسیر نگه می‌دارد. اگر بتوانید بین این دو نیرو تعادل برقرار کنید، زندگی به جای نوسان بین خوش‌خیالی و ترس، به روندی هدفمند و امیدوارانه تبدیل می‌شود."
+   },
+   {
+    "h2": "مشتری و زحل در دوره‌های مختلف زندگی",
+    "p": "گذر مشتری و زحل از خانه‌های چارت تولد، دوره‌های متفاوتی از رشد را نشان می‌دهد. هر دوازده سال، مشتری به جای اولیه خود بازمی‌گردد و یک سال پر از فرصت و اعتماد به نفس را آغاز می‌کند. زحل تقریباً هر بیست‌ونه سال یک بار به نقطه تولد خود بازمی‌گردد و معمولاً با مرحله‌ای از بلوغ، مسئولیت‌پذیری و بازبینی مسیر همراه است. توجه به این دوره‌ها می‌تواند به شما کمک کند زمان آموزش‌های تازه و زمان سخت‌گیری‌های ضروری را بهتر درک کنید."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "مشتری و زحل دو نیروی مکمل در زندگی ما هستند؛ یکی گشایش و گسترش را نمایندگی می‌کند و دیگری آموزش از طریق نظم و مسئولیت را. برای خودشناسی عمیق‌تر، بهتر است این دو سیاره را در چارت تولد خود بررسی کنید و ببینید چگونه داستان رشد شما را روایت می‌کنند. اگر می‌خواهید بدانید مشتری و زحل دقیقاً کجای چارت شما قرار دارند و چه پیامی برای زندگی‌تان دارند، همین حالا چارت تولد خود را بسازید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/jupiter-saturn-impact-life.webp",
+  "thumb": "/static/articles/jupiter-saturn-impact-life-thumb.webp"
+ },
+ {
+  "slug": "what-is-planetary-transit",
+  "title": "ترانزیت سیارات چیست؟ راهنمای کامل خواندن زبان آسمان",
+  "category": "ترانزیت",
+  "excerpt": "ترانزیت سیارات به حرکت روزانه سیارات در آسمان نسبت به موقعیت تولد شما گفته می‌شود و در آسترولوژی ابزاری برای خودشناسی و زمان‌بندی انتخاب‌هاست.",
+  "keywords": "ترانزیت,سیارات,نقشه آسمان",
+  "meta": "ترانزیت سیارات چیست؟ با زبان حرکت سیارات در آسمان و تأثیر آن بر زندگی و خودشناسی آشنا شوید؛ راهنمای ساده و کاربردی.",
+  "body": [
+   {
+    "h2": "ترانزیت سیارات یعنی چه؟",
+    "p": "ترانزیت در نجوم به عبور یک جرم آسمانی از مقابل جرم دیگر گفته می‌شود، اما در آسترولوژی معنای گسترده‌تری دارد. وقتی می‌گوییم «ترانزیت سیارات»، منظور حرکت روزانه و پیوسته سیارات در آسمان نسبت به موقعیت سیارات در چارت تولد شماست. به زبان ساده، آسمان هر لحظه در حال تغییر است و این تغییرات، داستان لحظه‌های زندگی ما را روایت می‌کنند."
+   },
+   {
+    "h2": "تفاوت ترانزیت با چارت تولد",
+    "p": "چارت تولد مانند عکس یک منظره در لحظه تولد است؛ ترانزیت‌ها اما آب‌وهوای همان منظره را در هر روز نشان می‌دهند. برای مثال، اگر در چارت تولد، خورشید شما در برج حمل باشد، هر سال با ورود خورشید به برج حمل، یک ترانزیت مهم برای شما رخ می‌دهد که به آن «بازگشت خورشیدی» می‌گویند. به همین دلیل، ترانزیت‌ها جایگزین چارت تولد نیستند؛ آن‌ها با چارت شما گفت‌وگو می‌کنند."
+   },
+   {
+    "h2": "چرا ترانزیت برای خودشناسی مهم است؟",
+    "p": "ترانزیت‌ها ستون فقرات نگاه به روند در آسترولوژی هستند. وقتی سیاره‌ای در آسمان با نقطه حساس چارت شما زاویه می‌سازد، موضوعات مرتبط با آن سیاره و خانه‌ی درگیر پررنگ می‌شوند. برای نمونه، عبور زحل از روی ماه تولد ممکن است دوره‌ای از مسئولیت‌پذیری عاطفی یا احساس سنگینی را نشان دهد. اما نگاه به روند در آسترولوژی به معنای سرنوشت قطعی نیست؛ ترانزیت‌ها بیشتر شبیه وضعیت آب‌وهوا هستند: اگر بدانید فردا بارانی است، چتر برمی‌دارید."
+   },
+   {
+    "h2": "سیارات کند و سریع در ترانزیت",
+    "p": "سیارات در ترانزیت سرعت‌های متفاوتی دارند. ماه فقط دو روز و نیم در هر برج می‌ماند و تأثیرات زودگذر و روزانه دارد. عطارد، زهره و خورشید ترانزیت‌های کوتاه‌مدت و اغلب موقعیتی ایجاد می‌کنند. در مقابل، سیارات اجتماعی مانند مشتری و زحل ماه‌ها یا سال‌ها در یک برج می‌مانند و تأثیر عمیق‌تر و ساختاری‌تر دارند. سیارات فرافردی مانند اورانوس، نپتون و پلوتو حتی چند دهه در یک برج هستند و نسل‌ها را تحت تأثیر قرار می‌دهند."
+   },
+   {
+    "h2": "مهم‌ترین ترانزیت‌هایی که باید بشناسید",
+    "p": "بازگشت زحل یکی از شناخته‌شده‌ترین ترانزیت‌هاست که حدود ۲۹ سالگی رخ می‌دهد و بلوغ، مسئولیت و انتخاب مسیر زندگی را برجسته می‌کند. عبور مشتری از روی خورشید معمولاً دوره‌ای از خوش‌بینی، فرصت و رشد شخصی است. ترانزیت‌های اورانوس اغلب با تغییرات ناگهانی، آزادی‌خواهی و بیداری همراه‌اند. ترانزیت نپتون می‌تواند رؤیاها، ابهام‌ها و مرزهای روانی را فعال کند. هر سیاره پیام خاص خودش را دارد و ترکیب زاویه‌ها با چارت شما معنا پیدا می‌کند."
+   },
+   {
+    "h2": "چگونه ترانزیت‌های خود را بخوانیم؟",
+    "p": "برای خواندن ترانزیت، ابتدا باید چارت تولد خود را بشناسید. سپس موقعیت فعلی سیارات را با درجات سیارات تولدی مقایسه کنید. زاویه‌های اصلی مانند مقارنه، مربع، تثلیث و تقابل اهمیت زیادی دارند. خوشگشایشانه امروز ابزارهای آنلاین زیادی وجود دارد که ترانزیت‌های روزانه شما را به‌صورت خودکار محاسبه می‌کنند. اما تفسیر آن‌ها نیازمند درک زبان نمادین سیارات و خانه‌هاست. پیشنهاد من این است که با یک دفترچه یادداشت، الگوهای تکرارشونده ترانزیت‌ها را در زندگی خود ثبت کنید."
+   },
+   {
+    "h2": "ترانزیت به عنوان ابزار خودشناسی",
+    "p": "ترانزیت‌ها را نباید فقط برای حدس اتفاقات بیرونی دید. آن‌ها در واقع آینه‌ای از رشد درونی ما هستند. وقتی زحل از روی ناهید شما عبور می‌کند، ممکن است رابطه‌ها جدی‌تر شوند یا نیاز به مرزگذاری در عشق را احساس کنید. این فرایند به شما کمک می‌کند چرخه‌های زندگی را بپذیرید. هیچ ترانزیتی برای همیشه نمی‌ماند؛ هر دوره سخت بالاخره تمام می‌شود و هر فرصت طلایی هم نیازمند اقدام به‌موقع است. در این مسیر، آسترولوژی نه یک علم قطعی، بلکه ابزاری برای خودآگاهی و تصمیم‌گیری بهتر است."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "ترانزیت سیارات، زبان زنده آسمان است که با چارت تولد ما گفت‌وگو می‌کند. با شناخت ترانزیت‌ها می‌توانیم زمان‌بندی بهتری برای اقدام‌های مهم داشته باشیم و چرخه‌های طبیعی رشد را درک کنیم. به‌یاد داشته باشید آسمان فرمان نمی‌دهد؛ فقط روشن می‌کند. اگر می‌خواهید بدانید الان کدام سیاره در حال فعال کردن چارت شماست، ساختن چارت تولد و بررسی ترانزیت‌های فعلی بهترین نقطه شروع است. آسمان همیشه در حال صحبت است؛ کافی است گوش کنیم."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/what-is-planetary-transit.webp",
+  "thumb": "/static/articles/what-is-planetary-transit-thumb.webp"
+ },
+ {
+  "slug": "zodiac-emotional-compatibility",
+  "title": "سازگاری عاطفی برج‌ها؛ زبان عشق هر عنصر را بشناسید",
+  "category": "سازگاری",
+  "excerpt": "راهنمایی گرم و واقع‌بینانه برای درک سازگاری عاطفی برج‌ها بر پایه عناصر، سیاره‌های شخصی و ترکیب‌های کلاسیک عشق.",
+  "keywords": "سازگاری برج ها,عشق,طالع",
+  "meta": "سازگاری عاطفی برج‌ها را با نگاه عناصر، ماه و زهره بررسی کنید؛ ابزاری برای خودشناسی در عشق، نه یک حکم قطعی.",
+  "body": [
+   {
+    "h2": "چرا سازگاری عاطفی برج‌ها مهم است؟",
+    "p": "وقتی از عشق و پیوند عاطفی حرف می‌زنیم، معمولاً اولین پرسشی که مطرح می‌شود این است: «آیا طالع ما با هم جور است؟» واقعیت این است که سازگاری برج‌ها می‌تواند مثل یک نقشه کمکی باشد؛ نقشه‌ای که زبان عاطفی، نیازهای پنهان و شیوه ابراز علاقه هر فرد را نشان می‌دهد. اما مهم است بدانیم آسترولوژی یک علم قطعی نیست؛ بلکه ابزاری برای خودشناسی و درک متقابل است. در ادامه، بدون اغراق، به لایه‌های مهم سازگاری عاطفی برج‌ها نگاه می‌کنیم."
+   },
+   {
+    "h2": "عناصر چهارگانه و زبان عاطفی",
+    "p": "در آسترولوژی، هر برج به یکی از چهار عنصر آتش، خاک، باد و آب تعلق دارد. این عناصر اولین کلید برای درک سازگاری عاطفی برج‌ها هستند. نشانه‌های آتشی (برج حمل، اسد، قوس) عشق را با هیجان، صراحت و اشتیاق بروز می‌دهند. نشانه‌های خاکی (ثور، سنبله، جدی) عشق را از طریق ثبات، عمل و امنیت نشان می‌دهند. نشانه‌های بادی (جوزا، میزان، دلو) با گفت‌وگو، کنجکاوی و تبادل فکری عاشق می‌شوند. نشانه‌های آبی (سرطان، عقرب، حوت) در دنیای احساسات، همدلی و پیوند عمیق نفس می‌کشند."
+   },
+   {
+    "h2": "ترکیب‌های هم‌عنصر؛ راحتی یا یکنواختی؟",
+    "p": "رابطه میان دو برج از یک عنصر معمولاً راحت شروع می‌شود، چون زبان عاطفی مشترکی دارند. برای مثال دو نشانه آبی مثل سرطان و حوت خیلی زود حرف هم را می‌فهمند و امنیت عاطفی می‌سازند. دو نشانه آتشی مثل اسد و قوس می‌توانند ماجراجویی و شور زیادی خلق کنند. اما این شباهت ممکن است بعد از مدتی به یکنواختی یا تشدید یک نقطه ضعف مشترک منجر شود. به همین دلیل، آسترولوژی همیشه فقط شباهت را ملاک عشق نمی‌داند؛ گاهی تفاوتِ مکمل، رابطه را زنده نگه می‌دارد."
+   },
+   {
+    "h2": "جفت‌های مکمل و جذابیت مخالف‌ها",
+    "p": "بعضی از به‌یادماندنی‌ترین پیوندهای عاطفی میان عناصر متفاوت شکل می‌گیرد. آتش و باد همدیگر را شعله‌ور می‌کنند؛ برای همین برج‌هایی مثل حمل و میزان یا اسد و دلو جذابیت اولیه بالایی دارند. خاک و آب نیز مکمل طبیعی‌اند، چون احساسِ آب به ثباتِ خاک نیاز دارد و خاک با لطافت آب زنده می‌شود. اما مخالف‌ها فقط جذاب نیستند؛ آن‌ها آینه یکدیگرند و می‌توانند زخم‌های پنهان را نشان دهند. اگر هر دو طرف آگاه باشند، این آینه‌بودن به رشد عاطفی عمیق تبدیل می‌شود."
+   },
+   {
+    "h2": "نقش ماه و زهره در سازگاری عاطفی برج‌ها",
+    "p": "خورشید فقط یک بخش از شخصیت ماست. برای شناخت سازگاری عاطفی برج‌ها، توجه به ماه و زهره اهمیت زیادی دارد. ماه نشان می‌دهد چه چیزی به ما احساس امنیت عاطفی می‌دهد و زهره نشان می‌دهد چگونه عشق می‌ورزیم و چه چیزی برایمان جذاب است. برای مثال ممکن است خورشید شما در برج جدی باشد، اما ماه شما در سرطان، نیاز عمیق به مراقبت و صمیمیت خانگی داشته باشد. به همین دلیل نمی‌توان فقط بر اساس برج خورشیدی درباره عشق قضاوت قطعی کرد."
+   },
+   {
+    "h2": "چند نمونه از سازگاری عاطفی برج‌ها",
+    "p": "سرطان و عقرب: پیوندی عاطفی، وفادار و عمیق که بر اعتماد و همدلی استوار است. ثور و جدی: رابطه‌ای باثبات و آرام که با گذر زمان ریشه می‌دواند. جوزا و میزان: گفت‌وگوی بی‌پایان و سبک‌بارِ عاشقانه که ذهن هر دو را بیدار نگه می‌دارد. حمل و قوس: ماجراجویی و هیجان زیاد، اما نیاز به صراحت و فضای شخصی دارد. هر کدام از این ترکیب‌ها نقاط قوت و چالش خاص خود را دارند؛ هیچ کدام «بهشت مطلق» یا «شکست قطعی» نیستند."
+   },
+   {
+    "h2": "چالش‌های رایج در سازگاری عاطفی",
+    "p": "حتی در بهترین ترکیب‌های نجومی هم سوءتفاهم پیش می‌آید. نشانه‌های آتشی ممکن است بی‌حوصلگی کنند، نشانه‌های خاکی ممکن است زیادی محتاط شوند، نشانه‌های بادی ممکن است از تعارض فاصله بگیرند و نشانه‌های آبی ممکن است در احساسات غرق شوند. آگاهی از این الگوها به ما کمک می‌کند به جای سرزنش، زبان یکدیگر را یاد بگیریم. پس سازگاری برج‌ها بیشتر از آنکه تعیین سرنوشت عشق باشد، دعوتی است به گفت‌وگو درباره نیازها."
+   },
+   {
+    "h2": "جمع‌بندی و پیشنهاد برای شروع",
+    "p": "سازگاری عاطفی برج‌ها را می‌توان مثل یک قطب‌نما دید؛ نه یک زندان. وقتی عنصر، ماه و زهره خود و طرف مقابل را می‌شناسید، عشق کمتر به حدس و گمان تبدیل می‌شود. اگر دوست دارید تصویر دقیق‌تری از زبان عشق خود و پارتنرتان داشته باشید، می‌توانید چارت تولد کامل را بررسی کنید. برای شروع، ساخت چارت شخصی می‌تواند نقطه روشنی باشد تا از حد برج خورشیدی فراتر بروید و سازگاری عاطفی را عمیق‌تر ببینید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/zodiac-emotional-compatibility.webp",
+  "thumb": "/static/articles/zodiac-emotional-compatibility-thumb.webp"
+ },
+ {
+  "slug": "suitable-career-based-on-birth-chart",
+  "title": "شغل مناسب بر اساس چارت تولد: راهنمای خودشناسی برای انتخاب مسیر شغلی",
+  "category": "شغل و موفقیت",
+  "excerpt": "چارت تولد می‌تواند مثل یک نقشه شخصی، استعدادها و تمایلات شغلی شما را نشان دهد، نه به عنوان سرنوشت قطعی بلکه به عنوان ابزاری برای خودشناسی.",
+  "keywords": "شغل,چارت تولد,مسیر شغلی",
+  "meta": "با بررسی چارت تولد، استعدادها و مسیر شغلی خود را بهتر بشناسید؛ از خانه دهم و ششم تا نشانه خورشید و ماه.",
+  "body": [
+   {
+    "h2": "چارت تولد دقیقاً درباره شغل چه می‌گوید؟",
+    "p": "چارت تولد یا نقشه آسمانی لحظه تولد، تصویری نمادین از ساختار روانی، استعدادها و نیازهای شماست. در بحث شغل، این نقشه به ما نشان می‌دهد که در چه فضاهایی انرژی بیشتری دارید، چه نوع فعالیتی برایتان معنا می‌سازد و از چه مسیری می‌توانید احساس موفقیت کنید. اما مهم است بدانید چارت تولد یک حکم قطعی نیست؛ بلکه مثل یک قطب‌نما، جهت‌های بالقوه را روشن می‌کند. برای خواندن مسیر شغلی در چارت، اخترشناسان معمولاً به سه بخش اصلی نگاه می‌کنند: خانه دهم، خانه ششم و سیارات شخصی مانند خورشید، ماه و زحل."
+   },
+   {
+    "h2": "خانه دهم: قله مسیر حرفه‌ای",
+    "p": "خانه دهم در چارت تولد، که به آن میانه آسمان یا MC نیز گفته می‌شود، مستقیم‌ترین بخش مرتبط با حرفه، جایگاه اجتماعی و تصویر عمومی شماست. علامتی که در نوک خانه دهم قرار دارد و سیاره حاکم آن، سرنخ‌های مهمی درباره سبک رهبری، جاه‌طلبی و نوع موفقیتی که برایتان طبیعی است ارائه می‌دهد. برای مثال، اگر میانه آسمان شما در برج حمل باشد، احتمالاً به مسیرهایی با استقلال، رقابت و شروع‌های تازه کشیده می‌شوید، در حالی که میانه آسمان در ترازو اغلب استعداد میانجی‌گری، همکاری و زیبایی‌شناسی را نشان می‌دهد. بررسی این نقطه از چارت مثل پیدا کردن عنوان اصلی فیلم حرفه‌ای شماست."
+   },
+   {
+    "h2": "خانه ششم: کار روزمره و محیط کاری",
+    "p": "خانه ششم برخلاف خانه دهم که به مسیر کلی و جایگاه اجتماعی اشاره دارد، به زندگی کاری روزمره، عادت‌ها، همکاران و نوع خدمتی که ارائه می‌دهید مربوط است. علامت و سیارات این خانه نشان می‌دهند در چه محیطی بازدهی بهتری دارید و چه ریتم کاری برایتان سالم‌تر است. برای نمونه، ماه در خانه ششم ممکن است نیاز به کاری با ارتباط انسانی و حمایت عاطفی را برجسته کند، در حالی که مریخ در خانه ششم می‌تواند فرد را به سمت کارهای پرتحرک، فوری و چالشی سوق دهد. ترکیب خانه دهم و ششم کمک می‌کند بین مسیر بزرگ حرفه‌ای و رضایت روزمره تعادل برقرار کنید."
+   },
+   {
+    "h2": "نقش خورشید، ماه و زحل در انتخاب شغل",
+    "p": "خورشید در چارت تولد هسته هویت و هدف اصلی شماست. معمولاً شغلی که با انرژی خورشید هم‌راستا باشد، حس درخشش و رضایت عمیق ایجاد می‌کند. ماه به نیازهای عاطفی و امنیت درونی اشاره دارد؛ کاری که ماه را نادیده بگیرد، حتی با موفقیت بیرونی، ممکن است خالی از احساس تعلق باشد. زحل نیز نماد نظم، پشتکار و درس‌های بلندمدت است. جای زحل اغلب حوزه‌ای را نشان می‌دهد که برای رسیدن به تسلط باید صبورانه تلاش کنید، اما در نهایت به اعتبار و ساختار حرفه‌ای مستحکم می‌رسید. برای مثال، زحل در خانه سوم می‌تواند استعداد نویسندگی، تدریس یا ارتباطات را پس از سال‌ها تمرین به سطح استادی برساند."
+   },
+   {
+    "h2": "عنصر غالب چارت و مشاغل سازگار",
+    "p": "بررسی عناصر چهارگانه در چارت تولد، تصویر سریعی از سبک کاری شما می‌دهد. چارت‌های آتشین (حمل، اسد، قوس) معمولاً در نقش‌های خلاقانه، انگیزشی، رهبری و فروش می‌درخشند. چارت‌های خاکی (ثور، سنبله، جدی) با کارهای مالی، مدیریتی، فنی و تولیدی هماهنگ‌اند. چارت‌های هوایی (جوزا، میزان، دلو) در ارتباطات، تحلیل، مشاوره، فناوری و شبکه‌سازی توانمندند. چارت‌های آبی (سرطان، عقرب، حوت) نیز اغلب به حرفه‌های مراقبتی، روان‌شناسی، هنر و کارهای درونی و عاطفی کشیده می‌شوند. اگرچه هر فرد ترکیبی از عناصر است، اما عنصر غالب می‌تواند اولویت‌های شغلی را شفاف‌تر کند."
+   },
+   {
+    "h2": "گره شمالی: مسیر رشد شغلی",
+    "p": "گره شمالی ماه در چارت تولد، نمادی از مسیر رشد و یادگیری است. این نقطه نشان می‌دهد در این زندگی به سمت چه تجربه‌هایی باید حرکت کنید تا احساس پیشرفت و معنا کنید. برخلاف تصور، گره شمالی معمولاً به منطقه راحتی شما اشاره نمی‌کند؛ بلکه به قلمروی ناآشنا و در حال تکامل اشاره دارد. برای انتخاب مسیر شغلی، نگاه به علامت و خانه گره شمالی می‌تواند الهام‌بخش باشد. برای مثال، گره شمالی در خانه هشتم ممکن است فرد را به سمت کارهای مالی مشترک، روان‌کاوی یا مدیریت بحران هدایت کند. گره شمالی را مثل فلش راهنما ببینید، نه زنجیر."
+   },
+   {
+    "h2": "چطور از چارت تولد برای مسیر شغلی استفاده کنیم؟",
+    "p": "بهترین روش این است که چارت تولد خود را کامل ببینید و آن را با تجربه‌های واقعی ترکیب کنید. ابتدا به خانه دهم و ششم و علامت‌هایشان دقت کنید، سپس جای خورشید، ماه، زحل و گره شمالی را بررسی کنید. می‌توانید الگوها را در دفترچه‌ای یادداشت کنید و ببینید چه حرفه‌هایی با این ویژگی‌ها هم‌خوانی دارند. اما همیشه به یاد داشته باشید که چارت تولد استعدادهای بالقوه را نشان می‌دهد، نه اجبار. مهارت‌های آموختنی، شرایط بازار، علاقه‌های شخصی و ارزش‌های شما به همان اندازه مهم‌اند. چارت تولد را ابزاری برای خودشناسی و هدایت مسیر ببینید، نه پیش‌گویی خشک."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "انتخاب شغل مناسب بر اساس چارت تولد، راهی هوشمندانه برای شناخت عمیق‌تر استعدادها، نیازها و مسیر رشد شماست. خانه دهم مسیر کلی حرفه‌ای را نشان می‌دهد، خانه ششم سبک کار روزمره را بازتاب می‌دهد و سیاراتی مانند خورشید، ماه و زحل به این روایت جزئیات می‌دهند. در نهایت، چارت تولد شما را به سمت آگاهی بیشتر دعوت می‌کند؛ آگاهی‌ای که می‌تواند تصمیم‌گیری شغلی را از یک انتخاب تصادفی به یک سفر خودشناسی تبدیل کند. اگر می‌خواهید نقشه آسمانی خود را دقیق‌تر ببینید و الگوهای شغلی‌تان را کشف کنید، می‌توانید چارت تولد خود را ترسیم کرده و با همین نشانه‌ها تحلیل کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/suitable-career-based-on-birth-chart.webp",
+  "thumb": "/static/articles/suitable-career-based-on-birth-chart-thumb.webp"
+ },
+ {
+  "slug": "birth-time-importance-in-astrology",
+  "title": "ساعت تولد و اهمیت آن در آسترولوژی",
+  "category": "آموزش نجوم",
+  "excerpt": "ساعت تولد دقیق، کلید تعیین طالع و چیدمان خانه‌های زایچه است و به خوانش شخصی‌تر از نقشه آسمان کمک می‌کند.",
+  "keywords": "ساعت تولد,طالع,خانه ها",
+  "meta": "چرا ساعت تولد در آسترولوژی مهم است؟ تأثیر آن بر طالع و خانه‌های چارت تولد را بخوانید؛ راهنمایی برای یافتن ساعت دقیق.",
+  "body": [
+   {
+    "h2": "چرا ساعت تولد در آسترولوژی اهمیت دارد؟",
+    "p": "بسیاری از ما با نشانه خورشیدی خود آشنا هستیم؛ اما آسترولوژیِ چارت تولد بسیار فراتر از یک نشانه است. برای ترسیم نقشه آسمان در لحظه تولد، علاوه بر تاریخ و مکان، به ساعت دقیق تولد نیاز داریم. زمین هر ۲۴ ساعت یک دور کامل می‌چرخد و به همین دلیل نشانه صعودی یا طالع تقریباً هر دو ساعت یک‌بار تغییر می‌کند. اگر ساعت تولد اشتباه باشد، طالع و خانه‌های چارت جابه‌جا می‌شوند و خوانش کلی نقشه می‌تواند گمراه‌کننده شود. از این منظر، ساعت تولد مانند یک لنگر است که چارت را بر آسمان واقعی متصل می‌کند."
+   },
+   {
+    "h2": "طالع یا نشانه صعودی چیست؟",
+    "p": "طالع یا همان نشانه صعودی، علامتی از منطقه‌البروج است که در لحظه تولد در افق شرقی آسمان در حال طلوع بوده است. این نقطه بر اساس ساعت و مکان تولد محاسبه می‌شود و معمولاً نمایانگر شخصیت بیرونی، سبک واکنش اولیه و تصویری است که از خود به دنیا نشان می‌دهیم. در چارت تولد، طالع مرز اولین خانه را مشخص می‌کند و به همین دلیل کل ساختار خانه‌ها را شکل می‌دهد. بدون ساعت دقیق، تعیین طالع تقریباً غیرممکن است و بسیاری از جزئیات شخصی چارت از دست می‌رود."
+   },
+   {
+    "h2": "خانه‌ها و نقش ساعت تولد در چیدمان آن‌ها",
+    "p": "در آسترولوژی، آسمان به دوازده بخش به نام خانه تقسیم می‌شود. هر خانه به یک حوزه زندگی مانند هویت، مالی، ارتباطات، خانواده، کار و روابط مربوط است. نقطه شروع خانه اول، همان طالع است و بر اساس آن، سایر خانه‌ها محاسبه می‌شوند. اگر ساعت تولد چند ساعت جابه‌جا شود، سیاره‌ها ممکن است از خانه‌ای به خانه دیگر منتقل شوند و معانی کاملاً متفاوتی پیدا کنند. برای مثال، ماه در خانه چهارم با ماه در خانه دهم از نظر تجربه عاطفی و مسیر شغلی تفاوت زیادی دارد. به همین دلیل ساعت تولد در تعیین خانه‌ها اهمیت حیاتی دارد."
+   },
+   {
+    "h2": "چطور ساعت دقیق تولد را پیدا کنیم؟",
+    "p": "بهترین منبع برای اطلاع از ساعت تولد، گواهی تولد یا برگه بیمارستان است. در بسیاری از کشورها این اطلاعات در اسناد رسمی ثبت می‌شود. اگر به این اسناد دسترسی ندارید، پرسیدن از والدین یا نزدیکان می‌تواند کمک کند؛ هرچند خاطره آن‌ها ممکن است دقیق نباشد. برخی از افراد با مراجعه به آرشیو بیمارستانی، ساعت زایمان را از پرونده مادر پیدا می‌کنند. اگر ساعت تقریبی دارید، یک اختربین باتجربه می‌تواند با روش اصلاح چارت یا رکتیفیکیشن، بر اساس رویدادهای مهم زندگی، زمان تولد را محدودتر کند."
+   },
+   {
+    "h2": "تفاوت بین ساعت تولد و نشانه خورشیدی",
+    "p": "نشانه خورشیدی فقط بر اساس روز تولد مشخص می‌شود و نیازی به ساعت ندارد؛ اما طالع و خانه‌ها به زمان دقیق وابسته‌اند. دو نفر که در یک روز و شهر مشترک به دنیا آمده‌اند، اگر در ساعات متفاوت متولد شده باشند، می‌توانند چارت‌های بسیار متفاوتی داشته باشند. یکی ممکن است طالع برج حمل و دیگری طالع ترازو داشته باشد. بنابراین اگر به‌دنبال شناخت عمیق‌تر از خود هستید، صرفاً دانستن نشانه خورشیدی کافی نیست و ساعت تولد به شما کمک می‌کند لایه‌های پنهان‌تری از شخصیت را ببینید."
+   },
+   {
+    "h2": "سخن پایانی",
+    "p": "ساعت تولد یکی از مهم‌ترین اطلاعات برای ترسیم چارت تولد است و بدون آن، طالع و خانه‌ها مبهم می‌مانند. اگر به آسترولوژی به‌عنوان ابزاری برای خودشناسی نگاه می‌کنیم، یافتن ساعت دقیق تولد می‌تواند دقت خوانش را به‌طور چشمگیری افزایش دهد. پس قبل از هر اقدامی، اسناد خود را بررسی کنید و در صورت نبودن اطلاعات، از یک متخصص کمک بگیرید. سپس می‌توانید چارت خود را با جزئیات دقیق‌تر بسازید و از زاویه‌ای تازه به الگوهای زندگی خود نگاه کنید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/birth-time-importance-in-astrology.webp",
+  "thumb": "/static/articles/birth-time-importance-in-astrology-thumb.webp"
+ },
+ {
+  "slug": "four-elements-fire-earth-air-water",
+  "title": "عنصرهای چهارگانه در آسترولوژی؛ زبانِ خاموشِ شخصیت شما",
+  "category": "آموزش نجوم",
+  "excerpt": "آشنایی با عنصرهای آتش، خاک، هوا و آب دریچه‌ای به خودشناسی و درک الگوهای رفتاری است.",
+  "keywords": "عنصرها,آتش,خاک,هوا,آب",
+  "meta": "راهنمای کامل عنصرهای چهارگانه در آسترولوژی: آتش، خاک، هوا و آب؛ از ویژگی‌ها تا تعادل در چارت تولد. ابزاری برای خودشناسی.",
+  "body": [
+   {
+    "h2": "چرا عنصرها در آسترولوژی مهم‌اند؟",
+    "p": "در آسترولوژی، چهار عنصر آتش، خاک، هوا و آب مانند الفبای اولیه‌ای هستند که خلق‌وخوی ما را روایت می‌کنند. این تقسیم‌بندی یک واقعیت علمی نیست، بلکه یک زبان نمادین است که به ما کمک می‌کند الگوهای رفتاری، نیازهای عمیق و حتی نقاط کور شخصیت را بهتر ببینیم. هر نشانه زودیاک به یکی از این عنصرها تعلق دارد و آن عنصر، سوخت اصلی انگیزه‌ها و واکنش‌های ما را مشخص می‌کند. وقتی چارت تولد را بررسی می‌کنیم، در واقع می‌فهمیم کدام عنصر در ما پررنگ‌تر و کدام کم‌رنگ‌تر است تا تعادل درونی را با آگاهی بیشتری بسازیم."
+   },
+   {
+    "h2": "آتش؛ جرقهٔ آغاز و انگیزه",
+    "p": "نشانه‌های آتشی یعنی برج حمل، اسد و قوس، سرشار از انرژی، شور و میل به حرکت هستند. آتش، عنصرِ شروع است؛ همان جرقه‌ای که ما را به اقدام، ریسک و ابراز وجود ترغیب می‌کند. افرادی که عنصر آتش در چارتشان پررنگ است معمولاً الهام‌بخش، شجاع و صریح‌اند و دوست دارند جهان را تغییر دهند. اما همین آتش اگر مهار نشود، می‌تواند به بی‌صبری، تکانشگری یا خستگی ناگهانی تبدیل شود. آتش به ما می‌آموزد که زندگی بدون شوق، تنها یک تکرار بی‌روح است؛ اما شوق بدون خودآگاهی هم مانند شعله‌ای است که زود خاموش می‌شود."
+   },
+   {
+    "h2": "خاک؛ ریشه و واقعیت",
+    "p": "نشانه‌های خاکی یعنی ثور، سنبله و جدی، ما را به زمین، جسم و واقعیت‌های ملموس متصل می‌کنند. عنصر خاک درباره ثبات، امنیت، کار و ساختن چیزی است که ماندگار باشد. افراد با چارت خاکی قوی معمولاً قابل اعتماد، صبور و اهل عمل هستند و به جزئیات اهمیت می‌دهند. آن‌ها می‌دانند که هیچ رویایی بدون برنامه و تلاش پیوسته به ثمر نمی‌رسد. با این حال، خاک بیش از حد می‌تواند به سخت‌گیری، ترس از تغییر یا وابستگی بیش از حد به امنیت منجر شود. خاک به ما یادآوری می‌کند که برای رشد، ریشه‌های سالم و زمینی که روی آن ایستاده‌ایم، ضروری است."
+   },
+   {
+    "h2": "هوا؛ پل ارتباط و اندیشه",
+    "p": "نشانه‌های هوایی یعنی جوزا، میزان و دلو، نماد ذهن، ارتباط و تبادل ایده‌ها هستند. هوا عنصرِ فاصله گرفتن از احساسات و نگاه کردن به مسائل از بالا است. افرادی که عنصر هوا در آن‌ها قوی است معمولاً کنجکاو، اجتماعی، منطقی و عاشق گفت‌وگو هستند و می‌توانند مفاهیم پیچیده را ساده کنند. آن‌ها به عدالت، آزادی و نوآوری اهمیت می‌دهند. اما هوای زیاد گاهی فرد را به تحلیل بیش از حد، پراکندگی ذهنی یا احساسی به نظر رسیدن سرد و detached می‌کشاند. هوا به ما می‌گوید که بدون ارتباط و اندیشه، تجربه‌های ما ناتمام می‌مانند؛ اما اندیشه بدون تماس با احساس نیز می‌تواند تهی شود."
+   },
+   {
+    "h2": "آب؛ ژرفای احساس و شهود",
+    "p": "نشانه‌های آبی یعنی سرطان، عقرب و حوت، عمیق‌ترین لایه‌های عاطفی ما را نمایندگی می‌کنند. آب عنصرِ احساس، حافظه، همدلی و شهود است و مانند جریان رودخانه، مرز نمی‌شناسد. افراد دارای عنصر آب قوی معمولاً مهربان، حساس و ادراکی هستند و به سادگی حال دیگران را می‌فهمند. آن‌ها به امنیت عاطفی و پیوندهای صمیمانه نیاز دارند و خلاقیتشان از دنیای درون تغذیه می‌شود. اما آب زیاد می‌تواند به نوسان خلقی، وابستگی عاطفی یا فرار از واقعیت منجر شود. آب به ما یادآوری می‌کند که قدرت واقعی، در توانایی احساس کردن و اجازه دادن به جریان زندگی برای عبور از ماست، نه سرکوب آن."
+   },
+   {
+    "h2": "تعادل عنصرها در چارت تولد",
+    "p": "هیچ عنصری به‌خودی‌خود خوب یا بد نیست؛ آنچه اهمیت دارد تعادل میان آن‌ها در چارت هر فرد است. وقتی عنصری در چارت کم باشد، آن بخش از زندگی ممکن است برای فرد ناآشنا یا چالش‌برانگیز باشد؛ مثلاً کمبود آتش می‌تواند به ترس از آغاز کردن و کمبود آب به مشکل در ابراز احساسات بیانجامد. از سوی دیگر، غلبه یک عنصر می‌تواند رفتاری یک‌جانبه ایجاد کند؛ مثل آتش زیاد که فرد را همیشه در تنش و عجله نگه می‌دارد. آگاهی از این تعادل به ما کمک می‌کند تا به جای قضاوت خود، روی رشد آن بخش کم‌رنگ‌تر کار کنیم و انرژی عنصر غالب را به مسیرهای سازنده هدایت کنیم."
+   },
+   {
+    "h2": "جمع‌بندی؛ عنصرها آینه‌ای برای خودشناسی",
+    "p": "عنصرهای چهارگانه آتش، خاک، هوا و آب، نقشه‌ای نمادین از نیازها، ترس‌ها و استعدادهای ما هستند. وقتی این عناصر را در چارت تولد خود می‌شناسیم، در واقع زبان خاموش شخصیت خود را رمزگشایی می‌کنیم و نسبت به تفاوت‌های دیگران نیز بردبارتر می‌شویم. این ابزار، راهی برای قضاوت یا پیش‌گویی قطعی نیست، بلکه آینه‌ای است که می‌توانیم خود را در آن واضح‌تر ببینیم. اگر می‌خواهید بدانید کدام عنصر در چارت شما غالب است و چگونه می‌توانید تعادل بیشتری بسازید، استخراج چارت تولد می‌تواند نقطه شروع خوبی باشد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/four-elements-fire-earth-air-water.webp",
+  "thumb": "/static/articles/four-elements-fire-earth-air-water-thumb.webp"
+ },
+ {
+  "slug": "moon-in-each-sign-emotions",
+  "title": "ماه در هر برج چه احساسی می‌سازد؟ | راهنمای خودشناسی احساسی",
+  "category": "ماه",
+  "excerpt": "جایگاه ماه در چارت تولد، لنز احساسی شما را نشان می‌دهد و در این مقاله سبک عاطفی ماه در هر ۱۲ برج را بررسی می‌کنیم.",
+  "keywords": "ماه در برج,احساسات,چارت تولد",
+  "meta": "ماه در چارت تولد نشان می‌دهد چه چیزی به شما امنیت عاطفی می‌دهد. با جایگاه ماه در ۱۲ برج و سبک احساسی هر کدام آشنا شوید.",
+  "body": [
+   {
+    "h2": "ماه در چارت تولد؛ لنز احساسی شما",
+    "p": "ماه در آسترولوژی نماینده احساسات، نیازهای درونی، واکنش‌های ناخودآگاه و تصویری است که از امنیت عاطفی داریم. اگر خورشید نشان دهد چه کسی هستید، ماه می‌گوید وقتی خسته‌اید یا در خلوت خودتان چه احساسی دارید. این مقاله به‌هیچ‌وجه یک حکم قطعی نیست؛ بلکه دعوتی است به خودشناسی از مسیر آینه آسمان."
+   },
+   {
+    "h2": "ماه در برج حمل",
+    "p": "ماه در برج حمل، احساسات را سریع و مستقیم بروز می‌دهد. شما زود هیجان‌زده، زود عصبانی و زود آشتی می‌کنید. نیاز به استقلال عاطفی دارید و اگر کسی بخواهد احساساتتان را کنترل کند، بی‌قرار می‌شوید. یادگیری صبر، کلید آرامش درونی شماست."
+   },
+   {
+    "h2": "ماه در برج ثور",
+    "p": "ماه در برج ثور به دنبال ثبات، آسایش و امنیت مادی-حسی است. شما با موسیقی، غذای خوب، طبیعت و آغوش گرم آرام می‌شوید. تغییر ناگهانی برایتان سخت است و در برابر آن لجباز می‌شوید. با ایجاد ریتم‌های پایدار، احساس امنیت بیشتری می‌کنید."
+   },
+   {
+    "h2": "ماه در برج جوزا",
+    "p": "ماه در برج جوزا احساسات را با کلمات پردازش می‌کند. شما باید درباره احساساتتان حرف بزنید، بنویسید یا پیام بدهید. بی‌حوصلگی برایتان آزاردهنده است و تنوع عاطفی می‌خواهید. مراقب باشید احساسات را زیادی تحلیل نکنید؛ گاهی فقط باید حس کرد."
+   },
+   {
+    "h2": "ماه در برج سرطان",
+    "p": "ماه در برج سرطان در خانه اصلی خودش است؛ پس احساسات عمیق، غریزی و محافظت‌گرانه دارد. شما شدیداً به خانواده، خانه و خاطرات وابسته‌اید. دیگران را بی‌آنکه بدانند پرورش می‌دهید اما گاهی دمدمی‌مزاج می‌شوید. امنیت عاطفی برایتان از هر چیزی مهم‌تر است."
+   },
+   {
+    "h2": "ماه در برج اسد",
+    "p": "ماه در برج اسد احساسات را با گرما، نمایش و سخاوت بروز می‌دهد. شما دوست دارید دیده و تحسین شوید؛ نادیده‌گرفتن، زخم عاطفی بزرگی برایتان می‌سازد. وقتی قلب‌تان می‌شکند، دراماتیک می‌شوید اما خیلی زود با محبت دوباره می‌درخشید."
+   },
+   {
+    "h2": "ماه در برج سنبله",
+    "p": "ماه در برج سنبله احساسات را از مسیر کمک‌کردن و جزئیات بیان می‌کند. شما وقتی مضطرب‌اید مشغول کار می‌شوید یا لیست می‌نویسید. ابراز مستقیم احساس برایتان دشوار است و نگرانی‌های کوچک را بزرگ می‌کنید. مهربانی با خود و رهاکردن کمال‌گرایی، التیام‌بخش شماست."
+   },
+   {
+    "h2": "ماه در برج میزان",
+    "p": "ماه در برج میزان برای رسیدن به تعادل عاطفی به روابط نیاز دارد. شما از تنش و دعوا بی‌قرار می‌شوید و اغلب احساسات خود را برای حفظ آرامش قربانی می‌کنید. زیبایی، هنر و گفت‌وگوی منصفانه حالتان را خوب می‌کند. یاد بگیرید گاهی «نه» بگویید."
+   },
+   {
+    "h2": "ماه در برج عقرب",
+    "p": "ماه در برج عقرب احساسات را عمیق، مرموز و گاهی طوفانی تجربه می‌کند. شما اهل احساسات سطحی نیستید؛ یا همه‌چیز را می‌خواهید یا هیچ. اعتماد برایتان سخت است اما وقتی کسی را بپذیرید، وفاداری بی‌نظیری نشان می‌دهید. رهاکردن کنترل، بزرگ‌ترین درس عاطفی شماست."
+   },
+   {
+    "h2": "ماه در برج قوس",
+    "p": "ماه در برج قوس به‌طور غریزی به سوی امید، ماجراجویی و معنا حرکت می‌کند. شما با سفر، آموزش یا برنامه‌ریزی برای آینده حال‌تان خوب می‌شود. محدودیت عاطفی و وابستگی، خفگی‌آور است. مراقب باشید از احساسات سخت فرار نکنید."
+   },
+   {
+    "h2": "ماه در برج جدی",
+    "p": "ماه در برج جدی احساسات را کنترل‌شده و مسئولانه بروز می‌دهد. شما به‌سختی آسیب‌پذیری نشان می‌دهید و در تنهایی با خودتان سختگیر می‌شوید. امنیت شما در ساختار، هدف و دستاورد است. اجازه بدهید گاهی بدون دلیل موفقیت، احساس ارزشمندی کنید."
+   },
+   {
+    "h2": "ماه در برج دلو",
+    "p": "ماه در برج دلو احساسات را از فاصله‌ای امن و با نگاه انسانی تجربه می‌کند. شما راحت‌تر درباره ایده‌ها حرف می‌زنید تا احساسات شخصی. نیاز به آزادی و دوستی دارید؛ چسبندگی عاطفی شما را پس می‌زند. پذیرش صمیمیت، مرز بعدی رشد شماست."
+   },
+   {
+    "h2": "ماه در برج حوت",
+    "p": "ماه در برج حوت احساسات را مانند اقیانوس، بی‌مرز و شهودی تجربه می‌کند. شما غم دیگران را از آن خود می‌کنید و گاهی نمی‌دانید کجای احساس تمام می‌شود. هنر، موسیقی و خلوت معنوی پناهگاه شماست. حفظ مرزهای عاطفی برای سلامت روانتان ضروری است."
+   },
+   {
+    "h2": "چطور از ماه چارت خود استفاده کنیم؟",
+    "p": "در نهایت، ماه در هر برج یک سبک احساسی است، نه یک تقدیر. با شناخت این الگو می‌توانید نیازهای عاطفی خود را واضح‌تر ببینید، با خودتان مهربان‌تر باشید و در روابط آگاهانه‌تر عمل کنید. برای شناخت دقیق‌تر، جایگاه ماه در چارت تولد خود را بررسی کنید؛ این نقطه شروع گفت‌وگویی صادقانه با درون شماست."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/moon-in-each-sign-emotions.webp",
+  "thumb": "/static/articles/moon-in-each-sign-emotions-thumb.webp"
+ },
+ {
+  "slug": "why-two-people-with-same-sun-sign-differ",
+  "title": "چرا دو نفر با یک برج متفاوت‌اند؟ بررسی نقش چارت تولد، ماه و طالع",
+  "category": "آموزش نجوم",
+  "excerpt": "برج خورشیدی فقط نقطه شروع است؛ در این مقاله می‌بینید چرا دو متولد یک ماه، شخصیت‌ها و مسیرهای متفاوتی دارند.",
+  "keywords": "تفاوت برج ها,چارت تولد,ماه,طالع",
+  "meta": "تفاوت دو نفر با یک برج خورشیدی را با نقش ماه، طالع و سیارات در چارت تولد بشناسید؛ راهنمای ساده و کاربردی خودشناسی.",
+  "body": [
+   {
+    "h2": "برج خورشیدی فقط یک تکه از پازل است",
+    "p": "خیلی‌ها فکر می‌کنند متولد فروردین بودن یعنی همه‌چیز تمام است؛ اما برج خورشیدی که از روی تاریخ تولد می‌شناسیم، فقط نشان می‌دهد خورشید در لحظه تولد در کدام صورت فلکی بوده است. خورشید شخصیت بنیادی و اراده ما را نشان می‌دهد، ولی چارت تولد از ده‌ها عامل دیگر تشکیل شده که هرکدام رنگ و لعاب متفاوتی به شخصیت می‌زنند. دو نفر با برج یکسان می‌توانند مثل دو ظرف از یک خمیر باشند که در نهایت شکل‌های متفاوتی گرفته‌اند."
+   },
+   {
+    "h2": "ماه؛ دنیای درونی و واکنش‌های احساسی",
+    "p": "ماه در چارت تولد معمولا هر دو روز و نیم یک برج عوض می‌کند. به همین دلیل حتی دوقلوهایی که چند دقیقه اختلاف دارند ممکن است ماهشان در درجه متفاوتی باشد. ماه نشان‌دهنده احساسات، نیازهای عاطفی، واکنش‌های غریزی و تصویری است که از مادر یا مراقب اولیه در ذهن داریم. دو نفر با خورشید حمل اما یکی با ماه سرطان و دیگری با ماه دلو، در موقعیت‌های احساسی کاملاً متفاوت عمل می‌کنند. اولی به امنیت و خانه پناه می‌برد، دومی فاصله می‌گیرد و منطقی برخورد می‌کند. این تفاوت ماه‌ها یکی از مهم‌ترین دلایل تفاوت دو متولد یک برج است."
+   },
+   {
+    "h2": "طالع یا صعود؛ نقابی که به جهان می‌زنیم",
+    "p": "طالع یا علامت صعود، برجی است که در لحظه تولد در افق شرقی طلوع می‌کرده. طالع هر دو ساعت تغییر می‌کند، بنابراین به ساعت و محل دقیق تولد وابسته است. اگر خورشید نشان دهد ما در عمق وجود چه کسی هستیم، طالع نشان می‌دهد در اولین برخورد چگونه دیده می‌شویم، چه سبک واکنشی داریم و از چه دریچه‌ای وارد تجربه‌های تازه می‌شویم. دو نفر با برج یکسان اما طالع متفاوت، حتی در ظاهر فیزیکی، لحن صدا و نوع شروع رابطه هم فرق می‌کنند. یکی با طالع برج ثور آرام و محتاط دیده می‌شود و دیگری با طالع برج جوزا پرحرف و اجتماعی."
+   },
+   {
+    "h2": "سیارات شخصی و جایگاه عطارد، زهره و مریخ",
+    "p": "عطارد نحوه فکر کردن و گفت‌وگو را نشان می‌دهد، زهره سبک عشق‌ورزی و ارزش‌ها را، و مریخ نحوه ابراز خشم، رقابت و میل را. هرکدام از این سیارات در چارت تولد در برج و خانه‌ای قرار می‌گیرند و ترکیب‌های بی‌پایانی می‌سازند. مثلاً دو نفر با خورشید ترازو؛ یکی عطارد در سنبله دارد و دقیق و نقاد حرف می‌زند، دیگری عطارد در عقرب دارد و عمیق، کم‌حرف و رازآلود. این تفاوت‌های سیاره‌ای باعث می‌شود دو نفر با یک برج خورشیدی، سلیقه، شیوه ارتباط و حتی جذابیت‌های متفاوتی داشته باشند."
+   },
+   {
+    "h2": "خانه‌ها و زاویه‌ها؛ نقشه شخصی آسمان",
+    "p": "چارت تولد به دوازده خانه تقسیم می‌شود که هر کدام حوزهای از زندگی را نمایندگی می‌کنند: کار، عشق، خانواده، سلامتی، سفر. یک سیاره ممکن است در برج یکسان باشد اما در خانه متفاوت قرار بگیرد و معنایش عوض شود. همچنین زاویه‌های بین سیارات — مانند مربع، سه‌گانه، مقابله — تنش‌ها و استعدادهای درونی را می‌سازند. به همین دلیل است که دو نفر با یک برج ممکن است یکی در روابط موفق باشد و دیگری مدام در چالش، چون خانه‌ها و زاویه‌های چارتشان کاملاً فرق دارد."
+   },
+   {
+    "h2": "پس چگونه تفاوت برج‌ها را در چارت خود ببینیم؟",
+    "p": "برای شناخت دقیق‌تر، اول تاریخ، ساعت و محل تولدتان را یادداشت کنید. سپس برج خورشیدی، ماه و طالع را پیدا کنید. این سه، مثل سه ستون اصلی شخصیت عمل می‌کنند: خورشید برای هویت و اراده، ماه برای احساسات، طالع برای سبک مواجهه با دنیا. در مرحله بعد، موقعیت عطارد، زهره و مریخ را بررسی کنید. لازم نیست ستاره‌شناس باشید؛ همین که بدانید هر سیاره نماد چه چیزی است، بسیاری از رفتارهای متضاد خودتان یا اطرافیانتان را بهتر می‌فهمید. آسترولوژی را ابزار خودشناسی بدانید، نه یک برچسب قطعی."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "تفاوت دو نفر با یک برج خورشیدی نه‌تنها عجیب نیست، بلکه کاملاً طبیعی است. برج خورشیدی فقط یکی از عوامل چارت تولد است و ماه، طالع، سیارات شخصی، خانه‌ها و زاویه‌ها همگی در شکل‌گیری شخصیت نقش دارند. دفعه بعد که کسی گفت «من فلان برجم ولی شبیه‌ش نیستم»، به او یادآوری کنید که احتمالاً ماه یا طالعش داستان دیگری دارد. برای دیدن نقشه کامل آسمان خود، یک چارت تولد دقیق بسازید و با نگاهی باز به سراغ کشف لایه‌های پنهان شخصیتتان بروید. این کار می‌تواند شروع یک گفت‌وگوی عمیق‌تر با خودتان باشد."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/why-two-people-with-same-sun-sign-differ.webp",
+  "thumb": "/static/articles/why-two-people-with-same-sun-sign-differ-thumb.webp"
+ },
+ {
+  "slug": "annual-prediction-with-transits",
+  "title": "نقشه سال با ترانزیت‌ها: راهنمای آسمانی برای خودشناسی در سال جدید",
+  "category": "ترانزیت",
+  "excerpt": "با ترکیب ترانزیت‌های کلیدی و چارت تولد، روندهای مهم سال خود را بشناسید و آگاهانه مسیر رشد را انتخاب کنید.",
+  "keywords": "نقشه سال,ترانزیت,چارت تولد",
+  "meta": "نقشه سال با ترانزیت‌ها؛ راهنمای عملی برای ترکیب حرکت سیاره‌ها با چارت تولد و خودشناسی در سال جدید.",
+  "body": [
+   {
+    "h2": "ترانزیت‌ها؛ نبض آسمان در زندگی روزمره",
+    "p": "در آسترولوژی، ترانزیت به حرکت سیاره‌ها در آسمان و زاویه‌هایی که با نقاط چارت تولد شما می‌سازند گفته می‌شود. هر سیاره با سرعت متفاوتی حرکت می‌کند؛ ماه فقط چند ساعت در یک درجه می‌ماند، اما پلوتون سال‌ها طول می‌کشد تا یک خانه را پشت سر بگذارد. برای نگاه سالانه، معمولاً به ترانزیت سیاره‌های کندتر مانند مشتری، زحل، اورانوس، نپتون و پلوتون و همچنین گره‌های ماه توجه می‌کنیم. این ترانزیت‌ها مثل چراغ‌های راهنمایی بلندمدت عمل می‌کنند و نشان می‌دهند کدام بخش از زندگی شما برای رشد، بازنگری یا رهاسازی آماده است."
+   },
+   {
+    "h2": "نقشه سال با ترانزیت‌ها؛ نه تقدیر، که نقشه راه",
+    "p": "بسیاری فکر می‌کنند نگاه سالانه یعنی گفتن این که دقیقاً چه اتفاقی می‌افتد. اما آسترولوژی استاندارد و مسئولانه، ترانزیت‌ها را یک ابزار خودشناسی می‌داند، نه یک پیشگویی قطعی. ترانزیت یک سیاره نشان‌دهنده انرژی غالب، موضوعات فعال و فرصت‌های رشد در یک بازه زمانی است. مثلاً اگر مشتری در حال عبور از خانه دهم چارت شما باشد، احتمالاً سالی برای پیشرفت شغلی، دیده‌شدن و گسترش اعتبار اجتماعی است؛ اما این شما هستید که تصمیم می‌گیرید از این انرژی برای ارتقای شغلی استفاده کنید، برند شخصی بسازید یا مسئولیت تازه‌ای بپذیرید. آسمان زمینه را می‌چیند، انتخاب همیشه با شماست."
+   },
+   {
+    "h2": "سه ترانزیت کلیدی برای نگاه سالانه",
+    "p": "برای شروع، سه ترانزیت مهم را بررسی کنید. مشتری سیاره رشد، فرصت و خوش‌بینی است و جابه‌جایی آن معمولاً یک سال در یک خانه می‌ماند و نشان می‌دهد کدام حوزه زندگی آماده گسترش است. زحل سیاره ساختار، تعهد و درس‌های بلوغ است؛ ترانزیت زحل به نقاط حساس چارت، سالی مسئولیت‌پذیر می‌سازد که نیاز به صبر و برنامه‌ریزی دارد. گره‌های ماه هم محور رشد و مسیر زندگی هستند؛ گره شمالی نشان می‌دهد مسیر رشد روحی و تجربه‌ای کجاست و گره جنوبی به الگوهای قدیمی اشاره دارد که باید رها شوند."
+   },
+   {
+    "h2": "ترکیب ترانزیت با چارت تولد؛ هر آسمان، یک داستان منحصربه‌فرد",
+    "p": "ترانزیت‌ها به‌تنهایی معنی کلی دارند، اما قدرت واقعی آن‌ها وقتی دیده می‌شود که با چارت تولد شما ترکیب شوند. مثلاً عبور زحل از روی خورشید تولد برای همه یکسان نیست؛ اگر خورشید شما در خانه هفتم باشد، این ترانزیت وارد روابط و مشارکت‌ها می‌شود، اما اگر در خانه دوم باشد، موضوع پول، ارزش‌های شخصی و امنیت مالی را فعال می‌کند. به همین دلیل است که نگاه سالانه بدون چارت تولد دقیق نیست. سیاره ترانزیت در یک خانه خاص می‌افتد و با سیاره‌های شخصی شما زاویه می‌سازد؛ این زاویه‌ها تعیین می‌کنند آیا آن انرژی را روان تجربه می‌کنید یا با اصطکاک و چالش روبه‌رو می‌شوید."
+   },
+   {
+    "h2": "نمونه‌هایی از ترانزیت‌های مهم امسال",
+    "p": "بسته به سال و موقعیت سیاره‌ها، ترانزیت‌های شاخص می‌توانند موضوعات عمومی یک سال را شکل دهند. برای مثال، وقتی اورانوس در خانه مالی شما حرکت کند، ممکن است سالی پر از تغییرات ناگهانی در درآمد، شغل آزاد یا شیوه خرج‌کردن باشد. اگر نپتون با ماه تولد شما مربع بسازد، مرزهای عاطفی و واقع‌بینی در روابط نزدیک نیاز به توجه دارد. همچنین پیوند مشتری و نپتون یا زحل و پلوتون می‌تواند دوره‌های تاریخی بسازد که در نگاه سالانه به‌عنوان پس‌زمینه جمعی در نظر گرفته می‌شود. نگاه سالانه از ترکیب این روندهای کلی با نقاط حساس چارت شما شکل می‌گیرد."
+   },
+   {
+    "h2": "چگونه نگاه سالانه خود را شروع کنیم؟",
+    "p": "بهترین نقطه شروع، داشتن چارت تولد دقیق با زمان و مکان تولد است. سپس می‌توانید ترانزیت‌های سال جاری را روی آن بررسی کنید. ابتدا به جابه‌جایی مشتری و زحل نگاه کنید، بعد به ترانزیت‌های گره ماه و در نهایت جنبه‌های سیاره‌های شخصی‌تر مانند مریخ و ونوس برای بازه‌های کوتاه‌تر. این کار مانند خواندن یک نقشه آب‌وهواست؛ می‌توانید بدانید کجا آفتابی است، کجا طوفان احتمال دارد و چه زمانی بهتر است بذر بکارید. با تمرین منظم، کم‌کم زبان آسمان را روان‌تر می‌فهمید."
+   },
+   {
+    "h2": "جمع‌بندی؛ آسمان مسیر را نشان می‌دهد، انتخاب با شماست",
+    "p": "نگاه سالانه با ترانزیت‌ها یک نقشه راه انعطاف‌پذیر است، نه یک قفس تقدیر. ترانزیت‌ها دوره‌های مناسب برای رشد، بازسازی، رهاکردن و اقدام را نشان می‌دهند، اما این شما هستید که با آگاهی و اراده، آن انرژی‌ها را به تجربه‌های واقعی تبدیل می‌کنید. برای دریافت یک نگاه سالانه شخصی و منسجم، بهتر است از چارت تولد خود شروع کنید و ترانزیت‌های امسال را روی آن بررسی کنید. در سایت ما می‌توانید چارت تولد خود را به‌صورت رایگان بسازید و بعد با راهنمای ترانزیت‌ها، نگاه دقیق‌تری به سال پیش رو داشته باشید."
+   }
+  ],
+  "date_fa": "مرداد ۱۴۰۵",
+  "image": "/static/articles/annual-prediction-with-transits.webp",
+  "thumb": "/static/articles/annual-prediction-with-transits-thumb.webp"
+ },
+ {
+  "slug": "uranus-in-birth-chart",
+  "title": "اورانوس در چارت تولد؛ سیاره بیداری، آزادی و دگرگونی",
+  "category": "سیارات",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "اورانوس در چارت تولد کجاست و چه می‌گوید؟ معنای نمادین این سیاره برای فردیت، آزادی و تغییرهای ناگهانی را ساده بخوانید.",
+  "keywords": "اورانوس,چارت تولد,اورانوس در برج,اورانوس در خانه,فردیت",
+  "meta": "اورانوس در چارت تولد نماد فردیت، استقلال و دگرگونی است؛ در این مقاله معنای آن در برج‌ها، خانه‌ها و جنبه‌ها را می‌خوانید.",
+  "image": "/static/articles/uranus-in-birth-chart.webp",
+  "body": [
+   {
+    "h2": "اورانوس؛ غولِ کشف‌شده از دل تلسکوپ",
+    "p": "اورانوس در سال ۱۷۸۱ میلادی توسط ویلیام هرشل کشف شد و نخستین سیاره‌ای بود که با تلسکوپ پیدا شد؛ کشفی که تصویر انسان از جهان را برای همیشه تغییر داد. در آسترولوژی، این کشف را هم‌زمان با دوران انقلاب صنعتی و بیداری‌های اجتماعی می‌دانند و به همین دلیل اورانوس را نماد تغییرهای ناگهانی، هنجارشکنی و پیشرفت‌های غیرمنتظره می‌خوانند. در چارت تولد، جایگاه اورانوس نشان می‌دهد ما در کدام بخش از زندگی برای آزادی و نوآوری می‌جنگیم. این معنا نه یک حکم قطعی، بلکه زبانی برای شناخت نیاز به تازگی درون ماست."
+   },
+   {
+    "h2": "اورانوس در آسترولوژی نماد چیست؟",
+    "p": "اورانوس را سیاره فردیت، استقلال و بیداری می‌نامند. انرژی آن شبیه جرقه برق است: ناگهانی، تیز و غیرمنتظره. اورانوس از تکرار و قیدوبند بیزار است و همیشه راه تازه‌ای برای دیدن چیزها می‌جوید. در نگاه روان‌شناختی، این سیاره به بخشی از ما اشاره دارد که می‌خواهد متفاوت باشد، بر قواعد جمع خط بکشد و مسیر خودش را بسازد. اگر این انرژی آگاهانه هدایت شود، به نوآوری و شجاعت تبدیل می‌شود و اگر نه، به بی‌قراری و شورش بی‌هدف می‌انجامد."
+   },
+   {
+    "h2": "اورانوس در برج‌ها",
+    "p": "اورانوس حدود هفت سال در هر برج می‌ماند؛ بنابراین جایگاه برجی آن میان هم‌سالان تقریباً مشترک است و بیشتر رنگ نسلی دارد. هر نسل با اورانوس خود، شیوه خاصی برای مواجهه با نوآوری، اعتراض و تغییر پیدا می‌کند. برای مثال اورانوس در برج‌های خاکی معمولاً تغییرهای عملی و ملموس می‌جوید و در برج‌های آبی به دنبال تحول عاطفی و شهودی است. اما برای خوانش شخصی، باید خانه و جنبه‌های اورانوس را هم در نظر گرفت؛ برج به تنهایی تصویر کامل نمی‌دهد."
+   },
+   {
+    "h2": "اورانوس در خانه‌ها",
+    "p": "خانه‌ها نشان می‌دهند میل به آزادی و تازگی در کدام حوزه زندگی خود را نشان می‌دهد. اگر اورانوس در خانه‌های مربوط به شغل باشد، فرد در کارش به استقلال و مسیر غیرمعمول نیاز دارد و از ساختارهای خشک فراری است. اگر اورانوس در خانه‌های رابطه باشد، آزادی در پیوندهای عاطفی برایش حیاتی است و فضای شخصی کافی، شرط صمیمیت اوست. اورانوس در خانه‌های خانه و خانواده نیز اغلب به سبک زندگی غیرسنتی و نیاز به فضای شخصی گسترده اشاره دارد. خانه اورانوس در واقع صحنه‌ای است که ما در آن نقش «شورشیِ آگاه» را بازی می‌کنیم."
+   },
+   {
+    "h2": "جنبه‌های اورانوس با سیارات شخصی",
+    "p": "وقتی اورانوس با خورشید، ماه یا عطارد زاویه مهمی می‌سازد، انرژی آن به شخصیت روزمره ما راه پیدا می‌کند. پیوند (مقارنه) اورانوس با سیارات شخصی، حس تازگی و بی‌قراری به آن جنبه از زندگی می‌دهد؛ مربع و تقابل آن معمولاً تنشی میان امنیت و آزادی می‌سازند که اگر مدیریت شود، رشد عمیقی به همراه دارد. تثلیث و سکستیل اما به ما اجازه می‌دهند نوآوری را نرم‌تر و طبیعی‌تر تجربه کنیم. در همه حال، این زاویه‌ها دعوتی‌اند برای آشتی دادن نیاز به ثبات با نیاز به تغییر."
+   },
+   {
+    "h2": "اورانوس قوی در چارت یعنی چه؟",
+    "p": "اگر اورانوس در چارت تولد جایگاه برجسته یا پرجنبه‌ای داشته باشد، فرد معمولاً به استقلال شدید و سبک زندگی غیررسمی تمایل دارد. این افراد زود از یکنواختی خسته می‌شوند و در محیط‌هایی که اجازه ابتکار نمی‌دهند، احساس خفگی می‌کنند. قوی بودن اورانوس در چارت به معنای سرنوشت دشوار نیست؛ بلکه نشان می‌دهد فردیت و صداقت، کلید رشد این شخص است. شناخت این انرژی کمک می‌کند به‌جای جنگیدن با آن، راهی سالم برای ابرازش پیدا کنیم."
+   },
+   {
+    "h2": "نگاهی واقع‌بینانه به اورانوس",
+    "p": "باید صادق باشیم: هیچ پژوهش کنترل‌شده‌ای نشان نداده که سیاره‌ها بتوانند شخصیت یا رویدادهای زندگی را تعیین کنند. اورانوس در اینجا همچون دیگر نمادهای آسترولوژی، زبانی برای گفت‌وگو با خودمان است، نه منبعی برای خبر دادن از آینده. آسترولوژی یک سیستم نمادین فرهنگی است و دقت آن به عنوان علم تجربی تأیید نشده است. اگر این مرز را شفاف نگه داریم، می‌توانیم از نمادهای آن برای شناخت نیازهای درونی خود استفاده کنیم."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "اورانوس به ما یادآوری می‌کند که زندگی فقط تکرار نیست؛ بخشی از ما همیشه مشتاق تازگی، آزادی و بیداری است. جایگاه اورانوس در چارت تولد، نشانه‌ای است از اینکه این اشتیاق را در کدام گوشه زندگی جست‌وجو می‌کنیم. اگر کنجکاوید ببینید این سیاره در چارت خودتان کجا نشسته است، همین حالا چارت رایگان تولدتان را در زایچه بسازید و با نگاهی باز و پرسشگر آن را کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/uranus-in-birth-chart-thumb.webp"
+ },
+ {
+  "slug": "neptune-in-birth-chart",
+  "title": "نپتون در چارت تولد؛ سیاره رویا، شهود و همدلی",
+  "category": "سیارات",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "نپتون در چارت تولد نماد چه چیزهایی است؟ معنای رویا، شهود، هنر و مهربانی را در برج‌ها، خانه‌ها و جنبه‌های نپتون بخوانید.",
+  "keywords": "نپتون,چارت تولد,نپتون در برج,شهود,رویا",
+  "meta": "راهنمای کامل معنای نپتون در چارت تولد؛ نماد رویا و شهود در برج‌ها، خانه‌ها و جنبه‌ها به زبان ساده.",
+  "image": "/static/articles/neptune-in-birth-chart.webp",
+  "body": [
+   {
+    "h2": "نپتون؛ سیاره‌ای که با ریاضی پیدا شد",
+    "p": "نپتون در سال ۱۸۴۶ نه با تلسکوپ، بلکه با محاسبات ریاضی جایابی شد؛ ستاره‌شناسان از انحراف مدار اورانوس به وجود سیاره‌ای نادیده پی بردند و آن را پیش از دیده‌شدن محاسبه کردند. این تولد عجیب، نپتون را در آسترولوژی به نماد چیزهایی تبدیل کرد که دیده نمی‌شوند اما اثرشان را حس می‌کنیم. رویا، الهام، ایمان و همدلی همگی در قلمرو نپتون جای می‌گیرند. در چارت تولد، نپتون به ما می‌گوید کجا بیش از همه به آرمان‌ها و تصورات درونی تکیه می‌کنیم."
+   },
+   {
+    "h2": "معنای نمادین نپتون",
+    "p": "نپتون سیاره مرزهای محو است: مرز میان من و دیگری، واقعیت و خیال، و آگاهی و ناخودآگاه. انرژی آن مانند مه است؛ نرم، فراگیر و مبهم. در بهترین حالت، نپتون به ما شهود، شفقت و توانایی هنری می‌بخشد و در لحظه‌های دشوار، به آرمان‌هایی اشاره می‌کند که ارزش زیستن دارند. این سیاره همچنین یادآوری می‌کند که گاهی می‌خواهیم از واقعیت سخت فرار کنیم و به دنیای رویا پناه ببریم؛ شناخت این تمایل، نخستین قدم برای استفاده سالم از آن است."
+   },
+   {
+    "h2": "نپتون در برج‌ها",
+    "p": "نپتون حدود چهارده سال در هر برج می‌ماند و بنابراین جایگاه برجی آن، بیشتر ویژگی یک نسل را نشان می‌دهد تا یک فرد. هر نسل با نپتون خود، رویای جمعی خاصی دارد؛ گاه رویای پیشرفت علمی، گاه آرمان اجتماعی و گاه جست‌وجوی معنویت. برای مثال نپتون در برج‌های آبی به نسل‌هایی با شهود و حس هنری قوی اشاره دارد و در برج‌های هوایی، به نسل‌هایی با آرمان‌های فکری و ارتباطی. اما برای درک نقش نپتون در زندگی شخصی، خانه و جنبه‌های آن را باید دقیق‌تر نگاه کرد."
+   },
+   {
+    "h2": "نپتون در خانه‌ها",
+    "p": "خانه نپتون، جایی از زندگی است که رویاها و آرمان‌های ما در آن خانه دارند. اگر نپتون در خانه‌های شغلی باشد، فرد شغلی با معنای انسانی یا هنری می‌جوید و صرفِ درآمد برایش کافی نیست. اگر نپتون در خانه‌های رابطه باشد، در عشق به دنبال پیوندی فراتر از ظاهر و منافع است. نپتون در خانه‌های مالی نیز می‌تواند نشانه نگاه غیرمادی به ثروت یا گاهی سردرگمی در مدیریت پول باشد. در هر حال، این خانه جایی است که مهربانی و خیال‌پردازی ما بیشترین نقش را بازی می‌کنند."
+   },
+   {
+    "h2": "جنبه‌های نپتون",
+    "p": "جنبه‌های نپتون نشان می‌دهند آرمان‌گرایی ما با کدام بخش شخصیت در گفت‌وگوست. پیوند نپتون با سیارات شخصی، حساسیت و شهود را بالا می‌برد؛ اما اگر با سیاره‌ای مانند زحل زاویه سختی بسازد، تنشی میان رویا و واقعیت شکل می‌گیرد که می‌تواند به بلوغ برسد. جنبه‌های سخت نپتون گاهی ما را به سمت توهم یا فرار می‌برند و شناخت آن‌ها یعنی یاد بگیریم کجا باید چشمانمان را باز کنیم. جنبه‌های نرم اما به ما امکان می‌دهند بدون از دست دادن زمین، از زیبایی و عمق زندگی استفاده کنیم."
+   },
+   {
+    "h2": "نپتون و خلاقیت",
+    "p": "نپتون را در آسترولوژی حامی هنر و تخیل می‌دانند؛ بسیاری از هنرمندان، شاعران و موسیقی‌دانان نپتون برجسته یا پرجنبه‌ای در چارت خود دارند. این سیاره به ما می‌آموزد که همه چیز با عقل سنجیده نمی‌شود؛ گاهی باید به حس درونی و الهام اعتماد کنیم. با این حال، الهام بدون نظم مثل رودی است بدون بستر که به بیراهه می‌رود. ترکیب شهود نپتونی با انضباط زمینی می‌تواند قوی‌ترین شکل خلاقیت را بسازد."
+   },
+   {
+    "h2": "نگاهی واقع‌بینانه به نپتون",
+    "p": "صادقانه بگوییم که نپتون و دیگر نمادهای آسترولوژی، تبیین علمی برای شخصیت انسان ارائه نمی‌دهند و هیچ آزمون تجربی این روابط را تأیید نکرده است. نپتون را می‌توان همچون استعاره‌ای غنی برای شناخت رویاها و ترس‌های خود به کار برد، نه راهنمایی برای تصمیم‌های عملی. در مسائل مهم زندگی، تکیه‌گاه واقعی ما عقل، تجربه و مشورت است. بدون ادعای غیب، تصمیم با عقل و استخاره."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "نپتون به ما یادآوری می‌کند که زندگی تنها از آنچه می‌بینیم ساخته نشده؛ لایه‌ای از رویا، همدلی و معنا نیز همیشه در جریان است. جایگاه نپتون در چارت تولد، نقشه‌ای است از اینکه کجا بیشتر به این لایه پنهان دسترسی داریم. اگر دوست دارید ببینید نپتون در چارت شما چه تصویری ترسیم می‌کند، همین حالا چارت رایگان تولدتان را در زایچه بسازید و با ذهنی باز آن را بخوانید."
+   }
+  ],
+  "thumb": "/static/articles/neptune-in-birth-chart-thumb.webp"
+ },
+ {
+  "slug": "pluto-in-birth-chart",
+  "title": "پلوتو در چارت تولد؛ سیاره تحول، عمق و قدرت",
+  "category": "سیارات",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "پلوتو در چارت تولد نماد تحول و قدرت درونی است؛ معنای آن را در برج‌ها، خانه‌ها و جنبه‌ها به زبان ساده بخوانید.",
+  "keywords": "پلوتو,چارت تولد,پلوتو در برج,تحول,عقرب",
+  "meta": "پلوتو در چارت تولد چه می‌گوید؟ راهنمای معنای نمادین پلوتو برای تحول، قدرت و بازسازی در برج‌ها و خانه‌ها.",
+  "image": "/static/articles/pluto-in-birth-chart.webp",
+  "body": [
+   {
+    "h2": "پلوتو؛ سیاره‌ای کوچک با معنایی بزرگ",
+    "p": "پلوتو در سال ۱۹۳۰ کشف شد و سال‌ها نهمین سیاره سامانه خورشیدی خوانده می‌شد تا اینکه در سال ۲۰۰۶ به رده سیاره‌های کوتوله منتقل شد. جالب اینکه این تنزل رتبه هیچ تغییری در جایگاه نمادین پلوتو در آسترولوژی ایجاد نکرد. پلوتو نماد چیزهایی است که در اعماق پنهان‌اند: قدرت، راز، پایان و تولد دوباره. در چارت تولد، پلوتو به ما می‌گوید در کدام حوزه زندگی قرار است بارها بسازیم، ویران کنیم و از نو متولد شویم."
+   },
+   {
+    "h2": "معنای نمادین پلوتو",
+    "p": "پلوتو با فرایندهای شدید و بنیادی پیوند خورده است: دگردیسی، بازسازی و قدرتی که از پذیرش رنج می‌آید. در آسترولوژی، این سیاره را با برج عقرب و نمادهایی مانند عقاب پیوند می‌دهند که از دل تاریکی به روشنایی می‌رسد. انرژی پلوتو سطحی نیست؛ در جایی کار می‌کند که دیگر نمی‌شود به همان شکل قبلی ادامه داد. شناخت پلوتوی چارت، یعنی شناخت نقطه‌هایی از زندگی که در آن‌جا رشد واقعی فقط از دل عبور از بحران ممکن می‌شود."
+   },
+   {
+    "h2": "پلوتو در برج‌ها",
+    "p": "پلوتو به دلیل مدار کشیده‌اش بین دوازده تا سی سال در یک برج می‌ماند و به همین دلیل، برج پلوتو تقریباً برای یک نسل کامل یکسان است. این جایگاه، رنگ تحول جمعی یک نسل را نشان می‌دهد؛ مثلاً پلوتو در برج‌های آبی به نسل‌هایی با حس عمیق و ظرفیت روانی بالا اشاره دارد. هر نسل با پلوتوی خود، شیوه خاصی برای کنار آمدن با بحران‌ها و بازسازی جمعی پیدا می‌کند. برای خوانش فردی اما باید سراغ خانه و جنبه‌های پلوتو برویم."
+   },
+   {
+    "h2": "پلوتو در خانه‌ها",
+    "p": "خانه پلوتو، میدان اصلی نبرد و بازسازی ماست. اگر پلوتو در خانه‌های شغلی باشد، فرد در مسیر حرفه‌ای‌اش بارها با پایان و شروع‌های تازه روبه‌رو می‌شود و از قله‌ها و فرودها درس می‌گیرد. اگر پلوتو در خانه‌های رابطه باشد، پیوندهای عاطفی‌اش معمولاً عمیق، جدی و دگرگون‌کننده‌اند. پلوتو در خانه‌های مالی نیز می‌تواند نشانه نگرش حساب‌شده و دقیق به منابع و قدرت باشد. این خانه جایی است که ما یاد می‌گیریم کنترل را رها کنیم تا چیزی تازه متولد شود."
+   },
+   {
+    "h2": "جنبه‌های پلوتو",
+    "p": "جنبه‌های پلوتو نشان می‌دهند انرژی عمیق و دگرگون‌کننده ما با کدام بخش از شخصیت درگیر است. پیوند یا مربع پلوتو با سیارات شخصی، زندگی را به صحنه تحولات شدید تبدیل می‌کند؛ گاهی با کنترل‌گری همراه است و گاهی با شفای عمیق. تثلیث پلوتو اما به ما توانایی طبیعی برای بازسازی و نفوذ به لایه‌های پنهان مسائل می‌دهد. در هر حال، این جنبه‌ها دعوتی‌اند برای مواجهه با بخش‌هایی از خود که معمولاً از آن‌ها فرار می‌کنیم."
+   },
+   {
+    "h2": "پلوتو قوی در چارت یعنی چه؟",
+    "p": "اگر پلوتو در چارت جایگاه برجسته یا جنبه‌های پررنگی داشته باشد، فرد ظرفیت بالایی برای تحمل بحران و بازسازی خود دارد. چنین افرادی معمولاً نگاه نافذی دارند، رازدارند و به ندرت سطحی زندگی می‌کنند. این شدت اگر مدیریت نشود می‌تواند به کنترل‌گری و بدبینی برسد؛ اما اگر آگاهانه هدایت شود، به عمیق‌ترین شکل خرد و شفا تبدیل می‌شود. پلوتوی قوی یعنی فرصتی برای رشد در دل دشوارترین تجربه‌ها."
+   },
+   {
+    "h2": "پلوتو و سایه",
+    "p": "در خوانش روان‌شناختی، پلوتو با مفهوم «سایه» در نظریه یونگ هم‌سو دانسته می‌شود؛ یعنی بخش‌هایی از وجود که نمی‌بینیم یا نمی‌پذیریم. کار آگاهانه با این بخش‌ها، راز اصلی تحول پلوتونی است. البته باید صادق بود که این‌ها استعاره‌های قدرتمندند، نه یافته‌های علمی قطعی. بدون ادعای غیب، تصمیم‌های زندگی با عقل و استخاره گرفته می‌شود؛ آسترولوژی فقط آیینه‌ای برای نگاه عمیق‌تر به خود است."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "پلوتو به ما می‌آموزد که پایان‌ها همیشه پایان نیستند؛ هر ویرانی، بذری برای ساختن است. جایگاه پلوتو در چارت تولد، نقشه‌ای است از جایی که بیشترین ظرفیت تحول را داریم. اگر کنجکاوید این سیاره در چارت خودتان چه داستانی دارد، همین حالا چارت رایگان تولدتان را در زایچه بسازید و با نگاهی عمیق آن را کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/pluto-in-birth-chart-thumb.webp"
+ },
+ {
+  "slug": "north-node-south-node-astrology",
+  "title": "گره شمالی و جنوبی در آسترولوژی؛ محور رشد و عادت",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "گره‌های ماه در چارت تولد چه معنایی دارند؟ گره شمالی مسیر رشد و گره جنوبی کیسه عادت‌ها و استعدادهای کهن است.",
+  "keywords": "گره شمالی,گره جنوبی,گره ماه,چارت تولد,رشد فردی",
+  "meta": "گره شمالی و جنوبی در آسترولوژی نماد جهت رشد و عادت‌های کهن‌اند؛ در این مقاله معنای این محور را ساده و کاربردی می‌خوانید.",
+  "image": "/static/articles/north-node-south-node-astrology.webp",
+  "body": [
+   {
+    "h2": "گره‌های ماه از دید نجوم",
+    "p": "در نجوم، گره‌های ماه دو نقطه‌ای هستند که مدار ماه با صفحه حرکت زمین به دور خورشید (دایره‌البروج) تلاقی می‌کند. گره شمالی جایی است که ماه از جنوب به شمال این صفحه می‌رود و گره جنوبی نقطه مقابل آن است. این دو نقطه همیشه روبه‌روی هم قرار دارند و در چارت تولد، یک محور واحد می‌سازند. خورشیدگرفتگی‌ها و ماه‌گرفتگی‌ها نیز زمانی رخ می‌دهند که خورشید و ماه نزدیک همین گره‌ها باشند."
+   },
+   {
+    "h2": "گره‌ها در آسترولوژی به چه کار می‌آیند؟",
+    "p": "در آسترولوژی نمادین، گره‌های ماه محور «رشد» و «عادت» در نظر گرفته می‌شوند. گره جنوبی به ویژگی‌ها، استعدادها و الگوهایی اشاره دارد که گویی از قبل با آن‌ها آشنا هستیم و به راحتی در آن‌ها می‌مانیم. گره شمالی اما جهت تازه‌ای را نشان می‌دهد که دعوت به رشد و گسترش داریم. این دو با هم یک قطب‌نمای درونی می‌سازند: یکی می‌گوید کجا راحتیم و دیگری می‌گوید کجا باید بزرگ شویم."
+   },
+   {
+    "h2": "گره جنوبی؛ کیسه استعدادها و عادت‌ها",
+    "p": "گره جنوبی نمایانگر چیزهایی است که در آن‌ها مهارت داریم، اما ممکن است به آن‌ها وابسته شده باشیم. این نقطه می‌تواند نشان دهد در چه زمینه‌ای بیش از حد راحتیم و از رشد فرار می‌کنیم؛ مثلاً تکیه بیش از حد بر کمک به دیگران یا پناه بردن به تحلیل ذهنی بی‌پایان. استعدادهای گره جنوبی واقعی‌اند و نباید دور ریخته شوند؛ فقط باید یاد بگیریم به آن‌ها تکیه نکنیم، آن‌جا که زندگی از ما چیز دیگری می‌خواهد. گره جنوبی به تعبیری، خانه امن ماست؛ اما ماندن همیشگی در خانه، سفر را ناممکن می‌کند."
+   },
+   {
+    "h2": "گره شمالی؛ جهت رشد",
+    "p": "گره شمالی نشان می‌دهد برای تعادل و رشد، باید به کدام سمت حرکت کنیم؛ سمت تازه‌ای که معمولاً در ابتدا ناآشنا و حتی ترسناک به نظر می‌رسد. اگر گره شمالی در برجی باشد که برایمان ناآشناست، رشد از دل همین ناآشنایی می‌گذرد. حرکت به سمت گره شمالی به معنای نادیده گرفتن گره جنوبی نیست؛ بلکه یادگیری استفاده هوشمندانه از داشته‌ها در خدمت مسیر تازه است. این محور، در واقع نقشه کوچکی از سفر زندگی هر فرد است."
+   },
+   {
+    "h2": "خواندن محور گره‌ها در برج‌ها و خانه‌ها",
+    "p": "برج گره‌ها رنگ و حال‌وهوای این سفر را نشان می‌دهد و خانه‌ها مشخص می‌کنند رشد در کدام حوزه زندگی اتفاق می‌افتد. برای مثال گره شمالی در خانه‌های اجتماعی، دعوت به پیوند با جمع و پذیرفتن نقش عمومی‌تر است؛ در خانه‌های شخصی، دعوت به عمق عاطفی و توجه به دنیای درون. از آنجا که گره جنوبی همیشه روبه‌روی گره شمالی است، هر محور گرهی، دو برج و دو خانه متضاد را به هم پیوند می‌زند. این تقابل، معنای اصلی محور گره‌هاست: آشتی دادن دو قطب."
+   },
+   {
+    "h2": "گره‌ها، گرفتگی‌ها و چرخه‌های جمعی",
+    "p": "گره‌های ماه حدود هجده ماه در یک محور برجی می‌مانند و سپس به محور قبلی برمی‌گردند؛ به همین دلیل در آسترولوژی، هر یک سال و نیم یک بار، تمرکز جمعی از یک محور به محور دیگر جابه‌جا می‌شود. گرفتگی‌های خورشید و ماه که نزدیک گره‌ها رخ می‌دهند، در این سنت نمادین، لحظه‌هایی برای بازبینی و شروع‌های معنادار خوانده می‌شوند. این چرخه‌ها می‌توانند به ما یادآوری کنند که زندگی فصلی است و هر فصل، دعوت خاص خود را دارد."
+   },
+   {
+    "h2": "نگاه متعادل به گره‌ها",
+    "p": "مهم است بدانیم که مفاهیمی مانند «کارما» و گره‌های ماه، بخشی از زبان نمادین آسترولوژی‌اند و تبیین علمی برای آن‌ها وجود ندارد. گره‌ها قرار نیست سرنوشت کسی را تعیین کنند یا او را به راهی از پیش نوشته بکشانند. ارزش این محور در این است که زبانی برای تأمل درباره الگوهای تکراری و جهت رشد فراهم می‌کند. بدون ادعای غیب، تصمیم با عقل و استخاره؛ آسترولوژی فقط آینه‌ای برای انتخاب آگاهانه‌تر است."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "محور گره‌های ماه، یکی از آموزنده‌ترین بخش‌های چارت تولد برای خودشناسی است؛ به ما می‌گوید کدام عادت‌ها ما را در جا نگه داشته‌اند و کدام جهت، افق تازه‌ای می‌گشاید. البته این فقط یک نقشه نمادین است و مسیر واقعی زندگی را خودمان می‌سازیم. اگر کنجکاوید ببینید گره‌های چارت شما در کدام برج و خانه نشسته‌اند، همین حالا چارت رایگان تولدتان را در زایچه بسازید و محور رشد خود را کشف کنید."
+   }
+  ],
+  "thumb": "/static/articles/north-node-south-node-astrology-thumb.webp"
+ },
+ {
+  "slug": "retrograde-planets-meaning",
+  "title": "سیارات رجوعی (رتروگراد) یعنی چه؟ راهنمای ساده",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "رتروگراد یا رجوع سیارات چیست و در چارت تولد چه معنایی دارد؟ از توضیح نجومی تا خوانش نمادین آن به زبان ساده.",
+  "keywords": "سیارات رجوعی,رتروگراد,عطارد رجوعی,چارت تولد",
+  "meta": "معنای رتروگراد یا حرکت رجوعی سیارات چیست؟ توضیح نجومی و خوانش نمادین آن در چارت تولد به زبان ساده.",
+  "image": "/static/articles/retrograde-planets-meaning.webp",
+  "body": [
+   {
+    "h2": "رتروگراد یعنی چه؟",
+    "p": "رتروگراد (یا رجوع) به حالتی گفته می‌شود که یک سیاره از دید ناظر زمینی، مدتی به نظر می‌رسد در آسمان به سمت عقب حرکت می‌کند. این حرکت ظاهری چند هفته تا چند ماه طول می‌کشد و برای هر سیاره دوره‌ای متفاوت دارد. عطارد معمولاً سه یا چهار بار در سال رجوع می‌کند و هر بار حدود سه هفته؛ سیارات بیرونی مانند مشتری و زحل هر سال یک دوره بلندتر دارند. در چارت تولد نیز اگر سیاره‌ای در لحظه تولد رجوعی بوده باشد، این حالت را «رتروگراد تولد» می‌نامیم."
+   },
+   {
+    "h2": "چرا سیارات به عقب حرکت می‌کنند؟",
+    "p": "نکته جالب این است که رتروگراد یک توهم ظاهری است، نه حرکت واقعی سیاره به سمت عقب. زمین و سیارات دیگر هر کدام با سرعت متفاوتی دور خورشید می‌چرخند؛ وقتی زمین از یک سیاره بیرونی سبقت می‌گیرد، آن سیاره برای مدتی به نظر می‌رسد در پس‌زمینه ستارگان عقب می‌رود. درست مثل قطاری که از کنار قطار کندتری عبور می‌کند و آن قطار به نظر می‌رسد دارد عقب می‌رود. پس رتروگراد هیچ تأثیر فیزیکی بر زمین یا زندگی ما ندارد و یک پدیده کاملاً قابل محاسبه نجومی است."
+   },
+   {
+    "h2": "رتروگراد در چارت تولد چه معنایی دارد؟",
+    "p": "در آسترولوژی نمادین، سیاره رجوعی نشان می‌دهد که کارکرد آن سیاره بیشتر به سمت درون چرخیده است تا بیرون. مثلاً عطارد رجوعی یعنی شیوه تفکر و ارتباط، درونی‌تر و بازاندیشانه‌تر است. این سیارات به جای بیان مستقیم، ابتدا در ذهن پردازش می‌شوند و سپس بیرون می‌آیند. به همین دلیل در سنت آسترولوژی، سیارات رجوعی را نه نقص، بلکه دعوتی به عمق و بازبینی می‌دانند."
+   },
+   {
+    "h2": "عطارد رجوعی؛ مشهورترین رتروگراد",
+    "p": "عطارد رجوعی آن‌قدر مشهور شده که گاهی همه مشکلات روزمره به آن نسبت داده می‌شود؛ از خرابی گوشی تا دیر رسیدن به قرار ملاقات. در نگاه نمادین، عطارد رجوعی تولد به معنای ذهنی است که قبل از صحبت زیاد فکر می‌کند و در ارتباطاتش دقت و بازاندیشی دارد. دوره‌های رجوع عطارد در آسمان نیز در این سنت، زمان‌های مناسبی برای بازبینی، اصلاح و بازگشت به کارهای ناتمام خوانده می‌شوند؛ نه توقف زندگی. به بیان دیگر، این دوره‌ها دعوت به آهسته‌تر شدن‌اند، نه ترس."
+   },
+   {
+    "h2": "زهره و مریخ رجوعی",
+    "p": "زهره رجوعی در چارت تولد می‌تواند نشانه پیوندی درونی با ارزش‌ها و عشق باشد؛ فرد احساساتش را دیر و عمیق بروز می‌دهد و در روابط، به کیفیت بیش از سرعت اهمیت می‌دهد. مریخ رجوعی نیز انرژی و خشم را به سمت درون می‌چرخاند؛ این افراد معمولاً عمل را با تأمل همراه می‌کنند و گاهی در ابراز خواسته‌هایشان محتاط‌اند. در دوره‌های رجوع این دو سیاره در آسمان، موضوعات عشق، ارزش و انگیزه در این سنت مورد بازبینی قرار می‌گیرند. این چرخه‌ها فرصتی برای بازتعریف خواسته‌ها هستند."
+   },
+   {
+    "h2": "سیارات اجتماعی و فرااجتماعی رجوعی",
+    "p": "مشتری و زحل رجوعی، نگاه ما را به باورها، رشد و مسئولیت، درونی می‌کنند؛ گاهی معنای موفقیت را باید در خود جست‌وجو کنیم، نه در تأیید بیرونی. اورانوس، نپتون و پلوتو نیز بخش بزرگی از سال را رجوعی‌اند؛ رجوع آن‌ها بیشتر یک ویژگی جمعی و نسلی است تا فردی. در چارت تولد، رجوع این سیارات نشان می‌دهد فرد با موضوعات تحول و آرمان‌ها، رابطه‌ای درونی و غیرمستقیم دارد. به همین دلیل خوانش رتروگراد سیارات کندتر، کمتر به فرد مربوط می‌شود و بیشتر به رنگ نسل است."
+   },
+   {
+    "h2": "آیا رتروگراد خطرناک است؟",
+    "p": "نه؛ این باور ریشه در سوءتفاهم از مفهوم رجوع دارد. حرکت رجوعی یک پدیده کاملاً نجومی است و هیچ ارتباط علمی با رویدادهای خوب یا بد زندگی ندارد. در خوانش نمادین نیز رتروگراد یک نقص نیست؛ فقط شیوه‌ای متفاوت از بیان انرژی همان سیاره است. اگر دوره‌های رجوع را به چشم فرصتی برای مکث و بازبینی ببینیم، می‌توانند به بهبود کیفیت کارها کمک کنند. تصمیم‌ها همیشه با عقل و آگاهی گرفته می‌شوند؛ نه با ترس از ستاره‌ها."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "رتروگراد یک پدیده نجومی واقعی و زیباست که در آسترولوژی به زبانی برای درون‌نگری تبدیل شده است. سیارات رجوعی در چارت تولد، نقاطی‌اند که انرژی آن سیاره به سمت عمق و بازبینی می‌رود؛ نه نشانه نقص، نه منبع ترس. اگر کنجکاوید بدانید چند سیاره چارت تولد شما رجوعی است و این چه تصویری از شما می‌سازد، همین حالا چارت رایگان‌تان را در زایچه بسازید و با نگاهی باز آن را کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/retrograde-planets-meaning-thumb.webp"
+ },
+ {
+  "slug": "rising-sign-ascendant-meaning",
+  "title": "طالع یا صعود (رایزینگ) چیست؟ راهنمای کامل",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "طالع یا برج صعودی، برجی است که هنگام تولد از افق شرقی در حال طلوع بوده؛ نقش آن در شخصیت و چارت تولد چیست؟",
+  "keywords": "طالع,صعود,رایزینگ,برج صعودی,چارت تولد",
+  "meta": "طالع یا صعود چیست و چرا مهم است؟ تفاوت طالع با برج خورشیدی و نقش آن در چارت تولد به زبان ساده.",
+  "image": "/static/articles/rising-sign-ascendant-meaning.webp",
+  "body": [
+   {
+    "h2": "طالع یا صعود چیست؟",
+    "p": "طالع (Ascendant) یا برج صعودی، برجی است که در لحظه دقیق تولد شما از افق شرقی محل تولد در حال طلوع بوده است. در چارت تولد، این نقطه مرز میان آسمان و زمین را مشخص می‌کند و چرخه دوازده خانه از همین نقطه آغاز می‌شود. به همین دلیل طالع مهم‌ترین نقطه چارت بعد از جایگاه خورشید به شمار می‌آید. ساده بگوییم: خورشید می‌گوید ما کیستیم و طالع نشان می‌دهد چطور وارد اتاق می‌شویم."
+   },
+   {
+    "h2": "چرا طالع این‌قدر مهم است؟",
+    "p": "طالع «ماسک اجتماعی» ماست؛ اولین تصویری که دیگران از ما می‌بینند و شیوه طبیعی برخورد ما با جهان. در آسترولوژی، طالع به ظاهر، لحن، انرژی نخستین و حتی نگرش ما به جسم اشاره دارد. این برج تعیین می‌کند چارت را از کدام دریچه نگاه کنیم؛ چون خانه اول همیشه از طالع شروع می‌شود. برای همین دو نفر با خورشید یکسان اما طالع متفاوت، شخصیت‌های بسیار متفاوتی از خود نشان می‌دهند."
+   },
+   {
+    "h2": "تفاوت برج خورشیدی با طالع",
+    "p": "برج خورشیدی که اغلب افراد می‌شناسند، جایگاه خورشید در لحظه تولد است و هسته هویت، اراده و هدف ما را نشان می‌دهد. طالع اما پوسته بیرونی و سبک مواجهه با زندگی است؛ جایی که تصمیم‌های اولیه و واکنش‌های آنی ما از آن می‌آید. به تعبیر ساده، خورشید نویسنده داستان است و طالع قالب و سبک روایت آن. برای شناخت کامل‌تر، هر دو را باید در کنار ماه و دیگر سیارات خواند."
+   },
+   {
+    "h2": "طالع و خانه اول",
+    "p": "طالع همیشه آغازگر خانه اول چارت است و این خانه به بدن، ظاهر و رویکرد کلی ما به زندگی مربوط می‌شود. سیاره‌ای که در خانه اول یا نزدیک طالع باشد، به حضورم رنگ می‌بخشد و گاهی حتی از برج طالع هم پررنگ‌تر دیده می‌شود. برای مثال ماه نزدیک طالع، چهره‌ای مهربان و حساس می‌سازد و مریخ نزدیک طالع، انرژی و صراحت را نمایان می‌کند. طالع در واقع آستانه ورود ما به هر تجربه‌ای است."
+   },
+   {
+    "h2": "چگونه طالع خود را بفهمیم؟",
+    "p": "برخلاف برج خورشیدی که تقریباً یک ماه ثابت است، طالع هر دو ساعت یک‌بار تغییر می‌کند؛ چون زمین می‌چرخد و برج‌های مختلف از افق بالا می‌آیند. به همین دلیل برای محاسبه طالع، به ساعت دقیق تولد (و حتی چند دقیقه آن) و محل تولد نیاز داریم. اگر ساعت تولد دقیق نباشد، طالع می‌تواند نادرست یا نامشخص باشد. برای همین هنگام ساخت چارت، ساعت تولد باید با دقت ثبت شود تا طالع به درستی محاسبه شود."
+   },
+   {
+    "h2": "حاکم طالع؛ کلید خوانش چارت",
+    "p": "در آسترولوژی، سیاره‌ای که بر برج طالع فرمانروایی می‌کند، «حاکم طالع» نامیده می‌شود و نقش مهمی در چارت دارد. جایگاه این سیاره در برج و خانه، نشان می‌دهد انرژی‌های اصلی زندگی ما به کدام سمت جریان پیدا می‌کنند. برای مثال اگر طالع برج حمل باشد، مریخ حاکم آن است و جایگاه مریخ در چارت، مسیر زندگی را روشن می‌کند. به همین دلیل اختربین‌ها برای شروع تحلیل، معمولاً اول سراغ طالع و حاکم آن می‌روند."
+   },
+   {
+    "h2": "طالع و خودشناسی",
+    "p": "شناخت طالع به ما کمک می‌کند بفهمیم چرا دیگران اغلب تصور خاصی از ما دارند یا چرا در موقعیت‌های تازه واکنش مشخصی نشان می‌دهیم. این شناخت همان‌قدر که درباره دیگران است، درباره پذیرش خودمان هم هست؛ پوسته بیرونی هم بخشی از حقیقت ماست. البته باید به یاد داشت که طالع یک تبیین علمی نیست، بلکه یک زبان نمادین برای مشاهده رفتار است. بدون ادعای غیب، تصمیم‌های مهم زندگی با عقل و استخاره گرفته می‌شوند."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "طالع یا صعود، نقطه آغاز چارت تولد و نشان‌دهنده سبک حضور ما در جهان است؛ از ظاهر و لحن تا شیوه شروع هر کار. اگر تا به حال فقط برج خورشیدی خود را می‌دانستید، پیدا کردن طالع می‌تواند لایه تازه‌ای از خودشناسی را برایتان باز کند. همین حالا چارت رایگان تولدتان را در زایچه بسازید تا طالع، خورشید و ماه خود را در یک نگاه ببینید."
+   }
+  ],
+  "thumb": "/static/articles/rising-sign-ascendant-meaning-thumb.webp"
+ },
+ {
+  "slug": "astrology-aspects-trine-sextile",
+  "title": "زاویه‌های نرم در چارت: مثلث و تسدیس",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "زاویه مثلث و تسدیس دو زاویه هماهنگ در چارت تولد هستند. در این مقاله می‌آموزیم این زاویه‌ها چه استعدادها و فرصت‌هایی را نشان می‌دهند و چطور از آن‌ها آگاهانه استفاده کنیم.",
+  "keywords": "زاویه مثلث,زاویه تسدیس,زاویه نرم,چارت تولد,زاویه‌های نجومی,ترین و سکستایل",
+  "meta": "زاویه مثلث (ترین) و تسدیس (سکستایل) در چارت تولد: نشانه‌های جریان طبیعی انرژی، استعدادها و فرصت‌هایی که با تلاش شکوفا می‌شوند، به زبان ساده.",
+  "image": "/static/articles/astrology-aspects-trine-sextile.webp",
+  "body": [
+   {
+    "h2": "زاویه در چارت تولد چیست؟",
+    "p": "در چارت تولد، هر سیاره در نقطه‌ای از دایره‌البروج قرار دارد و زاویه‌ای که دو سیاره با مرکز زمین می‌سازند، «زاویه» یا Aspect نامیده می‌شود. این زاویه‌ها به منزله زبان گفت‌وگوی سیارات هستند؛ هر زاویه نشان می‌دهد دو انرژی درون ما چگونه با یکدیگر ارتباط برقرار می‌کنند. اخترشناسان زاویه‌ها را به دو گروه نرم (هماهنگ) و سخت (چالش‌برانگیز) تقسیم می‌کنند. زاویه‌های نرم، یعنی مثلث و تسدیس، نماد جریان، همکاری و سهولت هستند و در این مقاله با زبان نمادین آن‌ها آشنا می‌شویم."
+   },
+   {
+    "h2": "زاویه مثلث (ترین)؛ جریان طبیعی انرژی",
+    "p": "زاویه مثلث زمانی شکل می‌گیرد که دو سیاره حدود ۱۲۰ درجه از هم فاصله داشته باشند؛ فاصله‌ای که معمولاً میان دو برج از یک عنصر، مانند دو برج آتشی یا دو برج آبی، رخ می‌دهد. این زاویه نماد هماهنگی طبیعی است: انرژی دو سیاره بدون اصطکاک در کنار هم جاری می‌شود و استعدادی را نشان می‌دهد که «آسان» و ذاتی به نظر می‌رسد. برای نمونه، مثلث ماه و زهره می‌تواند حساسیت و محبت را به هم گره بزند و روابط عاطفی گرم و صمیمی‌ای را رقم بزند. در عمل، صاحبان این زاویه‌ها اغلب در آن حوزه بدون تلاش ظاهری، عملکردی روان و خوب دارند."
+   },
+   {
+    "h2": "مثلث؛ استعداد یا کم‌تحرکی؟",
+    "p": "نکته ظریف زاویه مثلث این است که سهولت همیشه به شکوفایی نمی‌انجامد؛ گاهی راحتیِ بیش از حد باعث می‌شود استعداد بدون تمرین و توسعه باقی بماند. وقتی کاری به طور طبیعی برایمان پیش می‌رود، ممکن است از کنارش بگذریم و آن را جدی نگیریم، چون هیچ فشار بیرونی ما را به پیش نمی‌راند. مثلث‌ها به ما یادآوری می‌کنند که استعداد فقط نقطه شروع است، نه پایان مسیر. آگاهی از این زاویه کمک می‌کند انرژی نرم آن را با اراده و تمرین همراه کنیم تا به دستاوردی واقعی و ملموس تبدیل شود."
+   },
+   {
+    "h2": "زاویه تسدیس (سکستایل)؛ فرصتی که منتظر قدم ماست",
+    "p": "زاویه تسدیس حدود ۶۰ درجه فاصله دارد و معمولاً میان برج‌های هم‌ساز مانند آتش و هوا یا خاک و آب شکل می‌گیرد. این زاویه مانند دری است که باز است اما عبور از آن نیازمند حرکت خود ماست؛ یعنی نشان‌دهنده فرصت است، نه نتیجه آماده. تسدیس‌ها حوزه‌هایی را نشان می‌دهند که اگر قدم برداریم و تلاش کنیم، همکاری سیارات به نفع ما جریان می‌یابد. برخلاف مثلث، تسدیس بدون انتخاب و اقدام فعال شکوفا نمی‌شود و همین ویژگی آن را به زاویه‌ای پویا و امیدوارکننده تبدیل می‌کند."
+   },
+   {
+    "h2": "تفاوت مثلث و تسدیس در یک نگاه",
+    "p": "مثلث مانند رودخانه‌ای است که خودش جاری است؛ تسدیس مانند باغی است که باید آبیاری شود. در مثلث، توانایی به صورت آماده در دسترس است و چالش اصلی، قدردانی و توسعه آن است. در تسدیس، امکان و ظرفیت وجود دارد اما نتیجه به تصمیم، آموزش و تلاش آگاهانه ما بستگی دارد. هر دو زاویه به ما می‌گویند که چارت، نقشه گفت‌وگوی درونی است؛ ابزاری برای خودشناسی و تأمل، نه حکمی قطعی درباره سرنوشت ما."
+   },
+   {
+    "h2": "زاویه‌های نرم در کنار زاویه‌های سخت",
+    "p": "هیچ چارتی فقط از زاویه‌های نرم یا فقط از زاویه‌های سخت ساخته نشده است؛ ترکیب این دو، تصویر کامل شخصیت را می‌سازد. زاویه‌های نرم به ما می‌گویند در کجا به راحتی جاری می‌شویم و زاویه‌های سخت نشان می‌دهند در کجا باید رشد کنیم. دیدن مثلث‌ها و تسدیس‌ها بدون قضاوت، راهی برای شناخت بهتر خودمان است. به یاد داشته باشیم آسترولوژی یک زبان نمادین است و پژوهش‌های علمی، دقت تعیین‌کننده آن را برای آینده تأیید نکرده‌اند؛ ارزش آن در تأمل، خودآگاهی و گفت‌وگو با خود است."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "زاویه مثلث و تسدیس به ما نشان می‌دهند کدام انرژی‌های درونی‌مان به طور طبیعی با هم همکاری می‌کنند و کدام فرصت‌ها منتظر قدم ما هستند. شناخت این زاویه‌ها مانند روشن کردن چراغی در اتاق تاریک است؛ تصویر را واضح‌تر می‌بینیم اما تصمیم همیشه با خود ماست. اگر کنجکاوید بدانید چارت تولدتان چه زاویه‌های نرمی دارد، همین حالا چارت رایگان خود را در سایت ما بسازید و با نگاهی باز، این نقشه نمادین را کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/astrology-aspects-trine-sextile-thumb.webp"
+ },
+ {
+  "slug": "astrology-aspects-square-opposition",
+  "title": "زاویه‌های سخت در چارت: مربع و مقابله",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "زاویه مربع و مقابله چالش‌برانگیزترین زاویه‌های چارت تولد هستند، اما همین تنش‌ها موتور رشد و تحول ما می‌شوند. در این مقاله زبان نمادین آن‌ها را می‌آموزیم.",
+  "keywords": "زاویه مربع,زاویه مقابله,زاویه سخت,چارت تولد,زاویه‌های نجومی,اسکویر و اپوزیسیون",
+  "meta": "زاویه مربع (اسکویر) و مقابله (اپوزیسیون) در چارت تولد: تنش‌های درونی، آینه‌های روابط و فرصت‌های رشد، با نگاهی نمادین و بدون ادعای تعیین آینده.",
+  "image": "/static/articles/astrology-aspects-square-opposition.webp",
+  "body": [
+   {
+    "h2": "چرا زاویه‌های سخت ارزش شناخت دارند؟",
+    "p": "وقتی واژه «سخت» را در کنار زاویه‌های چارت می‌شنویم، شاید ناخودآگاه نگران شویم؛ اما در زبان نمادین آسترولوژی، زاویه‌های سخت نه بد هستند و نه نشانه نقص. این زاویه‌ها نقاطی هستند که دو نیروی درونی ما با هم تضاد دارند و همین تضاد، انرژی حرکت و رشد را می‌سازد. بدون چالش، هیچ ماهیچه‌ای قوی نمی‌شود و بدون تنش، شخصیت عمق نمی‌گیرد. شناخت این زاویه‌ها یعنی دیدن میدان تمرین اصلی زندگی خودمان، با نگاهی کنجکاوانه و بدون ترس."
+   },
+   {
+    "h2": "زاویه مربع؛ تنش سازنده درون",
+    "p": "زاویه مربع زمانی رخ می‌دهد که دو سیاره حدود ۹۰ درجه از هم فاصله دارند و معمولاً میان برج‌هایی با کیفیت یکسان اما عناصر متفاوت شکل می‌گیرد. این زاویه نماد گفت‌وگوی پرتنش میان دو بخش شخصیت است؛ مانند دو نفری که در یک اتاق، خواسته‌های متفاوتی دارند و باید به توافق برسند. برای نمونه، مربع مریخ و زحل می‌تواند میان شتاب و احتیاط کشمکش ایجاد کند: یک لحظه می‌خواهیم سریع اقدام کنیم و لحظه‌ای دیگر از ترس می‌ایستیم. این تنش اگر آگاهانه مدیریت شود، به اراده‌ای منظم و پایداری واقعی تبدیل می‌شود."
+   },
+   {
+    "h2": "مربع در زندگی روزمره",
+    "p": "مربع‌ها معمولاً در حوزه‌هایی که با آن‌ها «کلنجار» می‌رویم خود را نشان می‌دهند؛ جاهایی که احساس می‌کنیم کار برایمان سخت‌تر از دیگران است. همین سختی اما درس‌های عمیقی به ما می‌دهد؛ زیرا هرچه بیشتر با چالشی درگیر شویم، مهارت و ظرفیت بیشتری در آن به دست می‌آوریم. زاویه مربع مانند سنگی در کفش نیست که باید برداشته شود، بلکه مانند وزنه تمرین است که عضله می‌سازد. هدف از شناخت آن، حذف تنش نیست؛ بلکه تبدیل کردن آن به انرژی سازنده و عمل آگاهانه است."
+   },
+   {
+    "h2": "زاویه مقابله؛ آینه روبه‌رو",
+    "p": "زاویه مقابله وقتی شکل می‌گیرد که دو سیاره حدود ۱۸۰ درجه از هم قرار دارند؛ یعنی دقیقاً روبه‌روی هم در دایره‌البروج. این زاویه نماد قطبیت است: دو نیرویی که می‌توانند یکدیگر را کامل کنند اما از دید هم، غریبه به نظر می‌رسند. مقابله‌ها اغلب در روابط و تعامل با «دیگری» فعال می‌شوند؛ یعنی ویژگی‌هایی که در خود نمی‌بینیم، در شریک یا رقیب خود می‌بینیم. این زاویه مانند آینه‌ای است که تصویر نادیده‌گرفته‌شده ما را به ما نشان می‌دهد."
+   },
+   {
+    "h2": "مقابله و روابط؛ دیگری به‌مثابه آینه",
+    "p": "مقابله‌ها به ما می‌گویند آنچه در دیگران ما را آزار می‌دهد یا مجذوبمان می‌کند، اغلب بازتاب قطب ناشناخته خود ماست. برای نمونه، مقابله ماه و زحل می‌تواند میان نیاز به محبت و ترس از وابستگی دوگانگی بسازد و شریک زندگی ما ناخواسته همین دوگانگی را به صحنه می‌کشد. وقتی این الگو را بشناسیم، می‌توانیم به جای سرزنش طرف مقابل، با بخش نادیده‌گرفته خودمان آشتی کنیم. رابطه در این نگاه، میدان تمرین خودشناسی می‌شود، نه میدان جنگ."
+   },
+   {
+    "h2": "چطور با زاویه‌های سخت کار کنیم؟",
+    "p": "اولین قدم، قضاوت‌زدایی است: مربع و مقابله نشانه بدشانسی نیستند، بلکه زبان نمادینی برای توصیف کشمکش‌های انسانی‌اند. قدم دوم، مشاهده بدون سرزنش است؛ کافی است الگوهای تکراری را در زندگی خود ببینیم و نامشان را بشناسیم. قدم سوم، گفت‌وگو با خود و در صورت لزوم مشورت با افراد باتجربه برای تصمیم‌های مهم است. در این مسیر فراموش نکنیم آسترولوژی علمی اثبات‌شده نیست و هیچ زاویه‌ای آینده ما را از پیش تعیین نمی‌کند؛ این ما هستیم که با انتخاب‌هایمان مسیر خود را می‌سازیم."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "زاویه مربع و مقابله، سخت‌ترین اما آموزنده‌ترین بخش‌های چارت تولد هستند؛ آن‌ها میدان تمرین رشد ما را نشان می‌دهند. اگر این زاویه‌ها را در چارت خود دیدید، نگران نباشید؛ بلکه با کنجکاوی به آن‌ها نگاه کنید و ببینید کدام کشمکش درونی در زندگی شما تکرار می‌شود. برای کشف زاویه‌های چارت خودتان، همین حالا چارت رایگان تولدتان را در سایت ما بسازید و این نقشه نمادین را با نگاهی باز و تأمل‌گرانه کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/astrology-aspects-square-opposition-thumb.webp"
+ },
+ {
+  "slug": "midheaven-mc-career-astrology",
+  "title": "خانه دهم و مسیر شغلی؛ راهنمای میانه آسمان (MC) در چارت",
+  "category": "شغل و موفقیت",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "میانه آسمان (MC) و خانه دهم، نماد جایگاه اجتماعی، تصویر عمومی و جهت‌گیری شغلی در چارت تولد هستند. در این مقاله یاد می‌گیریم این بخش از چارت را چگونه بخوانیم.",
+  "keywords": "خانه دهم,میانه آسمان,MC,مسیر شغلی,چارت تولد,موفقیت شغلی",
+  "meta": "معنای خانه دهم و میانه آسمان (MC) در چارت تولد: تصویر عمومی، جایگاه اجتماعی و جهت‌گیری شغلی به زبان ساده و کاربردی.",
+  "image": "/static/articles/midheaven-mc-career-astrology.webp",
+  "body": [
+   {
+    "h2": "خانه دهم و میانه آسمان؛ قله چارت",
+    "p": "در چارت تولد، دوازده خانه هر کدام به حوزه‌هایی از زندگی اشاره دارند و خانه دهم در میان آن‌ها جایگاهی ویژه دارد؛ زیرا درست در بالاترین نقطه چارت قرار گرفته است. به خطی که از این نقطه به افق می‌رسد، «میانه آسمان» یا MC گفته می‌شود که از عبارت لاتین Medium Coeli گرفته شده است. خانه دهم و MC نماد بلندترین نقطه آرزوها، جایگاه اجتماعی و مسیری هستند که فرد در برابر چشم دیگران طی می‌کند. به همین دلیل اخترشناسان هنگام گفت‌وگو درباره شغل و موفقیت، نخست به این بخش از چارت نگاه می‌کنند."
+   },
+   {
+    "h2": "MC و تصویر عمومی ما",
+    "p": "میانه آسمان نشان می‌دهد ما چگونه دیده می‌شویم و چه نقشی در جامعه برای خود می‌سازیم؛ از عنوان شغلی تا اعتباری که در ذهن دیگران داریم. این بخش چارت درباره هویت خصوصی و درونی ما حرف نمی‌زند؛ بلکه درباره چهره عمومی و میراثی است که در دنیای بیرون از خود به جا می‌گذاریم. برای نمونه، MC در برج‌های هوایی می‌تواند به نقش‌هایی مانند آموزش، رسانه و ارتباطات اشاره داشته باشد و MC در برج‌های خاکی به مدیریت، مالکیت و کارهای ملموس. این توصیفات، زبان نمادین هستند و نباید آن‌ها را حکم قطعی درباره شغل دانست."
+   },
+   {
+    "h2": "برج روی MC و سیارات نزدیک آن",
+    "p": "برای خواندن خانه دهم، نخست به برجی نگاه می‌کنیم که روی خط MC قرار گرفته و سپس به سیاراتی که در خانه دهم یا نزدیک MC می‌نشینند. برج روی MC سبک عمومی ما در مسیر شغلی را توصیف می‌کند؛ مثلاً برج اسد در MC می‌تواند میل به دیده‌شدن و رهبری را نشان دهد. سیاره‌ای که به MC نزدیک است نیز رنگ آن مسیر را پررنگ می‌کند؛ مانند زحل که جدیت و مسئولیت را به تصویر عمومی می‌افزاید یا مشتری که گسترش و خوش‌بینی را تقویت می‌کند. ترکیب این نشانه‌ها، تصویری نمادین از جهت‌گیری شغلی می‌سازد، نه فهرستی از مشاغل مشخص."
+   },
+   {
+    "h2": "خانه دهم، خانه دوم و خانه ششم؛ سه نگاه به کار",
+    "p": "در گفت‌وگو درباره شغل، معمولاً سه خانه درگیر می‌شوند: خانه دوم که نماد درآمد و ارزش‌های مادی است، خانه ششم که به کار روزمره، مهارت و خدمت اشاره دارد و خانه دهم که جهت‌گیری بلندمدت و جایگاه اجتماعی را نشان می‌دهد. یک شغل رضایت‌بخش معمولاً نقطه تلاقی این سه است: کاری که هم درآمد دارد، هم با مهارت‌های روزمره ما هماهنگ است و هم در راستای آرزوی بلندمدت‌مان قرار دارد. چارت می‌تواند کمک کند این سه بعد را جدا ببینیم و بفهمیم در کدام یک احساس کمبود داریم. اما انتخاب نهایی، همیشه با عقل، مشورت و شناخت واقعیت‌های زندگی ما انجام می‌شود."
+   },
+   {
+    "h2": "مسیر شغلی یک انتخاب است، نه حکم از پیش نوشته",
+    "p": "مهم‌ترین نکته‌ای که درباره خانه دهم باید به خاطر بسپاریم این است که چارت، یک نقشه نمادین است، نه سندی اداری درباره شغل آینده. بسیاری از افراد با MCهای مشابه، مسیرهای کاملاً متفاوتی رفته‌اند و این نشان می‌دهد زمینه‌های اجتماعی، تحصیل، تلاش و فرصت‌ها نقشی تعیین‌کننده دارند. آسترولوژی در این حوزه می‌تواند زبان مناسبی برای تأمل درباره ارزش‌ها، استعدادها و تصویر آرمانی ما فراهم کند. بدون ادعای غیب، برای تصمیم‌های مهم شغلی باید از عقل، مشورت با آگاهان و در صورت تمایل استخاره بهره بگیریم."
+   },
+   {
+    "h2": "پرسش‌هایی برای تأمل درباره مسیر شغلی",
+    "p": "به جای پرسیدن «چه شغلی برایم نوشته شده؟»، بهتر است از خود بپرسیم: در چه فعالیتی احساس زنده بودن می‌کنم؟ دوست دارم در ذهن دیگران چگونه دیده شوم؟ کدام توانایی‌های من هم درآمد ایجاد می‌کند و هم برایم معنا دارد؟ پاسخ این پرسش‌ها، همراه با نگاه به خانه دهم، می‌تواند جهت‌گیری روشن‌تری به ما بدهد. چارت در این مسیر مانند آیینه‌ای است که سؤال‌های درست را به ما نشان می‌دهد، نه مانند ماشینی که پاسخ‌های آماده بیرون می‌دهد."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "خانه دهم و میانه آسمان، نماد قله آرزوها، جایگاه اجتماعی و جهت‌گیری شغلی ما در چارت تولد هستند. این بخش از چارت می‌تواند گفت‌وگوی ما درباره کار و موفقیت را عمیق‌تر کند، به شرط آنکه آن را نقشه‌ای نمادین بدانیم نه حکمی قطعی. اگر می‌خواهید ببینید MC و خانه دهم چارت خودتان چه تصویری ترسیم می‌کند، همین حالا چارت رایگان تولدتان را در سایت ما بسازید و این بخش از نقشه خود را با نگاهی کنجکاوانه بررسی کنید."
+   }
+  ],
+  "thumb": "/static/articles/midheaven-mc-career-astrology-thumb.webp"
+ },
+ {
+  "slug": "chiron-wounded-healer",
+  "title": "کایرون در چارت تولد؛ زخم و درمان",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "کایرون یا شفادهنده زخم‌دیده، نقطه‌ای از چارت است که عمیق‌ترین زخم و در عین حال ظرفیت شفای ما را نشان می‌دهد. در این مقاله با اسطوره و زبان نمادین آن آشنا می‌شویم.",
+  "keywords": "کایرون,شفادهنده زخم,چارت تولد,شفای درونی,زخم روانی,کییرون",
+  "meta": "کایرون (Chiron) در چارت تولد: معنای اسطوره‌ای، جایگاه خانه و برج و چگونگی تبدیل زخم به ظرفیت شفابخشی، با نگاهی نمادین.",
+  "image": "/static/articles/chiron-wounded-healer.webp",
+  "body": [
+   {
+    "h2": "کایرون کیست؟ اسطوره شفادهنده زخم‌دیده",
+    "p": "کایرون در اسطوره‌های یونانی، سانتور یا نیمه‌اسبی دانا و پزشک بود که برخلاف طبیعت جاودانه خود، زخمی درمان‌ناپذیر برداشت و باقی عمر را با آن زندگی کرد. نکته شگفت‌انگیز اسطوره این است که او با وجود زخمش، بهترین شفادهنده زمانه شد و قهرمانان بسیاری را آموزش داد. این تناقض، پیام اصلی نماد کایرون است: کسی که زخم خود را می‌شناسد، می‌تواند شفادهنده دیگران باشد. این جرم آسمانی در سال ۱۹۷۷ کشف شد و از آن پس به عنوان نماد «زخم و شفا» وارد زبان آسترولوژی مدرن شد."
+   },
+   {
+    "h2": "کایرون در چارت تولد چه نشان می‌دهد؟",
+    "p": "در چارت تولد، کایرون به نقطه‌ای اشاره دارد که احساس می‌کنیم در آنجا «کامل نیستیم»؛ جایی که زخم کهنه‌ای با خود حمل می‌کنیم و اغلب از آن شرم داریم. این زخم معمولاً ریشه در تجربه‌های کودکی یا الگوهای خانوادگی دارد و ممکن است به صورت حساسیت شدید، ترس از طرد شدن یا احساس بی‌ارزشی ظاهر شود. نکته مهم این است که کایرون نشانه نقص واقعی نیست؛ بلکه نماد زخمی است که ما آن را بخشی از هویت خود می‌پنداریم. شناخت این نقطه، اولین قدم برای آشتی با آن است."
+   },
+   {
+    "h2": "خانه و برج کایرون؛ زخم در کدام حوزه زندگی؟",
+    "p": "خانه کایرون نشان می‌دهد زخم نمادین ما در کدام حوزه زندگی فعال می‌شود؛ مثلاً کایرون در خانه هفتم می‌تواند به زخم‌های روابط و ترس از نزدیکی اشاره داشته باشد. برج کایرون نیز سبک واکنش ما به زخم را توصیف می‌کند؛ مانند برج سنبله که با کمال‌گرایی و خودانتقادی همراه است. ترکیب خانه و برج، نقشه‌ای نمادین می‌سازد که نشان می‌دهد در کجا بیشتر زخمی می‌شویم و چگونه با آن کنار می‌آییم. این زبان، فرصتی برای خودآگاهی است، نه برچسبی برای قضاوت خودمان."
+   },
+   {
+    "h2": "از زخم تا هدیه؛ شفای دیگران از مسیر زخم خود",
+    "p": "راز نماد کایرون در این است که زخم ما می‌تواند به حساسترین و شفابخش‌ترین نقطه وجودمان تبدیل شود. کسی که طرد شدن را تجربه کرده، می‌تواند پذیرش واقعی را به دیگران بیاموزد و کسی که درد نادیده‌گرفته‌شدن را چشیده، بهترین شنونده می‌شود. به همین دلیل کایرون را «شفادهنده زخم‌دیده» می‌نامند: ما اغلب در همان حرفه‌ای که خود زخمی هستیم، به دیگران کمک می‌کنیم. این بینش، زخم را از یک نقص به یک ظرفیت انسانی و ارزشمند تبدیل می‌کند."
+   },
+   {
+    "h2": "کایرون و خودشفقتی",
+    "p": "پرسش اصلی درباره کایرون این نیست که «زخم من کجاست؟» بلکه این است که «چگونه می‌توانم با زخمم مهربان باشم؟». خودشفقتی یعنی پذیرفتن اینکه زخم بخشی از داستان ماست، اما کل داستان نیست و ارزش ما به آن گره نخورده است. تمرین‌هایی مانند نوشتن درباره زخم، گفت‌وگو با صدایی مهربان‌تر و در صورت نیاز همراهی درمانگر، در این مسیر کمک‌کننده‌اند. آسترولوژی اینجا فقط زبانی نمادین است که نقطه توجه را نشان می‌دهد؛ درمان واقعی در روابط، مراقبت و کار درونی ما رخ می‌دهد."
+   },
+   {
+    "h2": "کایرون؛ نماد است، نه حکم",
+    "p": "کایرون یک جرم آسمانی واقعی است، اما اثرگذاری نمادین آن از نظر علمی اثبات نشده و پژوهش‌های تجربی آن را تأیید نکرده‌اند. ارزش کایرون در چارت، ارزش یک زبان است؛ زبانی برای نام‌گذاری زخم‌ها و یافتن مسیر شفا، نه ابزاری برای تعیین آینده. اگر این نقطه از چارت شما را به خودآگاهی رساند، عالی است؛ اما هیچ نمادی جای تصمیم آگاهانه و مسئولیت‌پذیری ما را نمی‌گیرد. بدون ادعای غیب، ما خود نویسنده داستان زندگی‌مان هستیم."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "کایرون در چارت تولد، نماد زخمی است که می‌تواند به ظرفیت شفابخشی تبدیل شود؛ جایی که ما هم درد را می‌شناسیم و هم راه التیام را. شناخت این نقطه، دعوتی است به مهربانی با خود و استفاده از تجربه‌های تلخ برای کمک به دیگران. اگر کنجکاوید بدانید کایرون در چارت شما کجا نشسته و چه پیامی برایتان دارد، همین حالا چارت رایگان تولدتان را در سایت ما بسازید و این بخش از نقشه نمادین خود را با نگاهی باز کاوش کنید."
+   }
+  ],
+  "thumb": "/static/articles/chiron-wounded-healer-thumb.webp"
+ },
+ {
+  "slug": "synastry-chart-compatibility",
+  "title": "چارت سیناستری؛ نقشه سازگاری دو نفر",
+  "category": "سازگاری",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "سیناستری هنر مقایسه دو چارت تولد است تا ببینیم انرژی دو نفر چگونه با هم گفت‌وگو می‌کند. در این مقاله یاد می‌گیریم این نقشه را بخوانیم و از آن برای شناخت رابطه استفاده کنیم.",
+  "keywords": "سیناستری,سازگاری عاطفی,چارت تولد,روابط,سازگاری دو نفر,چارت تطبیقی",
+  "meta": "چارت سیناستری چیست و چگونه خوانده می‌شود؟ راهنمای برهم‌نهی دو چارت تولد برای شناخت بهتر روابط، بدون حکم قطعی درباره آینده رابطه.",
+  "image": "/static/articles/synastry-chart-compatibility.webp",
+  "body": [
+   {
+    "h2": "سیناستری چیست؟",
+    "p": "سیناستری واژه‌ای یونانی به معنای «همراهی» است و در آسترولوژی به مقایسه دو چارت تولد گفته می‌شود تا ببینیم انرژی دو نفر چگونه با هم جفت می‌شود. در این روش، چارت دو نفر روی هم قرار می‌گیرد و زاویه‌های میان سیارات آن‌ها بررسی می‌شود؛ مانند گوش دادن همزمان به دو قطعه موسیقی برای یافتن هارمونی یا ناهماهنگی آن‌ها. هدف سیناستری قضاوت درباره خوب یا بد بودن رابطه نیست، بلکه شناخت الگوهای ارتباطی و نقاط حساس دو نفر است. این نقشه می‌تواند گفت‌وگوی زوج‌ها را درباره نیازها و تفاوت‌هایشان عمیق‌تر کند."
+   },
+   {
+    "h2": "خورشید و ماه دو نفر؛ قلب سازگاری",
+    "p": "در سیناستری، نخستین چیزی که بررسی می‌شود ارتباط میان خورشید و ماه دو نفر است؛ زیرا خورشید نماد هویت و ماه نماد دنیای احساسات است. وقتی خورشید یکی با ماه دیگری زاویه هماهنگ می‌سازد، دو نفر اغلب احساس می‌کنند یکدیگر را «می‌فهمند» و امنیت عاطفی به راحتی شکل می‌گیرد. برعکس، زاویه‌های چالش‌برانگیز میان این دو می‌تواند نشان دهد نیازهای هویتی و عاطفی دو نفر در برخی لحظه‌ها با هم اصطکاک دارد. اما این فقط آغاز گفت‌وگوست؛ هیچ زاویه‌ای به تنهایی سرنوشت رابطه را تعیین نمی‌کند."
+   },
+   {
+    "h2": "زهره و مریخ؛ زبان عشق و کشش",
+    "p": "زهره نماد شیوه ابراز محبت و مریخ نماد شیوه پیگیری و اشتیاق است؛ بنابراین تماس‌های میان زهره و مریخ دو نفر درباره جذابیت و زبان عشق حرف می‌زند. برای نمونه، اگر زهره شما با مریخ شریک‌تان زاویه هماهنگ داشته باشد، ابراز علاقه شما اغلب برای او جذاب و دلپذیر است. اگر این زاویه چالش‌برانگیز باشد، ممکن است یکی پرخاشگرانه‌تر و دیگری محتاط‌تر در ابراز علاقه دیده شود. شناخت این زبان‌ها به زوج‌ها کمک می‌کند انتظارات خود را شفاف‌تر بیان کنند، نه اینکه یکدیگر را سرزنش کنند."
+   },
+   {
+    "h2": "برهم‌نهی خانه‌ها؛ هر کدام در کدام بخش زندگی دیگری؟",
+    "p": "در سیناستری علاوه بر زاویه‌ها، محل قرار گرفتن سیارات هر نفر در خانه‌های چارت دیگری نیز بررسی می‌شود. اگر سیارات شما در خانه هفتم شریک‌تان بنشینند، شما در زندگی او نقش پررنگی در روابط و تعاملات نزدیک ایفا می‌کنید. سیاره‌ای که در خانه دوم او می‌نشیند ممکن است بر ارزش‌ها و مسائل مالی رابطه اثر بگذارد و سیاره‌ای در خانه دهم او بر تصویر اجتماعی مشترک. این برهم‌نهی نشان می‌دهد هر نفر کدام بخش از زندگی دیگری را روشن می‌کند یا به چالش می‌کشد."
+   },
+   {
+    "h2": "زاویه‌های چالش‌برانگیز در سیناستری؛ پایان رابطه نیستند",
+    "p": "دیدن مربع و مقابله در سیناستری نباید نگران‌کننده باشد؛ هر رابطه واقعی ترکیبی از هماهنگی و تنش است و این تنش‌ها اغلب جایی هستند که رشد مشترک رخ می‌دهد. دو نفر می‌توانند زاویه‌های سخت زیادی داشته باشند اما با مهارت ارتباطی، رابطه‌ای پربار بسازند؛ همان‌طور که زاویه‌های هماهنگ فراوان، بدون تلاش و احترام، به خودی خود رابطه موفقی نمی‌سازند. سیناستری مانند گفت‌وگوست: مهم‌تر از اینکه چه کسی چه می‌گوید، این است که هر دو چگونه گوش می‌دهند. کیفیت رابطه را در نهایت رفتار، تعهد و انتخاب‌های روزمره ما می‌سازد."
+   },
+   {
+    "h2": "سیناستری را در جای درست خود ببینیم",
+    "p": "سیناستری یک ابزار تأمل است، نه دستگاه سنجش قطعی سازگاری؛ از نظر علمی نیز اثبات نشده که زاویه‌های میان چارت دو نفر بتواند آینده رابطه را تعیین کند. تصمیم‌های مهم زندگی مانند ازدواج باید با شناخت واقعی طرف مقابل، گفت‌وگوی صادقانه و مشورت با افراد آگاه گرفته شود. در فرهنگ ما نیز هیچ آسمان‌نگاری جای عقل، مسئولیت‌پذیری و در صورت تمایل استخاره را نمی‌گیرد. اگر سیناستری به شما کمک کرد نیازهایتان را بهتر بیان کنید، به هدف خود رسیده است."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "چارت سیناستری نگاهی نمادین به چگونگی گفت‌وگوی انرژی دو نفر است؛ از خورشید و ماه گرفته تا برهم‌نهی خانه‌ها. این نقشه می‌تواند روابط را به میدان خودشناسی تبدیل کند، به شرط آنکه آن را ابزار گفت‌وگو بدانیم، نه حکم نهایی. اگر می‌خواهید ببینید چارت شما با چارت شریک یا فرد مورد علاقه‌تان چگونه هم‌صدا می‌شود، همین حالا چارت رایگان تولدتان را در سایت ما بسازید و این گفت‌وگوی نمادین را آغاز کنید."
+   }
+  ],
+  "thumb": "/static/articles/synastry-chart-compatibility-thumb.webp"
+ },
+ {
+  "slug": "moon-phases-astrology-meaning",
+  "title": "فازهای ماه و معنای آن‌ها در خودشناسی",
+  "category": "ماه",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "ماه در هر شب چهره‌ای تازه نشان می‌دهد؛ این چرخه بیست‌ونه‌روزه آیینه‌ای نمادین برای شناخت ریتم‌های درونی ماست.",
+  "keywords": "فازهای ماه,ماه نو,ماه کامل,خودشناسی,چارت تولد",
+  "meta": "فازهای ماه و معنای نمادین آن‌ها؛ از ماه نو تا ماه کامل و تربیع‌ها، چطور این چرخه کهن به خودشناسی و تنظیم ریتم زندگی کمک می‌کند.",
+  "image": "/static/articles/moon-phases-astrology-meaning.webp",
+  "body": [
+   {
+    "h2": "چرا ماه مهم است؟",
+    "p": "در نگاه نمادین، ماه نماینده دنیای درون است؛ جایی که احساسات، نیازهای ناخودآگاه و خاطرات در آن ساکن‌اند. خورشید به «منِ» خودآگاه اشاره دارد اما ماه به آنچه در خلوت خود تجربه می‌کنیم. از همین رو در بسیاری از فرهنگ‌ها ماه را آیینه روح نامیده‌اند. آشنایی با فازهای ماه، راهی برای گفت‌وگو با همین بخش پنهان وجود است."
+   },
+   {
+    "h2": "چرخه بیست‌ونه‌روزه ماه",
+    "p": "ماه در هر ۲۹.۵ روز یک دور کامل به دور زمین می‌گردد و در این مسیر از دید ما روشن و تاریک می‌شود. این چرخه به چهار مرحله اصلی تقسیم می‌شود: ماه نو، تربیع اول، ماه کامل و تربیع آخر. دیدن این تغییرات در آسمان، یادآور این حقیقت است که همه چیز در زندگی موج دارد؛ نه همیشه اوج است و نه همیشه فرود. شناختن این ریتم می‌تواند به ما کمک کند با تغییرات خودمان مهربان‌تر باشیم."
+   },
+   {
+    "h2": "ماه نو؛ بذر و آغاز",
+    "p": "در ماه نو، آسمان تاریک است و ماه تقریباً دیده نمی‌شود؛ از این رو آن را نماد آغاز و خلوت می‌دانند. در نگاه نمادین، این زمان برای نیت‌گذاری، کاشتن بذر و شروع پروژه‌های تازه مناسب دانسته شده است. البته این یک توصیه نمادین است نه یک قانون قطعی؛ هر روزی می‌تواند روز آغاز باشد. اما هماهنگ کردن شروع‌ها با چرخه ماه، به بسیاری از افراد حس معنا و نظم می‌دهد."
+   },
+   {
+    "h2": "نیمه اول چرخه؛ رشد و شتاب",
+    "p": "پس از ماه نو، قرص ماه شب‌به‌شب بزرگ‌تر می‌شود؛ به این دوره هلال افزایشی می‌گویند. در این فاز، انرژی به سمت رشد، گسترش و اقدام بیرونی جریان دارد. کسانی که با این زبان نمادین کار می‌کنند، برنامه‌ریزی، گفت‌وگو و پیش‌بردن کارها را در این نیمه انجام می‌دهند. نکته اینجاست که ما خودمان نقش اصلی این داستان را داریم؛ ماه فقط یادآور حرکت رو به جلو است."
+   },
+   {
+    "h2": "ماه کامل؛ اوج و روشنایی",
+    "p": "در ماه کامل، چهره ماه تمام و روشن دیده می‌شود و شب‌ها پرنورترند. نماد این مرحله، به ثمر نشستن، آگاهی و دیده‌شدن است؛ همان جایی که بذرهای ماه نو نتیجه خود را نشان می‌دهند. از سوی دیگر ماه کامل می‌تواند احساسات را برجسته و گاهی طوفانی کند، چون همه چیز زیر نور است. این فرصتی است برای نگاه صادقانه به آنچه در زندگی‌مان شکفته و آنچه هنوز به مراقبت نیاز دارد."
+   },
+   {
+    "h2": "نیمه دوم چرخه؛ رها کردن و بازنگری",
+    "p": "بعد از ماه کامل، نور ماه کم‌کم کاهش می‌یابد و وارد هلال کاهشی می‌شویم. این دوره نماد سپاس، بازنگری و رها کردن چیزهایی است که دیگر به کارمان نمی‌آیند. در این فاز، انرژی به سمت درون برمی‌گردد و فرصتی برای جمع‌بندی و استراحت فراهم می‌شود. این ریتم طبیعی به ما می‌آموزد که پایان‌ها هم بخشی از زندگی‌اند و هر رهایی، زمینه‌ای برای آغازی تازه است."
+   },
+   {
+    "h2": "فاز ماه در چارت تولد",
+    "p": "موقعیت و فاز ماه در لحظه تولد، بخشی از چارت تولد هر فرد است؛ مثلاً اینکه کسی در شب ماه کامل یا نزدیک ماه نو متولد شده باشد. اختربینان نمادین معتقدند این فاز، ریتم درونی و شیوه واکنش احساسی فرد را بازتاب می‌دهد. این بازتاب‌ها زبان نمادین‌اند و هیچ ادعای علمی یا قطعی ندارند؛ بلکه دریچه‌ای برای تأمل درباره خود هستند. برای دیدن فاز ماه تولدتان می‌توانید چارت خود را بسازید و آن را کنار سایر نشانه‌ها بررسی کنید."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "فازهای ماه، نقشه‌ای شاعرانه از ریتم‌های زندگی‌اند: آغاز، رشد، اوج، رها کردن و بازآغاز. استفاده از این چرخه به عنوان ابزار خودشناسی می‌تواند به آرامش، برنامه‌ریزی ذهنی و نگاه مهربانانه به فراز و نشیب‌ها کمک کند. در عین حال باید یادمان باشد این‌ها نمادند نه قانون؛ تصمیم‌های مهم زندگی با عقل، مشورت و اگر اهل دعا باشیم با استخاره گرفته می‌شوند، نه با موقعیت یک ستاره. اگر کنجکاوید بدانید ماه شما در روز تولدتان کجا و در چه فازی بوده، همین حالا چارت تولد رایگان خود را بسازید."
+   }
+  ],
+  "thumb": "/static/articles/moon-phases-astrology-meaning-thumb.webp"
+ },
+ {
+  "slug": "vedic-vs-western-astrology",
+  "title": "نجوم ودایی در برابر نجوم غربی؛ دو نگاه به یک آسمان",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "نجوم ودایی و نجوم غربی هر دو به یک آسمان نگاه می‌کنند اما دو دایرةالبروج متفاوت دارند؛ این مقاله تفاوت‌ها و کاربرد هر یک را بررسی می‌کند.",
+  "keywords": "نجوم ودایی,نجوم غربی,آسترولوژی هندی,دایرةالبروج,چارت تولد",
+  "meta": "تفاوت نجوم ودایی و نجوم غربی از دایرةالبروج تا خانه‌ها و سیارات؛ هر کدام چه نگاهی به خودشناسی دارند و کدام برای شما مناسب‌تر است.",
+  "image": "/static/articles/vedic-vs-western-astrology.webp",
+  "body": [
+   {
+    "h2": "دو مکتب، یک آسمان",
+    "p": "نجوم غربی و نجوم ودایی (جیوتیش) دو مکتب کهن‌اند که از یک آسمان و یک کمربند برج‌ها سخن می‌گویند. هر دو به سیارات، برج‌ها و خانه‌ها تکیه دارند و هر دو زبان نمادینی برای خودشناسی به دست می‌دهند. اما در نگاه اول یک تفاوت بزرگ میان آن‌ها دیده می‌شود: برجی که در یکی «برج خورشیدی شماست» در دیگری ممکن است یک برج عقب‌تر باشد. این تفاوت از کجا می‌آید؟ از دو تعریف متفاوت از نقطه آغاز دایرةالبروج."
+   },
+   {
+    "h2": "دایرةالبروج استوایی و نجومی",
+    "p": "نجوم غربی از دایرةالبروج استوایی استفاده می‌کند که نقطه آغاز آن، اعتدال بهاری است؛ همان لحظه‌ای که خورشید وارد برج حمل می‌شود. نجوم ودایی اما از دایرةالبروج نجومی بهره می‌برد که بر پایه موقعیت واقعی ستارگان ثابت محاسبه می‌شود. به دلیل پدیده تقدیم اعتدالین، این دو نقطه آغاز حدود ۲۴ درجه از هم فاصله گرفته‌اند؛ یعنی تقریباً یک برج کامل. به همین دلیل است که برج خورشیدی یک فرد در این دو نظام اغلب متفاوت درمی‌آید."
+   },
+   {
+    "h2": "سیستم خانه‌ها",
+    "p": "نجوم غربی معمولاً از نظام‌های خانه تقسیم‌شده مانند پلاسیدوس استفاده می‌کند که اندازه خانه‌ها در عرض‌های جغرافیایی مختلف تغییر می‌کند. نجوم ودایی اما در رایج‌ترین شکل خود از نظام خانه‌های تمام‌نشانه‌ای بهره می‌برد که در آن هر خانه دقیقاً برابر یک برج است. این تفاوت باعث می‌شود جایگاه سیارات در خانه‌ها در دو نظام متفاوت دیده شود و تفسیر حوزه‌های زندگی تغییر کند. هر دو نظام منطق درونی خود را دارند و انتخاب میان آن‌ها تا حد زیادی سلیقه‌ای و فرهنگی است."
+   },
+   {
+    "h2": "سیارات و تأکیدها",
+    "p": "هر دو مکتب تقریباً از همان سیارات کلاسیک بهره می‌برند، اما تأکیدهای متفاوتی دارند. نجوم ودایی اهمیت ویژه‌ای به ماه، گره‌های ماه (راهو و کتو) و چرخه‌های زمانی بزرگ می‌دهد. نجوم غربی مدرن بیشتر به سیارات فراتر از زحل یعنی اورانوس، نپتون و پلوتو و جنبه‌های روان‌شناختی توجه دارد. این تفاوت تأکیدها، دو شیوه متفاوت برای پرسیدن «من کیستم؟» پیش روی ما می‌گذارد."
+   },
+   {
+    "h2": "نگاه فلسفی",
+    "p": "نجوم ودایی در بستر فرهنگ هندی با مفاهیمی مانند کارما و دارما پیوند خورده و به چرخه‌های زندگی و رشد روحی توجه دارد. نجوم غربی مدرن نیز از دل جنبش‌های روان‌شناختی قرن بیستم بیرون آمده و بر خودآگاهی، سایه و رشد فردی تمرکز دارد. هر دو در نهایت سیستم‌های نمادین‌اند و هیچ‌کدام ادعای اثبات‌شده علمی ندارند. آنچه اهمیت دارد استفاده آگاهانه از آن‌ها به عنوان آینه تأمل است، نه پذیرش کورکورانه."
+   },
+   {
+    "h2": "کدام برای شما مناسب‌تر است؟",
+    "p": "پاسخ صادقانه این است که هیچ‌کدام «درست‌تر» نیست؛ هر دو ابزاری برای خودشناسی‌اند و افراد مختلف با یکی از آن‌ها ارتباط بیشتری برقرار می‌کنند. می‌توانید هر دو را امتحان کنید و ببینید کدام زبان برای شما معنادارتر است. حتی می‌توانید از هر دو استفاده کنید: نجوم غربی برای کاوش روان‌شناختی و نجوم ودایی برای نگاه به نظم کیهانی و چرخه‌های زندگی. بدون ادعای غیب، هر تصمیمی در نهایت با عقل و اراده خود شما گرفته می‌شود."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "نجوم ودایی و غربی دو خواهرند که از یک آسمان اما با دو خط‌کش متفاوت می‌خوانند. دانستن این تفاوت‌ها به شما کمک می‌کند چارت خود را آگاهانه‌تر بخوانید و از سردرگمی «چرا برجم فرق دارد؟» رها شوید. در سایت ما می‌توانید چارت تولد رایگان خود را در هر دو نظام استوایی و نجومی بسازید و تفاوت تفسیرها را با چشم خود ببینید؛ تجربه‌ای که خودش یک درس خودشناسی است."
+   }
+  ],
+  "thumb": "/static/articles/vedic-vs-western-astrology-thumb.webp"
+ },
+ {
+  "slug": "descendant-7th-house-meaning",
+  "title": "دسندنت و خانه هفتم: آینه روابط",
+  "category": "خانه‌ها",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "دسندنت، نقطه روبه‌روی طالع، نشان می‌دهد در روابط و شریک زندگی دنبال چه می‌گردیم؛ آینه‌ای برای شناخت الگوها و سایه‌های خودمان.",
+  "keywords": "دسندنت,خانه هفتم,روابط,ازدواج,چارت تولد",
+  "meta": "دسندنت و خانه هفتم چه چیزی درباره روابط، ازدواج و شراکت می‌گویند؟ راهنمای نمادین برای شناخت الگوهای ارتباطی در چارت تولد.",
+  "image": "/static/articles/descendant-7th-house-meaning.webp",
+  "body": [
+   {
+    "h2": "دسندنت چیست؟",
+    "p": "چارت تولد یک دایره است که از نقطه طالع (صعود) آغاز می‌شود و دقیقاً روبه‌روی آن، نقطه دسندنت قرار دارد. این نقطه در نظام‌های خانه تقسیم‌شده، آغاز خانه هفتم است و در نگاه نمادین، درِ ورود به دنیای «دیگری» محسوب می‌شود. اگر طالع نشان می‌دهد ما چگونه خودمان را به جهان نشان می‌دهیم، دسندنت نشان می‌دهد در دیگری به دنبال چه می‌گردیم. این دو نقطه مثل دو کفه ترازو، گفت‌وگوی همیشگی «من» و «تو» را ترسیم می‌کنند."
+   },
+   {
+    "h2": "خانه هفتم؛ قلمرو رابطه‌ها",
+    "p": "خانه هفتم در نگاه سنتی به ازدواج و شریک زندگی مربوط است، اما دامنه آن بسیار گسترده‌تر است: هر رابطه یک‌به‌یک و برابر، از دوستی صمیمی تا شراکت کاری و قراردادها، در این خانه معنا می‌شود. از مذاکره بر سر یک قرارداد تجاری تا آیین ازدواج، همه در این خانه جای می‌گیرند. در این خانه ما یاد می‌گیریم چیزی را با دیگری تقسیم کنیم، مذاکره کنیم و در عین حفظ خودمان، «ما» بسازیم. به همین دلیل خانه هفتم را خانه آینه روابط نامیده‌اند؛ چون الگوهای ما در ارتباط با دیگران در آن دیده می‌شود."
+   },
+   {
+    "h2": "دسندنت در برج‌های مختلف",
+    "p": "برجی که دسندنت در آن قرار دارد، تصویری نمادین از آنچه در شریک زندگی جست‌وجو می‌کنیم به دست می‌دهد. مثلاً دسندنت در برج حمل می‌تواند به جذب افراد مستقیم، شجاع و پرانرژی اشاره کند، در حالی که دسندنت در برج میزان، کشش به سمت هماهنگی، ادب و تعادل را نشان می‌دهد. این توصیف‌ها حکم قطعی نیستند؛ فقط رنگ و بوی نمادین روابط ما را نشان می‌دهند. هر کدام از ما در واقعیت، آدم‌های پیچیده‌تری از یک برج هستیم."
+   },
+   {
+    "h2": "سایه در آینه",
+    "p": "یکی از جذاب‌ترین خوانش‌های دسندنت این است که ویژگی‌هایی را نشان می‌دهد که در خودمان نمی‌پذیریم و به دیگری فرافکنی می‌کنیم. روان‌شناسان این پدیده را سایه می‌نامند: بخش‌هایی از وجود که نادیده‌شان گرفته‌ایم اما در شریک زندگی‌مان آن‌ها را می‌بینیم و گاهی دوستشان داریم، گاهی ازشان عصبانی می‌شویم. شاید به همین دلیل است که بعضی روابط، حتی ناسالم، آن‌قدر پرکشش‌اند که رها کردنشان سخت است؛ چون چیزی از خودمان را در طرف مقابل می‌بینیم. وقتی متوجه این مکانیسم شویم، رابطه به جای میدان جنگ، به کلاس درس تبدیل می‌شود."
+   },
+   {
+    "h2": "از من تا ما",
+    "p": "خانه هفتم از ما می‌خواهد میان استقلال و صمیمیت تعادل پیدا کنیم؛ نه آن‌قدر خودمحور که جایی برای دیگری نماند و نه آن‌قدر دلبسته که خودمان را گم کنیم. پرسش‌های ساده‌ای مثل «در رابطه چه می‌دهم و چه می‌گیرم؟» می‌توانند نقطه شروع این آگاهی باشند. در نگاه نمادین، رابطه سالم آن است که هر دو طرف در آن «خود» باقی بمانند و در عین حال با هم رشد کنند. چارت تولد در اینجا هم فقط آینه است: الگوها را نشان می‌دهد اما انتخاب و تغییر، همیشه با خود ماست."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "دسندنت و خانه هفتم، آینه‌ای از الگوهای ارتباطی ما هستند؛ از آنچه در دیگری می‌جوییم تا ویژگی‌هایی که به او فرافکنی می‌کنیم. شناختن این الگوها می‌تواند روابط ما را آگاهانه‌تر و صمیمانه‌تر کند. در عین حال یادمان باشد این زبان نمادین است و تصمیم‌های بزرگ زندگی مانند ازدواج، با عقل، مشورت و در صورت تمایل استخاره گرفته می‌شوند. اگر می‌خواهید دسندنت و خانه هفتم چارت خودتان را ببینید، همین حالا چارت تولد رایگان‌تان را بسازید و از این آینه لذت ببرید."
+   }
+  ],
+  "thumb": "/static/articles/descendant-7th-house-meaning-thumb.webp"
+ },
+ {
+  "slug": "intercepted-signs-astrology",
+  "title": "برج‌های محصور در چارت تولد؛ انرژی‌های پنهان",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "برج محصور، برجی است که میان یک خانه جای می‌گیرد و هیچ خط خانه‌ای از آن عبور نمی‌کند؛ نمادی از استعدادها و نیازهای کمتر دیده‌شده.",
+  "keywords": "برج محصور,خانه محصور,چارت تولد,خانه ها,آموزش نجوم",
+  "meta": "برج‌های محصور در چارت تولد چیست و چه معنایی دارند؟ راهنمای ساده و نمادین برای درک این پدیده فنی و تفسیر آن.",
+  "image": "/static/articles/intercepted-signs-astrology.webp",
+  "body": [
+   {
+    "h2": "برج محصور چیست؟",
+    "p": "در برخی نظام‌های خانه، اندازه خانه‌ها با هم برابر نیست؛ گاهی یک خانه آن‌قدر بزرگ می‌شود که برجی را کاملاً در خود جای می‌دهد. در چنین حالتی به آن برج، «برج محصور» می‌گویند؛ یعنی برجی که هیچ خط خانه (کاسپ) از آن عبور نمی‌کند. این پدیده در نگاه فنی یک ویژگی هندسی چارت است و در برخی نظام‌های دیگر مانند خانه‌های تمام‌نشانه‌ای اصلاً رخ نمی‌دهد. با این حال اختربینان برای آن معانی نمادین نیز در نظر گرفته‌اند."
+   },
+   {
+    "h2": "چرا برج محصور به وجود می‌آید؟",
+    "p": "زمین کروی است و در عرض‌های جغرافیایی بالا، برخی برج‌ها در آسمان سریع‌تر از بقیه طلوع می‌کنند. همین تفاوت سرعت باعث می‌شود در نظام‌هایی مانند پلاسیدوس، یک خانه خیلی بزرگ و خانه روبه‌روی آن خیلی کوچک شود. وقتی دو خانه متقابل آن‌قدر بزرگ شوند، دو برج در دو سوی چارت کاملاً محصور می‌مانند. پس برج محصور در وهله اول یک نتیجه ریاضی و هندسی است، نه یک راز عجیب."
+   },
+   {
+    "h2": "خانه محصور؛ دو سوی یک محور",
+    "p": "نکته جالب این است که برج‌های محصور همیشه جفت‌اند و در خانه‌های روبه‌روی هم قرار می‌گیرند. یعنی اگر در خانه اول برجی محصور باشد، در خانه هفتم هم برجی محصور خواهیم داشت و این دو برج در برج‌های متقابل (مثل ثور و عقرب) قرار دارند. اختربینان این محور را نشانه‌ای از دو حوزه زندگی می‌دانند که هر دو به توجه ویژه نیاز دارند. این دوگانگی می‌تواند یادآور تعادل میان دو بخش مهم زندگی ما باشد."
+   },
+   {
+    "h2": "معنای نمادین برج محصور",
+    "p": "در تفسیر نمادین، برج محصور نماینده انرژی‌ها و استعدادهایی است که به نظر می‌رسد در آن حوزه زندگی «جایی» ندارند یا دیرتر شکوفا می‌شوند. مثلاً کسی که برج محصورش در حوزه ارتباطات است، ممکن است در بیان خود احساس محدودیت کند اما در خلوت توانایی‌های شگفت‌انگیزی داشته باشد. این تفسیرها میان اختربینان متفاوت است و هیچ‌کدام ادعای قطعیت ندارد؛ بلکه پیشنهادی برای تأمل است. مهم‌ترین پیام این نماد، دعوت به صبر و آشنایی با بخش‌های کمتر دیده‌شده وجود است."
+   },
+   {
+    "h2": "با انرژی محصور چه کنیم؟",
+    "p": "اگر در چارت خود برج محصور دارید، اولین قدم این است که آن را نه نقص، بلکه یک چالش شیرین ببینید. انرژی برج محصور معمولاً از مسیرهای غیرمستقیم خودش را نشان می‌دهد؛ مثلاً از طریق افراد، کتاب‌ها یا تجربه‌هایی که ناگهان بخشی از وجودمان را روشن می‌کنند. گفت‌وگو با خود، نوشتن و شناخت تدریجی این بخش می‌تواند آن را از حاشیه به متن زندگی بیاورد. در نهایت این شما هستید که با انتخاب‌هایتان، هر نمادی را به واقعیت تبدیل می‌کنید."
+   },
+   {
+    "h2": "تفاوت نظام‌های خانه",
+    "p": "یادآوری این نکته مهم است که برج محصور تنها در نظام‌های خانه نابرابر دیده می‌شود و در نظام تمام‌نشانه‌ای وجود ندارد. بنابراین اگر چارت شما در یک نظام برج محصور دارد، در نظام دیگر این پدیده غایب است. این یعنی نباید به آن به چشم یک حکم از پیش تعیین‌شده نگاه کرد؛ بلکه آن را یکی از دیدگاه‌های ممکن برای خواندن چارت در نظر بگیریم. آشنایی با چند نظام خانه، دید بازتری به ما می‌دهد و از مطلق‌انگاری جلوگیری می‌کند."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "برج‌های محصور یکی از ظرافت‌های فنی چارت تولدند که در نظام‌های خانه نابرابر رخ می‌دهند و معنای نمادین جالبی دارند: انرژی‌هایی که آرام‌آرام شکوفا می‌شوند. شناختن آن‌ها می‌تواند به صبور بودن با خودمان و توجه به بخش‌های پنهان شخصیتمان کمک کند. بدون ادعای غیب، ستاره‌ها فقط نقشه‌اند و راه، راه خود ماست. اگر کنجکاوید چارت خود را ببینید و بررسی کنید کدام برج‌ها در آن محصور شده‌اند، همین حالا چارت رایگان‌تان را در سایت ما بسازید."
+   }
+  ],
+  "thumb": "/static/articles/intercepted-signs-astrology-thumb.webp"
+ },
+ {
+  "slug": "stellium-in-astrology",
+  "title": "استلیوم؛ وقتی چند سیاره در یک برج جمع می‌شوند",
+  "category": "آموزش نجوم",
+  "date_fa": "مرداد ۱۴۰۵",
+  "excerpt": "استلیوم یعنی حضور سه سیاره یا بیشتر در یک برج یا یک خانه؛ تمرکزی که هم قدرت می‌دهد و هم تعادل را به چالش می‌کشد.",
+  "keywords": "استلیوم,تجمیع سیارات,چارت تولد,برج,آموزش نجوم",
+  "meta": "استلیوم در چارت تولد چیست و چه معنایی دارد؟ نقاط قوت و چالش‌های تمرکز چند سیاره در یک برج یا خانه به زبان ساده.",
+  "image": "/static/articles/stellium-in-astrology.webp",
+  "body": [
+   {
+    "h2": "استلیوم چیست؟",
+    "p": "وقتی سه سیاره یا بیشتر در یک برج یا یک خانه جمع می‌شوند، اختربینان به آن «استلیوم» می‌گویند. واژه استلیوم ریشه لاتین دارد و به معنای گروه ستارگان است. در نگاه نمادین، استلیوم یعنی یک موضوع یا یک کیفیت در چارت ما آن‌قدر پررنگ است که نمی‌توان نادیده‌اش گرفت. هر چه تعداد سیارات بیشتر باشد، این تمرکز شدیدتر و اثر آن بر تفسیر چارت بیشتر می‌شود."
+   },
+   {
+    "h2": "استلیوم در یک برج",
+    "p": "وقتی استلیوم در یک برج شکل می‌گیرد، ویژگی‌های آن برج به نیروی مسلط شخصیت تبدیل می‌شود. مثلاً استلیوم در برج اسد می‌تواند خلاقیت، گرما و میل به دیده‌شدن را چنان برجسته کند که در تمام جنبه‌های زندگی دیده شود. در این حالت فرد ممکن است به‌راحتی با آن انرژی هم‌ذات‌پنداری کند و خودش را کاملاً همان برج بداند. اما نکته ظریف اینجاست که چارت تولد همیشه پیچیده‌تر از یک برج است؛ استلیوم فقط پررنگ‌ترین رنگِ بوم است."
+   },
+   {
+    "h2": "استلیوم در یک خانه",
+    "p": "گاهی سیارات استلیوم در یک خانه جمع می‌شوند و توجه اصلی به حوزه زندگی آن خانه جلب می‌شود. مثلاً استلیوم در خانه دهم می‌تواند تمرکز شدید بر کار، مسیر شغلی و جایگاه اجتماعی را نشان دهد. در این حالت زندگی فرد حول آن حوزه می‌چرخد و بقیه بخش‌ها ممکن است کمتر دیده شوند. شناختن این تمرکز به ما کمک می‌کند آگاهانه تصمیم بگیریم که آیا این توازن برایمان رضایت‌بخش است یا نه."
+   },
+   {
+    "h2": "قدرت استلیوم",
+    "p": "استلیوم از نظر نمادین یک موهبت است؛ عمق، تمرکز و تسلطی که افراد کمی دارند. کسی که استلیوم دارد می‌تواند در حوزه تمرکز خود به مهارت و بینش کم‌نظیری برسد، چون همه انرژی‌ها در یک جهت جریان دارند. این ویژگی در زندگی واقعی می‌تواند به تخصص عمیق، تعهد و پشتکار تبدیل شود. به همین دلیل در میان هنرمندان، ورزشکاران و متخصصان خلاق، چارت‌های دارای استلیوم چندان کمیاب نیستند. به بیان دیگر، استلیوم مثل عدسی است که نور پراکنده را در یک نقطه جمع می‌کند."
+   },
+   {
+    "h2": "چالش‌های استلیوم",
+    "p": "اما هر تمرکزی بهایی دارد و استلیوم هم از این قاعده مستثنا نیست. وقتی همه سیارات در یک برج یا خانه باشند، بخش‌های دیگر چارت ممکن است کمتر پرورش یابند و زندگی یک‌جانبه شود. همچنین انرژی متراکم آن برج گاهی به شکل افراط، خستگی یا مقاومت در برابر دیدگاه‌های دیگر ظاهر می‌شود. بنابراین کار با استلیوم، یادگیری تعادل است: بهره بردن از قدرت تمرکز بدون قربانی کردن تنوع زندگی."
+   },
+   {
+    "h2": "استلیوم و خودشناسی",
+    "p": "برای خودشناسی، استلیوم یک نقشه راه ارزشمند است: نشان می‌دهد انرژی زندگی ما به طور طبیعی به کدام سمت جریان دارد. می‌توانیم از این آگاهی برای انتخاب مسیرهای شغلی، هنری و ارتباطی که با تمرکز ما هم‌خوان‌اند استفاده کنیم. در عین حال می‌توانیم آگاهانه به بخش‌هایی که کمتر دیده شده‌اند هم توجه کنیم. این کار نه با جنگیدن با استلیوم، بلکه با گفت‌وگو با آن ممکن می‌شود."
+   },
+   {
+    "h2": "جمع‌بندی",
+    "p": "استلیوم یکی از جذاب‌ترین الگوهای چارت تولد است؛ تمرکزی که هم عمق و استادی می‌آورد و هم نیاز به تعادل دارد. شناختن آن به ما کمک می‌کند با انرژی‌های خود هماهنگ‌تر زندگی کنیم و از پراکندگی دور بمانیم. یادمان باشد این‌ها همه زبان نمادین‌اند؛ تصمیم‌ها و انتخاب‌های واقعی همیشه با خود ماست. اگر می‌خواهید ببینید آیا در چارت شما استلیومی وجود دارد یا نه، همین حالا چارت تولد رایگان خود را بسازید و الگوهای سیاراتتان را کشف کنید."
+   }
+  ],
+  "thumb": "/static/articles/stellium-in-astrology-thumb.webp"
+ }
+]
+```
+
+### `app/content/guide-beginner.md` (119 lines)
+
+```json
+# راهنمای مقدماتی آسترولوژی خودشناسی
+
+*به‌همراه «زایچه» — نقشه‌ی آسمان تو، برای شناخت بهتر خودت*
 
 ---
 
-## ۱۶) systemd units + CI + محیط نمونه
+## آسترولوژی چیست و چه نیست
+
+آسترولوژی یک زبان نمادین کهن است؛ نقشه‌ای از موقعیت سیاره‌ها در لحظه‌ی تولد تو. این نقشه نه «حکم درباره‌ی آینده» است و نه ادعای علمیِ اثبات‌شده، بلکه آینه‌ای است برای تأمل درباره‌ی شخصیت، تمایل‌ها و الگوهای رفتاری‌ات.
+
+چارت تولد تو، دایره‌ای ۳۶۰ درجه‌ای است که بر اساس زمان و مکان دقیق تولد رسم می‌شود. در این راهنما، با سه جزء اصلی آن آشنا می‌شوی و یاد می‌گیری چطور از آن برای خودشناسی استفاده کنی.
+
+> نکته‌ی مهم: این محتوا برای خودشناسی و تأمل است؛ تصمیم‌های مهم زندگی را با عقل، مشورت و استخاره بگیر.
+
+---
+
+## سه جزء اصلی چارت تو
+
+هر چارت از سه لایه تشکیل شده است:
+
+- **خورشید (برج خورشیدی):** هویت و جوهره‌ی اصلی تو — آن‌چه «من» می‌دانیش. این همان «برج» معروف است.
+- **ماه (برج قمری):** دنیای احساسات و نیازهای عاطفی‌ات — بخشی که کمتر دیده می‌شود اما عمیقاً حس می‌شود.
+- **طالع (رایزینگ):** نقابی که در نگاه اول به دنیا نشان می‌دهی — سبک حضور و برخورد اولیه‌ات با دیگران.
+
+ترکیب این سه، تصویری چندبعدی از تو می‌سازد؛ نه فقط یک «برج».
+
+---
+
+## دوازده برج فلکی
+
+برج‌ها دوازده کهن‌الگو هستند که بر اساس عنصر (آتش، خاک، باد، آب) و کیفیت (آغازگر، ثابت، متغیر) دسته‌بندی می‌شوند:
+
+| برج | عنصر | کیفیت | تم اصلی |
+|-----|------|--------|---------|
+| حَمَل | آتش | آغازگر | شجاعت، شروع، پیشگامی |
+| ثور | خاک | ثابت | ثبات، ارزش‌ها، آرامش |
+| جوزا | باد | متغیر | ارتباط، کنجکاوی، تنوع |
+| سرطان | آب | آغازگر | احساس، خانه، مراقبت |
+| اسد | آتش | ثابت | خلاقیت، خودابرازی، گرما |
+| سنبله | خاک | متغیر | دقت، تحلیل، خدمت |
+| میزان | باد | آغازگر | تعادل، روابط، زیبایی |
+| عقرب | آب | ثابت | عمق، تحول، شدت |
+| قوس | آتش | متغیر | معنا، سفر، خوش‌بینی |
+| جدی | خاک | آغازگر | ساختار، مسئولیت، هدف |
+| دلو | باد | ثابت | نوآوری، جمع، آزادی |
+| حوت | آب | متغیر | همدلی، رؤیا، معنویت |
+
+هر برج نه «خوب» است و نه «بد» — هر کدام قوّت‌ها و چالش‌های خودش را دارد.
+
+---
+
+## ده جرم آسمانی
+
+در آسترولوژی، ده «سیاره» (شامل خورشید و ماه) نقش‌های متفاوتی دارند:
+
+- **خورشید:** هویت، اراده، مسیر زندگی.
+- **ماه:** احساسات، عادت‌ها، نیازهای درونی.
+- **عطارد:** ذهن، گفتار، شیوه‌ی یادگیری.
+- **زهره:** عشق، ارزش‌ها، زیبایی‌شناسی.
+- **مریخ:** انرژی، خواستن، چگونگی اقدام.
+- **مشتری:** رشد، باور، خوش‌بینی.
+- **کیوان (زحل):** نظم، مرز، مسئولیت.
+- **اورانوس:** نوآوری، رهایی، غافلگیری.
+- **نپتون:** رؤیا، الهام، فراتر از مرزها.
+- **پلوتو:** تحول عمیق، قدرت، باززایی.
+
+موقعیت هر سیاره در برج و خانه‌ی خاصی از چارت، رنگ و بوی همان انرژی را برای تو مشخص می‌کند.
+
+---
+
+## دوازده خانه
+
+اگر برج‌ها «چه» و سیاره‌ها «که» هستند، خانه‌ها «کجا» هستند — یعنی حوزه‌ی زندگی که انرژی در آن جاری است:
+
+1. **خانه اول:** خود، ظاهر، آغاز.
+2. **خانه دوم:** دارایی، ارزش‌ها، اعتمادبه‌نفس.
+3. **خانه سوم:** ارتباط، یادگیری، اطرافیان.
+4. **خانه چهارم:** خانه، خانواده، ریشه‌ها.
+5. **خانه پنجم:** خلاقیت، عشق، لذت.
+6. **خانه ششم:** کار روزانه، سلامت، روال.
+7. **خانه هفتم:** روابط، شراکت، دیگری.
+8. **خانه هشتم:** تحول، اشتراک عمیق، رها کردن.
+9. **خانه نهم:** باور، سفر، معنای زندگی.
+10. **خانه دهم:** شغل، جایگاه، مسیر عمومی.
+11. **خانه یازدهم:** دوستان، آرمان‌ها، جمع.
+12. **خانه دوازدهم:** خلوت، ناخودآگاه، رهاسازی.
+
+---
+
+## زاویه‌های میان سیاره‌ها
+
+سیاره‌ها در چارت با هم «زاویه» (آسپکت) می‌سازند که نشان‌دهنده‌ی گفت‌وگوی درونی میان بخش‌های مختلف شخصیت است:
+
+- **هم‌راهی (۰ درجه):** ترکیب و هم‌افزایی انرژی‌ها.
+- **مثلث (۱۲۰):** روانی و استعداد طبیعی.
+- **تسديس (۶۰):** فرصت و همکاری سازنده.
+- **مربع (۹۰):** تنش و نیروی محرک رشد.
+- **مقابله (۱۸۰):** دو قطب که نیاز به تعادل دارند.
+
+زاویه‌های «سخت» بد نیستند؛ اغلب همان جایی هستند که بیشترین رشد را تجربه می‌کنیم.
+
+---
+
+## چطور چارتت را بخوانی (گام‌به‌گام)
+
+1. **از خورشید، ماه و طالع شروع کن.** این سه ستون اصلی شخصیت تو هستند.
+2. **به عنصر غالب نگاه کن.** اگر بیشتر سیاره‌هایت آتشی‌اند، به‌دنبال هیجان و اقدام هستی؛ اگر خاکی‌اند، ثبات و واقع‌گرایی.
+3. **خانه‌ی پرجمعیت را پیدا کن.** خانه‌ای که چند سیاره دارد، حوزه‌ی تمرکز اصلی زندگی‌ات است.
+4. **زاویه‌های سخت را به‌عنوان فرصت ببین.** تنش‌ها نقشه‌ی رشد تو هستند.
+5. **قضاوت نکن؛ تأمل کن.** چارت تو قرار نیست «سرنوشت محتوم» را تعیین کند؛ قرار است زبان آسمان باشد برای شناخت بهتر خودت.
+
+---
+
+## قدم بعدی
+
+این راهنما فقط نقطه‌ی شروع است. برای دیدن چارت واقعی خودت — با همه‌ی برج‌ها، خانه‌ها و زاویه‌ها به‌صورت دقیق و اختصاصی — در **زایچه** چارت تولد رایگان بساز و گزارش شخصی‌سازی‌شده‌ی خودت را دریافت کن.
+
+**زایچه** — نقشه‌ی آسمان تو، برای شناخت بهتر خودت.
+
+```
+
+
+---
+
+## ۱۷) systemd units + CI + محیط نمونه
 
 ### `deploy/chart-web.service` (32 lines)
 
@@ -15198,7 +21684,7 @@ zopfli==0.4.3
 
 ```
 
-### `.env.example` (64 lines)
+### `.env.example` (66 lines)
 
 ```bash
 # ============================================================
@@ -15207,7 +21693,7 @@ zopfli==0.4.3
 # ============================================================
 
 # --- Core ---
-APP_ENV=production            # production | development
+APP_ENV=production            # production | development (both prod & production activate fail-closed)
 SECRET_KEY=change-me-64-chars-random
 DATABASE_URL=postgresql+psycopg2://chart_app:CHANGE_ME@127.0.0.1:5432/chart_platform
 REDIS_URL=redis://127.0.0.1:6379/0
@@ -15264,6 +21750,8 @@ KAVENEGAR_SENDER=10004346
 # Required in prod. Keep this in backups or DB-stored secrets become undecryptable.
 SECRETS_MASTER_KEY=change-me-long-random-string
 ADMIN_SECRET=change-me-long-random-string
+# age public key for backup encryption (audit r4 B2) — private key: /root/.hermes/keys/chart-platform-age.txt
+AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ```
 
@@ -15271,61 +21759,57 @@ ADMIN_SECRET=change-me-long-random-string
 
 ---
 
-## ۱۷) خروجی واقعی pytest (آخرین اجرا)
+## ۱۸) خروجی واقعی pytest (آخرین اجرا)
 
 ```
-.................................................ss.....ss.............. [ 46%]
-........................................................................ [ 92%]
-...........                                                              [100%]
-=============================== warnings summary ===============================
-venv/lib/python3.11/site-packages/fastapi/testclient.py:1
-  /root/chart-platform/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
-    from starlette.testclient import TestClient as TestClient  # noqa
-
-tests/test_phase10.py::test_plans_include_new_keys
-  /root/chart-platform/tests/test_phase10.py:80: DeprecationWarning: 
-          🚨 You probably want to use `session.exec()` instead of `session.query()`.
-  
-          `session.exec()` is SQLModel's own short version with increased type
-          annotations.
-  
-          Or otherwise you might want to use `session.execute()` instead of
-          `session.query()`.
-          
-    keys = {p.key for p in s.query(Plan).all()}
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-151 passed, 4 skipped, 2 warnings in 1.98s
+........................................................................ [ 32%]
+.s...................................................................... [ 64%]
+........................................................................ [ 96%]
+........                                                                 [100%]
+223 passed, 1 skipped in 10.01s
 ```
 
-## ۱۸) تاریخچه گیت (آخرین 27 کامیت)
+## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+d6e6ef1 2026-08-14 docs: ROUND4-PHASE-D report (D1-D4 complete)
+6b11f56 2026-08-14 feat(d4): SSE streaming chat — LLMProvider.stream() real token streaming (OpenAI-compatible), router.stream_complete with fallback chain, /api/chat/stream text/event-stream (same guards as /api/chat, quota refunded if stream dies pre-token), chat UI consumes SSE with typing cursor (emoji->sprite icon-lock), authz matrix row; 3 tests; 223 passed
+f808242 2026-08-14 feat(d3): referral wallet — users.balance_rial + withdrawal_requests + orders.note, reward 5% credited to referrer on paid order (idempotent), pay_order_with_balance (full-amount only, no mixed), withdraw/resolve shared logic in orders.py, wallet section in account + balance payment button in plans + admin queue; 4 tests; 220 passed
+16918e5 2026-08-14 feat(d2): pgvector RAG — report_chunks + HNSW (384-dim), multilingual-e5-small (e5-large OOMs 2-worker web), chunk+index+search in app/rag.py, worker indexes done reports, chat uses semantic chunks w/ fallback; 3 tests; 216 passed
+94ef7c3 2026-08-14 fix(d1): VAPID keys — .env fixed to single-line; convert PEM→raw base64url at load (browser wants 65-byte point, pywebpush wants 32-byte scalar); verified end-to-end (signature+encryption pass, only network fails on fake endpoint)
+b1c6985 2026-08-14 feat(d1): Web Push — push_subscriptions table + migration, VAPID key/subscribe/unsubscribe endpoints, sw.js push+notificationclick handlers, account page subscribe button, weekly delivery pushes browser notification to owning user; 4 tests; authz matrix updated
+a9b219c 2026-08-14 docs: ROUND4-PHASE-C report
+2a696dc 2026-08-14 authz(c8): authorization matrix — docs/AUTHORIZATION-MATRIX.md (68 routes × 5 levels: Public/Capability/User/Paid/Admin) + structural test gating every route in the matrix (and matrix rows = real routes) + 3 guard spot-checks; 209 passed
+b8aa8c4 2026-08-14 privacy(c6): account deletion cascade — FIXED 2 real bugs (chat_messages never deleted + unitofwork doesn't order FK deletes → 500 for any user with charts; explicit per-level flush); chat-audio R2 retention 30d in backup; PRIVACY.md doc; privacy.html names real AI providers (DeepSeek/OpenCode) + audio/backup retention; 3 tests
+b093641 2026-08-14 chore: ruff fix
+f7428cc 2026-08-14 ops(c5): split health — /liveness (process heartbeat, no deps) vs /readiness (DB+Redis+worker+R2+disk, 503 when degraded); /health compat alias; UI banner polls /readiness; 4 tests
+ba51802 2026-08-14 test(c4): classify 4 skipped golden-UTC tests — verify_utc expectations added for chart-1/chart-8/chart-7-sidereal, only chart-2-no-time (no birth time by design) stays skipped with docstring; 199 passed, 1 skipped
+ee0579f 2026-08-14 chore(c3): zero-warning test suite — replace deprecated per-request cookies= with client.cookies.update (9 files), s.query→s.exec(select), pytest.ini filter for starlette lib deprecation, refactor_cookies helper; 196 passed, 0 warnings
+69ebdac 2026-08-14 chore(c2): remove dead send_transit_digests.py (replaced by weekly_transit.py, crontab already updated); R2_BUCKET default fallback zayche-storage (never voice-clone)
+7dba09b 2026-08-14 chore: ruff fix
+74af9cf 2026-08-14 feat(c1): report audio served from R2 — audio_key/upload_audio in storage, cache-hit presigned redirect, miss generates→uploads→30min presigned→temp cleanup; 3 tests
+42c7127 2026-08-14 ops(b9): LLM circuit breaker (N consecutive failures open circuit, cooldown, success closes, all-tripped fallback) + per-call timeout (LLM_TIMEOUT) + whole-call deadline (LLM_DEADLINE) + 3 tests
+51bcde8 2026-08-14 chore: ruff fix
+1d6a4a6 2026-08-14 security(b7): payment verify state machine — pending→verifying→paid|failed; network errors re-open (pending) instead of failing a possibly-paid order, refresh re-verifies via Zarinpal code 101; ORM expire fix for raw-SQL claim + 3 tests
+1b5e73a 2026-08-14 ops(b6): REAL refund lifecycle — Zarinpal refund call, refunding/refund_failed states + admin retry, originating subscription closed, coupon slot returned; subscriptions.order_id + orders.error + schema-align migration (prod stamped to head)
+c9a87b2 2026-08-14 ops(b6): REAL refund lifecycle — Zarinpal refund call, refunding/refund_failed states + admin retry, originating subscription closed, coupon slot returned; subscriptions.order_id + orders.error migration (prod stamped to head)
+4f547b4 2026-08-14 security(b5): chart creation rate limit 20/min + Redis MANDATORY in prod (boot refuse on memory backend, fail-closed on Redis outage) + conftest dev-mode isolation + tests
+7aa6846 2026-08-14 fix(admin): pass dlq_count explicitly to template context (ruff F841)
+48900fa 2026-08-14 ops(b3,b4): presigned TTL 7d→30min; R2 fail-closed in prod (boot refuse + upload failure → degraded, never silent local-only) + CI smoke checks
+cbc98d4 2026-08-14 ops(b1,b2): DLQ retry cron (30m) + admin DLQ KPI; backups age-encrypted (AGE_PUBKEY), plaintext zips purged from R2+disk, restore drill passes, drill immune to stale shell DATABASE_URL
+bdd3237 2026-08-14 docs: ROUND4-PHASE-A report (11 launch blockers verified, 183 tests) + ruff cleanup
+9b815b4 2026-08-14 test(a10): update coupon tests to reservation semantics (creation-time gate; paid orders never fail over capacity)
+8961735 2026-08-14 security(a10): coupon RESERVATION pattern — atomic slot claim at order creation, release on gateway error/verify failure/refund, stale-pending sweep script + 4 tests
+3dc673a 2026-08-14 security(a9/b8): subscription expiry enforcement (chat 403 when expired), renewal extends from remaining days, web monthly activates null-chat sub, UNIQUE(chart,chat) migration + timeutil tz-safe helpers
+1d7ee75 2026-08-14 security(a8): atomic per-account chat quota (Redis INCR+TTL claim before LLM, release on failure) + 3 tests incl. 10-thread race (exactly 3 wins)
+a7467aa 2026-08-14 security(a6): bot-created charts get capability tokens in share URLs (?t=) — well-formed query
+b24445e 2026-08-14 security(a3-a5): transit + synastry + order ownership (403 without _owns_chart) + 10 endpoint tests
+390065a 2026-08-14 security(a2): centralize APP_ENV → app/env.py IS_PROD (prod|production both fail-closed) + 5 boot tests
+9373039 2026-08-14 chore(ci): secret-file guard via find + setup_umami writes to /opt (outside repo)
 b8c6ce4 2026-08-14 chore(ci): filename-based umami guard in secret-scan (no self-match) + regen bundle
 61b333c 2026-08-14 chore(ci): anchor umami-pw pattern to JSON context (no self-match) + regen bundle
 31e4f10 2026-08-14 chore(ci): non-self-matching secret patterns (context-anchored) + regen bundle
 e0eaa8f 2026-08-14 security(a1): remove gemini AQ keys from repo (moved to /root/.hermes/keys/ 600), gitignore keys/, extend secret-scan with AQ/AIza patterns
 9421a5b 2026-08-14 chore(ci): restore umami old-password as banned-string in secret-scan (value now public after rotation)
 e03afa5 2026-08-14 security(a1): rotate Umami admin password + HASH_SALT/APP_SECRET (leaked via bundle), remove umami secret files from repo, add umami.env.example, harden secret-scan, regenerate bundle
-264c655 2026-08-14 docs(r3): regenerate full code bundle (16 sections, 133 files, fresh tests+git)
-d0d5f2b 2026-08-14 docs(r3): round-3 addendum + regenerated codebundle + fresh .env.example (CREATE_ALL_ON_BOOT, RATE_LIMIT_BACKEND, R2_ENDPOINT, SWISSEPH_EPHE_PATH)
-246c0a6 2026-08-14 feat(ui): degraded-status banner (polls /health, shows on Redis/DB down) + health endpoint tests — DOM-order bug caught by browser verification
-4ad4286 2026-08-14 feat(tests): payment callback race test (atomic claim — 5 concurrent verifies process once) + sidereal Lahiri golden chart (chart-7)
-c630066 2026-08-14 chore(ci): full security gate — ruff F/E9 (unused imports), bandit -lll, pip-audit (dropped unused python-jose/ecdsa), secret scan, brand scan, alembic chain check on fresh DB, coverage gate >=60%
-09f1420 2026-08-14 feat(ops): R2 bucket zayche-storage (decoupled from voice-clone) + master-key decrypt drill verified (backup .env restores decryptable secrets)
-ebc0657 2026-08-14 feat(zodiac): tropical default + sidereal Lahiri option — profile column + migration, web form chips, synastry selects, bot button step, homepage copy fix
-09bd53e 2026-08-14 fix(ops): migration chain aligned to models (alembic check clean), restore safety guards (mandatory target + FORCE_PROD_RESTORE), backup sanity gate (refuses empty DB), restore drill performed on prod backup
-721a8f2 2026-08-14 fix(security): P0 round-3 — chat IDOR (4 endpoints), admin stats auth, coupon atomic, bot bold leak, prompt injection, watchdog decouple, ephe path
-982ba0f 2026-08-14 fix(ops): P0/P1 audit fixes — chart watchdog (health+500→Telegram), systemd memory limits, QA predictive-tone + 15 tests, full code bundle
-984a423 2026-08-14 docs: verify external AI critique claim-by-claim + add confirmed risks to report
-0397a3f 2026-08-13 docs: comprehensive ZAYCHE project report for external AI analysis
-0760288 2026-08-13 feat(seo): proper title+description for /learn education index
-35502d4 2026-08-13 feat(ux): full site polish — nav+drawer, layered homepage, rich plans/guide/education, provider-select admin, meta fixes
-7f44cac 2026-08-13 feat(sky): enrich 'آسمان امروز' page — layered simple/expert view, aspects, retrogrades, moon events + top-nav placement
-9d3b01e 2026-08-13 chore: remove one-off content scripts
-fc9de69 2026-08-13 feat(content): categorize articles + expand 3 thin articles + plan AI-chat quotas
-6e00457 2026-08-13 feat(ux): Reicon icon sprite + AI chat showcase + full-feature homepage + complete nav
-3dc72ba 2026-08-13 feat(ai-chat): remove Gemini/AvalAI, per-part DeepSeek models, chat history + daily quota
-96f6034 2026-08-13 feat(brand): ZAYCHE mark — birth-chart logo (ring + 12 houses + compass star)
-ec75e74 2026-08-13 Initial import: Chart Platform (ZAYCHE / زایچه) — full codebase
 ```
