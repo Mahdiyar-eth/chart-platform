@@ -52,4 +52,5 @@ def test_retry_includes_qa_feedback(monkeypatch):
     assert "identity" in sections  # converged, no fallback
     assert metrics["qa_failures"] >= 2  # every domain retried at least once
     assert metrics["calls"] >= 3
-    assert "رد شد" in calls[1] and "رد شد" in calls[2]  # feedback present
+    # F-27c: at least the retry prompt after a rejection carries the reasons
+    assert any("رد شد" in p and "عبارت ممنوع" in p for p in calls[:5])
