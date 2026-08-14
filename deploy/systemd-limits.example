@@ -1,0 +1,37 @@
+# Systemd resource limits — applied 2026-08-14 (audit round 2, P0-2)
+# Purpose: prevent one service from exhausting host RAM (the 2026-08-11 disk incident
+# already proved co-located services can take the revenue product down).
+# Location: /etc/systemd/system/<svc>.service.d/limits.conf  (MemoryHigh = soft reclaim, MemoryMax = hard kill)
+
+# chart-web.service.d/limits.conf
+[Service]
+MemoryHigh=1.0G
+MemoryMax=1.5G
+
+# chart-worker.service.d/limits.conf
+[Service]
+MemoryHigh=1.2G
+MemoryMax=2.0G
+
+# voice-clone.service.d/limits.conf
+[Service]
+MemoryHigh=1.5G
+MemoryMax=2.2G
+
+# omniroute.service.d/limits.conf
+[Service]
+MemoryHigh=850M
+MemoryMax=1.1G
+
+# hermes-gateway.service.d/limits.conf
+[Service]
+MemoryHigh=2.2G
+MemoryMax=3.0G
+
+# hermes-webui.service.d/limits.conf
+[Service]
+MemoryHigh=700M
+MemoryMax=1.0G
+
+# Apply:  systemctl daemon-reload && systemctl restart <svc>
+# Verify: systemctl show <svc> -p MemoryHigh -p MemoryMax

@@ -16,6 +16,19 @@ FORBIDDEN_PATTERNS = [
     r"قطعاً", r"قطعی", r"یقیناً", r"مطمئناً", r"پیشگویی",
     # divination claims (غیب alone = "the unseen", poetic — ban only گویی/گو)
     r"غیبگویی", r"غیبگو", r"طلسم", r"جادو",
+    # predictive TONE without explicit divination words (audit round 2):
+    # «در آینده نزدیک», «به‌زودی», «مقدر شده/است», «سرنوشت تو», «نصیب تو»,
+    # «در انتظار توست», «روزی خواهی/روزی به», «خواهی رسید/شد/داشت/یافت»,
+    # «فال گرفتن/گفتن» — high-precision phrases; common neutral uses excluded
+    r"در آینده(ی)? نزدیک",
+    r"به ?زودی",
+    r"مقدر",
+    r"سرنوشت تو",
+    r"نصیب تو",
+    r"در انتظار تو",
+    r"روزی (خواهی|به )",
+    r"خواهی (رسید|شد|داشت|یافت|گشت)",
+    r"فال (گرفتن|گرفت|گفتن|گفت|خواندن|خواند)",
 ]
 
 VALID_PLANETS = {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
@@ -73,7 +86,9 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
         total_words += len(text.split())
 
         for pat in FORBIDDEN_PATTERNS:
-            if re.search(pat, text):
+            # ZWNJ (نیم‌فاصله) makes Persian spelling ambiguous — normalize it away
+            # so «پیش‌گویی» and «پیشگویی» both match the no-ZWNJ pattern.
+            if re.search(pat, text.replace("\u200c", "")):
                 errors.append(f"{domain}: عبارت ممنوع «{pat}» در متن")
                 break
 
