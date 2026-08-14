@@ -1,0 +1,770 @@
+{
+ "id": "chart-chart-10-london-winter",
+ "source": "golden",
+ "birth": {
+  "lat": 51.5074,
+  "lon": -0.1278,
+  "year": 1994,
+  "month": 1,
+  "day": 10,
+  "hour": 12,
+  "minute": 30,
+  "time_known": true,
+  "jalali": false,
+  "tz_name": "Europe/London"
+ },
+ "chart_json": {
+  "engine_config": {
+   "house_system": "P",
+   "zodiac": "tropical",
+   "ayanamsa": null,
+   "orb_rules": {
+    "conjunction": 8.0,
+    "sextile": 6.0,
+    "square": 7.0,
+    "trine": 8.0,
+    "opposition": 8.0
+   },
+   "node_type": "mean",
+   "lilith": "mean",
+   "chiron": true,
+   "ephe": "sepl_18/semo_18/seas_18/sena_18",
+   "swisseph_version": "2.10.03"
+  },
+  "birth": {
+   "local_time": "1994-01-10 12:30",
+   "tz_name": "Europe/London",
+   "utc_time": "1994-01-10 12:30:00",
+   "julian_day_ut": 2449363.020833,
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "time_known": true,
+   "moon_confidence": "high",
+   "moon_possible_signs": []
+  },
+  "planets": {
+   "Sun": {
+    "longitude": 290.041518,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 20.041518,
+    "retrograde": false,
+    "speed": 1.019365,
+    "house": 9
+   },
+   "Moon": {
+    "longitude": 271.856727,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 1.856727,
+    "retrograde": false,
+    "speed": 13.754641,
+    "house": 8
+   },
+   "Mercury": {
+    "longitude": 294.160939,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 24.160939,
+    "retrograde": false,
+    "speed": 1.658846,
+    "house": 9
+   },
+   "Venus": {
+    "longitude": 288.47306,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 18.47306,
+    "retrograde": false,
+    "speed": 1.258199,
+    "house": 9
+   },
+   "Mars": {
+    "longitude": 286.354264,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 16.354264,
+    "retrograde": false,
+    "speed": 0.768323,
+    "house": 9
+   },
+   "Jupiter": {
+    "longitude": 221.135327,
+    "sign_index": 7,
+    "sign_en": "Scorpio",
+    "sign_fa": "عقرب",
+    "degree": 11.135327,
+    "retrograde": false,
+    "speed": 0.134904,
+    "house": 6
+   },
+   "Saturn": {
+    "longitude": 327.953789,
+    "sign_index": 10,
+    "sign_en": "Aquarius",
+    "sign_fa": "دلو",
+    "degree": 27.953789,
+    "retrograde": false,
+    "speed": 0.104365,
+    "house": 11
+   },
+   "Uranus": {
+    "longitude": 292.140815,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 22.140815,
+    "retrograde": false,
+    "speed": 0.059354,
+    "house": 9
+   },
+   "Neptune": {
+    "longitude": 290.820102,
+    "sign_index": 9,
+    "sign_en": "Capricorn",
+    "sign_fa": "جدی",
+    "degree": 20.820102,
+    "retrograde": false,
+    "speed": 0.038024,
+    "house": 9
+   },
+   "Pluto": {
+    "longitude": 237.355926,
+    "sign_index": 7,
+    "sign_en": "Scorpio",
+    "sign_fa": "عقرب",
+    "degree": 27.355926,
+    "retrograde": false,
+    "speed": 0.027592,
+    "house": 7
+   },
+   "Node": {
+    "longitude": 240.593024,
+    "sign_index": 8,
+    "sign_en": "Sagittarius",
+    "sign_fa": "قوس",
+    "degree": 0.593024,
+    "retrograde": true,
+    "speed": -0.052915,
+    "house": 7
+   },
+   "Lilith": {
+    "longitude": 20.3917,
+    "sign_index": 0,
+    "sign_en": "Aries",
+    "sign_fa": "حمل",
+    "degree": 20.3917,
+    "retrograde": false,
+    "speed": 0.111333,
+    "house": 12
+   },
+   "Chiron": {
+    "longitude": 158.98726,
+    "sign_index": 5,
+    "sign_en": "Virgo",
+    "sign_fa": "سنبله",
+    "degree": 8.98726,
+    "retrograde": true,
+    "speed": -0.033465,
+    "house": 5
+   },
+   "Fortune": {
+    "longitude": 37.134163,
+    "sign_index": 1,
+    "sign_en": "Taurus",
+    "sign_fa": "ثور",
+    "degree": 7.134163,
+    "retrograde": false,
+    "speed": 0.0,
+    "house": 12
+   }
+  },
+  "angles": {
+   "ASC": {
+    "longitude": 55.318954,
+    "house": 1
+   },
+   "MC": {
+    "longitude": 295.221207,
+    "house": 10
+   },
+   "Vx": {
+    "longitude": 201.96253
+   }
+  },
+  "houses": {
+   "h1": 55.318954,
+   "h2": 79.631307,
+   "h3": 97.406918,
+   "h4": 115.221207,
+   "h5": 137.955798,
+   "h6": 175.166485,
+   "h7": 235.318954,
+   "h8": 259.631307,
+   "h9": 277.406918,
+   "h10": 295.221207,
+   "h11": 317.955798,
+   "h12": 355.166485
+  },
+  "aspects": [
+   {
+    "p1": "Sun",
+    "p2": "Mercury",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 4.1194,
+    "exact_angle": 4.1194
+   },
+   {
+    "p1": "Sun",
+    "p2": "Venus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 1.5685,
+    "exact_angle": 1.5685
+   },
+   {
+    "p1": "Sun",
+    "p2": "Mars",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 3.6873,
+    "exact_angle": 3.6873
+   },
+   {
+    "p1": "Sun",
+    "p2": "Uranus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 2.0993,
+    "exact_angle": 2.0993
+   },
+   {
+    "p1": "Sun",
+    "p2": "Neptune",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 0.7786,
+    "exact_angle": 0.7786
+   },
+   {
+    "p1": "Sun",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 0.3502,
+    "exact_angle": 90.3502
+   },
+   {
+    "p1": "Sun",
+    "p2": "ASC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 5.2774,
+    "exact_angle": 125.2774
+   },
+   {
+    "p1": "Sun",
+    "p2": "MC",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 5.1797,
+    "exact_angle": 5.1797
+   },
+   {
+    "p1": "Sun",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 1.921,
+    "exact_angle": 88.079
+   },
+   {
+    "p1": "Moon",
+    "p2": "Saturn",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 3.9029,
+    "exact_angle": 56.0971
+   },
+   {
+    "p1": "Moon",
+    "p2": "Chiron",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 7.1305,
+    "exact_angle": 112.8695
+   },
+   {
+    "p1": "Moon",
+    "p2": "Fortune",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 5.2774,
+    "exact_angle": 125.2774
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Venus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 5.6879,
+    "exact_angle": 5.6879
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Mars",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 7.8067,
+    "exact_angle": 7.8067
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Uranus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 2.0201,
+    "exact_angle": 2.0201
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Neptune",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 3.3408,
+    "exact_angle": 3.3408
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Pluto",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 3.195,
+    "exact_angle": 56.805
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 3.7692,
+    "exact_angle": 86.2308
+   },
+   {
+    "p1": "Mercury",
+    "p2": "ASC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 1.158,
+    "exact_angle": 121.158
+   },
+   {
+    "p1": "Mercury",
+    "p2": "MC",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 1.0603,
+    "exact_angle": 1.0603
+   },
+   {
+    "p1": "Mercury",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 2.1984,
+    "exact_angle": 92.1984
+   },
+   {
+    "p1": "Venus",
+    "p2": "Mars",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 2.1188,
+    "exact_angle": 2.1188
+   },
+   {
+    "p1": "Venus",
+    "p2": "Uranus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 3.6678,
+    "exact_angle": 3.6678
+   },
+   {
+    "p1": "Venus",
+    "p2": "Neptune",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 2.347,
+    "exact_angle": 2.347
+   },
+   {
+    "p1": "Venus",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 1.9186,
+    "exact_angle": 91.9186
+   },
+   {
+    "p1": "Venus",
+    "p2": "ASC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 6.8459,
+    "exact_angle": 126.8459
+   },
+   {
+    "p1": "Venus",
+    "p2": "MC",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 6.7481,
+    "exact_angle": 6.7481
+   },
+   {
+    "p1": "Venus",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 3.4895,
+    "exact_angle": 86.5105
+   },
+   {
+    "p1": "Mars",
+    "p2": "Jupiter",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 5.2189,
+    "exact_angle": 65.2189
+   },
+   {
+    "p1": "Mars",
+    "p2": "Uranus",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 5.7866,
+    "exact_angle": 5.7866
+   },
+   {
+    "p1": "Mars",
+    "p2": "Neptune",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 4.4658,
+    "exact_angle": 4.4658
+   },
+   {
+    "p1": "Mars",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 4.0374,
+    "exact_angle": 94.0374
+   },
+   {
+    "p1": "Mars",
+    "p2": "Chiron",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 7.367,
+    "exact_angle": 127.367
+   },
+   {
+    "p1": "Mars",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 5.6083,
+    "exact_angle": 84.3917
+   },
+   {
+    "p1": "Jupiter",
+    "p2": "Chiron",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 2.1481,
+    "exact_angle": 62.1481
+   },
+   {
+    "p1": "Jupiter",
+    "p2": "Fortune",
+    "aspect": "opposition",
+    "aspect_fa": "مقابله",
+    "angle": 180,
+    "orb": 4.0012,
+    "exact_angle": 175.9988
+   },
+   {
+    "p1": "Saturn",
+    "p2": "Pluto",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 0.5979,
+    "exact_angle": 90.5979
+   },
+   {
+    "p1": "Saturn",
+    "p2": "Node",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 2.6392,
+    "exact_angle": 87.3608
+   },
+   {
+    "p1": "Saturn",
+    "p2": "ASC",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 2.6348,
+    "exact_angle": 87.3652
+   },
+   {
+    "p1": "Saturn",
+    "p2": "Vx",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 5.9913,
+    "exact_angle": 125.9913
+   },
+   {
+    "p1": "Uranus",
+    "p2": "Neptune",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 1.3207,
+    "exact_angle": 1.3207
+   },
+   {
+    "p1": "Uranus",
+    "p2": "Pluto",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 5.2151,
+    "exact_angle": 54.7849
+   },
+   {
+    "p1": "Uranus",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 1.7491,
+    "exact_angle": 88.2509
+   },
+   {
+    "p1": "Uranus",
+    "p2": "ASC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 3.1781,
+    "exact_angle": 123.1781
+   },
+   {
+    "p1": "Uranus",
+    "p2": "MC",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 3.0804,
+    "exact_angle": 3.0804
+   },
+   {
+    "p1": "Uranus",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 0.1783,
+    "exact_angle": 90.1783
+   },
+   {
+    "p1": "Neptune",
+    "p2": "Lilith",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 0.4284,
+    "exact_angle": 89.5716
+   },
+   {
+    "p1": "Neptune",
+    "p2": "ASC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 4.4989,
+    "exact_angle": 124.4989
+   },
+   {
+    "p1": "Neptune",
+    "p2": "MC",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 4.4011,
+    "exact_angle": 4.4011
+   },
+   {
+    "p1": "Neptune",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 1.1424,
+    "exact_angle": 88.8576
+   },
+   {
+    "p1": "Pluto",
+    "p2": "Node",
+    "aspect": "conjunction",
+    "aspect_fa": "همنشینی",
+    "angle": 0,
+    "orb": 3.2371,
+    "exact_angle": 3.2371
+   },
+   {
+    "p1": "Pluto",
+    "p2": "ASC",
+    "aspect": "opposition",
+    "aspect_fa": "مقابله",
+    "angle": 180,
+    "orb": 2.037,
+    "exact_angle": 177.963
+   },
+   {
+    "p1": "Pluto",
+    "p2": "MC",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 2.1347,
+    "exact_angle": 57.8653
+   },
+   {
+    "p1": "Node",
+    "p2": "ASC",
+    "aspect": "opposition",
+    "aspect_fa": "مقابله",
+    "angle": 180,
+    "orb": 5.2741,
+    "exact_angle": 174.7259
+   },
+   {
+    "p1": "Node",
+    "p2": "MC",
+    "aspect": "sextile",
+    "aspect_fa": "شش‌ضلعی",
+    "angle": 60,
+    "orb": 5.3718,
+    "exact_angle": 54.6282
+   },
+   {
+    "p1": "Lilith",
+    "p2": "MC",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 4.8295,
+    "exact_angle": 85.1705
+   },
+   {
+    "p1": "Lilith",
+    "p2": "Vx",
+    "aspect": "opposition",
+    "aspect_fa": "مقابله",
+    "angle": 180,
+    "orb": 1.5708,
+    "exact_angle": 178.4292
+   },
+   {
+    "p1": "Chiron",
+    "p2": "Fortune",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 1.8531,
+    "exact_angle": 121.8531
+   },
+   {
+    "p1": "ASC",
+    "p2": "MC",
+    "aspect": "trine",
+    "aspect_fa": "سه‌ضلعی",
+    "angle": 120,
+    "orb": 0.0977,
+    "exact_angle": 120.0977
+   },
+   {
+    "p1": "MC",
+    "p2": "Vx",
+    "aspect": "square",
+    "aspect_fa": "تربیع",
+    "angle": 90,
+    "orb": 3.2587,
+    "exact_angle": 93.2587
+   }
+  ],
+  "elements": {
+   "Fire": 0,
+   "Earth": 7,
+   "Air": 1,
+   "Water": 2
+  },
+  "modalities": {
+   "Cardinal": 7,
+   "Fixed": 3,
+   "Mutable": 0
+  },
+  "moon_phase": "Waning",
+  "moon_phase_deg": 341.8152
+ }
+}
