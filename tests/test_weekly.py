@@ -44,7 +44,7 @@ def test_web_subscription_chat_id_none_does_not_crash():
     the weekly delivery; the reflection row must still be stored."""
     import asyncio
     import uuid
-    from unittest.mock import patch
+    from unittest.mock import AsyncMock, patch
 
     from sqlmodel import Session, text
 
@@ -61,7 +61,7 @@ def test_web_subscription_chat_id_none_does_not_crash():
 
     async def _run():
         with (patch.object(w, "build_weekly_reflection", return_value="متن هفته"),
-              patch.object(w, "send_message") as sm_mock):
+              patch("app.bots.handler.send_message", new_callable=AsyncMock) as sm_mock):
             res = await w.run_weekly_delivery()
         return res, sm_mock.call_count
 
