@@ -120,7 +120,7 @@ app/
 ├── models.py       ۱۴+ جدول SQLModel
 ├── auth.py, db.py, security.py, storage.py, config.py
 tests/              ۶۶ تست + ۲۱ golden chart
-scripts/            ci.sh, send_transit_digests, migrate, backup, gen_docs
+scripts/            ci.sh, weekly_transit, migrate, backup, gen_docs
 docs/               PLAN-CHECKLIST (منبع حقیقت), PLAN-V4, RUNBOOK, audit/
 ```
 
@@ -246,7 +246,7 @@ cd /root/chart-platform
 venv/bin/python -m pytest tests/ -q          # تست‌ها
 venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8767 --proxy-headers --forwarded-allow-ips=127.0.0.1
 # worker: systemctl status chart-worker (ARQ)
-# اسکریپت‌های کرون: scripts/ (backup, send_transit_digests, migrate, ci.sh)
+# اسکریپت‌های کرون: scripts/ (backup, weekly_transit, migrate, ci.sh)
 ```
 """)
 

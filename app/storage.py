@@ -16,7 +16,7 @@ from app.env import IS_PROD
 from app.secret_store import get_secret
 
 R2_ENDPOINT = get_secret("r2_endpoint", "R2_ENDPOINT", "").strip()
-R2_BUCKET = get_secret("r2_bucket", "R2_BUCKET", "hermes-voice-clone").strip()
+R2_BUCKET = get_secret("r2_bucket", "R2_BUCKET", "zayche-storage").strip()  # C2: never fall back to voice-clone
 R2_REGION = get_secret("r2_region", "R2_REGION", "auto").strip()
 R2_ACCESS = get_secret("r2_access_key_id", "R2_ACCESS_KEY_ID", "").strip()
 R2_SECRET = get_secret("r2_secret_access_key", "R2_SECRET_ACCESS_KEY", "").strip()
