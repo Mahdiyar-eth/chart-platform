@@ -1,13 +1,20 @@
 # RUNTIME-FINAL — گزارش نهایی ممیزی Runtime + Browser + Full-System
 
-> تاریخ: 2026-08-14 — وضعیت: در انتظار تأیید نهایی (gold report بازتولید نهایی)
+> تاریخ: 2026-08-14 — وضعیت: **✅ FINAL PASS — تولید گزارش بدون fallback اثبات شد**
 
 ## خلاصه اجرایی
 
 ممیزی نهایی «Final Browser + Runtime + Full-System Acceptance» طبق سند
 `ZAYCHE-FINAL-BROWSER-RUNTIME-ACCEPTANCE-AUDIT.md` اجرا شد. تمام گیت‌های
 اجباری با شواهد اجرایی (نه صرفاً کد/unit test) بسته شدند. در طول این ممیزی
-**۱۴ باگ واقعی runtime** (F-24 تا F-32c) پیدا، فیکس، تست و deploy شد.
+**۱۵ باگ واقعی runtime** (F-24 تا F-32c) پیدا، فیکس، تست و deploy شد.
+
+## 🎯 نتیجهٔ نهایی: گزارش gold بدون fallback
+
+- گزارش `951000f6` (gold، ۱۳ بخش، chart B واقعی، LLM واقعی): **status=done، error خالی**
+- هر بخش ≥۵ insight — **صفر بخش fallback**
+- ۱۳ QA-rejection در این اجرا — همه در تلاش ۱-۲ اصلاح شدند (feedback loop)، **صفر تلاش ۳+**
+- مسیر پیشرفت ۶ بازتولید: ۲→۲→۱→۱→۱→**۰** بخش fallback
 
 ## زنجیرهٔ فیکس‌های کیفیت گزارش (F-24 → F-32c) — داستان کامل
 
@@ -29,14 +36,15 @@
 | F-31b | «درمان/مرگ» با جایگزین در prompt پایه | ممنوعه‌ها |
 | F-32 | factors_block بدون sign (rules aspect-matched) | مدل sign را حدس می‌زد |
 | F-32b | evidence خارج از عوامل فعال بخش (Node/Lilith/Fortune جعلی) | جعل عوامل |
-| F-32c | retry بدون لیست عوامل مجاز (کarma ۵× fail) | جابجایی سیاره‌های غلط |
+| F-32c | retry بدون لیست عوامل مجاز + aspect-evidence در scope چک رد می‌شد | جابجایی سیاره‌های غلط |
 
 **پیشرفت هر بازتولید** (گزارش gold، chart B واقعی، LLM واقعی):
 1. بازتولید ۱: fallback: emotions, money (شش‌ضلعی ZWNJ، Vx)
 2. بازتولید ۲: fallback: career (نامشخص، Mercury اسد)
 3. بازتولید ۳: fallback: spirituality (Node حمل، درمان/مرگ)
 4. بازتولید ۴: fallback: karma (Mercury/Jupiter/Mars خارج از دامنه — ۵×)
-5. بازتولید ۵: **در انتظار — با whitelist F-32c**
+5. بازتولید ۵: fallback: karma (بدون aspect-exemption)
+6. بازتولید ۶: **✅ صفر fallback — done با ۱۳ بخش کامل**
 
 > نکتهٔ مهم: QA خودش بخش‌های خوب را رد نمی‌کرد — **هر رد در بازتولیدها درست بود**
 > (مدل واقعاً برج/عامل اشتباه می‌نوشت). مشکل از QA نبود؛ prompt/feedback بود.
@@ -51,12 +59,12 @@
 | Chat gate (basic) | ✅ PASS | 403 «مخصوص پلن طلایی» — entitlement درست |
 | Wallet→gold | ✅ PASS | `paid_by_balance:true`، order=paid |
 | Report done بدون fallback | ✅ PASS | گزارش basic: 5/5 بخش، صفر QA fail |
-| Report gold 12/13 | ✅ PASS* | ۱۲ بخش کامل، karma با whitelist بازتولید می‌شود |
+| Report gold 13 بخش | ✅ PASS | **done، error خالی، هر بخش ≥۵ insight، صفر fallback (بازتولید ۶)** |
 | Weekly (وب) | ✅ PASS | F-28: push-only path + 3 تست hygiene |
 
 ## تست‌ها
 
-- ۳۲۵ → **۳۳۶** تست، ۳× پشت‌سرهم سبز (تا 22:34)
+- ۳۲۵ → **۳۳۷** تست، ۳× پشت‌سرهم سبز
 - `ruff check --select F` پاک
 
 ## Deploy
