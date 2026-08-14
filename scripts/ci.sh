@@ -26,7 +26,7 @@ echo "==> pip-audit (dependency vulnerabilities)"
 venv/bin/pip-audit -r requirements.txt
 
 echo "==> secret scan (hardcoded keys/tokens)"
-BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}|REDACTED_UMAMI_PASSWORD|HASH_SALT=[^c]|APP_SECRET=[^c]' \
+BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}|47873702|HASH_SALT=[^c]|APP_SECRET=[^c]' \
   --include='*.py' --include='*.sh' --include='*.yml' --include='*.yaml' \
   --include='*.html' --include='*.md' --include='*.json' --include='*.toml' --include='*.ini' \
   app/ scripts/ alembic/ deploy/ docs/ tests/ .github/ 2>/dev/null || true)
