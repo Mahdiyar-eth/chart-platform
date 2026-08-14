@@ -43,22 +43,23 @@ ASPECT_NAMES = {"Conjunction", "Sextile", "Square", "Trine", "Opposition",
 # Persian→English normalization (F-27b, runtime audit): deepseek writes
 # evidence in mixed Persian/English («شش‌ضلعی» for sextile, «تربیع» for square,
 # «خورشید» for Sun, «Leo» for اسد). QA must accept both spellings.
+# NOTE: keys are written WITHOUT ZWNJ — _norm_token strips ZWNJ before lookup.
 _FA_ASPECTS = {
-    "اتصال": "Conjunction", "ترکیب": "Conjunction", "قرینگی": "Opposition",
-    "مقابله": "Opposition", "برابر": "Opposition",
+    "اتصال": "Conjunction", "ترکیب": "Conjunction", "همنشینی": "Conjunction",
+    "قرینگی": "Opposition", "مقابله": "Opposition", "برابر": "Opposition",
     "تربیع": "Square", "چهارضلعی": "Square",
-    "سه‌ضلعی": "Trine", "سه ضلعی": "Trine", "سه‌گانه": "Trine",
-    "شش‌ضلعی": "Sextile", "شش ضلعی": "Sextile", "شش‌گانه": "Sextile",
-    "پنج‌ضلعی": "Quintile", "غیرمتعارف": "Quincunx", "نیمه‌تربیع": "SemiSquare",
+    "سهضلعی": "Trine", "سه ضلعی": "Trine", "سهگانه": "Trine",
+    "ششضلعی": "Sextile", "شش ضلعی": "Sextile", "ششگانه": "Sextile",
+    "پنجضلعی": "Quintile", "غیرمتعارف": "Quincunx", "نیمهتربیع": "SemiSquare",
 }
 _FA_PLANETS = {
     "خورشید": "Sun", "ماه": "Moon", "عطارد": "Mercury", "زهره": "Venus",
     "مریخ": "Mars", "مشتری": "Jupiter", "زحل": "Saturn", "اورانوس": "Uranus",
-    "نپتون": "Neptune", "پلوتو": "Pluto", "گره": "Node", "گره‌ی": "Node",
+    "نپتون": "Neptune", "پلوتو": "Pluto", "گره": "Node", "گرهی": "Node",
     "لیلیت": "Lilith", "کیوان": "Saturn", "بهرام": "Mars", "تیر": "Mercury",
     "ناهید": "Venus", "هرمز": "Jupiter", "کایرون": "Chiron",
     "صعود": "ASC", "طالع": "ASC", "صعودی": "ASC",
-    "میانه": "MC", "میانه‌ی آسمان": "MC", "میل": "MC",
+    "میانه": "MC", "میانه آسمان": "MC", "میل": "MC",
     "قله": "Vx", "راس": "Vx", "بخت": "Fortune", "نقطه": "Fortune",
 }
 _FA_SIGNS = {
@@ -67,7 +68,7 @@ _FA_SIGNS = {
     "اسد": "Leo", "شیر": "Leo", "سنبله": "Virgo", "دوشیزه": "Virgo",
     "میزان": "Libra", "ترازو": "Libra", "عقرب": "Scorpio", "کژدم": "Scorpio",
     "قوس": "Sagittarius", "کمان": "Sagittarius", "جدی": "Capricorn", "بزغاله": "Capricorn",
-    "دلو": "Aquarius", "آب‌ریز": "Aquarius", "حوت": "Pisces", "ماهی": "Pisces",
+    "دلو": "Aquarius", "آبریز": "Aquarius", "حوت": "Pisces", "ماهی": "Pisces",
 }
 
 

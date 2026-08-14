@@ -91,3 +91,9 @@ def test_sign_check_still_strict_when_metadata_present():
     sec = _section({"factor": "Sun", "sign": "Pisces", "house": 10})
     errs = qa_section(sec, dict(_CHART), "career")
     assert any("برج نادرست" in e for e in errs)
+
+
+def test_zwnj_variant_evidence_accepted():
+    """Model writes شش‌ضلعی with ZWNJ — must still normalize (F-27b)."""
+    sec = _section({"aspect": "عطارد شش\u200cضلعی مریخ"})
+    assert qa_section(sec, dict(_CHART), "career") == []
