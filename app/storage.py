@@ -1,9 +1,9 @@
 """Cloudflare R2 object storage for report PDFs (plan §11 R2).
 
 Credentials come from chart-platform/.env (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
-R2_ENDPOINT, R2_BUCKET, R2_REGION). Bucket: hermes-voice-clone (shared with vc
-project — keys prefixed `chart-reports/`). R2 buckets are private: downloads go
-through 7-day presigned URLs. Falls back gracefully when not configured
+R2_ENDPOINT, R2_BUCKET, R2_REGION). Bucket: zayche-storage (own bucket since
+2026-08-14 — audit r3: decoupled from voice-clone's shared bucket). R2 buckets
+are private: downloads go through 7-day presigned URLs. Falls back gracefully when not configured
 (returns None) so local-disk serving keeps working.
 """
 import os
