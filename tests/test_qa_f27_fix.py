@@ -97,3 +97,21 @@ def test_zwnj_variant_evidence_accepted():
     """Model writes شش‌ضلعی with ZWNJ — must still normalize (F-27b)."""
     sec = _section({"aspect": "عطارد شش\u200cضلعی مریخ"})
     assert qa_section(sec, dict(_CHART), "career") == []
+
+
+def test_brj_prefix_and_moon_phase_sign_accepted():
+    """«برج جدی» prefix and «فاز …» sign slots must pass (F-31)."""
+    _c = dict(_CHART)
+    _c["planets"]["Neptune"] = {"sign_en": "Capricorn", "sign_fa": "جدی", "sign_index": 9}
+    _c["planets"]["Moon"] = {"sign_en": "Pisces", "sign_fa": "حوت", "sign_index": 11}
+    sec = _section({"factor": "Neptune", "sign": "برج جدی", "house": 8},
+                   {"factor": "Moon", "sign": "فاز Waning", "house": 12})
+    assert qa_section(sec, _c, "spirituality") == []
+
+
+def test_vx_evidence_accepted():
+    """Vx must match the engine key exactly (F-31)."""
+    _c = dict(_CHART)
+    _c["angles"] = {"Vx": {"longitude": 10.0, "sign_en": "Aries", "sign_fa": "حمل", "sign_index": 0}}
+    sec = _section({"aspect": "Mars sextile Vx"})
+    assert qa_section(sec, _c, "career") == []

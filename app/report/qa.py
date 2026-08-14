@@ -94,7 +94,7 @@ def _canon(name: str) -> str:
     with Persian→English normalization of aspects/planets/signs.
     """
     t = _norm_token(name).title()
-    t = {"Asc": "ASC", "Mc": "MC", "Vx": "VX", "Vertex": "VX"}.get(t, t)
+    t = {"Asc": "ASC", "Mc": "MC"}.get(t, t)  # Vx stays "Vx" — matches engine key
     return t
 
 
@@ -203,10 +203,15 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                     # F-30: charts built before the angles sign-metadata fix have
                     # no sign on ASC/MC/Vx — absence of data must not reject a
                     # correct evidence, so only check when the source has a sign.
+                    # F-31 (runtime audit): the model writes «برج جدی» (prefix),
+                    # «Leo» vs «اسد» — strip the برج prefix; and moon-phase
+                    # evidence puts «فاز …» in the sign slot — skip sign check.
+                    _ev_sign = str(ev["sign"]).replace("برج ", "").replace("برج", "").strip()
                     src_signs = {s for s in (str(src.get("sign_en", "")).lower(),
                                              str(src.get("sign_fa", "")).lower(),
                                              str(src.get("sign_index", ""))) if s}
-                    if src_signs and str(ev["sign"]).lower() not in src_signs:
+                    if (src_signs and not _ev_sign.startswith("فاز")
+                            and _ev_sign.lower() not in src_signs):
                         errors.append(f"{domain}: برج نادرست در evidence برای {f}: {ev.get('sign')}")
 
     if total_words < 150:

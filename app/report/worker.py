@@ -96,8 +96,16 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                 # attempt — static prompt rules alone can't stop the model from
                 # writing «درمان»/«مرگ»/«شش‌ضلعی»; telling it exactly why the
                 # previous draft was rejected converges in one retry.
+                # F-31: banned words get concrete replacements — the model kept
+                # swapping one banned word for another (مرگ → درمان) because the
+                # reason string didn't say what to write instead.
+                for _bad, _good in (("درمان", "پیشنهاد/راهکار"), ("دارو", "عادت سالم"),
+                                    ("مرگ", "پایان/تحول"), ("بیماری", "چالش تندرستی"),
+                                    ("پیش‌گویی", "نگاه به آینده"), ("پیشگویی", "نگاه به آینده")):
+                    errors = [e.replace(_bad, f"{_bad}«← بنویس: {_good}»") for e in errors]
                 fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
-                            "این موارد را دقیقاً رفع کن و دوباره بنویس:\n- "
+                            "این موارد را دقیقاً رفع کن (به‌ویژه واژه‌های ممنوع را با "
+                            "جایگزین پیشنهادی عوض کن) و دوباره بنویس:\n- "
                             + "\n- ".join(errors[:4]))
                 prompt = prompt + fix_hint
 
