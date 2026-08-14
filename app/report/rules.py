@@ -7,7 +7,7 @@ calculates — this module decides WHAT to tell the writer.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 # 13 life domains (plan v3.1 §8)
 DOMAINS = {
@@ -122,7 +122,6 @@ def evaluate(chart: dict) -> dict[str, list[dict]]:
     """Chart JSON → {domain: [active rule records with matched factor data]}."""
     planets = chart.get("planets", {})
     angles = chart.get("angles", {})
-    houses = chart.get("houses", {})
     aspects = chart.get("aspects", [])
     moon_phase = chart.get("moon_phase", "")
 

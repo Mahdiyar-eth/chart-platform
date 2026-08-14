@@ -4,7 +4,6 @@ Deterministic keyword classifier; no LLM call needed for routing.
 """
 from __future__ import annotations
 
-import re
 
 INTENTS: dict[str, list[str]] = {
     "identity": ["شخصیت", "من کیستم", "هویت", "خودشناسی", "نفس", "طبع", "روحیات", "خلقیات", "روحیه", "خصوصیت"],

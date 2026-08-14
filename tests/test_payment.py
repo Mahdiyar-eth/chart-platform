@@ -1,5 +1,4 @@
 """Payment flow tests — FAKE Zarinpal client (no real API calls, no spend)."""
-import json
 import sys
 from pathlib import Path
 
@@ -7,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 
-from app.models import Order, Plan, Report
+from app.models import Order, Plan
 from app.payment.zarinpal import ZarinpalError
 
 

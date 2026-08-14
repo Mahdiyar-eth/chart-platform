@@ -31,11 +31,11 @@ def aspect_grid_svg(planet_positions: dict) -> str:
     if len(names) < 2:
         return ""
     n = len(names)
-    cell, pad, header = 34, 0, 46
+    cell, header = 34, 46
     w, h = n * cell + 80, n * cell + header + 10
     p = _svg_open(w, h)
     p.append(f'<rect width="{w}" height="{h}" fill="#0b1026" rx="16"/>')
-    p.append(f'<text x="24" y="30" fill="#cfd6ff" font-size="15" font-weight="700">ماتریس جنبه‌ها</text>')
+    p.append('<text x="24" y="30" fill="#cfd6ff" font-size="15" font-weight="700">ماتریس جنبه‌ها</text>')
     for i, name in enumerate(names):
         x = 70 + i * cell
         p.append(f'<text x="{x + cell // 2}" y="{header - 14}" fill="#8b96c9" font-size="11" text-anchor="middle">{name}</text>')
@@ -82,7 +82,7 @@ def element_donut_svg(sign_counts: dict) -> str:
     w, h, cx, cy, r = 320, 220, 130, 110, 80
     p = _svg_open(w, h)
     p.append(f'<rect width="{w}" height="{h}" fill="#0b1026" rx="16"/>')
-    p.append(f'<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">تعادل عناصر</text>')
+    p.append('<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">تعادل عناصر</text>')
     ang = -90
     for el, col in ELEMENT_COLORS.items():
         frac = counts[el] / total
@@ -114,12 +114,12 @@ def house_bar_svg(house_counts: dict) -> str:
     p = _svg_open(w, h)
     p.append(f'<rect width="{w}" height="{h}" fill="#0b1026" rx="16"/>')
     if not house_counts:
-        p.append(f'<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">توزیع خانه‌ها</text>')
-        p.append(f'<text x="24" y="80" fill="#8b96c9" font-size="12">ساعت تولد نامعلوم است؛</text>')
-        p.append(f'<text x="24" y="100" fill="#8b96c9" font-size="12">خانه‌ها محاسبه نشده‌اند.</text>')
+        p.append('<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">توزیع خانه‌ها</text>')
+        p.append('<text x="24" y="80" fill="#8b96c9" font-size="12">ساعت تولد نامعلوم است؛</text>')
+        p.append('<text x="24" y="100" fill="#8b96c9" font-size="12">خانه‌ها محاسبه نشده‌اند.</text>')
         p.extend(_svg_close())
         return "".join(p)
-    p.append(f'<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">توزیع خانه‌ها</text>')
+    p.append('<text x="24" y="28" fill="#cfd6ff" font-size="15" font-weight="700">توزیع خانه‌ها</text>')
     maxv = max(house_counts.values()) if house_counts else 1
     for i in range(12):
         n = house_counts.get(i + 1, 0)
@@ -211,7 +211,7 @@ def transit_timeline_svg(chart_json: dict, months: int = 12) -> str:
     h = top + len(rows) * row_h + 26
     w = left + months * col_w + 16
     p = _svg_open(w, h)
-    p.append(f'<text x="8" y="20" fill="#e8ecff" font-size="13" font-weight="800">نقشهی گذرهای سال آینده</text>')
+    p.append('<text x="8" y="20" fill="#e8ecff" font-size="13" font-weight="800">نقشهی گذرهای سال آینده</text>')
     for col, ml in enumerate(month_labels):
         x = left + col * col_w
         p.append(f'<text x="{x + col_w / 2}" y="18" fill="#8b96c9" font-size="9" text-anchor="middle">{ml}</text>')

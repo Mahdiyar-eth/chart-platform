@@ -5,11 +5,10 @@ Only retrieved, relevant context is sent to the LLM (never the whole chart).
 """
 from __future__ import annotations
 
-import json
 import re
 
 from app.report.prompt_builder import factors_block
-from app.report.rules import DOMAINS, evaluate
+from app.report.rules import evaluate
 
 
 def _sanitize_question(q: str) -> str:

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from sqlmodel import Field, Session, select
+from sqlmodel import Session, select
 
 from app.db import engine
 from app.models import BotState

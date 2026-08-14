@@ -4,7 +4,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.astrology.engine import compute_from_fields
 from app.report.generator import generate_sections
 from app.report.prompt_builder import build_prompts_for_plan, PLAN_SECTIONS
 from tests.test_report_engine import CHART, FakeRouter

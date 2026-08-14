@@ -19,7 +19,7 @@ from app.core.llm import build_router
 from app.db import engine as db_engine
 from app.models import BirthProfile, Chart, LLMRun, Report
 from app.report.generator import build_report_json
-from app.report.prompt_builder import (build_all_prompts, build_personal_question_prompt,
+from app.report.prompt_builder import (build_personal_question_prompt,
                                        build_prompts_for_plan, order_domains_by_focus)
 from app.report.qa import parse_section, qa_repetition, qa_section
 from app.report.renderer import render_report_pdf

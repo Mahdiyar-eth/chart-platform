@@ -5,8 +5,6 @@ Every engine/prompt/renderer change must pass ALL golden charts (plan v3.1 §5.4
 Chart 1 = MaHDi's verified chart (expert agreement within 1 arc-minute,
 cross-checked against manual DST-offset computation 2026-08-12).
 """
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 GOLDEN_CHARTS = [
     {

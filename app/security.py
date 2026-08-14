@@ -12,7 +12,7 @@ from collections import defaultdict, deque
 from hmac import compare_digest as _compare_digest
 
 from fastapi import Request
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 import app.config  # noqa: F401
 

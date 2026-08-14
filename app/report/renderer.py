@@ -11,7 +11,6 @@ from pathlib import Path
 from weasyprint import HTML
 
 from app.astrology.big_three import big_three
-from app.astrology.engine import fmt_lon
 from app.report.rules import DOMAINS
 
 FONT_DIR = Path(__file__).parent.parent / "static" / "fonts"
@@ -65,9 +64,9 @@ def render_report_pdf(report: dict, out_path: str | Path, plan_key: str | None =
     bt = big_three(chart)
     birth = chart["birth"]
 
-    parts = [f'<div class="cover">',
-             f'<div class="title">گزارش چارت تولد</div>',
-             f'<div class="sub">آینهی خودشناسی — تفسیر اختصاصی بر اساس محاسبهی نجومی دقیق</div>',
+    parts = ['<div class="cover">',
+             '<div class="title">گزارش چارت تولد</div>',
+             '<div class="sub">آینهی خودشناسی — تفسیر اختصاصی بر اساس محاسبهی نجومی دقیق</div>',
              f'<div class="badge">تاریخ و ساعت تولد: {_esc(birth.get("local_time", ""))}</div>',
              f'<div class="badge">مکان: {_esc(birth.get("city_fa", "")) or "—"}</div>',
              "</div>"]
@@ -128,8 +127,8 @@ def render_report_pdf(report: dict, out_path: str | Path, plan_key: str | None =
                                  f"({_esc(e['sign_fa'])})</td><td>{_esc(tgt)}</td>"
                                  f"<td>{_esc(e['aspect'])} (اورب {e['orb']}°)</td></tr>")
                 parts.append("</table>")
-            parts.append(f'<div class="advice">🌠 این جدول از روی محاسبهی مستقیم نجومی ساخته شده '
-                         f'و نشان میدهد کدام گذرهای مهم روی چارت تو فعال میشوند.</div>')
+            parts.append('<div class="advice">🌠 این جدول از روی محاسبهی مستقیم نجومی ساخته شده '
+                         'و نشان میدهد کدام گذرهای مهم روی چارت تو فعال میشوند.</div>')
             try:
                 svg = transit_timeline_svg(chart, months=12).replace('width="100%"', 'width="680"')
                 parts.append(f'<div style="page-break-inside:avoid;">{svg}</div>')

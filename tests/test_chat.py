@@ -4,7 +4,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest
 
 from app.astrology.engine import compute_from_fields
 from app.chat.intents import detect_intent, route_question

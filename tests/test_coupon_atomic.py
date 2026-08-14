@@ -6,13 +6,11 @@ import uuid
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 import app.main as main_mod
 from app.db import engine
-from app.models import Coupon, Order
 
 
 def _mk_coupon(max_uses: int = 1) -> str:

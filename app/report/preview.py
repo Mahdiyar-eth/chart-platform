@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from app.astrology.big_three import big_three
 from app.astrology.svg_wheel import PLANET_FA
-from app.report.rules import DOMAINS, evaluate
+from app.report.rules import evaluate
 
 _TITLE = {
     "identity": "هویت و شخصیت",

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select
 
-from app.models import Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent, Report, Subscription, User
+from app.models import Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent, Subscription
 
 
 def get_or_create_referral_code(session: Session, user_id: str) -> str:

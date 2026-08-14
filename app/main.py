@@ -1360,7 +1360,6 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     audit(session.bind, u.phone or u.id, "account.delete", u.id)
 
     profiles = session.exec(select(BirthProfile).where(BirthProfile.user_id == u.id)).all()
-    profile_ids = [p.id for p in profiles]
     charts = []
     for p in profiles:
         charts += session.exec(select(Chart).where(Chart.profile_id == p.id)).all()

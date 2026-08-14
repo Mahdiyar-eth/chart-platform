@@ -57,7 +57,7 @@ h1 {{ color:#f5c518; font-size:34px; margin:0 0 6px; }}
 
 def render_share_card(chart_json: dict, chart_id: str) -> str:
     """Render + cache PNG. Returns file path."""
-    key = hashlib.sha1(chart_id.encode()).hexdigest()[:16]
+    key = hashlib.sha1(chart_id.encode(), usedforsecurity=False).hexdigest()[:16]
     out = CACHE_DIR / f"{key}.png"
     if out.exists():
         return str(out)

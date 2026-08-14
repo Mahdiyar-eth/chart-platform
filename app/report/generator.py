@@ -8,12 +8,11 @@ Phase 3: synchronous worker (ARQ queue comes in the same phase, see worker.py).
 """
 from __future__ import annotations
 
-import json
 import logging
 import time
 
 from app.core.llm import build_router
-from app.report.prompt_builder import build_all_prompts, build_prompts_for_plan
+from app.report.prompt_builder import build_prompts_for_plan
 from app.report.qa import parse_section, qa_repetition, qa_section
 
 log = logging.getLogger("report")

@@ -13,14 +13,10 @@ OpenCode Go (DeepSeek V4) only, with per-part model selection
 """
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
-import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import httpx
 

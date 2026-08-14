@@ -66,7 +66,6 @@ def factors_block(chart: dict, domain: str, active: list[dict]) -> str:
         line = f"- {r['factor']}: " + ("، ".join(parts) if parts else "فعال")
         lines.append(line)
     # aspects involving this domain's factors
-    planets = chart.get("planets", {})
     aspects = chart.get("aspects", [])
     for a in aspects:
         if a["p1"] in {r["factor"] for r in active} or a["p2"] in {r["factor"] for r in active}:

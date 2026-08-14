@@ -43,7 +43,7 @@ def _polar(cx: float, cy: float, r: float, deg: float) -> tuple[float, float]:
 def render_chart_svg(chart: dict, size: int = 800) -> str:
     cx = cy = size / 2
     R = size / 2 - 8
-    r_outer, r_sign, r_house, r_planet, r_inner = R, R * 0.84, R * 0.72, R * 0.55, R * 0.30
+    r_outer, r_sign, _, r_planet, r_inner = R, R * 0.84, R * 0.72, R * 0.55, R * 0.30
 
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" '
              f'width="100%" height="100%" font-family="Vazirmatn, Tahoma, sans-serif">']

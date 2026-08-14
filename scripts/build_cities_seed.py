@@ -39,7 +39,7 @@ SIMPLE_TO_FA = {
     "Qom": "قم", "Ahvaz": "اهواز", "Rasht": "رشت", "Yazd": "یزد",
     "Kerman": "کرمان", "Hamadan": "همدان", "Urmia": "ارومیه", "Zahedan": "زاهدان",
     "Ardabil": "اردبیل", "Bandar Abbas": "بندرعباس", "Arak": "اراک",
-    "Eslamshahr": "اسلامشهر", "Zanjan": "زنجان", "Sanandaj": "سنندج",
+    "Eslamshahr": "اسلامشهر", "Zanjan": "زنجان",
     "Qazvin": "قزوین", "Khorramabad": "خرم‌آباد", "Gorgan": "گرگان", "Sari": "ساری",
     "Kashan": "کاشان", "Shahriar": "شهریار", "Dezful": "دزفول", "Borujerd": "بروجرد",
     "Ilam": "ایلام", "Bojnurd": "بجنورد", "Birjand": "بیرجند", "Yasuj": "یاسوج",
@@ -95,7 +95,6 @@ def _norm(s: str) -> str:
 
 def main() -> None:
     fa_cities = load_cities()
-    fa_by_name: dict[str, dict] = {_norm(c["city_fa"]): c for c in fa_cities}
 
     # read simplemaps
     precise: dict[str, dict] = {}

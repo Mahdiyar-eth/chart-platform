@@ -339,7 +339,6 @@ async def _handle_callback(cb: dict, platform: str) -> None:
                     Subscription.chart_id == chart_id, Subscription.active == True,
                 )).first()
                 if sub:
-                    from datetime import datetime
                     expires = sub.expires_at.strftime("%Y-%m-%d") if sub.expires_at else "نامحدود"
                     await send_message(
                         chat_id,

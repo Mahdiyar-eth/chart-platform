@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import select
 from app.main import app
 from app.db import engine
-from app.models import Chart, BirthProfile
+from app.models import BirthProfile
 
 
 def _mk_chart(client, zodiac):

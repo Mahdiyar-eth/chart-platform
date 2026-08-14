@@ -9,7 +9,7 @@ Only ACTIVE, non-expired subscriptions receive digests. Silent when nobody.
 """
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 sys.path.insert(0, "/root/chart-platform")
 from dotenv import load_dotenv  # noqa: E402
