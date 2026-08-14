@@ -434,8 +434,20 @@ def _enqueue_report(report_id: str) -> bool:
 
 
 async def _enqueue_async(report_id: str) -> None:
-    pool = await _arq_pool()
-    await pool.enqueue_job("generate_report", report_id)
+    """Enqueue one ARQ job with a short-lived pool.
+
+    F-25 (runtime audit): a GLOBAL pool created inside asyncio.run() binds to
+    whichever worker-thread loop created it first; the next request runs in a
+    different thread → ``attached to a different loop`` → "queue unavailable".
+    A fresh pool per enqueue costs ~ms and is thread-safe by construction.
+    """
+    from arq import create_pool
+    from arq.connections import RedisSettings
+    pool = await create_pool(RedisSettings.from_dsn(_REDIS_URL))
+    try:
+        await pool.enqueue_job("generate_report", report_id)
+    finally:
+        await pool.aclose()
 
 
 @app.post("/api/charts/{chart_id}/report")

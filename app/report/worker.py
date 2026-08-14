@@ -218,8 +218,13 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             rep.status = "failed"
             rep.error = str(e)[:500]
         session.commit()
+        # F-24 (runtime audit): read status INSIDE the session — rep is
+        # detached after `with Session(...)` exits; touching rep.status then
+        # raised DetachedInstanceError and killed the job AFTER the report was
+        # fully generated (8-minute LLM work wasted, ARQ retried it again).
+        final_status = rep.status
 
-    if rep.status == "done":
+    if final_status == "done":
         # D2: index chunks for semantic chat retrieval — best-effort, must
         # never fail the report (model load is ~1 min on CPU, worker-side)
         try:
