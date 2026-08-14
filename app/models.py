@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, Index, UniqueConstraint, text
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
@@ -274,5 +275,29 @@ class PushSubscription(SQLModel, table=True):
     endpoint: str = Field(unique=True, index=True)
     p256dh: str
     auth: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ReportChunk(SQLModel, table=True):
+    """pgvector RAG (D2): semantic chunks of a finished report for grounded
+    chat retrieval. embedding is a pgvector column (384-dim for e5-small)."""
+    __tablename__ = "report_chunks"
+    __table_args__ = (
+        Index(
+            "ix_report_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    report_id: str = Field(foreign_key="reports.id", index=True)
+    chunk_index: int = Field(default=0)
+    section_key: str = Field(default="")
+    text: str = Field(default="")
+    embedding: list[float] | None = Field(
+        default=None,
+        sa_column=Column(Vector(384), nullable=True),
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

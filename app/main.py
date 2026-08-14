@@ -1363,6 +1363,7 @@ def api_chat(
             question, chart.chart_json,
             report_sections=(report.sections if report and report.sections else None),
             focus_areas=(profile.focus_areas if profile else None),
+            report_id=(report.id if report else None),
         )
     except Exception:
         chat_quota_release(acct)  # don't burn the daily quota on a failed call

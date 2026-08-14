@@ -166,6 +166,16 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             rep.error = str(e)[:500]
         session.commit()
 
+    if rep.status == "done":
+        # D2: index chunks for semantic chat retrieval — best-effort, must
+        # never fail the report (model load is ~1 min on CPU, worker-side)
+        try:
+            from app.rag import index_report
+            n = await asyncio.to_thread(index_report, report_id)
+            log.info("RAG indexed %d chunks for report %s", n, report_id[:8])
+        except Exception as e:  # noqa: BLE001
+            log.warning("RAG index skipped for %s: %s", report_id[:8], e)
+
 
 async def startup(ctx: dict) -> None:
     ctx["router"] = build_router()
