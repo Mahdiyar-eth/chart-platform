@@ -33,10 +33,54 @@ FORBIDDEN_PATTERNS = [
 
 VALID_PLANETS = {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
                  "Uranus", "Neptune", "Pluto", "Node", "Lilith", "Chiron",
-                 "ASC", "MC", "Fortune", "Vertex", "Vx"}
+                 "ASC", "MC", "Fortune", "Vertex", "Vx",
+                 "Vesta", "Ceres", "Pallas", "Juno"}
 
 ASPECT_NAMES = {"Conjunction", "Sextile", "Square", "Trine", "Opposition",
                 "Quincunx", "SemiSquare", "Sesquiquadrate", "Trigon", "Parallel"}
+
+
+# Persian→English normalization (F-27b, runtime audit): deepseek writes
+# evidence in mixed Persian/English («شش‌ضلعی» for sextile, «تربیع» for square,
+# «خورشید» for Sun, «Leo» for اسد). QA must accept both spellings.
+_FA_ASPECTS = {
+    "اتصال": "Conjunction", "ترکیب": "Conjunction", "قرینگی": "Opposition",
+    "مقابله": "Opposition", "برابر": "Opposition",
+    "تربیع": "Square", "چهارضلعی": "Square",
+    "سه‌ضلعی": "Trine", "سه ضلعی": "Trine", "سه‌گانه": "Trine",
+    "شش‌ضلعی": "Sextile", "شش ضلعی": "Sextile", "شش‌گانه": "Sextile",
+    "پنج‌ضلعی": "Quintile", "غیرمتعارف": "Quincunx", "نیمه‌تربیع": "SemiSquare",
+}
+_FA_PLANETS = {
+    "خورشید": "Sun", "ماه": "Moon", "عطارد": "Mercury", "زهره": "Venus",
+    "مریخ": "Mars", "مشتری": "Jupiter", "زحل": "Saturn", "اورانوس": "Uranus",
+    "نپتون": "Neptune", "پلوتو": "Pluto", "گره": "Node", "گره‌ی": "Node",
+    "لیلیت": "Lilith", "کیوان": "Saturn", "بهرام": "Mars", "تیر": "Mercury",
+    "ناهید": "Venus", "هرمز": "Jupiter", "کایرون": "Chiron",
+    "صعود": "ASC", "طالع": "ASC", "صعودی": "ASC",
+    "میانه": "MC", "میانه‌ی آسمان": "MC", "میل": "MC",
+    "قله": "Vx", "راس": "Vx", "بخت": "Fortune", "نقطه": "Fortune",
+}
+_FA_SIGNS = {
+    "حمل": "Aries", "بره": "Aries", "ثور": "Taurus", "گاو": "Taurus",
+    "جوزا": "Gemini", "دوپیکر": "Gemini", "خرچنگ": "Cancer", "سرطان": "Cancer",
+    "اسد": "Leo", "شیر": "Leo", "سنبله": "Virgo", "دوشیزه": "Virgo",
+    "میزان": "Libra", "ترازو": "Libra", "عقرب": "Scorpio", "کژدم": "Scorpio",
+    "قوس": "Sagittarius", "کمان": "Sagittarius", "جدی": "Capricorn", "بزغاله": "Capricorn",
+    "دلو": "Aquarius", "آب‌ریز": "Aquarius", "حوت": "Pisces", "ماهی": "Pisces",
+}
+
+
+def _norm_token(s: str) -> str:
+    """Best-effort Persian→English normalization of an evidence token."""
+    t = s.strip().replace("\u200c", "").replace("‌", "")
+    if t in _FA_ASPECTS:
+        return _FA_ASPECTS[t]
+    if t in _FA_PLANETS:
+        return _FA_PLANETS[t]
+    if t in _FA_SIGNS:
+        return _FA_SIGNS[t]
+    return t
 
 
 def _canon(name: str) -> str:
@@ -45,10 +89,12 @@ def _canon(name: str) -> str:
     F-27 (runtime audit): `.title()` mangles the all-caps abbreviations the
     engine emits — "MC".title() == "Mc", "ASC".title() == "Asc" — so valid
     evidence like "Uranus trine MC" / "Sun conjunct ASC" was rejected by QA
-    and whole report sections fell back to generic text.
+    and whole report sections fell back to generic text. F-27b extends this
+    with Persian→English normalization of aspects/planets/signs.
     """
-    t = name.title()
-    return {"Asc": "ASC", "Mc": "MC"}.get(t, t)
+    t = _norm_token(name).title()
+    t = {"Asc": "ASC", "Mc": "MC", "Vx": "VX", "Vertex": "VX"}.get(t, t)
+    return t
 
 
 def parse_section(raw: str) -> dict | None:
@@ -118,7 +164,8 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 if len(aparts) >= 3 and _canon(aparts[0]) in VALID_PLANETS \
                         and _canon(aparts[-1]) in VALID_PLANETS \
                         and (_canon(aparts[-1]) in chart.get("planets", {})
-                             or _canon(aparts[-1]) in chart.get("angles", {})):
+                             or _canon(aparts[-1]) in chart.get("angles", {})
+                             or _canon(aparts[-1]) in {"Vesta", "Ceres", "Pallas", "Juno"}):
                     pass  # valid aspect dict — both endpoints grounded
                 elif len(aparts) < 3:
                     pass  # {"aspect": "Conjunction"} — supplementary, skip endpoint check
@@ -143,15 +190,22 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 else:
                     errors.append(f"{domain}: عامل جعلی در evidence: {f}")
             elif f not in chart.get("planets", {}) and f not in chart.get("angles", {}):
-                errors.append(f"{domain}: عامل {f} در چارت وجود ندارد")
+                # F-27b: a well-known body absent from THIS chart (e.g. the model
+                # cites Vesta from training data) is a soft flaw — rejecting the
+                # whole section 3× and falling back to generic text is worse.
+                if f not in {"Vesta", "Ceres", "Pallas", "Juno", "Lilith", "Chiron"}:
+                    errors.append(f"{domain}: عامل {f} در چارت وجود ندارد")
             else:
                 # verify sign/house if present
                 src = chart["planets"].get(f) or chart["angles"].get(f)
                 if isinstance(ev, dict) and "sign" in ev and ev["sign"] is not None:
-                    if str(ev.get("sign")).lower() not in (
-                            str(src.get("sign_en", "")).lower(),
-                            str(src.get("sign_fa", "")).lower(),
-                            str(src.get("sign_index", ""))):
+                    # F-30: charts built before the angles sign-metadata fix have
+                    # no sign on ASC/MC/Vx — absence of data must not reject a
+                    # correct evidence, so only check when the source has a sign.
+                    src_signs = {s for s in (str(src.get("sign_en", "")).lower(),
+                                             str(src.get("sign_fa", "")).lower(),
+                                             str(src.get("sign_index", ""))) if s}
+                    if src_signs and str(ev["sign"]).lower() not in src_signs:
                         errors.append(f"{domain}: برج نادرست در evidence برای {f}: {ev.get('sign')}")
 
     if total_words < 150:

@@ -96,14 +96,15 @@ def test_subscribe_links_user_and_weekly_sends(monkeypatch):
         s.add(ch)
         s.commit()
         s.refresh(ch)
-        s.add(Sub(chart_id=ch.id, chat_id="12345", platform="telegram", active=True))
-        s.commit()
-        cid, pid = ch.id, p.id
+        cid, pid = ch.id, p.id  # read BEFORE any later commit expires them
     # F-28 hygiene: other tests may leave active subs behind; delivery
-    # iterates ALL of them, so clear the slate before asserting counts
+    # iterates ALL of them, so clear the slate BEFORE creating ours
     with Session(engine) as s:
         s.exec(text("DELETE FROM weekly_reflections"))
         s.exec(text("DELETE FROM subscriptions"))
+        s.commit()
+    with Session(engine) as s:
+        s.add(Sub(chart_id=ch.id, chat_id="12345", platform="telegram", active=True))
         s.commit()
     # drop any leftover WeeklyReflection for this chart (per-run cleanup —
     # the DB persists between runs, and `already` skips delivery)

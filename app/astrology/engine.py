@@ -168,6 +168,19 @@ def compute_chart(birth: BirthData, config: dict | None = None) -> ChartResult:
             "MC": {"longitude": round(ascmc[1], 6)},
             "Vx": {"longitude": round(ascmc[3], 6)},
         }
+        # F-30 (runtime audit): angles need sign metadata like planets — QA
+        # grounds evidence against sign_en/sign_fa; without it every correct
+        # "ASC in Leo" evidence was wrongly rejected → whole sections fell back
+        for _aname, _along in list(angles.items()):
+            _lon = _along["longitude"]
+            angles[_aname].update({
+                "sign_index": sign_of(_lon),
+                "sign_en": SIGNS_EN[sign_of(_lon)],
+                "sign_fa": SIGNS_FA[sign_of(_lon)],
+                "degree": round(degree_in_sign(_lon)[1], 6),
+                "retrograde": False,
+                "speed": 0.0,
+            })
         houses = {f"h{i+1}": round(cusps[i], 6) for i in range(12)}
         # house placement for planets + angles
         for name, p in planets.items():
