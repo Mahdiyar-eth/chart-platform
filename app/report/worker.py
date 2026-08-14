@@ -17,6 +17,7 @@ from sqlmodel import Session
 import app.config  # noqa: F401 — load .env FIRST
 from app.core.llm import build_router
 from app.db import engine as db_engine
+from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
 from app.report.generator import build_report_json
 from app.report.prompt_builder import (build_personal_question_prompt,
@@ -147,6 +148,11 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             rep.pdf_path = str(pdf)
             from app.storage import upload_report
             rep.r2_key = upload_report(report_id, str(pdf))
+            if not rep.r2_key and IS_PROD:
+                # audit r4 B4: never silently deliver a local-only report in
+                # prod — the local disk is ephemeral; surface it as degraded
+                rep.status = "degraded"
+                rep.error = "آپلود فایل گزارش در R2 ناموفق بود — گزارش موقتاً محلی است؛ با ادمین تماس بگیرید"
             fallback = metrics.get("fallback_domains", [])
             if fallback:
                 # audit P1-7: never silently deliver a low-quality report

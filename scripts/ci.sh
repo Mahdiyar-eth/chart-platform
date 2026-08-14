@@ -27,6 +27,19 @@ if [ "$RC" -eq 0 ]; then
   exit 1
 fi
 echo "✓ prod-mode refuses to boot without secrets"
+# 1b) audit r4 B4: prod without R2 creds must refuse to boot (fail-closed)
+set +e
+APP_ENV=production AUTH_SECRET=x ADMIN_SECRET=x SECRETS_MASTER_KEY=x \
+  R2_ACCESS_KEY_ID= R2_SECRET_ACCESS_KEY= R2_ENDPOINT= \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.storage" 2>smoke_r2.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded WITHOUT R2 (fail-closed broken)"
+  exit 1
+fi
+echo "✓ prod-mode refuses to boot without R2"
 # 2) with all secrets → boots, /health + landing + plans respond
 SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test}"
 APP_ENV=production DATABASE_URL="$SMOKE_DB" \

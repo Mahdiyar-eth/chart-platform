@@ -3,12 +3,16 @@
 Credentials come from chart-platform/.env (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
 R2_ENDPOINT, R2_BUCKET, R2_REGION). Bucket: zayche-storage (own bucket since
 2026-08-14 — audit r3: decoupled from voice-clone's shared bucket). R2 buckets
-are private: downloads go through 7-day presigned URLs. Falls back gracefully when not configured
-(returns None) so local-disk serving keeps working.
+are private: downloads go through 30-min presigned URLs (audit r4 B3).
+
+FAIL-CLOSED (audit r4 B4): in production R2 is mandatory — a misconfigured
+deploy must refuse to boot instead of silently serving from ephemeral local
+disk. In dev/tests missing creds still degrade gracefully.
 """
 import os
 
 import app.config  # noqa: F401 — ensure .env loaded
+from app.env import IS_PROD
 from app.secret_store import get_secret
 
 R2_ENDPOINT = get_secret("r2_endpoint", "R2_ENDPOINT", "").strip()
@@ -18,6 +22,12 @@ R2_ACCESS = get_secret("r2_access_key_id", "R2_ACCESS_KEY_ID", "").strip()
 R2_SECRET = get_secret("r2_secret_access_key", "R2_SECRET_ACCESS_KEY", "").strip()
 
 PREFIX = "chart-reports"  # keep chart-platform objects namespaced in the shared bucket
+
+if IS_PROD and not (R2_ACCESS and R2_SECRET and R2_ENDPOINT):
+    raise RuntimeError(
+        "R2 storage is REQUIRED in production (audit r4 B4 fail-closed). "
+        "Set R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_ENDPOINT in .env."
+    )
 
 
 def configured() -> bool:
@@ -54,8 +64,10 @@ def upload_report(report_id: str, local_path: str) -> str | None:
         return None
 
 
-def presigned_url(key: str, expires: int = 604800) -> str | None:
-    """7-day presigned GET URL (R2 max). None when not configured/failed."""
+def presigned_url(key: str, expires: int = 1800) -> str | None:
+    """30-min presigned GET URL (audit r4 B3 — was 7 days). Every consumer
+    (report PDF endpoint) generates a FRESH url per request, so the short TTL
+    only limits leaked-link windows, never breaks downloads."""
     if not configured() or not key:
         return None
     try:
