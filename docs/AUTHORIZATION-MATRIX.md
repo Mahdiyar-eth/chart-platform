@@ -25,6 +25,8 @@
 | `GET /api/reports/{report_id}.docx` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/pdf` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/audio` | Capability | `_owns_chart` (C1) |
+| `POST /api/reports/{report_id}/audio` | Capability | `_owns_chart` (H1.5 queue) |
+| `GET /api/reports/{report_id}/audio-status` | Capability | `_owns_chart` (H1.5 poll) |
 | `GET /api/share/{chart_id}.png` | Capability | `_owns_chart` |
 | `GET /plans` | Public | — |
 | `GET /payment/result` | Public/Page | صفحه پرداخت: `_owns_order` |

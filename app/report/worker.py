@@ -112,6 +112,56 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
     return sections, metrics
 
 
+async def generate_report_audio(ctx: dict, report_id: str) -> None:
+    """H1.5: queued edge-tts audio generation — no more inline TTS in the
+    request path. Bounded text (9k chars) → mp3 → R2 → status=ready."""
+    import asyncio
+    from pathlib import Path
+
+    with Session(db_engine) as session:
+        rep = session.get(Report, report_id)
+        if not rep:
+            log.error("audio: report %s not found", report_id)
+            return
+        if rep.audio_status == "ready":
+            return  # idempotent
+        rep.audio_status = "generating"
+        session.commit()
+    try:
+        text = "گزارش اختصاصی چارت تولد. "
+        with Session(db_engine) as session:
+            rep = session.get(Report, report_id)
+            for k, v in (rep.sections or {}).items():
+                t = (v or {}).get("title", k)
+                c = (v or {}).get("content", "")
+                text += f"بخش {t}. {' '.join(str(c).split())[:800]} "
+                if len(text) > 9000:
+                    break
+        out = Path("/tmp") / f"report-audio-{report_id[:8]}.mp3"
+        import edge_tts
+
+        async def _gen():
+            tts = edge_tts.Communicate(text, "fa-IR-DilaraNeural", rate="+0%")
+            await tts.save(str(out))
+
+        await asyncio.to_thread(lambda: asyncio.run(_gen()))
+        from app.storage import upload_audio
+        key = upload_audio(report_id, str(out))
+        out.unlink(missing_ok=True)
+        with Session(db_engine) as session:
+            rep = session.get(Report, report_id)
+            rep.audio_r2_key = key
+            rep.audio_status = "ready"
+            session.commit()
+        log.info("audio ready: %s (%s)", report_id[:8], key)
+    except Exception:  # noqa: BLE001
+        log.exception("audio generation failed for %s", report_id)
+        with Session(db_engine) as session:
+            rep = session.get(Report, report_id)
+            rep.audio_status = "failed"
+            session.commit()
+
+
 async def generate_report(ctx: dict, report_id: str) -> None:
     """ARQ job: sections → DB → PDF."""
     with Session(db_engine) as session:
@@ -190,7 +240,7 @@ async def shutdown(ctx: dict) -> None:
 
 
 class WorkerSettings:
-    functions = [generate_report]
+    functions = [generate_report, generate_report_audio]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = RedisSettings.from_dsn(REDIS_URL)

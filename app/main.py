@@ -1140,64 +1140,88 @@ def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...
 @app.get("/api/reports/{report_id}/audio")
 def api_report_audio(report_id: str, request: Request,
                      session: Session = Depends(get_session)):
+    """H1.5: audio download — ready → 302 presigned; generating/failed → 409
+    with the status so the client polls /audio-status instead of hanging."""
     rep = session.get(Report, report_id)
     if not rep or rep.status not in ("done", "degraded"):
         raise HTTPException(404, "report not ready")
     # gate: paid order + ownership (audit P0-3)
     if not _report_gate(rep, session, request):
         raise HTTPException(403, "برای دریافت فایل صوتی، ابتدا خرید کنید")
-    import asyncio
-    import time as _time
-    from pathlib import Path as _P
-    # audit P1: /tmp hygiene — drop audio cache files older than 24h
-    try:
-        _cut = _time.time() - 86400
-        for _f in _P("/tmp").glob("report-audio-*.mp3"):
-            if _f.stat().st_mtime < _cut:
-                _f.unlink(missing_ok=True)
-    except Exception:  # noqa: BLE001
-        pass
-    out = _P("/tmp") / f"report-audio-{report_id[:8]}.mp3"
-
-    # audit r4 C1: audio lives in R2 — R2 cache hit serves directly (no TTS
-    # cost), miss generates → uploads → 30-min presigned → temp file dropped.
-    from app.storage import audio_key, presigned_url, upload_audio
-    cached = presigned_url(audio_key(report_id))
-    if cached:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(cached, status_code=302)
-    if not out.exists():
-        text = "گزارش اختصاصی چارت تولد. "
-        for k, v in (rep.sections or {}).items():
-            t = (v or {}).get("title", k)
-            c = (v or {}).get("content", "")
-            text += f"بخش {t}. {' '.join(str(c).split())[:800]} "
-            if len(text) > 9000:
-                break
-        try:
-            import edge_tts
-            async def _gen():
-                tts = edge_tts.Communicate(text, "fa-IR-DilaraNeural", rate="+0%")
-                await tts.save(str(out))
-            asyncio.run(_gen())
-        except Exception as e:
-            raise HTTPException(502, f"تولید صوت ممکن نیست: {e}")
-    key = upload_audio(report_id, str(out))
-    try:
-        out.unlink(missing_ok=True)
-    except OSError:
-        pass
-    if key:
-        r2_url = presigned_url(key)
-        if r2_url:
+    from app.storage import audio_key, presigned_url
+    if rep.audio_status == "ready" and rep.audio_r2_key:
+        cached = presigned_url(audio_key(report_id))
+        if cached:
             from fastapi.responses import RedirectResponse
-            return RedirectResponse(r2_url, status_code=302)
-    # dev/fallback: no R2 — serve the local copy if it still exists
-    if out.exists():
-        from fastapi.responses import FileResponse
-        return FileResponse(str(out), media_type="audio/mpeg",
-                            filename=f"chart-report-{report_id[:8]}.mp3")
-    raise HTTPException(502, "در دسترس نیست")
+            return RedirectResponse(cached, status_code=302)
+    raise HTTPException(409, f"audio {rep.audio_status or 'none'}")
+
+
+@app.post("/api/reports/{report_id}/audio")
+def api_report_audio_request(report_id: str, request: Request,
+                             session: Session = Depends(get_session)):
+    """H1.5: request (queued) audio — enqueue an ARQ job when not already
+    generating/ready. Returns {status} — 200 when ready (with url), 202 when
+    generating, 409 when failed (retry allowed by re-POSTing)."""
+    rep = session.get(Report, report_id)
+    if not rep or rep.status not in ("done", "degraded"):
+        raise HTTPException(404, "report not ready")
+    if not _report_gate(rep, session, request):
+        raise HTTPException(403, "برای دریافت فایل صوتی، ابتدا خرید کنید")
+    from app.storage import audio_key, presigned_url
+    if rep.audio_status == "ready" and rep.audio_r2_key:
+        cached = presigned_url(audio_key(report_id))
+        if cached:
+            return {"status": "ready", "url": cached}
+    if rep.audio_status == "generating":
+        return {"status": "generating"}
+    if rep.audio_status == "failed":
+        # allow one retry — flip back to none so the worker re-generates
+        rep.audio_status = "none"
+        session.commit()
+    # enqueue (redis path; failure surfaces as 503 — never inline TTS)
+    try:
+        import asyncio as _a
+        _a.run(_enqueue_audio(report_id))
+    except Exception:  # noqa: BLE001 — redis down → surface 503, allow retry
+        rep.audio_status = "failed"
+        session.commit()
+        raise HTTPException(503, "صف تولید صوت در دسترس نیست؛ دوباره تلاش کنید")
+    rep.audio_status = "generating"
+    session.commit()
+    return {"status": "generating"}
+
+
+def _enqueue_audio(report_id: str) -> object:
+    """Synchronous bridge to enqueue the audio job (no async endpoint)."""
+    import asyncio
+
+    async def _do():
+        from arq import create_pool
+        from arq.connections import RedisSettings
+        pool = await create_pool(RedisSettings.from_dsn(_REDIS_URL))
+        try:
+            await pool.enqueue_job("generate_report_audio", report_id)
+        finally:
+            await pool.aclose()
+
+    return asyncio.run(_do())
+
+
+@app.get("/api/reports/{report_id}/audio-status")
+def api_report_audio_status(report_id: str, request: Request,
+                            session: Session = Depends(get_session)):
+    """H1.5: lightweight poll target for the client (no 409 semantics)."""
+    rep = session.get(Report, report_id)
+    if not rep:
+        raise HTTPException(404, "not found")
+    if not _report_gate(rep, session, request):
+        raise HTTPException(403, "forbidden")
+    from app.storage import audio_key, presigned_url
+    if rep.audio_status == "ready" and rep.audio_r2_key:
+        url = presigned_url(audio_key(report_id))
+        return {"status": "ready", "url": url}
+    return {"status": rep.audio_status or "none"}
 
 
 @app.get("/learn", response_class=HTMLResponse)

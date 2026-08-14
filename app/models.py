@@ -129,6 +129,9 @@ class Report(SQLModel, table=True):
             "onupdate": lambda: datetime.now(timezone.utc),
         },
     )
+    # H1.5: async report audio (edge-tts via worker) — none|generating|ready|failed
+    audio_status: str = Field(default="none")
+    audio_r2_key: str | None = Field(default=None)
 
 
 class Plan(SQLModel, table=True):
