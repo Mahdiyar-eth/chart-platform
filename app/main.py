@@ -1683,6 +1683,10 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         return RedirectResponse("/admin/login", status_code=303)
     orders = session.exec(select(Order).order_by(Order.created_at.desc()).limit(100)).all()
     reports = session.exec(select(Report).order_by(Report.created_at.desc()).limit(20)).all()
+    # B1: DLQ health — failed reports awaiting the retry cron
+    dlq = session.exec(select(Report).where(Report.status == "failed")).all()
+    dlq_count = len(dlq)
+    dlq_oldest = min((r.created_at for r in dlq), default=None)
     users = session.exec(select(User).order_by(User.created_at.desc()).limit(50)).all()
     plans = session.exec(select(Plan).order_by(Plan.sort)).all()
     audit = session.exec(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(30)).all()

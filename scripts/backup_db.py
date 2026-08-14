@@ -96,18 +96,31 @@ def main() -> int:
         return 1
     print(f"OK: sanity — plans={plans}, users={users}")
 
-    # 2) zip dump + .env
+    # 2) zip dump + .env, then encrypt with age (audit r4 B2 — secrets never
+    #    sit on R2 in plaintext; the age private key lives only on this server)
     try:
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
             z.write(dump_path, arcname=dump_path.name)
             z.write(ENV_FILE, arcname=".env")
         dump_path.unlink()  # dump kept only inside the zip
+        age_pub = os.getenv("AGE_PUBKEY", "").strip()
+        if not age_pub:
+            print("FAIL: AGE_PUBKEY not set — refusing to upload plaintext backup")
+            return 1
+        enc_path = BACKUP_DIR / f"{zip_path.name}.age"
+        subprocess.run(["age", "-r", age_pub, "-o", str(enc_path), str(zip_path)],
+                       check=True, capture_output=True, text=True)
+        zip_path.unlink()  # plaintext zip never leaves the disk
+        zip_path = enc_path
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: age encrypt error: {e.stderr[:500]}")
+        return 1
     except Exception as e:  # noqa: BLE001
-        print(f"FAIL: zip error: {e}")
+        print(f"FAIL: zip/encrypt error: {e}")
         return 1
 
     # 3) upload to R2
-    bucket = os.getenv("R2_BUCKET", "hermes-voice-clone")
+    bucket = os.getenv("R2_BUCKET", "zayche-storage")  # C2: never fall back to voice-clone bucket
     try:
         client = _r2_client()
         client.upload_file(str(zip_path), bucket, f"{R2_PREFIX}/{zip_path.name}")
@@ -117,7 +130,7 @@ def main() -> int:
 
     # 4) retention — local
     cutoff = time.time() - LOCAL_RETENTION_DAYS * 86400
-    for f in BACKUP_DIR.glob("chart_backup_*.zip"):
+    for f in BACKUP_DIR.glob("chart_backup_*.zip.age"):
         try:
             if f.stat().st_mtime < cutoff:
                 f.unlink()

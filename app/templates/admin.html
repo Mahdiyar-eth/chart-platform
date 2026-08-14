@@ -10,6 +10,7 @@
     <div class="kpi"><b>{{ n }}</b><span>سفارش {{ {'pending':'در انتظار','paid':'پرداخت‌شده','failed':'ناموفق'}.get(s, s) }}</span></div>
     {% endfor %}
     <div class="kpi"><b>{{ reports|selectattr('status','equalto','done')|list|length }}</b><span>گزارش آماده</span></div>
+    <div class="kpi"><b style="color:{{ '#e76f51' if dlq_count else '#2a9d8f' }};">{{ dlq_count }}</b><span>گزارش ناموفق (DLQ)</span></div>
     <div class="kpi"><b>{{ llm_cost_7d }}$</b><span>هزینه AI (۷ روز) — {{ llm_runs_7d }} درخواست</span></div>
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
