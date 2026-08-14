@@ -1718,6 +1718,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "llm_cost_7d": llm_cost, "llm_runs_7d": len(llm),
         "ai_status": ai_status, "ai_health": ai_health, "ai_provider": ai_provider,
         "chat_today": chat_today, "chat_total": chat_total,
+        "dlq_count": dlq_count,  # B1 — used by admin.html KPI
         "secrets": secret_store.secret_status(),
         "prompt_keys": PROMPT_KEYS,
         "prompt_overrides": [{"key": o["key"], "version": o["version"],
