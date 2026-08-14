@@ -214,6 +214,68 @@ def test_audit_writes_fallback_when_db_fails(monkeypatch, tmp_path):
     assert line["entity"] == "oid-1"
 
 
+# ── F-17 (audit v7 P1): report entitlement is per-REPORT — a refunded GOLD
+# report must NOT become downloadable again via a later BASIC purchase
+def test_refunded_report_stays_locked_after_new_purchase():
+    from app.main import _report_gate
+
+    class _Req:
+        def __init__(self, t):
+            self.state = {}
+            self.cookies = {"chart_access": t}
+            self._t = t
+
+        @property
+        def query_params(self):
+            class _QP:
+                def __init__(self, t):
+                    self._t = t
+
+                def get(self, k, default=None):
+                    return self._t if k == "t" else default
+            return _QP(self._t)
+
+    with Session(engine) as s:
+        from app.models import BirthProfile, Chart
+        p = BirthProfile(raw_year=1994, raw_month=8, raw_day=23, time_known=True,
+                         hour=6, minute=10, city_fa="تهران", tz_name="Asia/Tehran",
+                         calendar_system="jalali")
+        s.add(p)
+        s.flush()
+        c = Chart(profile_id=p.id, chart_json={}, engine_config={}, access_token="tok-f17")
+        s.add(c)
+        s.commit()
+        s.refresh(c)
+        tok = c.access_token
+        rep_gold = Report(chart_id=c.id, status="done", plan_key="gold")
+        s.add(rep_gold)
+        s.commit()
+        s.refresh(rep_gold)
+        # 1) user buys GOLD → report linked to the gold order
+        o_gold = Order(chart_id=c.id, plan_key="gold", status="paid",
+                       amount_rial=6_990_000, report_id=rep_gold.id)
+        s.add(o_gold)
+        s.commit()
+        assert _report_gate(rep_gold, s, _Req(tok)) is True
+        # 2) GOLD is refunded → entitlement revoked
+        o_gold.status = "refunded"
+        s.commit()
+        assert _report_gate(rep_gold, s, _Req(tok)) is False
+        # 3) user later buys BASIC on the same chart → ANOTHER paid order exists
+        rep_basic = Report(chart_id=c.id, status="done", plan_key="basic")
+        s.add(rep_basic)
+        s.commit()
+        s.refresh(rep_basic)
+        o_basic = Order(chart_id=c.id, plan_key="basic", status="paid",
+                        amount_rial=1_490_000, report_id=rep_basic.id)
+        s.add(o_basic)
+        s.commit()
+        # the old GOLD report must STAY locked despite the new paid order…
+        assert _report_gate(rep_gold, s, _Req(tok)) is False
+        # …while the new BASIC report is downloadable
+        assert _report_gate(rep_basic, s, _Req(tok)) is True
+
+
 # ── F-13 (audit v6 P1): R2 deletion failure blocks account deletion
 def test_account_delete_fails_closed_when_r2_delete_fails(monkeypatch):
     from app.security import new_csrf_token

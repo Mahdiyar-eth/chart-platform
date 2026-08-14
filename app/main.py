@@ -376,10 +376,16 @@ def _owns_chart(chart: Chart | None, session: Session, request: Request) -> bool
 
 
 def _report_gate(rep, session, request) -> bool:
-    """Paid-order gate + ownership (audit P0-1/P0-3): paid order AND the
-    requester must own the chart (user_id or capability token)."""
+    """Paid-order gate + ownership (audit P0-1/P0-3).
+
+    F-17 (audit v7 P1): entitlement is per-REPORT, not per-chart — the paid
+    order must be the one that OWNS this report (orders.report_id = rep.id).
+    The old check ("any paid order on the same chart") let a refunded GOLD
+    report become downloadable again the moment the user bought BASIC on the
+    same chart. Audio/PDF/DOCX all go through this gate.
+    """
     paid = session.exec(
-        select(Order).where(Order.chart_id == rep.chart_id, Order.status == "paid")
+        select(Order).where(Order.report_id == rep.id, Order.status == "paid")
     ).first()
     if not paid:
         return False

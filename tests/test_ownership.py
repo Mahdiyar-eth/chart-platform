@@ -135,7 +135,8 @@ def test_report_gate_grants_paid_owner():
     with Session(engine) as s:
         c = _make_anon_chart(s, "tok-rg2")
         rep = _make_report(s, c)
-        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid")
+        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid",
+                  report_id=rep.id)
         s.add(o)
         s.commit()
         assert _report_gate(rep, s, FakeRequest(t="tok-rg2")) is True
@@ -145,7 +146,8 @@ def test_report_gate_denies_paid_but_wrong_token():
     with Session(engine) as s:
         c = _make_anon_chart(s, "tok-rg3")
         rep = _make_report(s, c)
-        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid")
+        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid",
+                  report_id=rep.id)
         s.add(o)
         s.commit()
         assert _report_gate(rep, s, FakeRequest(t="WRONG")) is False

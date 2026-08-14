@@ -36,7 +36,7 @@ def _done_report(s, cid, audio_ready=False):
     s.commit()
     s.refresh(rep)
     o = Order(chart_id=cid, plan_key="gold", status="paid", amount_rial=99000,
-              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1")
+              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1", report_id=rep.id)
     s.add(o)
     s.commit()
     return rep.id
