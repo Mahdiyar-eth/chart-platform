@@ -104,10 +104,22 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                                     ("مرگ", "پایان/تحول"), ("بیماری", "چالش تندرستی"),
                                     ("پیش‌گویی", "نگاه به آینده"), ("پیشگویی", "نگاه به آینده")):
                     errors = [e.replace(_bad, f"{_bad}«← بنویس: {_good}»") for e in errors]
+                # F-32c: «خارج از عوامل فعال» without telling the model which
+                # factors ARE allowed made it swap one wrong planet for another
+                # (Mercury→Jupiter→Mars, 5 failed attempts). Always append the
+                # whitelist for this section.
+                try:
+                    from app.report.rules import evaluate
+                    _allowed = sorted({r["factor"] for r in evaluate(chart).get(domain, [])})
+                except Exception:  # noqa: BLE001
+                    _allowed = []
+                if _allowed:
+                    errors.append("عوامل مجاز این بخش فقط: " + "، ".join(_allowed))
                 fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
                             "این موارد را دقیقاً رفع کن (به‌ویژه واژه‌های ممنوع را با "
-                            "جایگزین پیشنهادی عوض کن) و دوباره بنویس:\n- "
-                            + "\n- ".join(errors[:4]))
+                            "جایگزین پیشنهادی عوض کن و فقط از عوامل مجاز استفاده کن) "
+                            "و دوباره بنویس:\n- "
+                            + "\n- ".join(errors[:5]))
                 prompt = prompt + fix_hint
 
         if not ok:

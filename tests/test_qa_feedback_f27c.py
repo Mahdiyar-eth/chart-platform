@@ -79,3 +79,45 @@ def test_debug_calls(monkeypatch):
         R(), {}, max_tokens=4096, report_id="r", plan_key="full", user_id="u"))
     assert len(calls) == m["calls"] == m["qa_failures"] >= 13 * 3
     assert any("رد شد" in p for p in calls[:5])
+
+
+def test_fix_hint_lists_allowed_factors(monkeypatch):
+    """F-32c: retry prompt must name the allowed factors for the section."""
+    calls = []
+
+    class _FakeRes:
+        ok = True
+        text = '{"section": "x", "insights": [{"insight": "کوتاه", "evidence": [{"factor": "Mercury", "sign": "Virgo", "house": 6}]}]}'
+        usage = type("U", (), {"total": 0, "prompt_tokens": 0, "completion_tokens": 0})()
+        cost = 0.0
+        provider = "fake"
+        model = "fake"
+        error = None
+
+    attempt = {"n": 0}
+
+    async def _run():
+        class R:
+            async def complete(self, prompt, **kw):
+                calls.append(prompt)
+                attempt["n"] += 1
+                if attempt["n"] < 2:
+                    return _FakeRes()  # still rejected: Mercury not in karma
+                r = _FakeRes()
+                r.text = '{"section": "x", "insights": [' \
+                         '{"insight": "' + "جمله طولانی " * 20 + '", "evidence": [{"factor": "Node", "sign": "عقرب", "house": 8}]},' \
+                         '{"insight": "' + "جمله طولانی " * 20 + '", "evidence": [{"factor": "Pluto", "sign": "عقرب", "house": 4}]}]}'
+                return r
+
+        from tests.test_qa_f27_fix import _CHART
+        _c = {k: dict(v) for k, v in _CHART.items()}
+        _c["planets"] = {k: dict(v) | {"longitude": i * 30.0, "house": i % 12 + 1}
+                         for i, (k, v) in enumerate(_CHART["planets"].items())}
+        _c["angles"] = {k: dict(v) | {"longitude": 15.0} for k, v in _CHART["angles"].items()}
+        sections, metrics = await w.generate_sections_async(
+            R(), _c, max_tokens=4096, report_id="rep", plan_key="karma", user_id="user")
+        return sections, metrics
+
+    sections, metrics = asyncio.run(_run())
+    assert metrics["qa_failures"] >= 1
+    assert any("عوامل مجاز این بخش فقط: Node" in p for p in calls)  # whitelist embedded
