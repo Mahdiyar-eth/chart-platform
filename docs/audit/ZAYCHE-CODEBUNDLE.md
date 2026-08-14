@@ -1,16 +1,16 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `c248090 2026-08-14 docs: V7-AUDIT-FIXES report — F-15/F-16 verified & fixed (308 tests)`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 308 passed, 1 skipped in 15.15s (58 فایل تست)
-- **کامیت‌ها:** 91 · head: c248090 2026-08-14 docs: V7-AUDIT-FIXES report — F-15/F-16 verified & fixed (308 tests)
+- **تست‌ها:** 309 passed, 1 skipped in 16.46s (58 فایل تست)
+- **کامیت‌ها:** 95 · head: c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
-- **مهاجرت‌ها:** 15 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
+- **مهاجرت‌ها:** 16 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
 - **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict) · Redis+ARQ · PostgreSQL 16 + pgvector 0.6 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
 - **دور چهارم (A/B/C/D):** امنیت A11 + بکاپ age/presigned + ریفاند زرین‌پال + state machine پرداخت + circuit breaker LLM · TTS→R2 · لایو‌نس/ری‌دینس تفکیکی · حریم خصوصی/retention · Web Push (VAPID، سرویس‌کارگر، اعلان هفتگی) · RAG pgvector (e5-small چندزبانه 384-dim) · کیف پول رفرال (۵٪، پرداخت با موجودی، تسویه) · چت استریم SSE (توکن واقعی)
@@ -36,11 +36,11 @@ app/                  FastAPI app
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
-tests/                58 فایل تست (308 passed, 1 skipped in 15.15s)
+tests/                58 فایل تست (309 passed, 1 skipped in 16.46s)
 scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
 docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
-alembic/versions/     15 مهاجرت
+alembic/versions/     16 مهاجرت
 .github/workflows/    CI
 ```
 
@@ -49,7 +49,7 @@ alembic/versions/     15 مهاجرت
 
 ## ۱) فایل اصلی اپلیکیشن (main.py — مسیرهای هسته + include routes)
 
-### `app/main.py` (1845 lines)
+### `app/main.py` (1851 lines)
 
 ```python
 """Chart Platform — FastAPI app (Phase 2: free product).
@@ -430,10 +430,16 @@ def _owns_chart(chart: Chart | None, session: Session, request: Request) -> bool
 
 
 def _report_gate(rep, session, request) -> bool:
-    """Paid-order gate + ownership (audit P0-1/P0-3): paid order AND the
-    requester must own the chart (user_id or capability token)."""
+    """Paid-order gate + ownership (audit P0-1/P0-3).
+
+    F-17 (audit v7 P1): entitlement is per-REPORT, not per-chart — the paid
+    order must be the one that OWNS this report (orders.report_id = rep.id).
+    The old check ("any paid order on the same chart") let a refunded GOLD
+    report become downloadable again the moment the user bought BASIC on the
+    same chart. Audio/PDF/DOCX all go through this gate.
+    """
     paid = session.exec(
-        select(Order).where(Order.chart_id == rep.chart_id, Order.status == "paid")
+        select(Order).where(Order.report_id == rep.id, Order.status == "paid")
     ).first()
     if not paid:
         return False
@@ -14812,7 +14818,7 @@ def test_houses_still_omitted_without_time():
 
 ```
 
-### `tests/test_ownership.py` (178 lines)
+### `tests/test_ownership.py` (180 lines)
 
 ```python
 """Ownership gate tests — audit P0-1.
@@ -14952,7 +14958,8 @@ def test_report_gate_grants_paid_owner():
     with Session(engine) as s:
         c = _make_anon_chart(s, "tok-rg2")
         rep = _make_report(s, c)
-        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid")
+        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid",
+                  report_id=rep.id)
         s.add(o)
         s.commit()
         assert _report_gate(rep, s, FakeRequest(t="tok-rg2")) is True
@@ -14962,7 +14969,8 @@ def test_report_gate_denies_paid_but_wrong_token():
     with Session(engine) as s:
         c = _make_anon_chart(s, "tok-rg3")
         rep = _make_report(s, c)
-        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid")
+        o = Order(chart_id=c.id, plan_key="full", amount_rial=399000, status="paid",
+                  report_id=rep.id)
         s.add(o)
         s.commit()
         assert _report_gate(rep, s, FakeRequest(t="WRONG")) is False
@@ -16085,7 +16093,7 @@ def _done_report(s, cid, audio_ready=False):
     s.commit()
     s.refresh(rep)
     o = Order(chart_id=cid, plan_key="gold", status="paid", amount_rial=99000,
-              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1")
+              authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1", report_id=rep.id)
     s.add(o)
     s.commit()
     return rep.id
@@ -17340,7 +17348,7 @@ def test_compute_transits_accepts_when_override():
 
 ```
 
-### `tests/test_v5_audit_fixes.py` (408 lines)
+### `tests/test_v5_audit_fixes.py` (470 lines)
 
 ```python
 """V5 audit (F-01..F-10): wallet reserve, atomic debit race, wallet→report
@@ -17557,6 +17565,68 @@ def test_audit_writes_fallback_when_db_fails(monkeypatch, tmp_path):
     assert line["action"] == "order.refund"
     assert line["admin"] == "admin"
     assert line["entity"] == "oid-1"
+
+
+# ── F-17 (audit v7 P1): report entitlement is per-REPORT — a refunded GOLD
+# report must NOT become downloadable again via a later BASIC purchase
+def test_refunded_report_stays_locked_after_new_purchase():
+    from app.main import _report_gate
+
+    class _Req:
+        def __init__(self, t):
+            self.state = {}
+            self.cookies = {"chart_access": t}
+            self._t = t
+
+        @property
+        def query_params(self):
+            class _QP:
+                def __init__(self, t):
+                    self._t = t
+
+                def get(self, k, default=None):
+                    return self._t if k == "t" else default
+            return _QP(self._t)
+
+    with Session(engine) as s:
+        from app.models import BirthProfile, Chart
+        p = BirthProfile(raw_year=1994, raw_month=8, raw_day=23, time_known=True,
+                         hour=6, minute=10, city_fa="تهران", tz_name="Asia/Tehran",
+                         calendar_system="jalali")
+        s.add(p)
+        s.flush()
+        c = Chart(profile_id=p.id, chart_json={}, engine_config={}, access_token="tok-f17")
+        s.add(c)
+        s.commit()
+        s.refresh(c)
+        tok = c.access_token
+        rep_gold = Report(chart_id=c.id, status="done", plan_key="gold")
+        s.add(rep_gold)
+        s.commit()
+        s.refresh(rep_gold)
+        # 1) user buys GOLD → report linked to the gold order
+        o_gold = Order(chart_id=c.id, plan_key="gold", status="paid",
+                       amount_rial=6_990_000, report_id=rep_gold.id)
+        s.add(o_gold)
+        s.commit()
+        assert _report_gate(rep_gold, s, _Req(tok)) is True
+        # 2) GOLD is refunded → entitlement revoked
+        o_gold.status = "refunded"
+        s.commit()
+        assert _report_gate(rep_gold, s, _Req(tok)) is False
+        # 3) user later buys BASIC on the same chart → ANOTHER paid order exists
+        rep_basic = Report(chart_id=c.id, status="done", plan_key="basic")
+        s.add(rep_basic)
+        s.commit()
+        s.refresh(rep_basic)
+        o_basic = Order(chart_id=c.id, plan_key="basic", status="paid",
+                        amount_rial=1_490_000, report_id=rep_basic.id)
+        s.add(o_basic)
+        s.commit()
+        # the old GOLD report must STAY locked despite the new paid order…
+        assert _report_gate(rep_gold, s, _Req(tok)) is False
+        # …while the new BASIC report is downloadable
+        assert _report_gate(rep_basic, s, _Req(tok)) is True
 
 
 # ── F-13 (audit v6 P1): R2 deletion failure blocks account deletion
@@ -21127,6 +21197,65 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("DROP INDEX IF EXISTS uq_sub_chart_account")
     op.alter_column('subscriptions', 'chat_id', existing_type=sa.String(), nullable=False)
+
+```
+
+### `alembic/versions/435333592075_f17_backfill_report_id_linkage_for_.py` (54 lines)
+
+```python
+"""f17 backfill report_id linkage for legacy paid reports
+
+Revision ID: 435333592075
+Revises: cec42d441b5c
+Create Date: 2026-08-14 17:42:49.045367
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+import sqlmodel.sql.sqltypes  # noqa: F401 — SQLModel AutoString type
+
+# revision identifiers, used by Alembic.
+revision: str = '435333592075'
+down_revision: Union[str, Sequence[str], None] = 'cec42d441b5c'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """F-17 (audit v7 P1): backfill order→report linkage for LEGACY reports.
+
+    Reports created before the report_id linkage existed have
+    orders.report_id = NULL. The download gate now requires the PAID order
+    that OWNS the report (orders.report_id = reports.id); without this
+    backfill, every legacy report would be locked forever.
+
+    Rule: link each unlinked report to the ONLY paid order of its chart.
+    Charts with 0 or 2+ paid orders are left untouched (ambiguous — must be
+    resolved manually; a refunded order stays unlinked so the report stays
+    locked, which is the correct entitlement outcome).
+    """
+    op.execute(sa.text(
+        "UPDATE orders o SET report_id = r.id "
+        "FROM reports r "
+        "WHERE o.report_id IS NULL "
+        "  AND o.status = 'paid' "
+        "  AND r.chart_id = o.chart_id "
+        "  AND NOT EXISTS (SELECT 1 FROM orders o2 "
+        "                  WHERE o2.chart_id = o.chart_id AND o2.status = 'paid' "
+        "                    AND o2.id <> o.id) "
+        "  AND NOT EXISTS (SELECT 1 FROM orders o3 WHERE o3.report_id = r.id) "
+        "  AND (SELECT count(*) FROM reports r2 "
+        "       WHERE r2.chart_id = o.chart_id "
+        "         AND NOT EXISTS (SELECT 1 FROM orders o4 WHERE o4.report_id = r2.id)) = 1"
+    ))
+
+
+def downgrade() -> None:
+    # no-op: backfill is not reversible (and does not need to be)
+    pass
 
 ```
 
@@ -24990,14 +25119,18 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ........................................................................ [ 23%]
 .............s.......................................................... [ 46%]
 ........................................................................ [ 69%]
-........................................................................ [ 93%]
-.....................                                                    [100%]
-308 passed, 1 skipped in 15.15s
+........................................................................ [ 92%]
+......................                                                   [100%]
+309 passed, 1 skipped in 16.46s
 ```
 
 ## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)
+c7f0a11 2026-08-14 docs+fix: F-17 backfill deterministic (single-orphan only)
+7815b93 2026-08-14 fix(v7b-audit): F-17 P1 per-report entitlement gate (orders.report_id=rep.id) + legacy backfill migration
+7f53a19 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (194 files, 308 passed, v7 fixes included)
 c248090 2026-08-14 docs: V7-AUDIT-FIXES report — F-15/F-16 verified & fixed (308 tests)
 19327d0 2026-08-14 fix(v7-audit): F-15 P0 atomic CAS on withdrawal resolve (single paid/reject winner), F-16 P2 audit fallback append-only sink
 ef63882 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (194 files, 15 migrations, 305 passed, v6 fixes included)
@@ -25034,8 +25167,4 @@ f808242 2026-08-14 feat(d3): referral wallet — users.balance_rial + withdrawal
 16918e5 2026-08-14 feat(d2): pgvector RAG — report_chunks + HNSW (384-dim), multilingual-e5-small (e5-large OOMs 2-worker web), chunk+index+search in app/rag.py, worker indexes done reports, chat uses semantic chunks w/ fallback; 3 tests; 216 passed
 94ef7c3 2026-08-14 fix(d1): VAPID keys — .env fixed to single-line; convert PEM→raw base64url at load (browser wants 65-byte point, pywebpush wants 32-byte scalar); verified end-to-end (signature+encryption pass, only network fails on fake endpoint)
 b1c6985 2026-08-14 feat(d1): Web Push — push_subscriptions table + migration, VAPID key/subscribe/unsubscribe endpoints, sw.js push+notificationclick handlers, account page subscribe button, weekly delivery pushes browser notification to owning user; 4 tests; authz matrix updated
-a9b219c 2026-08-14 docs: ROUND4-PHASE-C report
-2a696dc 2026-08-14 authz(c8): authorization matrix — docs/AUTHORIZATION-MATRIX.md (68 routes × 5 levels: Public/Capability/User/Paid/Admin) + structural test gating every route in the matrix (and matrix rows = real routes) + 3 guard spot-checks; 209 passed
-b8aa8c4 2026-08-14 privacy(c6): account deletion cascade — FIXED 2 real bugs (chat_messages never deleted + unitofwork doesn't order FK deletes → 500 for any user with charts; explicit per-level flush); chat-audio R2 retention 30d in backup; PRIVACY.md doc; privacy.html names real AI providers (DeepSeek/OpenCode) + audio/backup retention; 3 tests
-b093641 2026-08-14 chore: ruff fix
 ```
