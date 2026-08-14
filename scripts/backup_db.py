@@ -32,7 +32,7 @@ def _load_env() -> None:
     if ENV_FILE.exists():
         try:
             from dotenv import load_dotenv
-            load_dotenv(ENV_FILE)
+            load_dotenv(ENV_FILE, override=True)  # audit r3: .env must ALWAYS win — a stale shell export (e.g. DATABASE_URL) caused an empty-DB backup on 2026-08-14
         except Exception:  # noqa: BLE001
             pass
 
@@ -75,6 +75,26 @@ def main() -> int:
     except subprocess.CalledProcessError as e:
         print(f"FAIL: pg_dump error: {e.stderr[:500]}")
         return 1
+
+    # audit r3 sanity gate: refuse to ship a backup from an empty/absent DB.
+    # (2026-08-14: a stale shell DATABASE_URL made a backup of an empty scratch
+    # DB, which then wiped prod during a restore drill.)
+    try:
+        plans = subprocess.run(
+            ["psql", db_url, "-Atc", "SELECT count(*) FROM plans"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        users = subprocess.run(
+            ["psql", db_url, "-Atc", "SELECT count(*) FROM users"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: sanity check error: {e.stderr[:300]}")
+        return 1
+    if plans == "" or int(plans or 0) < 5:
+        print(f"FAIL: sanity check — plans={plans!r} on {db_url}; refusing to back up a non-live DB")
+        return 1
+    print(f"OK: sanity — plans={plans}, users={users}")
 
     # 2) zip dump + .env
     try:

@@ -12,6 +12,8 @@ _TMP_DB = "chart_platform_test"
 os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
 os.environ["PUBLIC_BASE_URL"] = "http://127.0.0.1:8767"
 os.environ["ENRICH_INSIGHTS"] = "0"  # no LLM calls in tests — deterministic fallback only
+os.environ["RATE_LIMIT_BACKEND"] = "memory"  # tests stay hermetic (no shared Redis keys)
+os.environ["CREATE_ALL_ON_BOOT"] = "1"       # tests build schema via create_all (no Alembic in CI)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 

@@ -17,7 +17,11 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 def init_db() -> None:
     # import models so they register on metadata
     import app.models  # noqa: F401
-    SQLModel.metadata.create_all(engine)
+    # audit P1 (round 3): production schema is Alembic-managed ONLY — create_all
+    # would silently ignore drift. It runs only when explicitly enabled
+    # (tests / fresh dev DBs), never on a normal production boot.
+    if os.getenv("CREATE_ALL_ON_BOOT", "0") == "1":
+        SQLModel.metadata.create_all(engine)
     seed_plans()
 
 

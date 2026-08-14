@@ -26,9 +26,19 @@ if [ -f .env ]; then
   set -a; . ./.env; set +a
 fi
 
-TARGET="${2:-${DATABASE_URL:-}}"
+TARGET="${2:-}"
 if [ -z "$TARGET" ]; then
-  echo "FAIL: no target DB URL (pass as arg 2 or set DATABASE_URL in .env)"
+  echo "FAIL: target DB URL is REQUIRED (arg 2)."
+  echo "      Refusing to guess — restoring into the wrong DB destroys data."
+  echo "      Usage: FORCE_PROD_RESTORE=1 bash scripts/restore_db.sh <backup> <postgresql://user:pass@host/db>"
+  exit 1
+fi
+
+# audit r3 guard: restoring into the production DB requires an explicit flag.
+DBNAME=$(python3 -c "import sys,urllib.parse as u; print(u.urlparse(sys.argv[1]).path.lstrip('/'))" "$TARGET" 2>/dev/null || echo "$TARGET")
+if [ "$DBNAME" = "chart_platform" ] && [ "${FORCE_PROD_RESTORE:-}" != "1" ]; then
+  echo "FAIL: target '$DBNAME' is the PRODUCTION database."
+  echo "      Set FORCE_PROD_RESTORE=1 to restore into production (destructive!)."
   exit 1
 fi
 

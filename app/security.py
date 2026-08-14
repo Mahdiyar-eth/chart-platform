@@ -21,6 +21,46 @@ _RATE_LIMITS_WINDOW = 60  # seconds
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 CSRF_COOKIE = "csrf_token"
 
+# audit P1 (round 3): distributed rate limiting. RATE_LIMIT_BACKEND=redis uses a
+# Redis fixed-window counter shared across workers/instances; any Redis failure
+# falls back to the per-process in-memory sliding window (fail-open on Redis).
+_RATE_LIMIT_BACKEND = os.getenv("RATE_LIMIT_BACKEND", "memory").lower()
+_rl_redis_conn = None
+
+
+def _rl_redis():
+    global _rl_redis_conn
+    if _rl_redis_conn is None:
+        import redis
+        _rl_redis_conn = redis.Redis.from_url(
+            os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
+            socket_connect_timeout=0.4, socket_timeout=0.4, decode_responses=True)
+    return _rl_redis_conn
+
+
+def _rl_memory(key: str, max_calls: int, window: int) -> bool:
+    """Sliding-window in-memory check; True = allowed."""
+    now = time.monotonic()
+    q = _RATE_LIMITS[key]
+    while q and now - q[0] > window:
+        q.popleft()
+    if len(q) >= max_calls:
+        return False
+    q.append(now)
+    return True
+
+
+def _rl_redis_check(key: str, max_calls: int, window: int) -> bool:
+    """Fixed-window Redis counter; True = allowed. Raises on Redis failure."""
+    import time as _t
+    bucket = int(_t.time() // max(1, window))
+    nk = f"rl:{key}:{bucket}"
+    r = _rl_redis()
+    n = r.incr(nk)
+    if n == 1:
+        r.expire(nk, window + 5)
+    return n <= max_calls
+
 
 def new_csrf_token() -> str:
     return _secrets.token_urlsafe(16)
@@ -38,13 +78,17 @@ class RateLimitExceeded(Exception):
 
 def check_rate_limit(key: str, max_calls: int, window: int = _RATE_LIMITS_WINDOW) -> None:
     """Allow `max_calls` per `window` seconds for `key`. Raises RateLimitExceeded."""
-    now = time.monotonic()
-    q = _RATE_LIMITS[key]
-    while q and now - q[0] > window:
-        q.popleft()
-    if len(q) >= max_calls:
+    if _RATE_LIMIT_BACKEND == "redis":
+        try:
+            if not _rl_redis_check(key, max_calls, window):
+                raise RateLimitExceeded(key)
+            return
+        except RateLimitExceeded:
+            raise
+        except Exception:  # noqa: BLE001 — Redis down/expired → in-memory fallback
+            pass
+    if not _rl_memory(key, max_calls, window):
         raise RateLimitExceeded(key)
-    q.append(now)
 
 
 def csrf_protect(request: Request) -> bool:

@@ -1192,20 +1192,18 @@ _seen_update_ids: set = set()
 _MAX_SEEN = 10_000
 
 # ── audit P1-8: lightweight per-IP rate limit for expensive endpoints ──
-_RL: dict = {}
+_RL: dict = {}  # legacy; kept for reference — limits now live in security.check_rate_limit
 
 
 def _rate_limit(key: str, limit: int, window: float = 60.0) -> bool:
-    import time as _t
-    now = _t.time()
-    w = _RL.get(key)
-    if not w or now - w[0] > window:
-        _RL[key] = [now, 1]
+    # audit P1 (round 3): delegate to the centralized limiter (Redis in prod,
+    # in-memory fallback) so limits are shared across workers.
+    from app.security import RateLimitExceeded, check_rate_limit
+    try:
+        check_rate_limit(key, limit, int(window))
         return True
-    if w[1] >= limit:
+    except RateLimitExceeded:
         return False
-    w[1] += 1
-    return True
 
 
 def _rl_client(request: Request) -> str:
