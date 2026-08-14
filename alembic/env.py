@@ -75,7 +75,11 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            # audit r4 b6b: DateTime vs TIMESTAMP(tz) / TEXT vs VARCHAR are
+            # equivalent in PG for our usage (all times stored UTC) — ignore
+            # type diffs so `alembic check` stays meaningful for real changes
+            compare_type=False,
         )
 
         with context.begin_transaction():

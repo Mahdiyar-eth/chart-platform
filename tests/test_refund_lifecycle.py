@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
