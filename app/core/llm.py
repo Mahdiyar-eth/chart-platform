@@ -13,7 +13,9 @@ OpenCode Go (DeepSeek V4) only, with per-part model selection
 """
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -61,6 +63,14 @@ class ProviderHealth:
     error_streak: int = 0
     last_latency_ms: int = 0
     cost_usd: float = 0.0
+    tripped_until: float = 0.0  # audit r4 B9 — circuit breaker (monotonic)
+
+
+# audit r4 B9: circuit breaker + deadlines
+_CIRCUIT_THRESHOLD = int(os.getenv("LLM_CIRCUIT_THRESHOLD", "3"))
+_CIRCUIT_COOLDOWN = float(os.getenv("LLM_CIRCUIT_COOLDOWN", "60"))
+_PER_CALL_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "120"))   # httpx per-request
+_DEADLINE = float(os.getenv("LLM_DEADLINE", "150"))          # whole-call backstop
 
 
 # ─────────────────────────── abstract provider ───────────────────────────
@@ -81,12 +91,21 @@ class LLMProvider(ABC):
     def report_success(self, latency_ms: int, usage: LLMUsage) -> None:
         self.health.last_latency_ms = latency_ms
         self.health.error_streak = 0
+        self.health.tripped_until = 0.0  # audit r4 B9 — success resets the breaker
+        self.health.last_error = None
         self.health.cost_usd += self.estimate_cost(usage)
 
     def report_error(self, err: str) -> None:
         self.health.error_streak += 1
         self.health.last_error = err
         self.health.healthy = self.health.error_streak < 5
+        # audit r4 B9 — circuit breaker: N consecutive failures open the circuit
+        if self.health.error_streak >= _CIRCUIT_THRESHOLD:
+            self.health.tripped_until = time.monotonic() + _CIRCUIT_COOLDOWN
+
+    def tripped(self) -> bool:
+        """True while the circuit is OPEN (cooldown not elapsed)."""
+        return self.health.tripped_until > time.monotonic()
 
     @staticmethod
     def estimate_cost(usage: LLMUsage) -> float:
@@ -131,7 +150,7 @@ class DeepSeekProvider(LLMProvider):
         if self.extra_payload:
             payload.update(self.extra_payload)
         try:
-            async with httpx.AsyncClient(timeout=300) as cl:
+            async with httpx.AsyncClient(timeout=_PER_CALL_TIMEOUT) as cl:
                 r = await cl.post(f"{self.api_base}/chat/completions",
                                   headers=headers,
                                   json=payload)
@@ -192,11 +211,30 @@ class LLMRouter:
     def _rank(self) -> list[LLMProvider]:
         def key(p: LLMProvider) -> tuple:
             return (not p.health.healthy, p.health.error_streak, p.health.cost_usd)
-        return sorted((self.providers[n] for n in self.order if n in self.providers), key=key)
+        ranked = sorted((self.providers[n] for n in self.order if n in self.providers), key=key)
+        # audit r4 B9: skip OPEN circuits; if that empties the pool, fall back
+        # to everything (a stale breaker must not deadlock the request)
+        candidates = [p for p in ranked if not p.tripped()]
+        return candidates or ranked
 
     async def complete(self, prompt: str, system: str | None = None,
                        max_tokens: int = 2048, temperature: float = 0.7,
                        json_mode: bool = False) -> LLMResult:
+        # audit r4 B9: whole-call deadline — a stuck provider chain must fail
+        # fast, not hold a worker slot for minutes
+        try:
+            return await asyncio.wait_for(
+                self._complete(prompt, system=system, max_tokens=max_tokens,
+                               temperature=temperature, json_mode=json_mode),
+                timeout=_DEADLINE)
+        except asyncio.TimeoutError:
+            logger.warning("LLM call hit the %ss deadline", _DEADLINE)
+            return LLMResult(text="", provider="none", model="",
+                             error=f"deadline exceeded ({_DEADLINE}s)")
+
+    async def _complete(self, prompt: str, system: str | None = None,
+                        max_tokens: int = 2048, temperature: float = 0.7,
+                        json_mode: bool = False) -> LLMResult:
         last: LLMResult | None = None
         for p in self._rank():
             last = await p.complete(prompt, system=system, max_tokens=max_tokens,
