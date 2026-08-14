@@ -15,7 +15,6 @@ import httpx
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-import app.main as m
 from app.main import app as main_app
 from app.db import engine
 from app.models import Coupon, Order, Report
