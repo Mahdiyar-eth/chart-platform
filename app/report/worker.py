@@ -86,6 +86,10 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                 ok = True
                 break
             metrics["qa_failures"] += 1
+            # F-26 (runtime audit): QA rejections used to be silent here, making
+            # degraded reports undebuggable — surface the reasons in worker logs
+            log.warning("QA fail %s (attempt %d/%d): %s", domain, attempt + 1,
+                        MAX_RETRIES + 1, errors[:3])
             if attempt < MAX_RETRIES:
                 metrics["retries"] += 1
 

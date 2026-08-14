@@ -39,6 +39,18 @@ ASPECT_NAMES = {"Conjunction", "Sextile", "Square", "Trine", "Opposition",
                 "Quincunx", "SemiSquare", "Sesquiquadrate", "Trigon", "Parallel"}
 
 
+def _canon(name: str) -> str:
+    """Normalize an aspect endpoint to its canonical engine key.
+
+    F-27 (runtime audit): `.title()` mangles the all-caps abbreviations the
+    engine emits — "MC".title() == "Mc", "ASC".title() == "Asc" — so valid
+    evidence like "Uranus trine MC" / "Sun conjunct ASC" was rejected by QA
+    and whole report sections fell back to generic text.
+    """
+    t = name.title()
+    return {"Asc": "ASC", "Mc": "MC"}.get(t, t)
+
+
 def parse_section(raw: str) -> dict | None:
     """Robust JSON extraction (strip code fences, find first { ... })."""
     raw = raw.strip()
@@ -103,8 +115,10 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
             elif isinstance(ev, dict) and ev.get("aspect"):  # {"aspect": "Sun Conjunct ASC"}
                 aparts = str(ev["aspect"]).split()
                 f = aparts[0] if aparts else ""
-                if len(aparts) >= 3 and aparts[0].title() in VALID_PLANETS and aparts[-1].title() in VALID_PLANETS \
-                        and (aparts[-1].title() in chart.get("planets", {}) or aparts[-1].title() in chart.get("angles", {})):
+                if len(aparts) >= 3 and _canon(aparts[0]) in VALID_PLANETS \
+                        and _canon(aparts[-1]) in VALID_PLANETS \
+                        and (_canon(aparts[-1]) in chart.get("planets", {})
+                             or _canon(aparts[-1]) in chart.get("angles", {})):
                     pass  # valid aspect dict — both endpoints grounded
                 elif len(aparts) < 3:
                     pass  # {"aspect": "Conjunction"} — supplementary, skip endpoint check
@@ -112,7 +126,7 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                     errors.append(f"{domain}: جنبه ناشناخته در evidence: {ev.get('aspect')}")
             else:
                 f = ev.get("factor", "") if isinstance(ev, dict) else ""
-            f = f.title() if isinstance(f, str) and f else f
+            f = _canon(f.title()) if isinstance(f, str) and f else f
             if not f:
                 errors.append(f"{domain}: evidence بدون عامل")
             elif f == "Moon Phase" or f == "Phase":
