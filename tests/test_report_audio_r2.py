@@ -12,7 +12,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-import app.main as m
 from app.main import app as main_app
 from app.db import engine
 from app.models import Order, Report
