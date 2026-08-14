@@ -13,6 +13,35 @@ venv/bin/alembic check
 echo "==> pytest + coverage (gate: >= 60%)"
 venv/bin/python -m pytest tests/ -q --cov=app --cov-report=term-missing --cov-fail-under=60
 
+echo "==> production boot smoke test (A11: fail-closed secrets honored)"
+# 1) APP_ENV=production WITHOUT secrets must refuse to boot (regression for
+#    the old APP_ENV=prod vs production mismatch — audit r4 A2)
+set +e
+APP_ENV=production AUTH_SECRET= ADMIN_SECRET= SECRETS_MASTER_KEY= \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.main" 2>smoke_missing.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded WITHOUT secrets (fail-closed broken)"
+  exit 1
+fi
+echo "✓ prod-mode refuses to boot without secrets"
+# 2) with all secrets → boots, /health + landing + plans respond
+SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test}"
+APP_ENV=production DATABASE_URL="$SMOKE_DB" \
+  AUTH_SECRET="smoke-test-auth-secret-000" ADMIN_SECRET="smoke-test-admin-secret-000" \
+  SECRETS_MASTER_KEY="smoke-test-master-key-000" \
+  venv/bin/python - <<'PY'
+from fastapi.testclient import TestClient
+import app.main as m
+c = TestClient(m.app)
+for path in ("/health", "/", "/plans", "/api/plans", "/robots.txt"):
+    r = c.get(path)
+    assert r.status_code == 200, f"{path} -> {r.status_code}"
+print("✓ prod-mode boot + critical routes OK")
+PY
+
 echo "==> compileall (syntax)"
 venv/bin/python -m compileall -q app/ scripts/
 

@@ -9,11 +9,10 @@ import json
 import time
 
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 
 from app.db import engine
 from app.main import app as main_app
-from app.models import Chart, Coupon, Order, Plan
+from app.models import Coupon, Order
 from sqlmodel import Session, select
 
 

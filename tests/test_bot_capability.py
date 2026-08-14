@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import os
 from app.bots.handler import chart_actions_keyboard
 
 

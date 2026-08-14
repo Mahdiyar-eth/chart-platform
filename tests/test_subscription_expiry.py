@@ -90,8 +90,10 @@ def test_expired_subscription_blocks_chat(chat_mock):
 def test_active_subscription_allows_chat(chat_mock):
     c = TestClient(main_mod.app)
     cid, tok = _mk_chart(c)
+    import uuid as _uuid
+    chat = f"tg-2-{_uuid.uuid4().hex[:6]}"  # unique — Redis quota counter persists
     with Session(engine) as s:
-        o = _order(s, cid, chat_id="tg-2")
+        o = _order(s, cid, chat_id=chat)
         activate_subscription(s, o)
         s.commit()
     ck = {"chart_access": json.dumps({cid: tok})}

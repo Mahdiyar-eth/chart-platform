@@ -11,11 +11,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 import app.main as main_mod
 from app.db import engine
-from app.models import ChatMessage, Order
+from app.models import Order
 from app.secret_store import set_secret
 
 
