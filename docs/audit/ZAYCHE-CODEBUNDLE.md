@@ -1,14 +1,14 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 309 passed, 1 skipped in 16.46s (58 فایل تست)
-- **کامیت‌ها:** 95 · head: c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)
+- **تست‌ها:** 312 passed, 1 skipped in 16.78s (59 فایل تست)
+- **کامیت‌ها:** 98 · head: b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
 - **مهاجرت‌ها:** 16 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
@@ -36,7 +36,7 @@ app/                  FastAPI app
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
-tests/                58 فایل تست (309 passed, 1 skipped in 16.46s)
+tests/                59 فایل تست (312 passed, 1 skipped in 16.78s)
 scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
 docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
@@ -49,7 +49,7 @@ alembic/versions/     16 مهاجرت
 
 ## ۱) فایل اصلی اپلیکیشن (main.py — مسیرهای هسته + include routes)
 
-### `app/main.py` (1851 lines)
+### `app/main.py` (1876 lines)
 
 ```python
 """Chart Platform — FastAPI app (Phase 2: free product).
@@ -726,6 +726,13 @@ def api_create_order(
         if not sec or not _owns_chart(sec, session, request):
             raise HTTPException(403, "not authorized")
     user = get_current_user(request)
+    # F-20 (audit v8 P2): in the wallet path, fail FAST before creating the
+    # order — no pending order + coupon reservation is left behind when the
+    # balance can't cover even the full (undiscounted) plan price.
+    if request.headers.get("x-pay-with-balance", "") == "1":
+        _plan = session.get(Plan, plan_key)
+        if not user or not _plan or (user.balance_rial or 0) < (_plan.price_rial or 0):
+            raise HTTPException(400, "موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
             session, plan_key, chart_id,
@@ -737,6 +744,12 @@ def api_create_order(
         if request.headers.get("x-pay-with-balance", "") == "1":
             from app.payment.orders import pay_order_with_balance
             if not pay_order_with_balance(session, order, user):
+                # F-20: immediate compensation — cancel the order and release
+                # the coupon RIGHT NOW instead of waiting for the hourly sweep
+                order.status = "cancelled"
+                if order.coupon_id:
+                    _release_coupon(session, order)
+                session.commit()
                 raise HTTPException(400, "موجودی کیف پول کافی نیست")
             pay_url = None
             # F-03 (audit v5 P1): wallet-paid report must be ENQUEUED, exactly
@@ -953,11 +966,11 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
     only the buyer's chart A lands in their account; B's birth data is stored
     as an anonymous profile reachable solely via its capability token."""
     from app.payment.orders import create_order
-    chart_a, _ = _compute_and_save_chart(
+    chart_a, profile_a = _compute_and_save_chart(
         session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
         time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
         province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
-    chart_b, _ = _compute_and_save_chart(
+    chart_b, profile_b = _compute_and_save_chart(
         session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
         time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
         province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
@@ -970,10 +983,22 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
             session, "synastry", chart_a.id, secondary_chart_id=chart_b.id,
             coupon=None, ref_code="", new_user_id=user.id if user else None,
         )
-    except (LookupError, ValueError) as e:
+    except (LookupError, ValueError, RuntimeError) as e:
+        # F-19 (audit v8 P1): failure compensation — the payment order could
+        # not be created, so the JUST-CREATED charts/profiles (including the
+        # anonymous Person B, which has NO user owner and therefore NO other
+        # deletion path) must not be left orphaned in the DB.
+        try:
+            session.rollback()  # drop the uncommitted order first (it holds an FK to chart A)
+            session.delete(chart_a)
+            session.delete(chart_b)
+            session.flush()
+            session.delete(profile_a)
+            session.delete(profile_b)
+            session.commit()
+        except Exception as _e:  # noqa: BLE001 — cleanup is best-effort
+            session.rollback()
         raise HTTPException(400, str(e))
-    except RuntimeError as e:
-        raise HTTPException(502, str(e))
     return {"order_id": order.id, "payment_url": pay_url,
             "chart_a": chart_a.id, "chart_b": chart_b.id,
             "token_b": chart_b.access_token}  # H1.6: guest capability token
@@ -1910,7 +1935,7 @@ async def admin_llm_test(request: Request):
 
 ## ۱.۵) مسیرهای استخراج‌شده (H1.9 — app/routes/)
 
-### `app/routes/admin.py` (242 lines)
+### `app/routes/admin.py` (260 lines)
 
 ```python
 """H1.9 — admin API routes extracted from main.py (coupons, prompts, refund,
@@ -1998,12 +2023,17 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(404, "order not found")
-    # F-04 (audit v5 P1): 'refunding' is retryable too — if the local commit
-    # failed after the gateway succeeded, the admin can re-issue and the
-    # gateway's already-refunded answer lands in the refunded branch below.
-    if order.status not in ("paid", "refund_failed", "refunding"):
-        raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
-    order.status = "refunding"
+    # F-18 (audit v8 P1): the paid → refunding transition is an ATOMIC CAS.
+    # ANY caller may proceed to the gateway (repeats answer 66/67), but the
+    # finalize step below is also CAS — so local side-effects (_release_coupon,
+    # close subscription) run EXACTLY once even under concurrent admins.
+    from sqlalchemy import text as _refund_text
+    claimed = session.exec(_refund_text(
+        "UPDATE orders SET status = 'refunding' WHERE id = :oid "
+        "AND status IN ('paid', 'refund_failed', 'refunding') RETURNING id"
+    ).bindparams(oid=order.id)).first()
+    if not claimed:
+        raise HTTPException(409, "سفارش در وضعیت قابل ریفاند نیست")
     session.commit()
     try:
         from app.payment.zarinpal import ZarinpalClient
@@ -2015,17 +2045,22 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         # (a timeout message mentioning '66' is NOT 'already refunded').
         gcode = getattr(e, "gateway_code", None)
         if gcode in (66, 67):
-            order.status = "refunded"
-            order.error = None
-            _release_coupon(session, order)
-            if order.chart_id:
-                subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
-                for sub in subs:
-                    sub.active = False
-                    sub.expires_at = datetime.now(timezone.utc)
+            # F-18: finalize is CAS — only the winning caller runs side-effects
+            won = session.exec(_refund_text(
+                "UPDATE orders SET status = 'refunded', error = NULL WHERE id = :oid "
+                "AND status = 'refunding' RETURNING id"
+            ).bindparams(oid=order.id)).first()
             session.commit()
-            audit(session.bind, "admin", "order.refund", order.id,
-                  f"already-refunded (gateway code {gcode})")
+            if won:
+                _release_coupon(session, order)
+                if order.chart_id:
+                    subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
+                    for sub in subs:
+                        sub.active = False
+                        sub.expires_at = datetime.now(timezone.utc)
+                session.commit()
+                audit(session.bind, "admin", "order.refund", order.id,
+                      f"already-refunded (gateway code {gcode})")
             return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
         order.status = "refund_failed"
         order.error = f"ریفاند ناموفق: {err[:300]}"
@@ -2033,7 +2068,15 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         audit(session.bind, "admin", "order.refund_failed", order.id, err[:200])
         raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {err[:200]} — بعداً دوباره تلاش کنید")
 
-    order.status = "refunded"
+    # F-18: success finalize is also CAS — side-effects run exactly once even
+    # if two admins refund the same order concurrently (loser skips them)
+    won = session.exec(_refund_text(
+        "UPDATE orders SET status = 'refunded', error = NULL WHERE id = :oid "
+        "AND status = 'refunding' RETURNING id"
+    ).bindparams(oid=order.id)).first()
+    session.commit()
+    if not won:
+        return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
     order.ref_id = res.get("ref_id", order.ref_id or "")
     order.error = None
     _release_coupon(session, order)  # audit r4 A10 — return the slot
@@ -16037,14 +16080,14 @@ def test_refund_rejects_pending_and_already_refunded(monkeypatch):
         s.commit()
         oid = o.id
     r = c.post(f"/api/admin/orders/{oid}/refund")
-    assert r.status_code == 400
+    assert r.status_code == 409  # F-18: CAS claim — non-refundable state → 409 Conflict
 
     with Session(engine) as s:
         o = s.get(Order, oid)
         o.status = "refunded"
         s.commit()
     r2 = c.post(f"/api/admin/orders/{oid}/refund")
-    assert r2.status_code == 400
+    assert r2.status_code == 409
     assert fake.refund_calls == 0  # never hit the gateway
 
 
@@ -17820,6 +17863,191 @@ def test_wallet_payment_rewards_referrer():
         ev = s.exec(select(ReferralEvent).where(ReferralEvent.referrer_user_id == ref_id)).one()
         assert ev.status == "rewarded"
         assert ref2.balance_rial > 0
+
+```
+
+### `tests/test_v8_audit_fixes.py` (180 lines)
+
+```python
+"""F-18..F-20 (audit v8) regression tests.
+
+F-18 (P1): concurrent admin refunds — CAS claim/finalize ⇒ local side-effects
+          (_release_coupon, close subscription) run EXACTLY once.
+F-19 (P1): synastry order failure — just-created charts/profiles (incl. the
+          anonymous guest Person B) are compensated, never orphaned.
+F-20 (P2): wallet path with insufficient balance — fail fast BEFORE creating
+          the order; no pending order + coupon reservation is left behind.
+"""
+import sys
+import threading
+import uuid as _uuid
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fastapi.testclient import TestClient
+from sqlmodel import Session, func, select
+
+import app.main as main_mod
+from app.db import engine
+from app.models import BirthProfile, Chart, Coupon, Order, Subscription, User
+from app.payment.orders import activate_subscription
+
+
+def _mk_chart(c: TestClient) -> str:
+    d = c.post("/api/charts", data={
+        "calendar": "jalali", "year": "1373", "month": "6", "day": "1",
+        "hour": "6", "minute": "10", "city_fa": "تهران",
+        "lat": "35.6889", "lon": "51.3897",
+    }).json()
+    return d["chart_id"]
+
+
+def _admin_cookies() -> dict:
+    from app.main import _admin_cookie_value
+    return {"chart_admin": _admin_cookie_value()}
+
+
+def _mk_paid_order(s: Session, cid: str, chat: str) -> Order:
+    o = Order(chart_id=cid, plan_key="monthly", status="paid",
+              amount_rial=99000, chat_id=chat, platform="telegram",
+              authority="Q" + _uuid.uuid4().hex[:10].upper(), ref_id="REF1")
+    s.add(o)
+    s.commit()
+    s.refresh(o)
+    return o
+
+
+# ── F-18: concurrent admins refund one order — side-effects run once ──
+def test_concurrent_refunds_release_coupon_exactly_once(monkeypatch):
+    class _Fake:
+        def __init__(self):
+            self.refund_calls = 0
+
+        def request(self, *a, **k):
+            return "Q" + _uuid.uuid4().hex[:10].upper(), "https://pay.example/x"
+
+        def verify(self, *a, **k):
+            return {"ref_id": "REF" + _uuid.uuid4().hex[:6]}
+
+        def refund(self, *a, **k):
+            self.refund_calls += 1
+            return {"ref_id": "RREF" + _uuid.uuid4().hex[:6]}
+
+    fake = _Fake()
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: fake)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: fake)
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+    cid = _mk_chart(c)
+    chat = f"tg-f18-{_uuid.uuid4().hex[:6]}"
+    with Session(engine) as s:
+        o = _mk_paid_order(s, cid, chat)
+        cp = Coupon(code="F18-" + _uuid.uuid4().hex[:6].upper(), percent=10,
+                    max_uses=1, active=True)
+        s.add(cp)
+        s.commit()
+        o.coupon_id = cp.id
+        cp.used_count = 1  # A10 reservation
+        activate_subscription(s, o)
+        s.commit()
+        oid, cpid = o.id, cp.id
+
+    results: list[int] = []
+    barrier = threading.Barrier(3)
+
+    def _refund():
+        cc = TestClient(main_mod.app)
+        cc.cookies.update(_admin_cookies())
+        barrier.wait()
+        r = cc.post(f"/api/admin/orders/{oid}/refund")
+        results.append(r.status_code)
+
+    threads = [threading.Thread(target=_refund) for _ in range(3)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    with Session(engine) as s:
+        o = s.get(Order, oid)
+        assert o.status == "refunded", o.status
+        # coupon slot released EXACTLY once (never negative, never doubled)
+        assert s.get(Coupon, cpid).used_count == 0
+        sub = s.exec(select(Subscription).where(Subscription.order_id == oid)).one()
+        assert sub.active is False
+    # a caller that arrives AFTER the refund finished correctly gets 409 —
+    # the invariant is: final state refunded + side-effects exactly once
+    assert all(st in (200, 409) for st in results), results
+    assert 1 <= fake.refund_calls <= 3  # gateway may be called repeatedly
+
+
+# ── F-19: synastry order failure compensates the just-created charts ──
+def test_synastry_order_failure_leaves_no_orphan_data(monkeypatch):
+    class _Boom:
+        def request(self, *a, **k):
+            raise RuntimeError("gateway unavailable")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", lambda: _Boom())
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", lambda: _Boom())
+    c = TestClient(main_mod.app)
+    c.cookies.update(_admin_cookies())
+    with Session(engine) as s:
+        charts_before = s.exec(select(func.count()).select_from(Chart)).one()
+        profiles_before = s.exec(select(func.count()).select_from(BirthProfile)).one()
+
+    r = c.post("/api/synastry/order", data={
+        "name_a": "الف", "year_a": "1373", "month_a": "6", "day_a": "1",
+        "hour_a": "6", "minute_a": "10", "city_a": "تهران", "calendar_a": "jalali",
+        "name_b": "ب", "year_b": "1375", "month_b": "1", "day_b": "15",
+        "hour_b": "12", "minute_b": "0", "city_b": "اصفهان", "calendar_b": "jalali",
+    })
+    assert r.status_code in (400, 502)
+
+    with Session(engine) as s:
+        charts_after = s.exec(select(func.count()).select_from(Chart)).one()
+        profiles_after = s.exec(select(func.count()).select_from(BirthProfile)).one()
+    # NO orphaned charts/profiles (especially the anonymous guest Person B)
+    assert charts_after == charts_before, (charts_before, charts_after)
+    assert profiles_after == profiles_before, (profiles_before, profiles_after)
+
+
+# ── F-20: wallet with insufficient balance creates NO order, reserves NO coupon
+def test_wallet_insufficient_balance_creates_no_order():
+    c = TestClient(main_mod.app)
+
+    # a user with a wallet that can NOT cover the basic plan (1.49M rial)
+    phone = "98912" + str(9_000_000 + _uuid.uuid4().int % 1_000_000)
+    with Session(engine) as s:
+        u = User(phone=phone, balance_rial=100_000)
+        s.add(u)
+        s.commit()
+        s.refresh(u)
+        uid = u.id
+
+    # user session cookie FIRST, so the chart below is OWNED by this user
+    from app.auth import _user_cookie_value
+    c.cookies.update({"chart_user": _user_cookie_value(uid)})
+    cid = _mk_chart(c)
+
+    with Session(engine) as s:
+        before = s.exec(select(func.count()).select_from(Order)).one()
+        cp = Coupon(code="F20-" + _uuid.uuid4().hex[:6].upper(), percent=10,
+                    max_uses=1, active=True)
+        s.add(cp)
+        s.commit()
+        cpid, real_code = cp.id, cp.code
+
+    r = c.post("/api/orders", data={
+        "plan_key": "basic", "chart_id": cid, "coupon": real_code,
+    }, headers={"x-pay-with-balance": "1"})
+    assert r.status_code == 400, r.text
+    assert "موجودی" in r.json().get("detail", "")
+
+    with Session(engine) as s:
+        after = s.exec(select(func.count()).select_from(Order)).one()
+        assert after == before  # NO order was created at all
+        assert s.get(Coupon, cpid).used_count == 0  # nothing was reserved
 
 ```
 
@@ -25120,13 +25348,16 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 .............s.......................................................... [ 46%]
 ........................................................................ [ 69%]
 ........................................................................ [ 92%]
-......................                                                   [100%]
-309 passed, 1 skipped in 16.46s
+.........................                                                [100%]
+312 passed, 1 skipped in 16.78s
 ```
 
 ## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+b6297a1 2026-08-14 docs: V9-AUDIT-FIXES report — F-18/F-19/F-20 verified & fixed (312 tests)
+ac7b86b 2026-08-14 fix(v8-audit): F-18 CAS refund (side-effects exactly once), F-19 synastry failure compensation, F-20 wallet fail-fast + immediate coupon release
+b1fc64f 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE (195 files, 16 migrations, 309 passed, F-17 included)
 c420106 2026-08-14 docs: V8-AUDIT-FIXES report — F-17 per-report entitlement (309 tests, 16 migrations)
 c7f0a11 2026-08-14 docs+fix: F-17 backfill deterministic (single-orphan only)
 7815b93 2026-08-14 fix(v7b-audit): F-17 P1 per-report entitlement gate (orders.report_id=rep.id) + legacy backfill migration
@@ -25164,7 +25395,4 @@ a381b61 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE — round-4 complete (166 
 d6e6ef1 2026-08-14 docs: ROUND4-PHASE-D report (D1-D4 complete)
 6b11f56 2026-08-14 feat(d4): SSE streaming chat — LLMProvider.stream() real token streaming (OpenAI-compatible), router.stream_complete with fallback chain, /api/chat/stream text/event-stream (same guards as /api/chat, quota refunded if stream dies pre-token), chat UI consumes SSE with typing cursor (emoji->sprite icon-lock), authz matrix row; 3 tests; 223 passed
 f808242 2026-08-14 feat(d3): referral wallet — users.balance_rial + withdrawal_requests + orders.note, reward 5% credited to referrer on paid order (idempotent), pay_order_with_balance (full-amount only, no mixed), withdraw/resolve shared logic in orders.py, wallet section in account + balance payment button in plans + admin queue; 4 tests; 220 passed
-16918e5 2026-08-14 feat(d2): pgvector RAG — report_chunks + HNSW (384-dim), multilingual-e5-small (e5-large OOMs 2-worker web), chunk+index+search in app/rag.py, worker indexes done reports, chat uses semantic chunks w/ fallback; 3 tests; 216 passed
-94ef7c3 2026-08-14 fix(d1): VAPID keys — .env fixed to single-line; convert PEM→raw base64url at load (browser wants 65-byte point, pywebpush wants 32-byte scalar); verified end-to-end (signature+encryption pass, only network fails on fake endpoint)
-b1c6985 2026-08-14 feat(d1): Web Push — push_subscriptions table + migration, VAPID key/subscribe/unsubscribe endpoints, sw.js push+notificationclick handlers, account page subscribe button, weekly delivery pushes browser notification to owning user; 4 tests; authz matrix updated
 ```
