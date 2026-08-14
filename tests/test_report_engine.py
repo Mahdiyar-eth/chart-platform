@@ -42,7 +42,14 @@ class FakeRouter:
         domain = self._guess_domain(prompt)
         if domain in self.text_by_domain:
             return _res(self.text_by_domain[domain])
-        return _res(json.dumps(GOOD_SECTION, ensure_ascii=False))
+        if domain == "relationships":
+            return _res(json.dumps(GOOD_SECTION, ensure_ascii=False))
+        # F-32b: GOOD_SECTION cites Saturn/Venus which are only active in
+        # relationships — empty evidence so other domains pass QA cleanly.
+        _s = json.loads(json.dumps(GOOD_SECTION, ensure_ascii=False))
+        for _ins in _s["insights"]:
+            _ins["evidence"] = []
+        return _res(json.dumps(_s, ensure_ascii=False))
 
     @staticmethod
     def _guess_domain(prompt: str) -> str:

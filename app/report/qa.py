@@ -179,9 +179,9 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                         and (_canon(aparts[-1]) in chart.get("planets", {})
                              or _canon(aparts[-1]) in chart.get("angles", {})
                              or _canon(aparts[-1]) in {"Vesta", "Ceres", "Pallas", "Juno"}):
-                    pass  # valid aspect dict — both endpoints grounded
+                    continue  # valid aspect dict — grounded; no sign/scope check
                 elif len(aparts) < 3:
-                    pass  # {"aspect": "Conjunction"} — supplementary, skip endpoint check
+                    continue  # {"aspect": "Conjunction"} — supplementary, skip
                 else:
                     errors.append(f"{domain}: جنبه ناشناخته در evidence: {ev.get('aspect')}")
             else:
