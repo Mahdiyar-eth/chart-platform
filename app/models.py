@@ -49,6 +49,7 @@ class BirthProfile(SQLModel, table=True):
     lon: float | None = Field(default=None)
     tz_name: str = Field(default="Asia/Tehran")
     utc_datetime: datetime | None = Field(default=None)  # computed
+    zodiac: str = Field(default="tropical")  # tropical | sidereal (Vedic/Lahiri) — audit r3
     focus_areas: list[str] = Field(default_factory=list, sa_column=Column(JSONB))
     personal_question: str | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

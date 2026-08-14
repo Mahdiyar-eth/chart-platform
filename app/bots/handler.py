@@ -168,38 +168,64 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
             )
             return True
         best = hits[0]
-        try:
-            chart = compute_from_fields(best["lat"], best["lon"], payload["year"], payload["month"],
-                                        payload["day"], payload["hour"], payload["minute"])
-        except Exception as e:  # noqa: BLE001
-            logger.error("compute failed: %s", e)
-            await send_message(chat_id, "⛔ مشکلی در محاسبه پیش آمد؛ دوباره تلاش کن.", platform)
-            return True
-        clear_chat_state(chat_id, platform)
-
-        from app.db import engine
-        from sqlmodel import Session
-        from app.models import Chart
-        with Session(engine) as s:
-            row = Chart(chart_json=chart.chart_json)
-            s.add(row)
-            s.commit()
-            chart_id = row.id
-
-        bt = big_three(chart.chart_json)
-        base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
-        caption = (
-            f"🌟 **چارت تولد تو آماده شد!**\n\n"
-            f"☀️ خورشید: **{bt.get('Sun', {}).get('sign_fa', '')}**\n"
-            f"🌙 ماه: **{bt.get('Moon', {}).get('sign_fa', '')}**\n"
-            f"⬆️ طالع: **{bt.get('ASC', {}).get('sign_fa', '')}**\n\n"
-            f"برای مشاهده و خرید گزارش اختصاصی، دکمه‌های زیر را بزن:"
+        # audit r3: zodiac system is a choice → buttons, before computing
+        set_chat_state(chat_id, platform, "waiting_zodiac",
+                       {**payload, "city_fa": city, "lat": best["lat"], "lon": best["lon"]})
+        await send_message(
+            chat_id,
+            "🌗 **سیستم نجومی** چارت را انتخاب کن:\n\n"
+            "**تروپیکال** — برج‌های خورشیدی رایج (پیش‌فرض)\n"
+            "**سایدریال لاهیری** — سیستم ودیک/هندی",
+            platform,
+            reply_markup={"inline_keyboard": [[
+                {"text": "🌞 تروپیکال (پیش‌فرض)", "callback_data": "zodiac_tropical"},
+                {"text": "🕉 سایدریال لاهیری", "callback_data": "zodiac_sidereal"},
+            ]]},
         )
-        await send_photo(chat_id, f"{base}/api/share/{chart_id}.png", caption,
-                         platform, reply_markup=chart_actions_keyboard(chart_id))
+        return True
+
+    if state == "waiting_zodiac":
+        # should not arrive as free text (buttons only) — remind
+        await send_message(
+            chat_id, "روی یکی از دو دکمه‌ی بالا بزن: 🌞 تروپیکال یا 🕉 سایدریال لاهیری", platform)
         return True
 
     return False
+
+
+async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zodiac: str) -> None:
+    """Compute chart from payload + chosen zodiac system, persist, send card."""
+    try:
+        chart = compute_from_fields(
+            payload["lat"], payload["lon"], payload["year"], payload["month"],
+            payload["day"], payload["hour"], payload["minute"], zodiac=zodiac,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.error("compute failed: %s", e)
+        await send_message(chat_id, "⛔ مشکلی در محاسبه پیش آمد؛ دوباره تلاش کن.", platform)
+        return
+
+    from app.db import engine
+    from sqlmodel import Session
+    from app.models import Chart
+    with Session(engine) as s:
+        row = Chart(chart_json=chart.chart_json)
+        s.add(row)
+        s.commit()
+        chart_id = row.id
+
+    bt = big_three(chart.chart_json)
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    caption = (
+        f"🌟 **چارت تولد تو آماده شد!**\n\n"
+        f"☀️ خورشید: **{bt.get('Sun', {}).get('sign_fa', '')}**\n"
+        f"🌙 ماه: **{bt.get('Moon', {}).get('sign_fa', '')}**\n"
+        f"⬆️ طالع: **{bt.get('ASC', {}).get('sign_fa', '')}**\n\n"
+        f"سیستم: {'سایدریال لاهیری' if zodiac == 'sidereal' else 'تروپیکال'}\n"
+        f"برای مشاهده و خرید گزارش اختصاصی، دکمه‌های زیر را بزن:"
+    )
+    await send_photo(chat_id, f"{base}/api/share/{chart_id}.png", caption,
+                     platform, reply_markup=chart_actions_keyboard(chart_id))
 
 
 # ─────────────────────────── update dispatch ───────────────────────────
@@ -282,6 +308,20 @@ async def _handle_callback(cb: dict, platform: str) -> None:
     elif data == "cancel":
         clear_chat_state(chat_id, platform)
         await send_message(chat_id, "لغو شد. هر وقت خواستی دوباره شروع کن 👇", platform, reply_markup=start_keyboard())
+    elif data.startswith("zodiac_"):
+        # audit r3: tropical|sidereal choice — compute the chart with the chosen system
+        zodiac = data.split("_", 1)[1]
+        if zodiac not in ("tropical", "sidereal"):
+            await answer_callback(cb_id, "گزینه نامعتبر", platform=platform)
+            return
+        st = get_chat_state(chat_id, platform)
+        if not st or st.get("state") != "waiting_zodiac":
+            await answer_callback(cb_id, "ابتدا چارت بساز", platform=platform)
+            return
+        payload = st.get("payload") or {}
+        clear_chat_state(chat_id, platform)
+        await answer_callback(cb_id, platform=platform)
+        await _compute_and_send_chart(chat_id, platform, payload, zodiac)
     elif data.startswith("sub_"):
         chart_id = data[4:]
         try:

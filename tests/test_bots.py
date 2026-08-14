@@ -40,7 +40,7 @@ def test_start_command(monkeypatch):
 
 
 def test_full_chart_flow(monkeypatch):
-    """callback chart_start → date → time → city → chart card sent."""
+    """callback chart_start → date → time → city → zodiac (buttons) → chart card."""
     clear_chat_state(222, "telegram")
     import asyncio
     async def run():
@@ -58,9 +58,18 @@ def test_full_chart_flow(monkeypatch):
         await H.handle_update({
             "message": {"chat": {"id": 222}, "text": "تهران"}
         }, "telegram")
+        # audit r3: zodiac system choice (buttons) before computing
+        await H.handle_update({
+            "callback_query": {"id": "c2", "data": "zodiac_tropical",
+                               "message": {"chat": {"id": 222}}}
+        }, "telegram")
     asyncio.run(run())
     methods = [c["method"] for c in FakeBotAPI.calls]
-    assert methods.count("sendMessage") == 3   # ask date / ask time / ask city
+    assert methods.count("sendMessage") == 4   # ask date / time / city / zodiac
+    zodiac_msg = next(c for c in FakeBotAPI.calls if c["method"] == "sendMessage"
+                      and "سیستم نجومی" in c["payload"]["text"])
+    kb = zodiac_msg["payload"]["reply_markup"]["inline_keyboard"]
+    assert any(b["callback_data"] == "zodiac_sidereal" for row in kb for b in row)
     assert "sendPhoto" in methods              # chart card with actions
     photo_call = next(c for c in FakeBotAPI.calls if c["method"] == "sendPhoto")
     assert "api/share/" in photo_call["payload"]["photo"]

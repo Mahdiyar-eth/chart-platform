@@ -242,7 +242,7 @@ def _compute_and_save_chart(
         raw_year=year, raw_month=month, raw_day=day,
         time_known=time_known, hour=hour, minute=minute,
         city_fa=city_fa, province_fa=province_fa, lat=lat, lon=lon,
-        name=name,
+        name=name, zodiac=zodiac,
         focus_areas=[a.strip() for a in (focus_areas or "").split(",") if a.strip()],
         personal_question=personal_question or None,
         user_id=user_id or (get_current_user(request).id if get_current_user(request) else None),
@@ -842,9 +842,11 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
                  name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
                  day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
                  city_a: str = Form(None), calendar_a: str = Form("jalali"),
+                 zodiac_a: str = Form("tropical"),
                  name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
                  day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
-                 city_b: str = Form(None), calendar_b: str = Form("jalali")):
+                 city_b: str = Form(None), calendar_b: str = Form("jalali"),
+                 zodiac_b: str = Form("tropical")):
     if not _rate_limit(f"synastry:{_rl_client(request)}", 10, 60):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     """Free teaser (plan §8): score + verdict only. Full analysis is a paid product."""
@@ -854,9 +856,9 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
     if not city_a or not city_b:
         raise HTTPException(400, "شهرها را انتخاب کنید")
     ca = compute_from_fields(city_a[0]["lat"], city_a[0]["lon"], year_a, month_a, day_a,
-                             hour_a, minute_a, True, calendar_a == "jalali", "Asia/Tehran")
+                             hour_a, minute_a, True, calendar_a == "jalali", "Asia/Tehran", zodiac=zodiac_a)
     cb = compute_from_fields(city_b[0]["lat"], city_b[0]["lon"], year_b, month_b, day_b,
-                             hour_b, minute_b, True, calendar_b == "jalali", "Asia/Tehran")
+                             hour_b, minute_b, True, calendar_b == "jalali", "Asia/Tehran", zodiac=zodiac_b)
     r = synastry(ca.chart_json, cb.chart_json)
     return {
         "a": name_a or "شخص اول", "b": name_b or "شخص دوم",
@@ -869,19 +871,21 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
                        name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
                        day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
                        city_a: str = Form(None), calendar_a: str = Form("jalali"),
+                       zodiac_a: str = Form("tropical"),
                        name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
                        day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
-                       city_b: str = Form(None), calendar_b: str = Form("jalali")):
+                       city_b: str = Form(None), calendar_b: str = Form("jalali"),
+                       zodiac_b: str = Form("tropical")):
     """Save both charts + create the paid synastry order (plan §8, ~499k toman)."""
     from app.payment.orders import create_order
     chart_a, _ = _compute_and_save_chart(
         session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
         time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
-        province_fa=None, lat=None, lon=None, name=name_a, zodiac="tropical")
+        province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
     chart_b, _ = _compute_and_save_chart(
         session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
         time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
-        province_fa=None, lat=None, lon=None, name=name_b, zodiac="tropical")
+        province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b)
     session.add(chart_a); session.add(chart_b)
     session.commit(); session.refresh(chart_a); session.refresh(chart_b)
     user = get_current_user(request)

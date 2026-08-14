@@ -18,6 +18,11 @@
         <button type="button" class="chip" :class="{'sel': cal === 'jalali'}" @click="cal = 'jalali'">شمسی</button>
         <button type="button" class="chip" :class="{'sel': cal === 'gregorian'}" @click="cal = 'gregorian'">میلادی</button>
       </div>
+      <label style="margin-top:12px;">سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <div>
+        <button type="button" class="chip" :class="{'sel': zodiac === 'tropical'}" @click="zodiac = 'tropical'">تروپیکال (پیش‌فرض)</button>
+        <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
+      </div>
       <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px;">
         <div><label>سال</label><input class="input" type="number" x-model.number="year" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
         <div><label>ماه</label><input class="input" type="number" x-model.number="month" min="1" max="12"></div>
@@ -81,7 +86,7 @@
 <script>
 function formState(){
   return {
-    step: 1, cal: 'jalali', year: 1373, month: 1, day: 1,
+    step: 1, cal: 'jalali', zodiac: 'tropical', year: 1373, month: 1, day: 1,
     timeKnown: true, hour: 12, minute: 0,
     cityQ: '', cities: [], picked: '', city: null,
     areas: ['هویت و شخصیت','ذهن و منطق','عواطف و شهود','پول و ثروت','شغل','روابط و ازدواج','خانواده','انرژی و تندرستی','خلاقیت','آموزش و مهاجرت','شبکه‌ها و دوستان','معنویت','کارما'],
@@ -102,6 +107,7 @@ function formState(){
       e.preventDefault(); this.loading = true; this.error = '';
       const fd = new FormData();
       fd.append('calendar', this.cal); fd.append('year', this.year); fd.append('month', this.month); fd.append('day', this.day);
+      fd.append('zodiac', this.zodiac);
       fd.append('time_known', this.timeKnown); fd.append('hour', this.hour); fd.append('minute', this.minute);
       fd.append('city_fa', this.picked); fd.append('lat', this.city ? this.city.lat : ''); fd.append('lon', this.city ? this.city.lon : '');
       fd.append('focus_areas', this.focus.join(','));
