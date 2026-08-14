@@ -14,7 +14,7 @@ from pathlib import Path
 
 import redis.asyncio as redis_async
 
-from fastapi import Body, Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,7 +22,7 @@ from sqlmodel import Session, select
 
 import app.config  # noqa: F401 — load .env FIRST
 from app.env import IS_PROD
-from app.auth import get_current_user, request_otp, set_user_cookie, verify_otp
+from app.auth import get_current_user
 from app.security import security_guard, chat_quota_claim, chat_quota_release, chat_quota_used
 from app.astrology.big_three import big_three
 from app.astrology.cities_ir import search_cities
@@ -33,7 +33,7 @@ from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
-                        PromptVersion, ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
+                        ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
@@ -794,47 +794,7 @@ def api_payment_verify(
     return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
 
 
-@app.get("/sitemap.xml")
-def sitemap_xml():
-    import os
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
-    urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
-            "/terms", "/refund", "/disclaimer", "/contact",
-            "/guide", "/about", "/faq", "/articles"]
-    # dynamic learn pages — guides + planets + houses at /learn/, signs at /signs/
-    try:
-        from app.seo.content import GUIDES, PLANETS, HOUSES, SIGNS
-        urls += [f"/learn/{k}" for k in GUIDES]
-        urls += [f"/learn/{k}" for k in PLANETS]
-        urls += [f"/learn/{k}" for k in HOUSES]
-        urls += [f"/signs/{s['slug']}" for s in SIGNS.values()]
-    except Exception:
-        pass
-    try:
-        urls += [f"/articles/{a['slug']}" for a in _load_articles()]
-    except Exception:
-        pass
-    # de-dupe preserving order
-    seen, out = set(), []
-    for u in urls:
-        if u not in seen:
-            seen.add(u)
-            out.append(u)
-    body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for u in out:
-        body += f'  <url><loc>{base}{u}</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n'
-    body += "</urlset>\n"
-    from fastapi.responses import Response
-    return Response(content=body, media_type="application/xml")
-
-
-@app.get("/robots.txt")
-def robots_txt():
-    import os
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
-    from fastapi.responses import Response
-    return Response(content=f"User-agent: *\nAllow: /\nSitemap: {base}/sitemap.xml\n",
-                    media_type="text/plain")
+# ── SEO / public pages (H1.9 → app/routes/seo.py) ────────────────────────────
 
 
 @app.get("/api/share/{chart_id}.png")
@@ -852,151 +812,7 @@ def api_share_card(chart_id: str, request: Request,
     return FileResponse(path, media_type="image/png")
 
 
-@app.post("/api/admin/coupons")
-def admin_coupon_create(request: Request, session: Session = Depends(get_session),
-                        code: str = Form(...), percent: int = Form(...), max_uses: int = Form(1)):
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    if not (0 < percent <= 100):
-        raise HTTPException(400, "percent must be 1-100")
-    c = Coupon(code=code.strip().upper(), percent=percent, max_uses=max_uses)
-    session.add(c)
-    session.commit()
-    from app.security import audit
-    audit(session.bind, "admin", "coupon.create", c.code, f"{percent}%")
-    return {"ok": True, "id": c.id, "code": c.code}
-
-
-# ── prompt overrides (plan v3.0 §8 — مدیریت پرامپتها) ─────────────────────────
-PROMPT_KEYS = ["identity", "mind", "emotions", "career", "money", "love", "health",
-               "family", "social", "spirit", "life_path", "strength", "karma", "cultural"]
-
-
-@app.get("/api/admin/prompts")
-def admin_prompts_list(request: Request, session: Session = Depends(get_session)):
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    from app.report.prompt_overrides import get_overrides
-    active = get_overrides()
-    rows = session.exec(select(PromptVersion).order_by(
-        PromptVersion.prompt_key, PromptVersion.version.desc())).all()
-    seen: set[str] = set()
-    out = []
-    for r in rows:  # latest version per key (rows are desc by version)
-        if r.prompt_key in seen:
-            continue
-        seen.add(r.prompt_key)
-        out.append({"key": r.prompt_key, "version": r.version,
-                    "is_active": r.is_active,
-                    "content": r.content if r.is_active else None})
-    # keys without any override yet
-    missing = [k for k in PROMPT_KEYS if k not in seen]
-    return {"keys": [o["key"] for o in out] + missing,
-            "overrides": out, "active": active}
-
-
-@app.post("/api/admin/prompts/{prompt_key}")
-def admin_prompt_save(request: Request, prompt_key: str, session: Session = Depends(get_session),
-                      content: str = Form(...)):
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    if prompt_key not in PROMPT_KEYS:
-        raise HTTPException(400, "unknown prompt key")
-    from app.report.prompt_overrides import set_override
-    row = set_override(session, prompt_key, content)
-    from app.security import audit
-    audit(session.bind, "admin", "prompt.update", prompt_key, f"v{row.version} ({len(content)} chars)")
-    return {"ok": True, "key": prompt_key, "version": row.version}
-
-
-@app.post("/api/admin/orders/{order_id}/refund")
-def admin_refund(order_id: str, request: Request, session: Session = Depends(get_session)):
-    """audit r4 B6: REAL refund lifecycle — calls Zarinpal, closes the chat
-    subscription if this order originated one, returns the coupon slot.
-
-    States: paid → refunding → refunded | refund_failed (admin retries).
-    """
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    order = session.get(Order, order_id)
-    if not order:
-        raise HTTPException(404, "order not found")
-    if order.status not in ("paid", "refund_failed"):
-        raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
-    order.status = "refunding"
-    session.commit()
-    try:
-        from app.payment.zarinpal import ZarinpalClient
-        res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
-    except Exception as e:  # noqa: BLE001 — gateway/network error
-        order.status = "refund_failed"
-        order.error = f"ریفاند ناموفق: {str(e)[:300]}"
-        session.commit()
-        from app.security import audit
-        audit(session.bind, "admin", "order.refund_failed", order.id, str(e)[:200])
-        raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {str(e)[:200]} — بعداً دوباره تلاش کنید")
-
-    order.status = "refunded"
-    order.ref_id = res.get("ref_id", order.ref_id or "")
-    order.error = None
-    _release_coupon(session, order)  # audit r4 A10 — return the slot
-
-    # close the subscription this order originated (audit r4 B6)
-    if order.chart_id:
-        subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
-        for sub in subs:
-            sub.active = False
-            sub.expires_at = datetime.now(timezone.utc)
-
-    session.commit()
-    from app.security import audit
-    audit(session.bind, "admin", "order.refund", order.id, order.ref_id or "")
-    return {"ok": True, "status": "refunded", "ref_id": res.get("ref_id", "")}
-
-
-@app.post("/api/admin/orders/{order_id}/regenerate")
-def admin_regenerate(order_id: str, request: Request, session: Session = Depends(get_session)):
-    """Re-run a failed report from admin (plan v3.0 §8 — بازتولید گزارش)."""
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    order = session.get(Order, order_id)
-    if not order:
-        raise HTTPException(404, "order not found")
-    if order.status != "paid":
-        raise HTTPException(400, "فقط سفارش پرداخت‌شده بازتولید می‌شود")
-    chart = session.get(Chart, order.chart_id)
-    if not chart:
-        raise HTTPException(404, "chart not found")
-    rep = session.exec(select(Report).where(Report.chart_id == order.chart_id).order_by(
-        Report.created_at.desc())).first()
-    if not rep:
-        raise HTTPException(404, "report not found")
-    if rep.status == "done":
-        raise HTTPException(400, "گزارش آماده است — برای اجرای مجدد اول حذفش کنید")
-    rep.status = "queued"
-    rep.error = None
-    session.add(rep)
-    session.commit()
-    ok = _enqueue_report(rep.id)
-    if not ok:
-        rep.status = "failed"
-        rep.error = "queue unavailable (worker not running)"
-        session.commit()
-        raise HTTPException(503, "worker در دسترس نیست — بعداً دوباره تلاش کنید")
-    from app.security import audit
-    audit(session.bind, "admin", "report.regenerate", rep.id, f"order={order.id} chart={chart.id}")
-    return {"ok": True, "report_id": rep.id, "status": "queued"}
-
-
-@app.get("/api/admin/coupons", response_class=JSONResponse)
-def admin_coupons(request: Request, session: Session = Depends(get_session)):
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    return [{"id": c.id, "code": c.code, "percent": c.percent, "max_uses": c.max_uses,
-             "used_count": c.used_count, "active": c.active} for c in session.exec(select(Coupon)).all()]
-
-
-# ─────────────────────────── synastry / rectify / audio (Phases 8-9) ───────────────
+# ── admin API (H1.9 → app/routes/admin.py) ───────────────────────────────────
 
 @app.get("/synastry", response_class=HTMLResponse)
 def synastry_page(request: Request):
@@ -1231,44 +1047,7 @@ def api_report_audio_status(report_id: str, request: Request,
     return {"status": rep.audio_status or "none"}
 
 
-@app.get("/learn", response_class=HTMLResponse)
-def learn_index(request: Request):
-    from app.seo.content import GUIDES, PLANETS, HOUSES
-    return templates.TemplateResponse(request, "seo_index.html", {
-        "title": "آموزش چارت تولد — مقالات نجومی",
-        "guides": GUIDES, "planets": PLANETS, "houses": HOUSES,
-    })
-
-
-@app.get("/learn/{slug}", response_class=HTMLResponse)
-def learn_page(request: Request, slug: str):
-    from app.seo.content import GUIDES, PLANETS, HOUSES, SIGNS
-    page = GUIDES.get(slug) or PLANETS.get(slug) or HOUSES.get(slug) or (
-        next((s for s in SIGNS.values() if s["slug"] == slug), None))
-    if not page:
-        raise HTTPException(404, "not found")
-    is_sign = slug in (s["slug"] for s in SIGNS.values())
-    canonical = f"{request.url.scheme}://{request.url.netloc}/" + \
-                (f"signs/{slug}" if is_sign else f"learn/{slug}")
-    return templates.TemplateResponse(request, "seo_page.html", {
-        "title": page["title"], "page": page, "slug": slug,
-        "meta_description": (page.get("keywords") or page.get("title")),
-        "canonical": canonical,
-    })
-
-
-@app.get("/signs/{slug}", response_class=HTMLResponse)
-def sign_page(request: Request, slug: str):
-    from app.seo.content import SIGNS
-    sign = next((s for s in SIGNS.values() if s["slug"] == slug), None)
-    if not sign:
-        raise HTTPException(404, "not found")
-    canonical = f"{request.url.scheme}://{request.url.netloc}/signs/{slug}"
-    return templates.TemplateResponse(request, "seo_page.html", {
-        "title": sign["title"], "page": sign, "slug": slug,
-        "meta_description": sign["keywords"],
-        "canonical": canonical,
-    })
+# ── learn/sign/articles — H1.9 → app/routes/seo.py ───────────────────────────
 
 
 # ─────────────────────────── SEO (Phase 8) ───────────────────────────
@@ -1644,127 +1423,13 @@ async def bale_webhook(secret: str, request: Request):
     return {"ok": True}
 
 
-# ─────────────────────────── auth (lazy OTP — plan §4) ───────────────────────────
-
-@app.post("/api/auth/otp/request")
-def auth_otp_request(request: Request, phone: str = Form(...)):
-    # combined rate limit: IP (here) + phone (inside request_otp via Redis)
-    if not _rate_limit(f"otp-ip:{_rl_client(request)}", 5, 600):
-        raise HTTPException(429, "تعداد درخواست زیاد است؛ کمی بعد تلاش کن")
-    if not phone or len(phone) < 10:
-        raise HTTPException(400, "شماره موبایل معتبر نیست")
-    try:
-        return request_otp(phone)
-    except RuntimeError as e:
-        raise HTTPException(503, str(e)) from e
+# ─────────────────────────── auth (H1.9 → app/routes/auth.py) ───────────────────────────
 
 
-@app.post("/api/auth/otp/verify")
-def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(...)):
-    u = verify_otp(phone, code)
-    if not u:
-        raise HTTPException(401, "کد نادرست یا منقضی شده")
-    return set_user_cookie(request, u.id)
+# ── Wallet (D3) — H1.9 → app/routes/wallet.py ─────────────────────────────────
 
 
-@app.get("/api/auth/me")
-def auth_me(request: Request):
-    u = get_current_user(request)
-    if not u:
-        return {"user": None}
-    return {"user": {"id": u.id, "phone": u.phone, "role": u.role}}
-
-
-@app.post("/api/auth/logout")
-def auth_logout():
-    from fastapi.responses import RedirectResponse
-    resp = RedirectResponse("/", status_code=303)
-    resp.delete_cookie("chart_user")
-    return resp
-
-
-# ── Wallet (D3) ──────────────────────────────────────────────────────────────
-
-@app.get("/api/wallet")
-def wallet_balance(request: Request, session: Session = Depends(get_session)):
-    """Wallet status: balance + referral code + pending withdrawal."""
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(401, "login required")
-    u = session.get(User, user.id)
-    from app.payment.orders import get_or_create_referral_code
-    code = get_or_create_referral_code(session, u.id)
-    pending = session.exec(select(WithdrawalRequest).where(
-        WithdrawalRequest.user_id == u.id,
-        WithdrawalRequest.status == "pending")).all()
-    return {
-        "balance_rial": u.balance_rial or 0,
-        "referral_code": code,
-        "pending_withdrawals": len(pending),
-    }
-
-
-@app.post("/api/wallet/withdraw")
-def wallet_withdraw(request: Request, amount_rial: int = Form(...),
-                    session: Session = Depends(get_session)):
-    """Request a cash-out; admin pays out manually (status=paid)."""
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(401, "login required")
-    from app.payment.orders import withdraw_request
-    if not withdraw_request(session, user.id, amount_rial):
-        raise HTTPException(400, "درخواست نامعتبر (موجودی کافی نیست یا درخواست در انتظار بررسی دارید)")
-    return {"ok": True}
-
-
-@app.post("/api/admin/withdrawals/{wid}/resolve")
-def admin_resolve_withdrawal(wid: str, request: Request, status: str = Form("paid"),
-                             note: str = Form(""),
-                             session: Session = Depends(get_session)):
-    """Admin resolves a withdrawal: paid (money sent) or rejected (balance kept)."""
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    from app.payment.orders import resolve_withdrawal
-    if not resolve_withdrawal(session, wid, status, note):
-        raise HTTPException(400, "invalid withdrawal or state")
-    session.add(AuditLog(admin=request.cookies.get("chart_user", ""), action="withdrawal_resolve",
-                         entity=wid, details=status))
-    session.commit()
-    return {"ok": True}
-
-
-# ── Web Push (D1) ────────────────────────────────────────────────────────────
-
-@app.get("/api/push/vapid-public-key")
-def push_vapid_public_key():
-    """VAPID public key for the browser's pushManager.subscribe()."""
-    from app.push import VAPID_PUBLIC_KEY
-    if not VAPID_PUBLIC_KEY:
-        raise HTTPException(503, "push not configured")
-    return {"key": VAPID_PUBLIC_KEY}
-
-
-@app.post("/api/push/subscribe")
-def push_subscribe(payload: dict | None = Body(default=None),
-                   request: Request = None,
-                   session: Session = Depends(get_session)):
-    """Register a browser push subscription (endpoint + p256dh + auth)."""
-    from app.push import subscribe as _subscribe
-    u = get_current_user(request)
-    body = payload or {}
-    ok = _subscribe(body.get("endpoint", ""), body.get("p256dh", ""),
-                    body.get("auth", ""), u.id if u else None, session)
-    if not ok:
-        raise HTTPException(400, "invalid subscription")
-    return {"ok": True}
-
-
-@app.post("/api/push/unsubscribe")
-def push_unsubscribe(payload: dict | None = Body(default=None),
-                     session: Session = Depends(get_session)):
-    from app.push import unsubscribe as _unsubscribe
-    _unsubscribe((payload or {}).get("endpoint", ""), session)
-    return {"ok": True}
+# ── Web Push (D1) — H1.9 → app/routes/push.py ────────────────────────────────
 
 
 @app.get("/account", response_class=HTMLResponse)
@@ -1896,32 +1561,10 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     return resp
 
 
-@app.get("/privacy", response_class=HTMLResponse)
-def privacy_page(request: Request):
-    return templates.TemplateResponse(request, "privacy.html", {"title": "حریم خصوصی"})
+# ── static pages & articles — H1.9 → app/routes/seo.py ───────────────────────
 
 
-@app.get("/terms", response_class=HTMLResponse)
-def terms_page(request: Request):
-    return templates.TemplateResponse(request, "terms.html", {"title": "قوانین استفاده"})
-
-
-@app.get("/refund", response_class=HTMLResponse)
-def refund_page(request: Request):
-    return templates.TemplateResponse(request, "refund.html", {"title": "شرایط استرداد"})
-
-
-@app.get("/disclaimer", response_class=HTMLResponse)
-def disclaimer_page(request: Request):
-    return templates.TemplateResponse(request, "disclaimer.html", {"title": "سلب مسئولیت"})
-
-
-@app.get("/contact", response_class=HTMLResponse)
-def contact_page(request: Request):
-    return templates.TemplateResponse(request, "contact.html", {"title": "تماس با ما"})
-
-
-# ─── content pages (guide / about / faq) + articles ───
+# ─── admin auth (login / logout / dashboard) — pages stay here (H1.9) ───
 
 def _load_pages() -> dict:
     import json as _json
@@ -1936,68 +1579,7 @@ def _load_articles() -> list[dict]:
     return _json.loads(p.read_text("utf-8")) if p.exists() else []
 
 
-@app.get("/guide", response_class=HTMLResponse)
-def page_guide(request: Request):
-    data = _load_pages()["guide"]
-    return templates.TemplateResponse(request, "page.html", {
-        "title": data["title"], "meta": data.get("meta", ""),
-        "sections": data["sections"], "hero": data["title"],
-    })
-
-
-@app.get("/about", response_class=HTMLResponse)
-def page_about(request: Request):
-    data = _load_pages()["about"]
-    return templates.TemplateResponse(request, "page.html", {
-        "title": data["title"], "meta": data.get("meta", ""),
-        "sections": data["sections"], "hero": data["title"],
-    })
-
-
-@app.get("/faq", response_class=HTMLResponse)
-def page_faq(request: Request):
-    data = _load_pages()["faq"]
-    cats = data.get("categories") or [{"name": "عمومی", "items": data.get("items", [])}]
-    return templates.TemplateResponse(request, "faq.html", {
-        "title": data["title"], "meta": data.get("meta", ""),
-        "categories": cats,
-    })
-
-
-@app.get("/articles", response_class=HTMLResponse)
-def page_articles(request: Request):
-    arts = _load_articles()
-    categories = sorted({a.get("category", "عمومی") for a in arts})
-    return templates.TemplateResponse(request, "articles_index.html", {
-        "title": "مقالات نجوم و چارت تولد",
-        "meta": "مجموعه مقالات آموزشی نجوم، چارت تولد، سیارات، برج‌ها و تحلیل شخصیت — به زبان ساده",
-        "articles": arts,
-        "categories": categories,
-    })
-
-
-@app.get("/sky", response_class=HTMLResponse)
-def page_sky(request: Request):
-    from app.astrology.sky import sky_today
-    return templates.TemplateResponse(request, "sky.html", {
-        "title": "آسمان امروز — فاز ماه، موقعیت سیارات و جنبه‌های آسمانی",
-        "meta": "موقعیت امروز سیارات، فاز ماه، جنبه‌های آسمانی و رجوعی‌ها — با توضیح ساده و تخصصی برای خودشناسی و تأمل",
-        "sky": sky_today(),
-    })
-
-
-@app.get("/articles/{slug}", response_class=HTMLResponse)
-def page_article(slug: str, request: Request):
-    arts = _load_articles()
-    art = next((a for a in arts if a["slug"] == slug), None)
-    if not art:
-        raise HTTPException(404, "article not found")
-    from app.seo.article_banner import article_banner_svg
-    return templates.TemplateResponse(request, "article.html", {
-        "title": art["title"], "meta": art.get("meta", ""), "art": art,
-        "banner_svg": article_banner_svg(art.get("category", ""), art["title"]),
-        "others": [a for a in arts if a["slug"] != slug][:6],
-    })
+# ── guide/about/faq/articles/sky — H1.9 → app/routes/seo.py ──────────────────
 
 
 # ─────────────────────────── admin dashboard (Phase 5) ───────────────────────────
@@ -2103,71 +1685,30 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "dlq_count": dlq_count,  # B1 — used by admin.html KPI
         "withdrawals": withdrawals,  # D3 — wallet cash-out queue
         "secrets": secret_store.secret_status(),
-        "prompt_keys": PROMPT_KEYS,
+        # H1.9: prompt management moved to app/routes/admin.py
+        "prompt_keys": _admin_routes.PROMPT_KEYS,
         "prompt_overrides": [{"key": o["key"], "version": o["version"],
                               "is_active": o["is_active"], "content": o["content"]}
-                             for o in admin_prompts_list(request, session)["overrides"]],
+                             for o in _admin_routes.admin_prompts_list(request, session)["overrides"]],
     })
 
 
-@app.put("/api/admin/plans/{plan_key}")
-def api_admin_plan_update(plan_key: str, request: Request, session: Session = Depends(get_session),
-                          price_toman: int | None = Form(None), active: bool | None = Form(None)):
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    plan = session.get(Plan, plan_key)
-    if not plan:
-        raise HTTPException(404, "plan not found")
-    if price_toman is not None and price_toman > 0:
-        plan.price_toman = price_toman
-    if active is not None:
-        plan.active = active
-    session.add(plan)
-    session.commit()
-    from app.security import audit
-    audit(session.bind, "admin", "plan.update", plan.key, f"{plan.price_toman} toman active={plan.active}")
-    return {"ok": True}
+# ── H1.9: extracted routers (auth / wallet / push / admin / seo) ──────────────
+from app.routes import admin as _admin_routes
+from app.routes import auth as _auth_routes
+from app.routes import push as _push_routes
+from app.routes import seo as _seo_routes
+from app.routes import wallet as _wallet_routes
 
+# Flatten into app.router.routes: newer FastAPI keeps include_router lazy
+# (_IncludedRouter), which would hide these from app.routes (authz-matrix test,
+# middleware, route enumeration). Appending APIRoutes keeps full visibility.
+for _rt in (_auth_routes.router, _wallet_routes.router, _push_routes.router,
+            _seo_routes.router, _admin_routes.router):
+    for _r in _rt.routes:
+        app.router.routes.append(_r)
 
-@app.get("/api/admin/llm-cost")
-def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)):
-    """H1.3: rich LLM cost dashboard — 24h/7d/30d totals, per-model,
-    per-user (top 5), per-kind, fail rate."""
-    if not _is_admin(request):
-        raise HTTPException(403, "admin only")
-    from datetime import timedelta
-    now = datetime.now(timezone.utc)
-
-    def _agg(minutes: int | None) -> dict:
-        q = select(LLMRun)
-        if minutes:
-            q = q.where(LLMRun.created_at >= now - timedelta(minutes=minutes))
-        rows = session.exec(q).all()
-        by_model: dict[str, float] = {}
-        by_kind: dict[str, int] = {}
-        by_user: dict[str, float] = {}
-        fails = 0
-        tokens = 0
-        for r in rows:
-            by_model[r.model] = by_model.get(r.model, 0) + r.cost_usd
-            by_kind[r.kind] = by_kind.get(r.kind, 0) + 1
-            if r.user_id:
-                by_user[r.user_id] = by_user.get(r.user_id, 0) + r.cost_usd
-            if not r.ok:
-                fails += 1
-            tokens += r.prompt_tokens + r.completion_tokens
-        top_users = sorted(by_user.items(), key=lambda kv: kv[1], reverse=True)[:5]
-        return {
-            "cost_usd": round(sum(r.cost_usd for r in rows), 4),
-            "runs": len(rows),
-            "fail_rate": round(fails / len(rows), 3) if rows else 0.0,
-            "total_tokens": tokens,
-            "by_model": {k: round(v, 4) for k, v in sorted(by_model.items(), key=lambda kv: -kv[1])},
-            "by_kind": by_kind,
-            "top_users": [{"user_id": u, "cost_usd": round(c, 4)} for u, c in top_users],
-        }
-
-    return {"24h": _agg(60 * 24), "7d": _agg(60 * 24 * 7), "30d": _agg(60 * 24 * 30)}
+# api/admin/plans + api/admin/llm-cost → app/routes/admin.py (H1.9)
 
 
 @app.get("/api/admin/stats")
