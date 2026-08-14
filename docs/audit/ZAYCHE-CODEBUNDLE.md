@@ -1,14 +1,14 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `d0d5f2b 2026-08-14 docs(r3): round-3 addendum + regenerated codebundle + fresh .env.example (CREATE_ALL_ON_BOOT, RATE_LIMIT_BACKEND, R2_ENDPOINT, SWISSEPH_EPHE_PATH)`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور سوم بازبینی — به‌روز تا کامیت `1d2886b 2026-08-14 docs(r3): regenerate full code bundle (16 sections, 133 files, fresh tests+git)`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` + پیوست دور سوم: `docs/audit/ROUND-3-ADDENDUM.md`
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 151 passed, 4 skipped, 2 warnings in 1.67s
-- **کامیت‌ها:** 20 · head: d0d5f2b 2026-08-14 docs(r3): round-3 addendum + regenerated codebundle + fresh .env.example (CREATE_ALL_ON_BOOT, RATE_LIMIT_BACKEND, R2_ENDPOINT, SWISSEPH_EPHE_PATH)
+- **تست‌ها:** 151 passed, 4 skipped, 2 warnings in 1.80s
+- **کامیت‌ها:** 21 · head: 1d2886b 2026-08-14 docs(r3): regenerate full code bundle (16 sections, 133 files, fresh tests+git)
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
 - **مهاجرت‌ها:** 4 Alembic (baseline → chat_messages → align-audit-r3 → zodiac) — `alembic check` پاک
 - **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict, MemoryMax=1.5G) · Redis+ARQ · PostgreSQL 16 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
@@ -12623,7 +12623,7 @@ echo "==> pip-audit (dependency vulnerabilities)"
 venv/bin/pip-audit -r requirements.txt
 
 echo "==> secret scan (hardcoded keys/tokens)"
-BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}' \
+BAD=$(grep -rniE 'AKIA[0-9A-Z]{16}|BEGIN (RSA|EC|OPENSSH) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|xox[baprs]-|ghp_[A-Za-z0-9]{30,}|REDACTED_UMAMI_PASSWORD|HASH_SALT=[^c]|APP_SECRET=[^c]' \
   --include='*.py' --include='*.sh' --include='*.yml' --include='*.yaml' \
   --include='*.html' --include='*.md' --include='*.json' --include='*.toml' --include='*.ini' \
   app/ scripts/ alembic/ deploy/ docs/ tests/ .github/ 2>/dev/null || true)
@@ -15030,22 +15030,16 @@ MemoryMax=1.0G
 
 ```
 
-### `deploy/umami-admin.txt` (6 lines)
+### `deploy/umami.env.example` (8 lines)
 
 ```bash
-{
-  "username": "admin",
-  "password": "REDACTED_UMAMI_PASSWORD",
-  "website_id": "e8f58dc5-fee9-455d-8ee6-18e26ea23791",
-  "url": "https://analytics.negar.io"
-}
-```
-
-### `deploy/umami.env` (3 lines)
-
-```bash
-HASH_SALT=REDACTED_UMAMI_HASH_SALT
-APP_SECRET=REDACTED_UMAMI_APP_SECRET
+# Umami analytics — environment template (REAL values live in /opt/umami.env on the server, chmod 600)
+# NEVER commit real secrets. This file is for documentation only.
+HASH_SALT=change-me-64-hex-chars
+APP_SECRET=change-me-64-hex-chars
+DATABASE_URL=postgresql://umami:change-me@127.0.0.1:5432/umami
+HOSTNAME=127.0.0.1
+PORT=3000
 
 ```
 
@@ -15291,12 +15285,13 @@ tests/test_phase10.py::test_plans_include_new_keys
     keys = {p.key for p in s.query(Plan).all()}
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-151 passed, 4 skipped, 2 warnings in 1.67s
+151 passed, 4 skipped, 2 warnings in 1.80s
 ```
 
-## ۱۸) تاریخچه گیت (آخرین 20 کامیت)
+## ۱۸) تاریخچه گیت (آخرین 21 کامیت)
 
 ```
+1d2886b 2026-08-14 docs(r3): regenerate full code bundle (16 sections, 133 files, fresh tests+git)
 d0d5f2b 2026-08-14 docs(r3): round-3 addendum + regenerated codebundle + fresh .env.example (CREATE_ALL_ON_BOOT, RATE_LIMIT_BACKEND, R2_ENDPOINT, SWISSEPH_EPHE_PATH)
 246c0a6 2026-08-14 feat(ui): degraded-status banner (polls /health, shows on Redis/DB down) + health endpoint tests — DOM-order bug caught by browser verification
 4ad4286 2026-08-14 feat(tests): payment callback race test (atomic claim — 5 concurrent verifies process once) + sidereal Lahiri golden chart (chart-7)
