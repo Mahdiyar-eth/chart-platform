@@ -22,6 +22,7 @@ R2_ACCESS = get_secret("r2_access_key_id", "R2_ACCESS_KEY_ID", "").strip()
 R2_SECRET = get_secret("r2_secret_access_key", "R2_SECRET_ACCESS_KEY", "").strip()
 
 PREFIX = "chart-reports"  # keep chart-platform objects namespaced in the shared bucket
+AUDIO_PREFIX = "chart-audio"  # audit r4 C1 — TTS mp3s live in R2, not /tmp
 
 if IS_PROD and not (R2_ACCESS and R2_SECRET and R2_ENDPOINT):
     raise RuntimeError(
@@ -50,6 +51,22 @@ def _client():
 
 def report_key(report_id: str) -> str:
     return f"{PREFIX}/{report_id}.pdf"
+
+
+def audio_key(report_id: str) -> str:
+    return f"{AUDIO_PREFIX}/{report_id}.mp3"
+
+
+def upload_audio(report_id: str, local_path: str) -> str | None:
+    """Upload a TTS mp3 to R2 (audit r4 C1). Returns the object key or None."""
+    if not configured() or not os.path.exists(local_path):
+        return None
+    try:
+        client = _client()
+        client.upload_file(local_path, R2_BUCKET, audio_key(report_id))
+        return audio_key(report_id)
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def upload_report(report_id: str, local_path: str) -> str | None:

@@ -1080,6 +1080,14 @@ def api_report_audio(report_id: str, request: Request,
     except Exception:  # noqa: BLE001
         pass
     out = _P("/tmp") / f"report-audio-{report_id[:8]}.mp3"
+
+    # audit r4 C1: audio lives in R2 — R2 cache hit serves directly (no TTS
+    # cost), miss generates → uploads → 30-min presigned → temp file dropped.
+    from app.storage import audio_key, presigned_url, upload_audio
+    cached = presigned_url(audio_key(report_id))
+    if cached:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(cached, status_code=302)
     if not out.exists():
         text = "گزارش اختصاصی چارت تولد. "
         for k, v in (rep.sections or {}).items():
@@ -1096,9 +1104,22 @@ def api_report_audio(report_id: str, request: Request,
             asyncio.run(_gen())
         except Exception as e:
             raise HTTPException(502, f"تولید صوت ممکن نیست: {e}")
-    from fastapi.responses import FileResponse
-    return FileResponse(str(out), media_type="audio/mpeg",
-                        filename=f"chart-report-{report_id[:8]}.mp3")
+    key = upload_audio(report_id, str(out))
+    try:
+        out.unlink(missing_ok=True)
+    except OSError:
+        pass
+    if key:
+        r2_url = presigned_url(key)
+        if r2_url:
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(r2_url, status_code=302)
+    # dev/fallback: no R2 — serve the local copy if it still exists
+    if out.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(str(out), media_type="audio/mpeg",
+                            filename=f"chart-report-{report_id[:8]}.mp3")
+    raise HTTPException(502, "در دسترس نیست")
 
 
 @app.get("/learn", response_class=HTMLResponse)
