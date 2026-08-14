@@ -33,7 +33,7 @@ FORBIDDEN_PATTERNS = [
 
 VALID_PLANETS = {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
                  "Uranus", "Neptune", "Pluto", "Node", "Lilith", "Chiron",
-                 "ASC", "MC", "Fortune", "Vertex", "Vx",
+                 "ASC", "MC", "Fortune", "Vertex", "Vx", "VX",
                  "Vesta", "Ceres", "Pallas", "Juno"}
 
 ASPECT_NAMES = {"Conjunction", "Sextile", "Square", "Trine", "Opposition",

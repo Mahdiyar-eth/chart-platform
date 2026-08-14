@@ -92,6 +92,14 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                         MAX_RETRIES + 1, errors[:3])
             if attempt < MAX_RETRIES:
                 metrics["retries"] += 1
+                # F-27c (runtime audit): feed the QA reasons back into the next
+                # attempt — static prompt rules alone can't stop the model from
+                # writing «درمان»/«مرگ»/«شش‌ضلعی»; telling it exactly why the
+                # previous draft was rejected converges in one retry.
+                fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
+                            "این موارد را دقیقاً رفع کن و دوباره بنویس:\n- "
+                            + "\n- ".join(errors[:4]))
+                prompt = prompt + fix_hint
 
         if not ok:
             fallback_domains.append(domain)
