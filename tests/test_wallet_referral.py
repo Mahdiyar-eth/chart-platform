@@ -153,4 +153,22 @@ def test_withdrawal_lifecycle(db_session):
     db_session.refresh(wr)
     assert wr.status == "paid" and wr.resolved_at is not None
     db_session.refresh(u)
-    assert u.balance_rial == 600_000  # balance NOT auto-debited (manual payout)
+    # F-01 (audit v5 P0): the amount was RESERVED at request time — the same
+    # balance can never be withdrawn twice; 'paid' keeps the debit.
+    assert u.balance_rial == 100_000
+
+    # a second request from the now-lowered balance is rejected (overdraw)
+    assert withdraw_request(db_session, u.id, 500_000) is False
+    # 100k remains — below the 500k floor, so nothing more can be withdrawn
+    assert withdraw_request(db_session, u.id, 100_000) is False
+    # a REJECTED withdrawal refunds the reserved amount (F-01): start fresh
+    u.balance_rial = 1_000_000
+    db_session.commit()
+    db_session.refresh(u)
+    assert withdraw_request(db_session, u.id, 600_000) is True
+    wr2 = db_session.exec(select(WithdrawalRequest).where(
+        WithdrawalRequest.user_id == u.id, WithdrawalRequest.status == "pending")).first()
+    assert wr2 is not None
+    assert resolve_withdrawal(db_session, wr2.id, "rejected", "اطلاعات بانکی ناقص") is True
+    db_session.refresh(u)
+    assert u.balance_rial == 1_000_000  # 1M - 600k reserved + 600k refunded

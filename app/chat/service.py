@@ -32,8 +32,12 @@ def chat_answer(question: str, chart_json: dict, report_sections: dict | None = 
                                     focus_areas, report_id)
 
     from app.core.llm import build_chat_router
+    from app.chat.retrieval import CHAT_SYSTEM_PROMPT
     rtr = router or build_chat_router()
-    res = asyncio.run(rtr.complete(prompt, max_tokens=1024, temperature=0.7))
+    # F-09 (audit v5 P1): policy goes in the system message — real trust
+    # boundary between the fixed rules and the user's untrusted input.
+    res = asyncio.run(rtr.complete(prompt, system=CHAT_SYSTEM_PROMPT,
+                                   max_tokens=1024, temperature=0.7))
     answer = res.text or ""
     if not answer:
         answer = "در حال حاضر سرویس پاسخ‌گویی در دسترس نیست (محدودیت سهمیه). لطفاً چند ساعت بعد تلاش کنید."
@@ -64,9 +68,11 @@ async def chat_stream(question: str, chart_json: dict,
     yield {"type": "intent", "intent": route["intent"], "domains": route["domains"]}
 
     from app.core.llm import build_chat_router
+    from app.chat.retrieval import CHAT_SYSTEM_PROMPT
     rtr = router or build_chat_router()
     last = None
-    async for chunk in rtr.stream_complete(prompt, max_tokens=1024, temperature=0.7):
+    async for chunk in rtr.stream_complete(prompt, system=CHAT_SYSTEM_PROMPT,
+                                           max_tokens=1024, temperature=0.7):
         last = chunk
         if chunk.error:
             break

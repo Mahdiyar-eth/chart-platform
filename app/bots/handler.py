@@ -199,11 +199,16 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
 async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zodiac: str) -> None:
     """Compute chart from payload + chosen zodiac system, persist, send card."""
     try:
-        from app.astrology.cities_world import tz_from_coords
+        from app.astrology.cities_world import is_iran_coords, tz_from_coords
+        tz_name = tz_from_coords(payload["lat"], payload["lon"])
+        # F-06: Tehran fallback only for Iran; bot asks for a city otherwise
+        if tz_name is None and not is_iran_coords(payload["lat"], payload["lon"]):
+            await send_message(chat_id, "⛔ برای این موقعیت، شهر را انتخاب کن تا منطقهٔ زمانی درست شود.", platform)
+            return
         chart = compute_from_fields(
             payload["lat"], payload["lon"], payload["year"], payload["month"],
             payload["day"], payload["hour"], payload["minute"], zodiac=zodiac,
-            tz_name=tz_from_coords(payload["lat"], payload["lon"]),
+            tz_name=tz_name or "Asia/Tehran",
         )
     except Exception as e:  # noqa: BLE001
         logger.error("compute failed: %s", e)

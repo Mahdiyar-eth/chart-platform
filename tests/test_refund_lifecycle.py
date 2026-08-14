@@ -41,7 +41,7 @@ class _FakeZP:
     def refund(self, *a, **k):
         self.refund_calls += 1
         if not self.refund_ok:
-            raise ZarinpalError("refund failed: [{'code': 66, 'message': 'no such authority'}]")
+            raise ZarinpalError("refund failed: gateway timeout (network)")
         return {"ref_id": "RREF" + self.uid}
 
 

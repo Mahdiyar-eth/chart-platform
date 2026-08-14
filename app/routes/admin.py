@@ -83,7 +83,10 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(404, "order not found")
-    if order.status not in ("paid", "refund_failed"):
+    # F-04 (audit v5 P1): 'refunding' is retryable too — if the local commit
+    # failed after the gateway succeeded, the admin can re-issue and the
+    # gateway's already-refunded answer lands in the refunded branch below.
+    if order.status not in ("paid", "refund_failed", "refunding"):
         raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
     order.status = "refunding"
     session.commit()
@@ -91,11 +94,26 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         from app.payment.zarinpal import ZarinpalClient
         res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
     except Exception as e:  # noqa: BLE001 — gateway/network error
+        err = str(e)
+        # F-04: an already-refunded authority is SUCCESS, not failure — the
+        # money already moved back on an earlier attempt whose commit died.
+        if any(k in err.lower() for k in ("already", "duplicate", "refunded", "66", "67")):
+            order.status = "refunded"
+            order.error = None
+            _release_coupon(session, order)
+            if order.chart_id:
+                subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
+                for sub in subs:
+                    sub.active = False
+                    sub.expires_at = datetime.now(timezone.utc)
+            session.commit()
+            audit(session.bind, "admin", "order.refund", order.id, "already-refunded (idempotent)")
+            return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
         order.status = "refund_failed"
-        order.error = f"ریفاند ناموفق: {str(e)[:300]}"
+        order.error = f"ریفاند ناموفق: {err[:300]}"
         session.commit()
-        audit(session.bind, "admin", "order.refund_failed", order.id, str(e)[:200])
-        raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {str(e)[:200]} — بعداً دوباره تلاش کنید")
+        audit(session.bind, "admin", "order.refund_failed", order.id, err[:200])
+        raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {err[:200]} — بعداً دوباره تلاش کنید")
 
     order.status = "refunded"
     order.ref_id = res.get("ref_id", order.ref_id or "")

@@ -19,6 +19,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
+from sqlalchemy import text
 
 import app.config  # noqa: F401 — load .env FIRST
 from app.env import IS_PROD
@@ -26,7 +27,6 @@ from app.auth import get_current_user
 from app.security import security_guard, chat_quota_claim, chat_quota_release, chat_quota_used
 from app.astrology.big_three import big_three
 from app.astrology.cities_ir import search_cities
-from app.astrology.cities_world import tz_from_coords
 from app.astrology.engine import compute_from_fields
 from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
@@ -312,8 +312,17 @@ def _compute_and_save_chart(
     )
     assert lat is not None and lon is not None
     try:
-        from app.astrology.cities_world import tz_from_coords
+        from app.astrology.cities_world import is_iran_coords, tz_from_coords
         tz_name = tz_from_coords(lat, lon)  # H0.1: real IANA tz, not hardcoded
+        # F-06 (audit v5 P1): never silently compute a non-Iranian chart with
+        # Asia/Tehran — the whole chart would be off by hours. Tehran fallback
+        # is allowed ONLY inside Iran; otherwise ask for a valid city.
+        if tz_name is None:
+            if is_iran_coords(lat, lon):
+                tz_name = "Asia/Tehran"
+            else:
+                raise HTTPException(400,
+                                    "منطقهٔ زمانی این مختصات در دسترس نیست — لطفاً شهر را انتخاب کنید")
         result = compute_from_fields(
             lat=lat, lon=lon, year=year, month=month, day=day,
             hour=hour if time_known else 12,
@@ -441,6 +450,11 @@ def api_create_report(chart_id: str, request: Request,
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
+    # F-07 (audit v5 P1): serialize concurrent requests for the same chart
+    # with a transaction-scoped advisory lock — the plain SELECT-then-INSERT
+    # let two simultaneous POSTs both see existing=None and enqueue two LLM jobs.
+    session.exec(text("SELECT pg_advisory_xact_lock(hashtext(:ck))")
+                 .bindparams(ck=f"report:{chart_id}"))
     regenerate = request.query_params.get("regenerate") == "1"
     existing = session.exec(
         select(Report).where(Report.chart_id == chart_id)
@@ -665,6 +679,17 @@ def api_create_order(
             if not pay_order_with_balance(session, order, user):
                 raise HTTPException(400, "موجودی کیف پول کافی نیست")
             pay_url = None
+            # F-03 (audit v5 P1): wallet-paid report must be ENQUEUED, exactly
+            # like the Zarinpal callback path — otherwise the Report row stays
+            # 'queued' forever (no cron sweeps queued rows).
+            if order.report_id:
+                rep = session.get(Report, order.report_id)
+                if rep and rep.status == "queued":
+                    if not _enqueue_report(rep.id):
+                        rep.status = "failed"
+                        rep.error = "queue unavailable at payment time — از ادمین بازتولید کنید"
+                        session.add(rep)
+                        session.commit()
     except LookupError:
         raise HTTPException(404, "plan not found")
     except ValueError as e:
@@ -833,16 +858,17 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     """Free teaser (plan §8): score + verdict only. Full analysis is a paid product."""
     from app.astrology.synastry import synastry
+    from app.astrology.cities_world import resolve_tz_safe
     city_a = search_cities(city_a or "", 1)
     city_b = search_cities(city_b or "", 1)
     if not city_a or not city_b:
         raise HTTPException(400, "شهرها را انتخاب کنید")
     ca = compute_from_fields(float(city_a[0]["lat"]), float(city_a[0]["lon"]), year_a, month_a, day_a,
                              hour_a, minute_a, True, calendar_a == "jalali",
-                             tz_from_coords(float(city_a[0]["lat"]), float(city_a[0]["lon"])), zodiac=zodiac_a)
+                             resolve_tz_safe(float(city_a[0]["lat"]), float(city_a[0]["lon"])) or "Asia/Tehran", zodiac=zodiac_a)
     cb = compute_from_fields(float(city_b[0]["lat"]), float(city_b[0]["lon"]), year_b, month_b, day_b,
                              hour_b, minute_b, True, calendar_b == "jalali",
-                             tz_from_coords(float(city_b[0]["lat"]), float(city_b[0]["lon"])), zodiac=zodiac_b)
+                             resolve_tz_safe(float(city_b[0]["lat"]), float(city_b[0]["lon"])) or "Asia/Tehran", zodiac=zodiac_b)
     r = synastry(ca.chart_json, cb.chart_json)
     return {
         "a": name_a or "شخص اول", "b": name_b or "شخص دوم",
@@ -1356,6 +1382,36 @@ def transit_page(request: Request, chart_id: str, session: Session = Depends(get
 
 _seen_update_ids: set = set()
 _MAX_SEEN = 10_000
+_DEDUPE_TTL = 300  # F-05: replay window (seconds) — Redis-backed across workers
+
+
+def _dedupe_update(update: dict) -> bool:
+    """audit P0-5: return True if this update_id was already processed (retry).
+
+    F-05 (audit v5 P1): the dedupe store is REDIS-backed (SET NX EX) so the
+    two web workers share it — a process-local set let the same update_id be
+    processed twice when a retry landed on the other worker. The local set is
+    only a fallback when Redis is down, and it never clears wholesale (the old
+    clear() at _MAX_SEEN re-opened the dedupe window for every past update).
+    """
+    uid = update.get("update_id")
+    if uid is None:
+        return False
+    try:
+        from app.security import _rl_redis
+        r = _rl_redis()
+        if r is not None:
+            claimed = r.set(f"botup:{uid}", "1", nx=True, ex=_DEDUPE_TTL)
+            if claimed is not None:
+                return not claimed
+    except Exception:  # noqa: BLE001 — Redis down → local fallback
+        pass
+    if uid in _seen_update_ids:
+        return True
+    if len(_seen_update_ids) >= _MAX_SEEN:      # bounded memory — drop oldest, never clear all
+        _seen_update_ids.pop()
+    _seen_update_ids.add(uid)
+    return False
 
 # ── audit P1-8: lightweight per-IP rate limit for expensive endpoints ──
 _RL: dict = {}  # legacy; kept for reference — limits now live in security.check_rate_limit
@@ -1374,19 +1430,6 @@ def _rate_limit(key: str, limit: int, window: float = 60.0) -> bool:
 
 def _rl_client(request: Request) -> str:
     return request.client.host if request.client else "unknown"
-
-
-def _dedupe_update(update: dict) -> bool:
-    """audit P0-5: return True if this update_id was already processed (retry)."""
-    uid = update.get("update_id")
-    if uid is None:
-        return False
-    if uid in _seen_update_ids:
-        return True
-    _seen_update_ids.add(uid)
-    if len(_seen_update_ids) > _MAX_SEEN:      # bounded memory
-        _seen_update_ids.clear()
-    return False
 
 
 @app.post("/api/v1/telegram/webhook")
@@ -1512,8 +1555,20 @@ def account_delete(request: Request, csrf_token: str = Form(""),
             session.delete(msg)
         # reports (+ their R2 objects + LLM runs + RAG chunks)
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
-            if rep.r2_key:
-                delete_object(rep.r2_key)
+            # F-08 (audit v5 P1): audio object + local PDF artifact too — the
+            # old code only deleted rep.r2_key and leaked both of these.
+            for key in (rep.r2_key, rep.audio_r2_key):
+                if key:
+                    try:
+                        delete_object(key)
+                    except Exception:  # noqa: BLE001 — best-effort, audited below
+                        audit(session.bind, u.phone or u.id, "account.delete_r2_failed",
+                              key, "R2 deletion failed during account deletion")
+            if rep.pdf_path:
+                try:
+                    os.remove(rep.pdf_path)
+                except OSError:
+                    pass  # missing file is fine
             for run in session.exec(select(LLMRun).where(LLMRun.report_id == rep.id)).all():
                 session.delete(run)
             # H0.2: RAG embeddings (report_chunks) — missing before; deleting a

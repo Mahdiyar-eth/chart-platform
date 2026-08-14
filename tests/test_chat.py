@@ -20,8 +20,9 @@ class FakeRouter:
         self.text = text
         self.calls = 0
 
-    async def complete(self, prompt, max_tokens=2048, temperature=0.7, json_mode=False):
+    async def complete(self, prompt, system=None, max_tokens=2048, temperature=0.7, json_mode=False):
         self.calls += 1
+        self.last_system = system
         return SimpleResult(self.text)
 
 

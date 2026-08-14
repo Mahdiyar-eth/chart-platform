@@ -10,6 +10,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select
+from sqlalchemy import text
 
 from app.models import (BirthProfile, Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent,
                         Report, Subscription, User, WithdrawalRequest)
@@ -200,7 +201,12 @@ def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
 
 def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
     """D3: queue a cash-out request. One pending at a time; amount must be
-    positive and within balance. Returns False on any refusal."""
+    positive and within balance. Returns False on any refusal.
+
+    F-01 (audit v5 P0): the amount is RESERVED (debited) at request time and
+    returned on rejection — otherwise the same balance could be withdrawn
+    repeatedly after each 'paid' resolution (unlimited admin payout).
+    """
     # H1.4: minimum payout — 500k rial (50k toman) keeps manual bank transfers
     # worth the effort and discourages dust-level abuse
     MIN_WITHDRAW_RIAL = 500_000
@@ -211,14 +217,19 @@ def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
             WithdrawalRequest.user_id == user_id,
             WithdrawalRequest.status == "pending")).first():
         return False
+    # F-01: reserve now — reject later refunds this back
+    u.balance_rial = (u.balance_rial or 0) - amount_rial
     session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
     session.commit()
     return True
 
 
 def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") -> bool:
-    """D3: admin resolves a withdrawal. Balance is NOT auto-debited — payout is
-    a manual bank transfer; the record is the audit trail."""
+    """D3: admin resolves a withdrawal.
+
+    F-01 (audit v5 P0): the amount was reserved at request time; 'paid' keeps
+    the debit (admin transferred the money), 'rejected' refunds the balance.
+    """
     wr = session.get(WithdrawalRequest, wid)
     if not wr or wr.status != "pending":
         return False
@@ -227,6 +238,10 @@ def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") 
     wr.status = status
     wr.note = note
     wr.resolved_at = datetime.now(timezone.utc)
+    if status == "rejected":
+        u = session.get(User, wr.user_id)
+        if u:
+            u.balance_rial = (u.balance_rial or 0) + wr.amount_rial
     session.commit()
     return True
 
@@ -234,17 +249,33 @@ def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") 
 def pay_order_with_balance(session: Session, order: Order, user: User | None) -> bool:
     """D3: settle an order entirely from the wallet. Returns True if paid by
     balance (order.status = paid, no Zarinpal round-trip). Boundary: balance
-    can only pay the FULL amount — no mixed payments (wallet+gateway)."""
+    can only pay the FULL amount — no mixed payments (wallet+gateway).
+
+    F-02 (audit v5 P0): the debit is a single atomic conditional UPDATE
+    (balance >= amount) — the old read-check-subtract allowed two concurrent
+    requests to double-spend the same balance. F-10 (P2): the referrer is
+    rewarded here too, like the Zarinpal path.
+    """
     if not user:
         return False
     if order.status != "pending":
         return False
-    if (user.balance_rial or 0) < order.amount_rial:
+    # F-02: atomic conditional debit — rowcount 0 ⇒ insufficient balance
+    res = session.exec(text(
+        "UPDATE users SET balance_rial = balance_rial - :amt "
+        "WHERE id = :uid AND balance_rial >= :amt"
+    ).bindparams(amt=order.amount_rial, uid=user.id))
+    if res.rowcount != 1:
         return False
-    user.balance_rial -= order.amount_rial
     order.status = "paid"
     order.paid_at = datetime.now(timezone.utc)
-    order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {user.balance_rial + order.amount_rial:,} ریال"
+    order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {(user.balance_rial or 0) + order.amount_rial:,} ریال"
+    # F-10: credit the referrer (5%) — same hook as the Zarinpal verify path
+    try:
+        reward_referral(session, order)
+    except Exception:  # noqa: BLE001 — referral must never break payment
+        session.rollback()
+        order = session.get(Order, order.id)
     if order.plan_key == "monthly":
         activate_subscription(session, order)
     if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:

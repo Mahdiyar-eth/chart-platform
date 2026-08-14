@@ -28,18 +28,45 @@ def _fa_map() -> dict[str, str]:
     return _FA or {}
 
 
-def tz_from_coords(lat: float, lon: float) -> str:
-    """IANA timezone for any coordinates (H0.1). Falls back to Asia/Tehran
-    when the lookup is unavailable (offline / edge). Lazy singleton."""
+def tz_from_coords(lat: float, lon: float) -> str | None:
+    """IANA timezone for any coordinates (H0.1).
+
+    F-06 (audit v5 P1): returns None when the lookup is unavailable instead of
+    silently falling back to Asia/Tehran — a wrong UTC offset silently corrupts
+    the whole chart for a non-Iranian user. Callers must decide: Iran-only
+    flows may fall back to Tehran; anything else must ask the user for a city.
+    Lazy singleton.
+    """
     global _TF
     try:
         if _TF is None:
             import timezonefinder as _tzf
             _TF = _tzf.TimezoneFinder()
         tz = _TF.timezone_at(lng=lon, lat=lat)
-        return tz or "Asia/Tehran"
+        return tz or None
     except Exception:  # noqa: BLE001 — never break chart computation
+        return None
+
+
+IRAN_BBOX = {"min_lon": 44.0, "max_lon": 64.0, "min_lat": 25.0, "max_lat": 40.0}
+
+
+def is_iran_coords(lat: float, lon: float) -> bool:
+    """Rough Iran bounding box — used to decide whether the Tehran fallback is
+    acceptable for a coordinate pair (F-06: Tehran fallback only for Iran)."""
+    return (IRAN_BBOX["min_lon"] <= lon <= IRAN_BBOX["max_lon"]
+            and IRAN_BBOX["min_lat"] <= lat <= IRAN_BBOX["max_lat"])
+
+
+def resolve_tz_safe(lat: float, lon: float) -> str | None:
+    """F-06: timezone with safe fallback — Asia/Tehran ONLY inside Iran;
+    None for everywhere else (caller must 400 with 'pick a city')."""
+    tz = tz_from_coords(lat, lon)
+    if tz:
+        return tz
+    if is_iran_coords(lat, lon):
         return "Asia/Tehran"
+    return None
 
 
 def resolve_fa_alias(query: str) -> str | None:
