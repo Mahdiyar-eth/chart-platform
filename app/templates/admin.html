@@ -15,6 +15,16 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">هزینه AI — تفکیکی (H1.3)</h2>
+  <div class="glass" style="padding:14px;font-size:.85rem;">
+    <div id="llm-cost-panels" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <p class="muted" style="font-size:.78rem;">در حال بارگذاری…</p>
+    </div>
+    <p class="muted" style="font-size:.72rem;margin-top:10px;">
+      منبع: llm_runs (گزارش + گفتگو + گذر). به‌ازای هر مدل، کاربر (۵ هزینه‌برترین) و درصد خطا.
+    </p>
+  </div>
+
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">وضعیت هوش مصنوعی</h2>
   <div class="glass" style="padding:14px;font-size:.85rem;">
     <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:10px;">
@@ -247,6 +257,36 @@
   </div>
   <script>
     document.addEventListener('alpine:init', () => { Alpine.store('plans', {}); });
+
+    // H1.3: LLM cost breakdown (24h / 7d / 30d) — fetch once, render panels
+    (async function loadLlmCost(){
+      try {
+        const r = await fetch('/api/admin/llm-cost', {headers:{'Accept':'application/json'}});
+        if (!r.ok) throw new Error('http ' + r.status);
+        const j = await r.json();
+        const box = document.getElementById('llm-cost-panels');
+        const lbl = {'24h':'۲۴ ساعت','7d':'۷ روز','30d':'۳۰ روز'};
+        let html = '';
+        for (const [k, a] of Object.entries(j)) {
+          const models = Object.entries(a.by_model || {}).slice(0, 4)
+            .map(([m, c]) => `<div style="direction:ltr;font-size:.72rem;"><code>${m}</code> — ${c}$</div>`).join('')
+            || '<div class="muted" style="font-size:.72rem;">بدون هزینه</div>';
+          const kinds = Object.entries(a.by_kind || {}).map(([kd, n]) => `${kd}: ${n}`).join(' · ');
+          const users = (a.top_users || []).map(u => `<div style="font-size:.72rem;direction:ltr;"><code>${u.user_id.slice(0,10)}</code> — ${u.cost_usd}$</div>`).join('');
+          html += `<div style="border:1px solid var(--stroke);border-radius:12px;padding:12px;background:rgba(255,255,255,.03);">
+            <b style="color:#c4b5fd;">${lbl[k] || k}</b>
+            <div style="margin:8px 0 4px;font-size:1.05rem;"><b>${a.cost_usd}$</b> <span class="muted" style="font-size:.75rem;">${a.runs} درخواست · خطا ${Math.round((a.fail_rate||0)*100)}%</span></div>
+            <div class="muted" style="font-size:.72rem;margin-bottom:4px;">${kinds || ''}</div>
+            ${models}
+            ${users ? `<div class="muted" style="font-size:.72rem;margin-top:6px;">هزینه‌برترین کاربران:</div>${users}` : ''}
+          </div>`;
+        }
+        box.innerHTML = html;
+      } catch (e) {
+        document.getElementById('llm-cost-panels').innerHTML =
+          '<p class="muted" style="font-size:.78rem;">خطا در بارگذاری هزینه AI</p>';
+      }
+    })();
     async function savePart(part){
       const provider = document.getElementById('provider-' + part).value;
       const model = document.getElementById('model-' + part).value;

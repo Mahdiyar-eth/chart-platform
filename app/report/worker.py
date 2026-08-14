@@ -34,7 +34,8 @@ MAX_RETRIES = 2
 async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                                    report_id: str | None = None, plan_key: str = "full",
                                    focus_areas: list[str] | None = None,
-                                   personal_question: str | None = None) -> tuple[dict, dict]:
+                                   personal_question: str | None = None,
+                                   user_id: str | None = None) -> tuple[dict, dict]:
     """Plan-aware section generation (plan v3.0 §10.3): basic=5, full=13, gold=13+islamic.
     focus_areas reorders domains (focused first); personal_question adds an extra section."""
     prompts = build_prompts_for_plan(chart, plan_key)
@@ -65,7 +66,8 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
             metrics["provider"].add(res.provider)
             try:
                 with Session(db_engine) as _s:
-                    _s.add(LLMRun(report_id=report_id, provider=res.provider,
+                    _s.add(LLMRun(report_id=report_id, user_id=user_id, kind="report",
+                                  provider=res.provider,
                                   model=res.model, gateway=res.provider,
                                   prompt_tokens=res.usage.prompt_tokens,
                                   completion_tokens=res.usage.completion_tokens,
@@ -134,7 +136,8 @@ async def generate_report(ctx: dict, report_id: str) -> None:
                 ctx["router"], chart.chart_json, report_id=report_id,
                 plan_key=rep.plan_key or "full",
                 focus_areas=(profile.focus_areas if profile else None),
-                personal_question=(profile.personal_question if profile else None))
+                personal_question=(profile.personal_question if profile else None),
+                user_id=(profile.user_id if profile else None))
             rep.sections = sections
             rep.metrics = {**metrics, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S")}
 

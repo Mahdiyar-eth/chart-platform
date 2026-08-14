@@ -1421,6 +1421,18 @@ def api_chat(
             completion_tokens=result.get("tokens", 0),
             cost_usd=result.get("cost_usd", 0.0), ok=bool(result.get("ok")),
         ))
+        # H1.3: cost metering — every chat call lands in llm_runs (user-scoped)
+        try:
+            session.add(LLMRun(
+                user_id=(profile.user_id if profile else None), kind="chat",
+                provider=result.get("provider", ""), model=result.get("model", ""),
+                gateway=result.get("provider"),
+                prompt_tokens=result.get("prompt_tokens", 0),
+                completion_tokens=result.get("tokens", 0),
+                cost_usd=result.get("cost_usd", 0.0), ok=bool(result.get("ok")),
+            ))
+        except Exception:  # noqa: BLE001 — metering must never break the answer
+            session.rollback()
         session.commit()
     except Exception:  # noqa: BLE001 — history must never break the answer
         session.rollback()
@@ -1475,6 +1487,20 @@ async def api_chat_stream(
                                 completion_tokens=ev.get("tokens", 0),
                                 cost_usd=ev.get("cost_usd", 0.0), ok=True,
                             ))
+                            # H1.3: streamed chat calls also land in llm_runs
+                            try:
+                                s2.add(LLMRun(
+                                    user_id=(profile.user_id if profile else None),
+                                    kind="chat",
+                                    provider=ev.get("provider", ""),
+                                    model=ev.get("model", ""),
+                                    gateway=ev.get("provider"),
+                                    prompt_tokens=ev.get("prompt_tokens", 0),
+                                    completion_tokens=ev.get("tokens", 0),
+                                    cost_usd=ev.get("cost_usd", 0.0), ok=True,
+                                ))
+                            except Exception:  # noqa: BLE001
+                                pass
                             s2.commit()
                     except Exception:  # noqa: BLE001 — history must never break the stream
                         pass
@@ -2074,16 +2100,43 @@ def api_admin_plan_update(plan_key: str, request: Request, session: Session = De
 
 @app.get("/api/admin/llm-cost")
 def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)):
+    """H1.3: rich LLM cost dashboard — 24h/7d/30d totals, per-model,
+    per-user (top 5), per-kind, fail rate."""
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
     from datetime import timedelta
-    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-    rows = session.exec(select(LLMRun).where(LLMRun.created_at >= week_ago)).all()
-    by_provider: dict[str, float] = {}
-    for r in rows:
-        by_provider[r.provider] = by_provider.get(r.provider, 0) + r.cost_usd
-    return {"cost_usd_7d": round(sum(r.cost_usd for r in rows), 4),
-            "runs_7d": len(rows), "by_provider": {k: round(v, 4) for k, v in by_provider.items()}}
+    now = datetime.now(timezone.utc)
+
+    def _agg(minutes: int | None) -> dict:
+        q = select(LLMRun)
+        if minutes:
+            q = q.where(LLMRun.created_at >= now - timedelta(minutes=minutes))
+        rows = session.exec(q).all()
+        by_model: dict[str, float] = {}
+        by_kind: dict[str, int] = {}
+        by_user: dict[str, float] = {}
+        fails = 0
+        tokens = 0
+        for r in rows:
+            by_model[r.model] = by_model.get(r.model, 0) + r.cost_usd
+            by_kind[r.kind] = by_kind.get(r.kind, 0) + 1
+            if r.user_id:
+                by_user[r.user_id] = by_user.get(r.user_id, 0) + r.cost_usd
+            if not r.ok:
+                fails += 1
+            tokens += r.prompt_tokens + r.completion_tokens
+        top_users = sorted(by_user.items(), key=lambda kv: kv[1], reverse=True)[:5]
+        return {
+            "cost_usd": round(sum(r.cost_usd for r in rows), 4),
+            "runs": len(rows),
+            "fail_rate": round(fails / len(rows), 3) if rows else 0.0,
+            "total_tokens": tokens,
+            "by_model": {k: round(v, 4) for k, v in sorted(by_model.items(), key=lambda kv: -kv[1])},
+            "by_kind": by_kind,
+            "top_users": [{"user_id": u, "cost_usd": round(c, 4)} for u, c in top_users],
+        }
+
+    return {"24h": _agg(60 * 24), "7d": _agg(60 * 24 * 7), "30d": _agg(60 * 24 * 30)}
 
 
 @app.get("/api/admin/stats")

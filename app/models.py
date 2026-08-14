@@ -76,6 +76,8 @@ class LLMRun(SQLModel, table=True):
     __tablename__ = "llm_runs"
     id: str = Field(default_factory=_uuid, primary_key=True)
     report_id: str | None = Field(default=None, index=True)
+    user_id: str | None = Field(default=None, index=True)  # H1.3: who paid
+    kind: str = Field(default="report")  # H1.3: report|chat|transit|article
     provider: str
     model: str
     gateway: str | None = Field(default=None)
