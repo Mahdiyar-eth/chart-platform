@@ -609,11 +609,18 @@ def api_payment_verify(
             order.card_pan = v.get("card_pan")
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
-            # consume coupon (idempotent — only once per order)
+            # consume coupon (idempotent — only once per order; atomic against
+            # concurrent verifies so max_uses can never be exceeded — audit P1 r3)
             if order.coupon_id:
-                c = session.get(Coupon, order.coupon_id)
-                if c and c.used_count < c.max_uses:
-                    c.used_count += 1
+                from sqlalchemy import text
+                consumed = session.exec(text(
+                    "UPDATE coupons SET used_count = used_count + 1 "
+                    "WHERE id = :cid AND used_count < max_uses RETURNING id"
+                ), params={"cid": order.coupon_id}).first()
+                if not consumed:
+                    order.status = "failed"
+                    session.commit()
+                    return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
             # monthly subscription: activate + extend 30 days (plan §7)
             from app.payment.orders import REPORT_PLANS, activate_subscription
             if order.plan_key == "monthly":
@@ -1041,6 +1048,9 @@ def chat_page(request: Request, chart_id: str, session: Session = Depends(get_se
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    if not _owns_chart(chart, session, request):
+        # audit P0 (round 3): chat exposes a private conversation — same gate as /chart
+        return RedirectResponse("/birth-form?e=private", status_code=303)
     return templates.TemplateResponse(request, "chat.html", {
         "title": "گفت‌وگو با چارت", "chart_id": chart_id,
     })
@@ -1066,7 +1076,10 @@ def _chat_quota_info(session: Session, chart_id: str, order) -> dict:
 
 
 @app.get("/api/chat/access/{chart_id}")
-def api_chat_access(chart_id: str, session: Session = Depends(get_session)):
+def api_chat_access(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    # audit P0 (round 3): ownership BEFORE paid/quota info — bare UUID must not leak
+    if not _owns_chart(session.get(Chart, chart_id), session, request):
+        raise HTTPException(403, "دسترسی به این گفتگو ندارید")
     # audit P0-4: AI chat is a GOLD/monthly feature (plan §7) — basic/full don't include it
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
@@ -1079,7 +1092,10 @@ def api_chat_access(chart_id: str, session: Session = Depends(get_session)):
 
 
 @app.get("/api/chat/history/{chart_id}")
-def api_chat_history(chart_id: str, session: Session = Depends(get_session)):
+def api_chat_history(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    # audit P0 (round 3): chat history is private personal data — ownership required
+    if not _owns_chart(session.get(Chart, chart_id), session, request):
+        raise HTTPException(403, "دسترسی به این گفتگو ندارید")
     msgs = session.exec(
         select(ChatMessage).where(ChatMessage.chart_id == chart_id)
         .order_by(ChatMessage.created_at.asc())
@@ -1103,6 +1119,10 @@ def api_chat(
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
+    # audit P0 (round 3): ownership before any spend — bare UUID must not consume
+    # another chart's paid quota or answer questions about someone else's birth chart
+    if not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این گفتگو ندارید")
     # paid check: chat requires GOLD/monthly (audit P0-4 — plan §7)
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
@@ -1113,7 +1133,7 @@ def api_chat(
     # daily quota (per chart)
     quota = _chat_quota_info(session, chart_id, order)
     if quota["used"] >= quota["limit"]:
-        raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا ✨")
+        raise HTTPException(429, f"سهمیه امروزت تمام شد ({quota['limit']} سوال در روز). فردا دوباره بیا")
 
     profile = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
     report = session.exec(
@@ -1210,7 +1230,7 @@ async def telegram_webhook(request: Request):
     # audit P0: fail-closed — without a configured secret the route refuses
     if not TELEGRAM_WEBHOOK_SECRET:
         raise HTTPException(403, "telegram webhook not configured (fail-closed)")
-    if request.headers.get("X-Telegram-Bot-Api-Secret-Token") != TELEGRAM_WEBHOOK_SECRET:
+    if not _hmac.compare_digest(request.headers.get("X-Telegram-Bot-Api-Secret-Token") or "", TELEGRAM_WEBHOOK_SECRET):
         raise HTTPException(403, "bad secret")
     update = await request.json()
     if _dedupe_update(update):
@@ -1623,7 +1643,9 @@ def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)
 
 
 @app.get("/api/admin/stats")
-def api_admin_stats(session: Session = Depends(get_session)):
+def api_admin_stats(request: Request, session: Session = Depends(get_session)):
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
     orders = session.exec(select(Order)).all()
     paid = [o for o in orders if o.status == "paid"]
     return {

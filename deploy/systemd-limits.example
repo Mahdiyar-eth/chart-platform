@@ -1,6 +1,11 @@
-# Systemd resource limits — applied 2026-08-14 (audit round 2, P0-2)
+# Systemd resource limits — applied 2026-08-14 (audit round 2, P0-2; tightened round 3)
 # Purpose: prevent one service from exhausting host RAM (the 2026-08-11 disk incident
-# already proved co-located services can take the revenue product down).
+# already proved co-located services can take the whole box down).
+#
+# NOTE (round 3): Max ceilings sum (~10.2G) exceeds physical RAM (7.6G) by design —
+# they are KILL ceilings, not allocations. The MemoryHigh (reclaim) targets sum to
+# ~7.45G < RAM, and the host has 6G swap (13.6G total), so the worst case fits in
+# RAM+swap and systemd's cgroup OOM kill stays inside the offending service.
 # Location: /etc/systemd/system/<svc>.service.d/limits.conf  (MemoryHigh = soft reclaim, MemoryMax = hard kill)
 
 # chart-web.service.d/limits.conf

@@ -6,10 +6,12 @@ set -uo pipefail
 
 STATE=/tmp/chart-watchdog.state
 HEALTH_URL="http://127.0.0.1:8767/health"
-BOT_TOKEN=$(grep -E "^TELEGRAM_BOT_TOKEN" /root/voice-clone/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | xargs)
+# audit P1 (round 3): read the alert token from CHART's own .env, NOT voice-clone's —
+# chart alerts must survive unrelated projects moving/deleting.
+_BOT_TOKEN=$(grep -E "^TELEGRAM_BOT_TOKEN" /root/chart-platform/.env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | xargs)
 CHAT_ID="100973849"
 
-if [ -z "$BOT_TOKEN" ]; then echo "no bot token"; exit 1; fi
+if [ -z "$_BOT_TOKEN" ]; then echo "no bot token in chart .env"; exit 1; fi
 
 # 1) health — 3 tries, 2s apart
 ok=0
@@ -29,7 +31,7 @@ was_bad=0; last_alert=0
 [ -f "$STATE" ] && { read was_bad last_alert < "$STATE" 2>/dev/null || true; }
 
 send() {
-  curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+  curl -s -X POST "https://api.telegram.org/bot${_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${CHAT_ID}" --data-urlencode "text=$1" -o /dev/null
 }
 

@@ -121,7 +121,7 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
     if state == "waiting_birth_date":
         m = _DATE_RE.match(text.strip())
         if not m:
-            await send_message(chat_id, "⛔ قالب تاریخ درست نیست.\n📅 تاریخ را به شکل <b>روز/ماه/سال</b> بفرست؛ مثال: <b>23/08/1994</b>", platform)
+            await send_message(chat_id, "⛔ قالب تاریخ درست نیست.\n📅 تاریخ را به شکل **روز/ماه/سال** بفرست؛ مثال: **23/08/1994**", platform)
             return True
         d, mo, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
         ok, err = validate_birth_fields(y, mo, d)
@@ -131,8 +131,8 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
         set_chat_state(chat_id, platform, "waiting_birth_time", {**payload, "day": d, "month": mo, "year": y})
         await send_message(
             chat_id,
-            "🕐 <b>ساعت تولد</b> را بفرست (مثال: 06:10).\n\n"
-            "اگر ساعت دقیق را نمی‌دانی، فقط <b>صفر</b> یا <b>خالی</b> بفرست — نیمه‌شب در نظر گرفته می‌شود.",
+            "🕐 **ساعت تولد** را بفرست (مثال: 06:10).\n\n"
+            "اگر ساعت دقیق را نمی‌دانی، فقط **صفر** یا **خالی** بفرست — نیمه‌شب در نظر گرفته می‌شود.",
             platform, reply_markup=cancel_keyboard(),
         )
         return True
@@ -143,7 +143,7 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
         if t and t not in ("0", "صفر"):
             m = _TIME_RE.match(t)
             if not m:
-                await send_message(chat_id, "⛔ قالب ساعت درست نیست.\n🕐 ساعت را به شکل <b>ساعت:دقیقه</b> بفرست؛ مثال: <b>06:10</b>", platform)
+                await send_message(chat_id, "⛔ قالب ساعت درست نیست.\n🕐 ساعت را به شکل **ساعت:دقیقه** بفرست؛ مثال: **06:10**", platform)
                 return True
             hour, minute = int(m.group(1)), int(m.group(2))
             if hour > 23 or minute > 59:
@@ -152,7 +152,7 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
         set_chat_state(chat_id, platform, "waiting_birth_city", {**payload, "hour": hour, "minute": minute})
         await send_message(
             chat_id,
-            "🏙️ <b>شهر تولد</b> را بفرست (مثال: تهران، شیراز، مشهد...)",
+            "🏙️ **شهر تولد** را بفرست (مثال: تهران، شیراز، مشهد...)",
             platform, reply_markup=cancel_keyboard(),
         )
         return True
@@ -189,10 +189,10 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
         bt = big_three(chart.chart_json)
         base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
         caption = (
-            f"🌟 <b>چارت تولد تو آماده شد!</b>\n\n"
-            f"☀️ خورشید: <b>{bt.get('Sun', {}).get('sign_fa', '')}</b>\n"
-            f"🌙 ماه: <b>{bt.get('Moon', {}).get('sign_fa', '')}</b>\n"
-            f"⬆️ طالع: <b>{bt.get('ASC', {}).get('sign_fa', '')}</b>\n\n"
+            f"🌟 **چارت تولد تو آماده شد!**\n\n"
+            f"☀️ خورشید: **{bt.get('Sun', {}).get('sign_fa', '')}**\n"
+            f"🌙 ماه: **{bt.get('Moon', {}).get('sign_fa', '')}**\n"
+            f"⬆️ طالع: **{bt.get('ASC', {}).get('sign_fa', '')}**\n\n"
             f"برای مشاهده و خرید گزارش اختصاصی، دکمه‌های زیر را بزن:"
         )
         await send_photo(chat_id, f"{base}/api/share/{chart_id}.png", caption,
@@ -276,7 +276,7 @@ async def _handle_callback(cb: dict, platform: str) -> None:
         set_chat_state(chat_id, platform, "waiting_birth_date", {})
         await send_message(
             chat_id,
-            "📅 <b>تاریخ تولد</b> را بفرست؛ مثال: <b>23/08/1994</b>",
+            "📅 **تاریخ تولد** را بفرست؛ مثال: **23/08/1994**",
             platform, reply_markup=cancel_keyboard(),
         )
     elif data == "cancel":

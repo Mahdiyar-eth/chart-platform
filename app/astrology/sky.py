@@ -7,6 +7,7 @@ No LLM, no cost, no prediction — reflective self-knowledge.
 from __future__ import annotations
 
 import math
+import os
 from datetime import datetime, timezone
 
 import jdatetime
@@ -14,7 +15,7 @@ import swisseph as swe
 
 from app.astrology.transits import SIGNS_FA, PLANET_NAMES, _lon, _angular_diff
 
-swe.set_ephe_path("ephe")
+swe.set_ephe_path(os.getenv("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe"))
 swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
 
 _PLANET_FA = {

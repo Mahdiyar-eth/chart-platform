@@ -80,7 +80,7 @@ def build_weekly_reflection(chart_json: dict) -> str:
             "زمانِ آرامی برای مرور و تثبیت است.",
         ]
 
-    intro = f"🌌 <b>نگاهی به آسمان هفته</b>\n<i>{_week_range()}</i>\n\n"
+    intro = f"🌌 **نگاهی به آسمان هفته**\n{_week_range()}\n\n"
     body = "\n".join(lines)
     return intro + body + "\n\n" + FOOTER
 
