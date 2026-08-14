@@ -1,0 +1,95 @@
+# ماتریس Authorization (ZAYCHE / زایچه) — audit r4 C8
+
+**سطوح دسترسی:**
+- **Public** — بدون هیچ گاردی (rate limit جداگانه)
+- **Capability** — مالکیت چارت از طریق توکن capability (امضای HMAC) یا ورود کاربرِ مالک (`_owns_chart`)
+- **User** — کوکی ورود معتبر (`get_current_user`)
+- **Paid** — دسترسی پرداختی (سیناستری/اشتراک) — همیشه بالای Capability
+- **Admin** — `_is_admin` (کوکی `chart_admin` + HMAC)
+
+| Resource (route) | سطح | گارد در کد |
+|---|---|---|
+| `GET /sw.js` | Public | — (PWA) |
+| `GET /liveness` | Public | — (ops heartbeat) |
+| `GET /readiness` | Public | — (ops probe: DB+Redis+worker+R2+disk) |
+| `GET /health` | Public | — (alias خوانی readiness) |
+| `GET /` | Public | — |
+| `GET /birth-form` | Public | — |
+| `GET /chart/{chart_id}` | Capability | `_owns_chart` (توکن در URL/کوکی) |
+| `GET /api/cities` | Public | — |
+| `POST /api/charts` | Public | rate limit 20/min (B5) |
+| `POST /api/charts/{chart_id}/report` | Capability | `_owns_chart` |
+| `GET /api/charts/{chart_id}/preview` | Capability | `_owns_chart` |
+| `GET /api/charts/{chart_id}/transit-year.svg` | Capability | `_owns_chart` |
+| `GET /api/charts/{chart_id}/report` | Capability | `_owns_chart` |
+| `GET /api/reports/{report_id}.docx` | Capability | `_owns_chart` |
+| `GET /api/reports/{report_id}/pdf` | Capability | `_owns_chart` |
+| `GET /api/reports/{report_id}/audio` | Capability | `_owns_chart` (C1) |
+| `GET /api/share/{chart_id}.png` | Capability | `_owns_chart` |
+| `GET /plans` | Public | — |
+| `GET /payment/result` | Public/Page | صفحه پرداخت: `_owns_order` |
+| `GET /api/plans` | Public | — |
+| `POST /api/orders` | Capability (+User optional) | `_owns_chart` ×2 (سیناستری) |
+| `GET /api/orders/{order_id}` | Capability | `_owns_order` |
+| `GET /api/payments/verify` | Public | idempotent + state machine (B7) |
+| `GET /sitemap.xml` | Public | — |
+| `GET /robots.txt` | Public | — |
+| `GET /synastry` | Public | — |
+| `POST /api/synastry` | Public | rate limit |
+| `POST /api/synastry/order` | Capability | `_owns_chart` |
+| `POST /api/synastry/full` | Capability | `_owns_chart` |
+| `GET /api/synastry/access` | Paid/Capability | access check |
+| `GET /rectify` | Public | — |
+| `POST /api/rectify` | Capability | `_owns_chart` |
+| `GET /chat/{chart_id}` | Capability | `_owns_chart` |
+| `GET /api/chat/access/{chart_id}` | Capability | 403 «دسترسی به این گفتگو ندارید» |
+| `GET /api/chat/history/{chart_id}` | Capability | 403 (همان) |
+| `POST /api/chat` | Capability | 403 (همان) + سهمیه اتمیک (A9) |
+| `GET /api/charts/{chart_id}/transits` | Capability | `_owns_chart` |
+| `GET /transit/{chart_id}` | Capability | `_owns_chart` |
+| `POST /api/v1/telegram/webhook` | Public | secret در URL + امضای تلگرام |
+| `POST /api/v1/bale/webhook/{secret}` | Public | secret در URL |
+| `POST /api/auth/otp/request` | Public | rate limit + هش OTP (P1-2) |
+| `POST /api/auth/otp/verify` | Public | rate limit + هش OTP (P1-2) |
+| `GET /api/auth/me` | User | کوکی ورود |
+| `POST /api/auth/logout` | User | کوکی ورود |
+| `GET /account` | User | کوکی ورود |
+| `GET /account/login` | Public | rate limit |
+| `POST /account/delete` | User | CSRF + cascade (C6) |
+| `GET /privacy` | Public | — |
+| `GET /terms` | Public | — |
+| `GET /refund` | Public | — |
+| `GET /disclaimer` | Public | — |
+| `GET /contact` | Public | — |
+| `GET /guide` | Public | — |
+| `GET /about` | Public | — |
+| `GET /faq` | Public | — |
+| `GET /learn` | Public | — |
+| `GET /learn/{slug}` | Public | — |
+| `GET /signs/{slug}` | Public | — |
+| `GET /articles` | Public | — |
+| `GET /articles/{slug}` | Public | — |
+| `GET /sky` | Public | — |
+| `GET /admin/login` | Public | rate limit |
+| `POST /admin/login` | Public | rate limit |
+| `GET /admin/logout` | Public | — |
+| `GET /admin` | Admin | `_is_admin` |
+| `PUT /api/admin/plans/{plan_key}` | Admin | `_is_admin` |
+| `POST /api/admin/coupons` | Admin | `_is_admin` |
+| `GET /api/admin/coupons` | Admin | `_is_admin` |
+| `GET /api/admin/prompts` | Admin | `_is_admin` |
+| `POST /api/admin/prompts/{prompt_key}` | Admin | `_is_admin` |
+| `POST /api/admin/orders/{order_id}/refund` | Admin | `_is_admin` |
+| `POST /api/admin/orders/{order_id}/regenerate` | Admin | `_is_admin` |
+| `GET /api/admin/llm-cost` | Admin | `_is_admin` |
+| `GET /api/admin/stats` | Admin | `_is_admin` |
+| `GET /api/admin/secrets` | Admin | `_is_admin` |
+| `POST /api/admin/secrets/{key}` | Admin | `_is_admin` |
+| `POST /api/admin/secrets/{key}/reveal` | Admin | `_is_admin` |
+| `POST /api/admin/llm/test` | Admin | `_is_admin` |
+
+**نکات:**
+- Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.
+- Admin کوکی: `chart_admin` (امضا با `_ADMIN_SECRET` جدا از کاربران).
+- Webhooks: تلگرام از طریق `secret_token` ستشده؛ Bale فقط secret در URL.
+- هر route جدید باید در این ماتریس + `tests/test_authz_matrix.py` ثبت شود (تست ساختاری فایل را میخواند).
