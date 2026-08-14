@@ -171,6 +171,9 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 continue
             if isinstance(ev, str):  # model wrote "Pluto Conjunction Node"
                 f = ev.split()[0] if ev.split() else ""
+                parts = f.split()
+                is_aspect = (len(parts) >= 3 and parts[0] in VALID_PLANETS
+                             and parts[2] in VALID_PLANETS)
             elif isinstance(ev, dict) and ev.get("aspect"):  # {"aspect": "Sun Conjunct ASC"}
                 aparts = str(ev["aspect"]).split()
                 f = aparts[0] if aparts else ""
@@ -184,8 +187,10 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                     continue  # {"aspect": "Conjunction"} — supplementary, skip
                 else:
                     errors.append(f"{domain}: جنبه ناشناخته در evidence: {ev.get('aspect')}")
+                    continue
             else:
                 f = ev.get("factor", "") if isinstance(ev, dict) else ""
+                is_aspect = False
             f = _canon(f.title()) if isinstance(f, str) and f else f
             if not f:
                 errors.append(f"{domain}: evidence بدون عامل")
@@ -208,16 +213,20 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 # whole section 3× and falling back to generic text is worse.
                 if f not in {"Vesta", "Ceres", "Pallas", "Juno", "Lilith", "Chiron"}:
                     errors.append(f"{domain}: عامل {f} در چارت وجود ندارد")
-            elif not _allow_any and f not in _active_factors:
-                # F-32b: factor is in the chart but NOT active for this section
+            elif not _allow_any and f not in _active_factors and not is_aspect:
+                # F-32b/c: factor is in the chart but NOT active for this section
                 # (the builder only sent the active ones) — citing it means the
-                # model is improvising from astrological memory. Reject, and the
-                # feedback loop tells it to stick to the listed factors.
-                errors.append(f"{domain}: عامل {f} خارج از عوامل فعال این بخش است")
+                # model is improvising from astrological memory. Aspect evidence
+                # is exempt: the builder lists every aspect of the active
+                # factors, so «Mars سه‌ضلعی Jupiter» is grounded even though
+                # Jupiter is not an active factor of this section.
+                errors.append(f"{domain}: عامل {f} خارج از عوامل فعال این بخش است — "
+                              f"فقط از عوامل مجاز به‌صورت factor استفاده کن، یا این عامل را "
+                              "در قالب جنبه بنویس (مثلاً «Mars سه‌ضلعی Jupiter»)")
             else:
                 # verify sign/house if present
                 src = chart["planets"].get(f) or chart["angles"].get(f)
-                if isinstance(ev, dict) and "sign" in ev and ev["sign"] is not None:
+                if not is_aspect and isinstance(ev, dict) and "sign" in ev and ev["sign"] is not None:
                     # F-30: charts built before the angles sign-metadata fix have
                     # no sign on ASC/MC/Vx — absence of data must not reject a
                     # correct evidence, so only check when the source has a sign.

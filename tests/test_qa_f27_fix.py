@@ -160,3 +160,13 @@ def test_domain_factor_accepted():
     sec = _section({"factor": "Mars", "sign": "سرطان", "house": 11})
     errs = qa_section(sec, _c, "career")
     assert not any("خارج از عوامل فعال" in e for e in errs)
+
+
+def test_aspect_endpoint_outside_domain_accepted():
+    """Aspect citing a non-active endpoint (Jupiter) must pass (F-32c)."""
+    _c = dict(_CHART)
+    _c["planets"]["Jupiter"] = {"sign_en": "Scorpio", "sign_fa": "عقرب", "sign_index": 7}
+    sec = _section({"aspect": "Mars سه\u200cضلعی Jupiter"})
+    errs = qa_section(sec, _c, "career")  # career active: MC, Mars
+    assert not any("خارج از عوامل فعال" in e for e in errs)
+    assert not any("برج نادرست" in e for e in errs)
