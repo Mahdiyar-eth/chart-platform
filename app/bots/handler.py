@@ -11,6 +11,7 @@ import html as _html
 import logging
 import os
 import re
+import secrets
 import traceback
 
 import httpx
@@ -82,13 +83,15 @@ def start_keyboard() -> dict:
     return {"inline_keyboard": [[{"text": "✨ ساخت چارت تولد من", "callback_data": "chart_start"}]]}
 
 
-def chart_actions_keyboard(chart_id: str) -> dict:
+def chart_actions_keyboard(chart_id: str, tok: str = "") -> dict:
     base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    q = f"?t={tok}" if tok else ""  # audit r4 A6: bot charts carry capability token
+    sep = "&" if q else ""          # keep the query string well-formed
     return {
         "inline_keyboard": [
-            [{"text": "📄 مشاهده چارت", "url": f"{base}/chart/{chart_id}"}],
-            [{"text": "✨ خرید گزارش کامل", "url": f"{base}/plans?chart={chart_id}"}],
-            [{"text": "🌠 گذرهای کنونی", "url": f"{base}/transit/{chart_id}"}],
+            [{"text": "📄 مشاهده چارت", "url": f"{base}/chart/{chart_id}{q}"}],
+            [{"text": "✨ خرید گزارش کامل", "url": f"{base}/plans?chart={chart_id}{sep}{q.lstrip('?')}"}],
+            [{"text": "🌠 گذرهای کنونی", "url": f"{base}/transit/{chart_id}{q}"}],
             [{"text": "🌌 نگاهی به آسمان هفته", "callback_data": f"sub_{chart_id}"}],
         ]
     }
@@ -209,7 +212,8 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
     from sqlmodel import Session
     from app.models import Chart
     with Session(engine) as s:
-        row = Chart(chart_json=chart.chart_json)
+        row = Chart(chart_json=chart.chart_json,
+                    access_token=secrets.token_urlsafe(32))  # A6: capability token
         s.add(row)
         s.commit()
         chart_id = row.id
@@ -225,7 +229,7 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
         f"برای مشاهده و خرید گزارش اختصاصی، دکمه‌های زیر را بزن:"
     )
     await send_photo(chat_id, f"{base}/api/share/{chart_id}.png", caption,
-                     platform, reply_markup=chart_actions_keyboard(chart_id))
+                     platform, reply_markup=chart_actions_keyboard(chart_id, row.access_token or ""))
 
 
 # ─────────────────────────── update dispatch ───────────────────────────
