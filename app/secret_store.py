@@ -18,6 +18,8 @@ from __future__ import annotations
 import base64
 import hashlib
 import os
+
+from app.env import IS_PROD
 import secrets as _secrets
 from pathlib import Path
 
@@ -105,7 +107,7 @@ def _load_or_create_master() -> str:
         return _KEY_FILE.read_text().strip()
     # auto-generate + persist (dev / first boot); prod must set env var explicitly
     generated = _secrets.token_urlsafe(32)
-    if os.getenv("APP_ENV", "dev") == "prod" and not _KEY_FILE.exists():
+    if IS_PROD and not _KEY_FILE.exists():
         raise RuntimeError(
             "SECRETS_MASTER_KEY is required in prod (secrets encryption key). "
             "Set it in the systemd env file before first boot."

@@ -21,6 +21,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
 import app.config  # noqa: F401 — load .env FIRST
+from app.env import IS_PROD
 from app.auth import get_current_user, request_otp, set_user_cookie, verify_otp
 from app.security import security_guard
 from app.astrology.big_three import big_three
@@ -1532,8 +1533,8 @@ if not _ADMIN_PIN:
 _ADMIN_COOKIE = "chart_admin"
 _ADMIN_SECRET: str = os.getenv("ADMIN_SECRET") or ""
 if not _ADMIN_SECRET:
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("ADMIN_SECRET is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("ADMIN_SECRET is required in production (APP_ENV=prod|production)")
     _ADMIN_SECRET = _secrets.token_hex(16)
 
 

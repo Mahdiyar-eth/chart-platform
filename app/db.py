@@ -4,11 +4,13 @@ import os
 from sqlalchemy import create_engine
 from sqlmodel import Session, SQLModel
 
-_DEV_DEFAULT = "postgresql://chart_app:CHANGE_ME@127.0.0.1:5432/chart_platform"
+from app.env import IS_PROD
+
+_DEV_DEFAULT = "postgresql://chart_app:***@127.0.0.1:5432/chart_platform"
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("DATABASE_URL is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("DATABASE_URL is required in production (APP_ENV=prod|production)")
     DATABASE_URL = _DEV_DEFAULT
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

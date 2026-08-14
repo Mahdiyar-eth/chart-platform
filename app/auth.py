@@ -16,6 +16,7 @@ import secrets
 
 import redis as _redis
 
+from app.env import IS_PROD
 from fastapi import Request
 from sqlmodel import Session, select
 
@@ -29,8 +30,8 @@ _AUTH_SECRET: str = os.getenv("AUTH_SECRET") or ""
 if not _AUTH_SECRET:
     # fail-closed in production: a random per-boot secret would silently
     # invalidate every session on restart (audit P0)
-    if os.getenv("APP_ENV", "dev") == "prod":
-        raise RuntimeError("AUTH_SECRET is required (set APP_ENV=prod)")
+    if IS_PROD:
+        raise RuntimeError("AUTH_SECRET is required in production (APP_ENV=prod|production)")
     _AUTH_SECRET = secrets.token_hex(16)  # dev-only ephemeral
 _OTP_DEV_MODE = os.getenv("OTP_DEV_MODE", "false").lower() == "true"
 USER_COOKIE = "chart_user"
@@ -101,7 +102,7 @@ def _send_sms(phone: str, code: str) -> None:
             r.raise_for_status()
             return
         except Exception as e:
-            if os.getenv("APP_ENV", "dev") == "prod":
+            if IS_PROD:
                 raise RuntimeError(f"SMS delivery failed: {e}") from e
             log.warning("SMS send failed: %s — falling back to dev log", e)
     if _OTP_DEV_MODE:
