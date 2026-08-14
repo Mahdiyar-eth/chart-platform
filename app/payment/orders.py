@@ -238,19 +238,29 @@ def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") 
 
     F-01 (audit v5 P0): the amount was reserved at request time; 'paid' keeps
     the debit (admin transferred the money), 'rejected' refunds the balance.
+    F-15 (audit v6 P0): the pending→paid/rejected transition is an ATOMIC CAS
+    (`UPDATE ... WHERE status='pending' RETURNING id`) — two concurrent admin
+    requests can no longer both win the same withdrawal (double payout, or a
+    rejected amount refunded twice). The refund for 'rejected' happens inside
+    the SAME transaction and ONLY in the winning caller.
     """
     wr = session.get(WithdrawalRequest, wid)
-    if not wr or wr.status != "pending":
+    if not wr or status not in ("paid", "rejected"):
         return False
-    if status not in ("paid", "rejected"):
-        return False
-    wr.status = status
-    wr.note = note
-    wr.resolved_at = datetime.now(timezone.utc)
+    amt = wr.amount_rial
+    uid = wr.user_id
+    now = datetime.now(timezone.utc)
+    won = session.exec(text(
+        "UPDATE withdrawal_requests SET status = :status, note = :note, "
+        "resolved_at = :now WHERE id = :wid AND status = 'pending' RETURNING id"
+    ).bindparams(status=status, note=note[:500], now=now, wid=wid)).first()
+    if not won:
+        return False  # already resolved by a concurrent caller — loser
     if status == "rejected":
-        u = session.get(User, wr.user_id)
-        if u:
-            u.balance_rial = (u.balance_rial or 0) + wr.amount_rial
+        # F-15: refund inside the same transaction, exactly once
+        session.exec(text(
+            "UPDATE users SET balance_rial = balance_rial + :amt WHERE id = :uid"
+        ).bindparams(amt=amt, uid=uid))
     session.commit()
     return True
 

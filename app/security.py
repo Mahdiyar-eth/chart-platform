@@ -9,6 +9,7 @@ import os
 import secrets as _secrets
 import time
 from collections import defaultdict, deque
+from datetime import datetime, timezone
 from hmac import compare_digest as _compare_digest
 
 from fastapi import Request
@@ -186,12 +187,31 @@ async def security_guard(request: Request, call_next):
     return await call_next(request)
 
 
+_AUDIT_FALLBACK = os.environ.get("AUDIT_FALLBACK_LOG", "/tmp/zayche-audit-fallback.log")
+
+
 def audit(engine, admin: str, action: str, entity: str = "", details: str = "") -> None:
-    """Write an audit_logs row (best-effort — never crashes the request)."""
+    """Write an audit_logs row (best-effort — never crashes the request).
+
+    F-16 (audit v6 P2): a DB failure no longer swallows the forensic record
+    silently — the event is appended to an append-only fallback file so a
+    refund / withdrawal resolution / secret change is never left with NO
+    durable trace. The fallback is read by scripts/audit_fallback_ingest.py
+    and re-inserted once the DB is healthy.
+    """
     try:
         from app.models import AuditLog
         with Session(engine) as s:
             s.add(AuditLog(admin=admin, action=action, entity=entity, details=details[:500]))
             s.commit()
-    except Exception:
-        pass
+    except Exception:  # noqa: BLE001 — never crash the main operation
+        try:
+            import json as _json
+            with open(_AUDIT_FALLBACK, "a") as f:
+                f.write(_json.dumps({
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                    "admin": admin, "action": action, "entity": entity,
+                    "details": details[:500],
+                }, ensure_ascii=False) + "\n")
+        except Exception:
+            pass  # last resort: even the fallback failed — stay silent

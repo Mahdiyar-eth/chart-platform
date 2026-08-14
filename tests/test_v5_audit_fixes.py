@@ -141,6 +141,79 @@ def test_concurrent_withdrawals_only_one_wins():
         assert u.balance_rial == 300_000  # 1M - 700k reserved exactly once
 
 
+# ── F-15 (audit v6 P0): concurrent admin resolves — atomic CAS ⇒ the
+# withdrawal is resolved EXACTLY once (no double payout / double refund)
+def test_concurrent_admin_resolve_only_one_wins():
+    import threading
+    from app.payment.orders import resolve_withdrawal, withdraw_request
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5h{__import__('uuid').uuid4().hex[:8]}", 1_000_000)
+        uid = u.id
+        assert withdraw_request(s, uid, 700_000) is True
+        wid = s.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == uid)).one().id
+    wins = [0]
+
+    def _resolve_paid():
+        with Session(engine) as s2:
+            if resolve_withdrawal(s2, wid, "paid", "موفق"):
+                wins[0] += 1
+
+    ts = [threading.Thread(target=_resolve_paid) for _ in range(3)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert wins[0] == 1  # exactly ONE 'paid' may be issued for one payout
+    with Session(engine) as s:
+        wr = s.get(WithdrawalRequest, wid)
+        assert wr.status == "paid"
+        u = s.get(User, uid)
+        assert u.balance_rial == 300_000  # 1M - 700k, NOT refunded twice
+
+
+def test_concurrent_admin_reject_refunds_exactly_once():
+    import threading
+    from app.payment.orders import resolve_withdrawal, withdraw_request
+    with Session(engine) as s:
+        u = _mk_user(s, f"+98v5i{__import__('uuid').uuid4().hex[:8]}", 1_000_000)
+        uid = u.id
+        assert withdraw_request(s, uid, 700_000) is True
+        wid = s.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == uid)).one().id
+    wins = [0]
+
+    def _reject():
+        with Session(engine) as s2:
+            if resolve_withdrawal(s2, wid, "rejected", "ناقص"):
+                wins[0] += 1
+
+    ts = [threading.Thread(target=_reject) for _ in range(3)]
+    [t.start() for t in ts]
+    [t.join() for t in ts]
+    assert wins[0] == 1
+    with Session(engine) as s:
+        wr = s.get(WithdrawalRequest, wid)
+        assert wr.status == "rejected"
+        u = s.get(User, uid)
+        assert u.balance_rial == 1_000_000  # 1M - 700k + 700k = refunded ONCE
+
+
+# ── F-16 (audit v6 P2): audit fallback — DB failure must not lose the record
+def test_audit_writes_fallback_when_db_fails(monkeypatch, tmp_path):
+    import json as _json
+    from app.security import audit as _audit
+    fallback = tmp_path / "audit-fallback.log"
+    monkeypatch.setenv("AUDIT_FALLBACK_LOG", str(fallback))
+    monkeypatch.setattr("app.security._AUDIT_FALLBACK", str(fallback))
+
+    # engine that is not a real engine — any use raises inside audit()
+    _audit(object(), "admin", "order.refund", "oid-1", "خطای تست")
+    assert fallback.exists()
+    line = _json.loads(fallback.read_text().strip().splitlines()[-1])
+    assert line["action"] == "order.refund"
+    assert line["admin"] == "admin"
+    assert line["entity"] == "oid-1"
+
+
 # ── F-13 (audit v6 P1): R2 deletion failure blocks account deletion
 def test_account_delete_fails_closed_when_r2_delete_fails(monkeypatch):
     from app.security import new_csrf_token
