@@ -140,5 +140,6 @@ def test_web_monthly_activation_creates_null_chat_sub():
         # F-28 cleanup: leave no active web sub behind — run_weekly_delivery in
         # later tests iterates ALL active subs (push-only now, not a crash)
         s.delete(sub)
+        s.exec(text("DELETE FROM orders WHERE chart_id = :cid").bindparams(cid=cid))
         s.exec(text("DELETE FROM charts WHERE id = :cid").bindparams(cid=cid))
         s.commit()
