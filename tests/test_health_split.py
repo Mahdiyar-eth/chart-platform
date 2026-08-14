@@ -38,7 +38,6 @@ def test_health_is_alias_of_readiness():
 
 
 def test_readiness_degrades_when_db_down(monkeypatch):
-    from app.db import engine as real_engine
 
     class _Dead:
         def connect(self):
