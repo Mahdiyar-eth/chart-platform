@@ -33,7 +33,7 @@ from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
-                        PromptVersion, ReferralCode, ReferralEvent, Report, Subscription,
+                        PromptVersion, ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
@@ -1788,12 +1788,20 @@ def account_delete(request: Request, csrf_token: str = Form(""),
         # chat messages (FK → chart) — was missing entirely (audit r4 C6)
         for msg in session.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all():
             session.delete(msg)
-        # reports (+ their R2 objects + LLM runs)
+        # reports (+ their R2 objects + LLM runs + RAG chunks)
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
             if rep.r2_key:
                 delete_object(rep.r2_key)
             for run in session.exec(select(LLMRun).where(LLMRun.report_id == rep.id)).all():
                 session.delete(run)
+            # H0.2: RAG embeddings (report_chunks) — missing before; deleting a
+            # report that was RAG-indexed raised IntegrityError → account
+            # deletion 500'd (proved with a real delete on the test DB).
+            # No SQLModel relationship exists between Report/ReportChunk, so
+            # unitofwork cannot order these — explicit flush is required.
+            for ch in session.exec(select(ReportChunk).where(ReportChunk.report_id == rep.id)).all():
+                session.delete(ch)
+            session.flush()
             session.delete(rep)
         # orders (as primary chart, or as synastry secondary)
         for o in session.exec(select(Order).where(
@@ -1813,6 +1821,11 @@ def account_delete(request: Request, csrf_token: str = Form(""),
         session.delete(e)
     for rc in session.exec(select(ReferralCode).where(ReferralCode.user_id == u.id)).all():
         session.delete(rc)
+    # H0.2: wallet withdrawal requests (FK → users) — missing before; a user
+    # with any withdrawal request could not delete their account.
+    for wd in session.exec(select(WithdrawalRequest).where(WithdrawalRequest.user_id == u.id)).all():
+        session.delete(wd)
+    session.flush()
 
     for c in charts:
         session.delete(c)
