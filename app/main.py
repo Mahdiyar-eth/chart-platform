@@ -84,28 +84,73 @@ def sw_file():
                         headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
 
-@app.get("/health")
-def health_check():
-    """Liveness/readiness (audit P2-7): DB + Redis + basic app heartbeat."""
+@app.get("/liveness")
+def liveness():
+    """C5 (audit r4): pure process heartbeat — no dependencies. A running
+    process answers 200 even if DB/Redis/R2 are all down (orchestrator
+    restarts only on readiness failure)."""
+    return JSONResponse({"status": "alive"})
+
+
+@app.get("/readiness")
+def readiness():
+    """C5 (audit r4): full dependency probe — DB + Redis + worker + R2 + disk.
+    Returns 503 while ANY dependency is down; the UI degraded banner keys off
+    this (plan §health)."""
     from sqlalchemy import text
-    out = {"status": "ok", "db": "ok", "redis": "ok"}
+    out: dict = {"status": "ok"}
     code = 200
+    # 1) DB
     try:
         with engine.connect() as c:
             c.execute(text("SELECT 1"))
+        out["db"] = "ok"
     except Exception:  # noqa: BLE001
         out["db"] = "down"
-        out["status"] = "degraded"
         code = 503
+    # 2) Redis (rate-limit backend in prod — REQUIRED)
     try:
         import redis as _r
         if not _r.Redis.from_url(_REDIS_URL, decode_responses=True).ping():
             raise RuntimeError("no pong")
+        out["redis"] = "ok"
     except Exception:  # noqa: BLE001
         out["redis"] = "down"
-        out["status"] = "degraded"
         code = 503
+    # 3) ARQ worker (report generation runs off-process)
+    try:
+        import asyncio as _asyncio
+        _asyncio.run(_arq_pool())
+        out["worker"] = "ok"
+    except Exception:  # noqa: BLE001
+        out["worker"] = "down"
+        code = 503
+    # 4) R2 configured (fail-closed in prod — B4)
+    from app.storage import configured as _r2_configured
+    out["r2"] = "ok" if _r2_configured() else "unconfigured"
+    if not _r2_configured() and IS_PROD:
+        out["r2"] = "down"
+        code = 503
+    # 5) disk headroom (watchdog threshold is 85%)
+    try:
+        import shutil
+        free_gb = shutil.disk_usage("/").free / 2 ** 30
+        out["disk_free_gb"] = round(free_gb, 1)
+        if free_gb < 1.0:  # <1GB free → not ready
+            out["disk"] = "critical"
+            code = 503
+        else:
+            out["disk"] = "ok"
+    except Exception:  # noqa: BLE001
+        out["disk"] = "unknown"
+    out["status"] = "ok" if code == 200 else "degraded"
     return JSONResponse(out, status_code=code)
+
+
+@app.get("/health")
+def health_check():
+    """Backward-compatible alias of /readiness (audit P2-7)."""
+    return readiness()
 
 
 # ─────────────────────────── pages ───────────────────────────

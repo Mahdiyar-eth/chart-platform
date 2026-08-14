@@ -322,13 +322,13 @@
       if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
     });
   });
-  /* audit r3 (P2-18): degraded-status banner — poll /health, show when Redis/DB down */
+  /* audit r4 (C5): degraded-status banner — poll /readiness, show when any dependency down */
   (function(){
     var shown = false;
     var bar = document.getElementById('degradedBar');
     if (!bar) return;
     function check(){
-      fetch('/health', {headers: {'Accept': 'application/json'}})
+      fetch('/readiness', {headers: {'Accept': 'application/json'}})
         .then(function(r){ return r.json(); })
         .then(function(j){
           if (j && j.status === 'degraded' && !shown){
