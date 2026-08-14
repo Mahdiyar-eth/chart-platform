@@ -23,7 +23,9 @@ def _boot(app_env: str, secrets_ok: bool) -> subprocess.CompletedProcess:
     env["AUTH_SECRET"] = "test-secret" if secrets_ok else ""
     env["ADMIN_SECRET"] = "test-admin" if secrets_ok else ""
     env["SECRETS_MASTER_KEY"] = "test-master-key" if secrets_ok else ""
-    env["RATE_LIMIT_BACKEND"] = "memory"
+    # audit r4 B5: production REQUIRES the Redis rate-limit backend — the
+    # subprocess needs it (and a real Redis) to boot successfully
+    env["RATE_LIMIT_BACKEND"] = "redis" if secrets_ok else "memory"
     return subprocess.run(
         [PY, "-c", "import app.main"], cwd="/tmp", env=env,
         capture_output=True, text=True, timeout=60,

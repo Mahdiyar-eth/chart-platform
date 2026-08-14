@@ -40,6 +40,19 @@ if [ "$RC" -eq 0 ]; then
   exit 1
 fi
 echo "✓ prod-mode refuses to boot without R2"
+# 1c) audit r4 B5: prod with in-memory rate limit backend must refuse to boot
+set +e
+APP_ENV=production AUTH_SECRET=x ADMIN_SECRET=x SECRETS_MASTER_KEY=x \
+  RATE_LIMIT_BACKEND=memory \
+  DATABASE_URL="${DATABASE_URL:-postgresql://x:x@127.0.0.1:5432/x}" \
+  venv/bin/python -c "import app.security" 2>smoke_rl.log
+RC=$?
+set -e
+if [ "$RC" -eq 0 ]; then
+  echo "❌ prod-mode boot succeeded with memory rate-limit backend"
+  exit 1
+fi
+echo "✓ prod-mode requires Redis rate-limit backend"
 # 2) with all secrets → boots, /health + landing + plans respond
 SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test}"
 APP_ENV=production DATABASE_URL="$SMOKE_DB" \

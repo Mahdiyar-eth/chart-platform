@@ -15,6 +15,7 @@ from fastapi import Request
 from sqlmodel import Session
 
 import app.config  # noqa: F401
+from app.env import IS_PROD
 
 _RATE_LIMITS: dict[str, deque] = defaultdict(deque)
 _RATE_LIMITS_WINDOW = 60  # seconds
@@ -22,9 +23,15 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 CSRF_COOKIE = "csrf_token"
 
 # audit P1 (round 3): distributed rate limiting. RATE_LIMIT_BACKEND=redis uses a
-# Redis fixed-window counter shared across workers/instances; any Redis failure
-# falls back to the per-process in-memory sliding window (fail-open on Redis).
+# Redis fixed-window counter shared across workers/instances. audit r4 B5:
+# Redis is MANDATORY in production (per-process memory counters are useless
+# with >1 worker) — a prod deploy configured for memory must refuse to boot.
 _RATE_LIMIT_BACKEND = os.getenv("RATE_LIMIT_BACKEND", "memory").lower()
+if IS_PROD and _RATE_LIMIT_BACKEND != "redis":
+    raise RuntimeError(
+        "RATE_LIMIT_BACKEND=redis is REQUIRED in production (audit r4 B5). "
+        "In-memory counters do not work across workers."
+    )
 _rl_redis_conn = None
 
 
@@ -124,7 +131,12 @@ def check_rate_limit(key: str, max_calls: int, window: int = _RATE_LIMITS_WINDOW
             return
         except RateLimitExceeded:
             raise
-        except Exception:  # noqa: BLE001 — Redis down/expired → in-memory fallback
+        except Exception:  # noqa: BLE001 — Redis down
+            if IS_PROD:
+                # audit r4 B5: fail-CLOSED in prod — never silently open the
+                # floodgates because Redis hiccuped
+                raise RateLimitExceeded(key)
+            # dev/tests: in-memory fallback keeps things usable
             pass
     if not _rl_memory(key, max_calls, window):
         raise RateLimitExceeded(key)

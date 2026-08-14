@@ -38,3 +38,23 @@ def test_redis_backend_falls_back_to_memory(monkeypatch):
         pass
     sec._RATE_LIMIT_BACKEND = "memory"  # restore for other tests
     sec._rl_redis_conn = None
+
+
+def test_chart_creation_rate_limited(monkeypatch):
+    """audit r4 B5: chart creation is limited to 20/min per client."""
+    import app.main as m
+    import app.security as sec
+
+    # this test exercises the REAL limiter (conftest bypasses it by default);
+    # same shape as main._rate_limit: (key, limit, window) -> allowed
+    def _real(key, limit, window=60.0):
+        try:
+            sec.check_rate_limit(key, limit, int(window))
+            return True
+        except sec.RateLimitExceeded:
+            return False
+
+    monkeypatch.setattr(m, "_rate_limit", _real)
+    ok = [m._rate_limit("chart:testclient", 20, 60) for _ in range(20)]
+    assert all(ok), "first 20 calls allowed"
+    assert not m._rate_limit("chart:testclient", 20, 60), "21st call limited"

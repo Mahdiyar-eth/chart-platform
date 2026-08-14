@@ -181,6 +181,9 @@ def api_create_chart(
     personal_question: str | None = Form(None),
 ):
     """Compute chart (sync, fast) + cache. Returns chart_id."""
+    # audit r4 B5: chart creation is the compute-heavy entry point — 20/min per client
+    if not _rate_limit(f"chart:{_rl_client(request)}", 20, 60):
+        raise HTTPException(429, "درخواستهای زیادی ثبت کردید؛ یک دقیقه صبر کنید")
     chart, profile = _compute_and_save_chart(
         session, request,
         calendar=calendar, year=year, month=month, day=day,
