@@ -91,6 +91,7 @@ def pick(prefix: str, files: list[str]) -> list[str]:
 
 
 main_py = [f for f in APP_PY if f == "app/main.py"]
+routes_py = [f for f in APP_PY if f.startswith("app/routes/")]  # H1.9
 core_py = [f for f in APP_PY if f.startswith("app/astrology/")]
 report_py = [f for f in APP_PY if f.startswith("app/report/")]
 chat_py = [f for f in APP_PY if f.startswith("app/chat/")]
@@ -104,43 +105,51 @@ base_py = [f for f in APP_PY if f in (
     "app/push.py", "app/rag.py", "app/timeutil.py",
 )]
 
+# content files (seo + H1.7 verified Islamic KB)
+CONTENT_FILES = ["app/content/pages.json", "app/content/articles.json",
+                 "app/content/guide-beginner.md", "app/content/islamic_kb.json"]
+
 header = f"""# باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور چهارم — فازهای A/B/C/D کامل — به‌روز تا کامیت `{head}`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `{head}`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
-> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md`
+> راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
 - **تست‌ها:** {test_summary} ({n_tests} فایل تست)
 - **کامیت‌ها:** {commits} · head: {head}
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
-- **مهاجرت‌ها:** {n_migrations} Alembic (baseline → chat → align-r3 → zodiac → D1 push_subscriptions → D2 report_chunks pgvector → D3 wallet/withdrawals/orders.note) — `alembic check` پاک
+- **مهاجرت‌ها:** {n_migrations} Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** {n_tables} SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
 - **زیرساخت:** systemd chart-web/chart-worker (User=zayche, NoNewPrivileges, ProtectSystem=strict) · Redis+ARQ · PostgreSQL 16 + pgvector 0.6 · R2 باکت `zayche-storage` · nginx/HTTPS chart.negar.io
 - **دور چهارم (A/B/C/D):** امنیت A11 + بکاپ age/presigned + ریفاند زرین‌پال + state machine پرداخت + circuit breaker LLM · TTS→R2 · لایو‌نس/ری‌دینس تفکیکی · حریم خصوصی/retention · Web Push (VAPID، سرویس‌کارگر، اعلان هفتگی) · RAG pgvector (e5-small چندزبانه 384-dim) · کیف پول رفرال (۵٪، پرداخت با موجودی، تسویه) · چت استریم SSE (توکن واقعی)
+- **دور پنجم (HARDENING H0+H1):** تایمزون واقعی (timezonefinder + ۱۱۰۰ شهر جهانی) · حذف حساب کامل (cascade RAG) · confidence ساعت نامعلوم · بازیابی worker راکد (heartbeat + cron) · ترانزیت با tz چارت · چت context ساختاریافته (بدون برش JSON) · سنجش هزینهٔ LLM (llm_runs.user_id/kind + داشبورد) · ضدسوءاستفاده referral (self-referral + کف برداشت) · TTS صف‌دار (ARQ، بدون inline) · سیناستری مهمان (Person B بدون حساب + capability token) · لایهٔ اسلامی verified (KB ۳۰ مفهوم با ارجاع سوره/آیه) · چارچوب ارزیابی انسانی (۲۰ چارت × ۱۳ دامنه، rubric ۸ معیاری) · refactor main.py → app/routes/ · سیاست حریم خصوصی v1.1
 
 ## ساختار کلی
 
 ```
 app/                  FastAPI app
-  main.py             همه مسیرها + لایف‌سایکل + بوت ربات‌ها (۲۱۵۰+ خط)
+  main.py             مسیرها + لایف‌سایکل + بوت ربات‌ها (~۱۷۸۰ خط)
+  routes/             H1.9: auth / wallet / push / seo / admin (۳۴ endpoint استخراج‌شده)
   models.py           {n_tables} جدول SQLModel
   push.py             Web Push (VAPID + ارسال اعلان مرورگر)
   rag.py              pgvector RAG (chunk/index/search، مدل e5-small)
-  astrology/          Swiss Ephemeris: engine, sky, synastry, rectify, transits, svg, golden_data
-  report/             تولید گزارش 13 بخشی + QA خودکار + PDF/Word + ترانزیت هفتگی
+  astrology/          Swiss Ephemeris: engine, sky, synastry, rectify, transits, svg, golden_data, cities_world (H0.1)
+  report/             تولید گزارش 13 بخشی + QA خودکار + PDF/Word + ترانزیت هفتگی + صوتی (H1.5)
   chat/               AI chat: retrieval + intents + service (+ SSE stream)
   payment/            زرین‌پال + سفارش/اشتراک/کوپن/استرداد + کیف پول/تسویه
   bots/               هندلر یکپارچه تلگرام + بله (تمام‌دکمه‌ای، مرحلهٔ زودیاک)
   seo/                محتوای آموزشی (برج‌ها/سیارات/خانه‌ها) + بنر مقالات
+  content/            صفحات + مقالات + KB اسلامی تأییدشده (H1.7)
   core/llm.py         لایهٔ LLM (استریم توکن + fallback chain + circuit breaker)
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            {len(TEMPLATES)} قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
 tests/                {n_tests} فایل تست ({test_summary})
-scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل
+scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
+docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
 alembic/versions/     {n_migrations} مهاجرت
 .github/workflows/    CI
@@ -148,7 +157,8 @@ alembic/versions/     {n_migrations} مهاجرت
 """
 
 parts = [header]
-parts.append(section("۱) فایل اصلی اپلیکیشن (main.py — همه مسیرها)", main_py))
+parts.append(section("۱) فایل اصلی اپلیکیشن (main.py — مسیرهای هسته + include routes)", main_py))
+parts.append(section("۱.۵) مسیرهای استخراج‌شده (H1.9 — app/routes/)", routes_py))
 parts.append(section("۲) هسته: مدل‌ها، دیتابیس، تنظیمات",
                      [f for f in base_py if f in ("app/models.py", "app/db.py", "app/config.py", "app/timeutil.py")]))
 parts.append(section("۳) امنیت، کلیدها و Web Push",
@@ -165,7 +175,7 @@ parts.append(section("۱۲) PWA: سرویس‌کارگر اعلان + مانیف
 parts.append(section("۱۳) تست‌ها", TESTS))
 parts.append(section("۱۴) زیرساخت و استقرار (اسکریپت‌ها)", SCRIPTS, "bash"))
 parts.append(section("۱۵) میگریشن‌های Alembic", MIGRATIONS))
-parts.append(section("۱۶) محتوای صفحات و مقالات", ["app/content/pages.json", "app/content/articles.json", "app/content/guide-beginner.md"], "json"))
+parts.append(section("۱۶) محتوای صفحات، مقالات و KB اسلامی (H1.7)", CONTENT_FILES, "json"))
 parts.append(section("۱۷) systemd units + CI + محیط نمونه", DEPLOY + CI_FILES + ["requirements.txt", ".env.example"], "bash"))
 
 parts.append(f"""
