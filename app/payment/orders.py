@@ -154,11 +154,13 @@ def activate_subscription(session: Session, order: Order) -> None:
         sub.expires_at = base + timedelta(days=30)
         sub.plan_key = order.plan_key
         sub.platform = order.platform or sub.platform
+        sub.order_id = order.id  # audit r4 B6 — latest originating order
     else:
         session.add(Subscription(
             chat_id=order.chat_id, platform=order.platform or "telegram",
             chart_id=order.chart_id, freq="weekly", plan_key=order.plan_key,
             active=True, expires_at=base + timedelta(days=30),
+            order_id=order.id,  # audit r4 B6
         ))
 
 

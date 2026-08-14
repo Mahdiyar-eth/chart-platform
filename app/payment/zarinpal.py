@@ -76,6 +76,30 @@ class ZarinpalClient:
             raise ZarinpalError(f"verify code {code}: {d.get('message')}")
         return {"ref_id": d.get("ref_id", ""), "card_pan": d.get("card_pan", "")}
 
+    def refund(self, authority: str, amount_rial: int) -> dict:
+        """Refund a paid transaction (audit r4 B6). Returns {ref_id} on success.
+
+        Zarinpal v4: POST /payment/refund.json — needs the original authority.
+        A repeat call on an already-refunded authority errors (code ~ 66/67),
+        which the caller must map to "already refunded".
+        """
+        payload = {
+            "merchant_id": self.merchant_id,
+            "authority": authority,
+            "amount": amount_rial,
+        }
+        r = httpx.post(f"{self.base}/payment/refund.json", json=payload,
+                       headers={"Accept": "application/json"}, timeout=self.timeout)
+        data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
+        errs = data.get("errors") or []
+        if errs:
+            raise ZarinpalError(f"refund failed: {errs}")
+        d = data.get("data") or {}
+        code = d.get("code")
+        if code != 100:
+            raise ZarinpalError(f"refund code {code}: {d.get('message')}")
+        return {"ref_id": d.get("ref_id", "")}
+
 
 def fake_authority() -> str:
     return "S" + uuid.uuid4().hex[:32].upper()

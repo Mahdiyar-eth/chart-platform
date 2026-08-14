@@ -818,19 +818,47 @@ def admin_prompt_save(request: Request, prompt_key: str, session: Session = Depe
 
 @app.post("/api/admin/orders/{order_id}/refund")
 def admin_refund(order_id: str, request: Request, session: Session = Depends(get_session)):
+    """audit r4 B6: REAL refund lifecycle — calls Zarinpal, closes the chat
+    subscription if this order originated one, returns the coupon slot.
+
+    States: paid → refunding → refunded | refund_failed (admin retries).
+    """
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(404, "order not found")
-    if order.status != "paid":
+    if order.status not in ("paid", "refund_failed"):
         raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
+    order.status = "refunding"
+    session.commit()
+    try:
+        from app.payment.zarinpal import ZarinpalClient
+        res = ZarinpalClient().refund(order.authority or "", order.amount_rial)
+    except Exception as e:  # noqa: BLE001 — gateway/network error
+        order.status = "refund_failed"
+        order.error = f"ریفاند ناموفق: {str(e)[:300]}"
+        session.commit()
+        from app.security import audit
+        audit(session.bind, "admin", "order.refund_failed", order.id, str(e)[:200])
+        raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {str(e)[:200]} — بعداً دوباره تلاش کنید")
+
     order.status = "refunded"
+    order.ref_id = res.get("ref_id", order.ref_id or "")
+    order.error = None
     _release_coupon(session, order)  # audit r4 A10 — return the slot
+
+    # close the subscription this order originated (audit r4 B6)
+    if order.chart_id:
+        subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
+        for sub in subs:
+            sub.active = False
+            sub.expires_at = datetime.now(timezone.utc)
+
     session.commit()
     from app.security import audit
     audit(session.bind, "admin", "order.refund", order.id, order.ref_id or "")
-    return {"ok": True, "status": "refunded"}
+    return {"ok": True, "status": "refunded", "ref_id": res.get("ref_id", "")}
 
 
 @app.post("/api/admin/orders/{order_id}/regenerate")

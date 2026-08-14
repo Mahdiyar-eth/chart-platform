@@ -141,6 +141,7 @@ class Order(SQLModel, table=True):
     """Payment order — one per (profile, plan) purchase."""
     __tablename__ = "orders"
     id: str = Field(default_factory=_uuid, primary_key=True)
+    error: str | None = Field(default=None)  # audit r4 B6 — refund/gateway failure detail
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
     plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
@@ -185,6 +186,7 @@ class Subscription(SQLModel, table=True):
     plan_key: str = Field(default="monthly")    # paid monthly plan (plan v3.0 §12)
     active: bool = Field(default=True)
     expires_at: datetime | None = Field(default=None)
+    order_id: str | None = Field(default=None, index=True)  # audit r4 B6 — originating order (refund closes the sub)
     last_sent_at: datetime | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

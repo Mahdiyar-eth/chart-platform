@@ -27,6 +27,9 @@ class FakeZP:
     def verify(self, authority, amount_rial):
         return {"ref_id": "200000000001", "card_pan": "621986****0000"}
 
+    def refund(self, *a, **k):
+        return {"ref_id": "R200000000001"}  # audit r4 B6 — real refund path
+
 
 class FailVerifyZP(FakeZP):
     def verify(self, authority, amount_rial):
@@ -141,11 +144,11 @@ def test_refund_returns_slot(monkeypatch):
     with Session(engine) as s:
         assert s.get(Order, oid).status == "paid"
         assert s.exec(select(Coupon).where(Coupon.code == code)).first().used_count == 1
-    # admin refund
-    admin_ck = {"admin_session": "1"}  # _is_admin in tests: header/cookie? use cookie
+    # admin refund (audit r4 B6: real Zarinpal refund call — FakeZP.refund mocked)
+    from app.main import _admin_cookie_value
+    admin_ck = {"chart_admin": _admin_cookie_value()}
     r = c.post(f"/api/admin/orders/{oid}/refund", cookies=admin_ck)
-    assert r.status_code in (200, 403), r.text
+    assert r.status_code == 200, r.text
     with Session(engine) as s:
         cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
-        if r.status_code == 200:
-            assert cp.used_count == 0, "refund must return the slot"
+        assert cp.used_count == 0, "refund must return the slot"
