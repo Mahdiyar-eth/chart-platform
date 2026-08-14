@@ -33,7 +33,7 @@ from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
                         PromptVersion, ReferralCode, ReferralEvent, Report, Subscription,
-                        User, WeeklyReflection)
+                        User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -643,13 +643,20 @@ def api_create_order(
             coupon=coupon, ref_code=request.cookies.get("chart_ref", ""),
             new_user_id=user.id if user else None,
         )
+        # D3: settle from wallet when the user chose it and has enough balance
+        if request.headers.get("x-pay-with-balance", "") == "1":
+            from app.payment.orders import pay_order_with_balance
+            if not pay_order_with_balance(session, order, user):
+                raise HTTPException(400, "موجودی کیف پول کافی نیست")
+            pay_url = None
     except LookupError:
         raise HTTPException(404, "plan not found")
     except ValueError as e:
         raise HTTPException(400, str(e))
     except RuntimeError as e:
         raise HTTPException(502, str(e))
-    return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority}
+    return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority,
+            "paid_by_balance": pay_url is None}
 
 
 @app.get("/api/orders/{order_id}")
@@ -711,6 +718,15 @@ def api_payment_verify(
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
             order.status = "paid"
+            # D3: credit the referrer's wallet (5% of discounted amount)
+            try:
+                from app.payment.orders import reward_referral
+                reward_referral(session, order)
+            except Exception:  # noqa: BLE001 — referral must never break payment
+                session.rollback()
+                order = session.exec(
+                    select(Order).where(Order.authority == Authority)).first()
+            assert order is not None, "order vanished mid-verify"
             # Coupon was RESERVED atomically at order creation (audit r4 A10) —
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
@@ -1527,6 +1543,56 @@ def auth_logout():
     return resp
 
 
+# ── Wallet (D3) ──────────────────────────────────────────────────────────────
+
+@app.get("/api/wallet")
+def wallet_balance(request: Request, session: Session = Depends(get_session)):
+    """Wallet status: balance + referral code + pending withdrawal."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "login required")
+    u = session.get(User, user.id)
+    from app.payment.orders import get_or_create_referral_code
+    code = get_or_create_referral_code(session, u.id)
+    pending = session.exec(select(WithdrawalRequest).where(
+        WithdrawalRequest.user_id == u.id,
+        WithdrawalRequest.status == "pending")).all()
+    return {
+        "balance_rial": u.balance_rial or 0,
+        "referral_code": code,
+        "pending_withdrawals": len(pending),
+    }
+
+
+@app.post("/api/wallet/withdraw")
+def wallet_withdraw(request: Request, amount_rial: int = Form(...),
+                    session: Session = Depends(get_session)):
+    """Request a cash-out; admin pays out manually (status=paid)."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "login required")
+    from app.payment.orders import withdraw_request
+    if not withdraw_request(session, user.id, amount_rial):
+        raise HTTPException(400, "درخواست نامعتبر (موجودی کافی نیست یا درخواست در انتظار بررسی دارید)")
+    return {"ok": True}
+
+
+@app.post("/api/admin/withdrawals/{wid}/resolve")
+def admin_resolve_withdrawal(wid: str, request: Request, status: str = Form("paid"),
+                             note: str = Form(""),
+                             session: Session = Depends(get_session)):
+    """Admin resolves a withdrawal: paid (money sent) or rejected (balance kept)."""
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    from app.payment.orders import resolve_withdrawal
+    if not resolve_withdrawal(session, wid, status, note):
+        raise HTTPException(400, "invalid withdrawal or state")
+    session.add(AuditLog(admin=request.cookies.get("chart_user", ""), action="withdrawal_resolve",
+                         entity=wid, details=status))
+    session.commit()
+    return {"ok": True}
+
+
 # ── Web Push (D1) ────────────────────────────────────────────────────────────
 
 @app.get("/api/push/vapid-public-key")
@@ -1869,6 +1935,11 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     chat_today = len(session.exec(select(ChatMessage.id).where(ChatMessage.created_at >= today_start)).all())
     chat_total = len(session.exec(select(ChatMessage.id)).all())
+    # D3: withdrawal queue for admin (pending first)
+    withdrawals = session.exec(
+        select(WithdrawalRequest).order_by(
+            WithdrawalRequest.status.asc(), WithdrawalRequest.created_at.desc()).limit(30)
+    ).all()
     return templates.TemplateResponse(request, "admin.html", {
         "title": "دشبورد مدیریت", "orders": orders, "reports": reports,
         "revenue_toman": revenue, "by_status": by_status,
@@ -1877,6 +1948,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "ai_status": ai_status, "ai_health": ai_health, "ai_provider": ai_provider,
         "chat_today": chat_today, "chat_total": chat_total,
         "dlq_count": dlq_count,  # B1 — used by admin.html KPI
+        "withdrawals": withdrawals,  # D3 — wallet cash-out queue
         "secrets": secret_store.secret_status(),
         "prompt_keys": PROMPT_KEYS,
         "prompt_overrides": [{"key": o["key"], "version": o["version"],

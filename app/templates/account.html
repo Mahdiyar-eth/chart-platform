@@ -58,13 +58,28 @@
   {% endif %}
 
   <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">کیف پول من</h2>
+    <div x-data="wallet()" x-init="init()" x-cloak>
+      <p class="muted" style="font-size:.85rem;margin-bottom:8px;">اعتبار حاصل از دعوت دوستان</p>
+      <div style="font-size:1.7rem;font-weight:800;color:var(--gold);" x-text="fmt(balance)"></div>
+      <p class="muted" style="font-size:.8rem;margin:8px 0;">کد دعوت تو: <b style="color:#fff;direction:ltr;display:inline-block;" x-text="code"></b></p>
+      <button class="btn" x-show="balance > 0" @click="askWithdraw()" style="padding:9px 20px;margin-top:6px;">
+        درخواست تسویه
+      </button>
+    </div>
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
     <h2 style="font-size:1.05rem;">اشتراک هفتگی «نگاهی به آسمان هفته»</h2>
     <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">هر هفته، نگاهی تأملی به گذرهای سیارهای چارتت — مستقیم در تلگرام.</p>
     <a class="btn" href="https://t.me/Astrology_chartx_bot" target="_blank" rel="noopener" style="display:inline-block; padding:10px 22px;">فعال‌سازی در تلگرام</a>
   </section>
 
   <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
-    <h2 style="font-size:1.05rem;">🔔 اعلان مرورگر</h2>
+    <h2 style="font-size:1.05rem;">
+      <svg style="width:17px;height:17px;vertical-align:-3px;margin-left:6px;color:var(--gold);" aria-hidden="true"><use href="#icon-bell"/></svg>
+      اعلان مرورگر
+    </h2>
     <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
     <button id="pushBtn" class="btn" style="padding:10px 22px;">فعال‌سازی اعلان</button>
   </section>
@@ -136,5 +151,28 @@
     return arr;
   }
 })();
+function wallet() {
+  return {
+    balance: 0,
+    code: '',
+    async init() {
+      try {
+        const r = await fetch('/api/wallet');
+        if (r.ok) { const j = await r.json(); this.balance = j.balance_rial || 0; this.code = j.referral_code || ''; }
+      } catch (e) { /* anonymous */ }
+    },
+    fmt(n) { return Number(n || 0).toLocaleString('fa-IR') + ' ریال'; },
+    async askWithdraw() {
+      const v = prompt('مبلغ تسویه به ریال (حداکثر ' + this.balance.toLocaleString('fa-IR') + '):');
+      if (!v) return;
+      const fd = new FormData();
+      fd.append('amount_rial', String(parseInt(v.replace(/[^\d]/g, ''), 10) || 0));
+      const r = await fetch('/api/wallet/withdraw', { method: 'POST', body: fd });
+      const j = await r.json();
+      alert(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'));
+      if (r.ok) location.reload();
+    }
+  };
+}
 </script>
 {% endblock %}

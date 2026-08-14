@@ -25,6 +25,7 @@ class User(SQLModel, table=True):
     password_hash: str | None = Field(default=None)
     role: str = Field(default="user")  # user | admin
     status: str = Field(default="active")
+    balance_rial: int = Field(default=0)  # referral wallet (D3)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -143,6 +144,7 @@ class Order(SQLModel, table=True):
     __tablename__ = "orders"
     id: str = Field(default_factory=_uuid, primary_key=True)
     error: str | None = Field(default=None)  # audit r4 B6 — refund/gateway failure detail
+    note: str | None = Field(default=None)   # D3 — payment method note (wallet)
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
     plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
@@ -222,6 +224,18 @@ class ReferralCode(SQLModel, table=True):
     user_id: str = Field(foreign_key="users.id", index=True)
     code: str = Field(unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class WithdrawalRequest(SQLModel, table=True):
+    """Wallet cash-out request (D3) — admin approves manually (status=paid)."""
+    __tablename__ = "withdrawal_requests"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
+    amount_rial: int = Field(default=0)
+    status: str = Field(default="pending")   # pending | paid | rejected
+    note: str = Field(default="")            # admin note (bank ref etc.)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    resolved_at: datetime | None = Field(default=None)
 
 
 class PromptVersion(SQLModel, table=True):

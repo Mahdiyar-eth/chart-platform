@@ -38,6 +38,13 @@
               style="width:100%;{% if p.key == 'full' %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
         خرید {{ p.name_fa }}
       </button>
+      <button x-show="walletLoaded && balance !== null && balance >= {{ p.price_rial }}"
+              @click="buy('{{ p.key }}', true)"
+              class="btn"
+              style="width:100%;margin-top:10px;background:rgba(30,160,90,.18);border:1px solid rgba(30,160,90,.5);color:#7ee2a8;">
+        <svg style="width:15px;height:15px;vertical-align:-3px;margin-left:5px;" aria-hidden="true"><use href="#icon-wallet"/></svg>
+        پرداخت با موجودی کیف پول
+      </button>
     </div>
     {% endfor %}
 
@@ -81,7 +88,19 @@
 function purchase() {
   return {
     busy: false,
-    async buy(planKey) {
+    balance: null,
+    walletLoaded: false,
+    async init() {
+      try {
+        const r = await fetch('/api/wallet');
+        if (r.ok) {
+          const j = await r.json();
+          this.balance = j.balance_rial;
+        }
+      } catch (e) { /* anonymous visitor — no wallet */ }
+      this.walletLoaded = true;
+    },
+    async buy(planKey, useBalance) {
       const chartId = new URLSearchParams(location.search).get('chart') || '';
       if (!chartId) {
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
@@ -92,9 +111,18 @@ function purchase() {
         const fd = new FormData();
         fd.append('plan_key', planKey);
         fd.append('chart_id', chartId);
-        const r = await fetch('/api/orders', { method: 'POST', body: fd });
+        const r = await fetch('/api/orders', {
+          method: 'POST',
+          body: fd,
+          headers: useBalance ? { 'x-pay-with-balance': '1' } : {},
+        });
         const j = await r.json();
         if (!r.ok) { alert(j.detail || 'خطا در ایجاد سفارش'); this.busy = false; return; }
+        if (j.paid_by_balance) {
+          alert('خرید با موجودی کیف پول انجام شد ✅ گزارش در حال تولید است.');
+          location.href = '/account';
+          return;
+        }
         window.location.href = j.payment_url;
       } catch (e) { alert('ارتباط با سرور برقرار نشد'); this.busy = false; }
     }

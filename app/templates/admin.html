@@ -198,6 +198,36 @@
     </table>
   </div>
 
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">تسویه کیف پول (D3)</h2>
+  <div class="glass" style="overflow-x:auto;padding:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:640px;">
+      <thead><tr style="color:var(--muted);text-align:right;"><th style="padding:10px 8px;">تاریخ</th><th>کاربر</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        {% for w in withdrawals %}
+        <tr style="border-top:1px solid var(--stroke);">
+          <td style="padding:9px 8px;white-space:nowrap;">{{ w.created_at.strftime('%m-%d %H:%M') }}</td>
+          <td style="direction:ltr;text-align:right;">{{ w.user_id[:8] }}</td>
+          <td>{{ '{:,}'.format(w.amount_rial // 10) }}</td>
+          <td style="color:{% if w.status == 'paid' %}#2a9d8f{% elif w.status == 'rejected' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">{{ {'pending':'در انتظار','paid':'پرداخت شد','rejected':'رد شد'}.get(w.status, w.status) }}</td>
+          <td>
+            {% if w.status == 'pending' %}
+            <form method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" style="display:inline;margin-left:6px;">
+              <input type="hidden" name="status" value="paid">
+              <button class="btn" style="padding:5px 12px;font-size:.78rem;">تأیید واریز</button>
+            </form>
+            <form method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" style="display:inline;">
+              <input type="hidden" name="status" value="rejected">
+              <button class="btn btn-ghost" style="padding:5px 12px;font-size:.78rem;color:#ff6b6b;">رد</button>
+            </form>
+            {% else %}{{ w.note or '—' }}{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not withdrawals %}<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--muted);">درخواست تسویه‌ای نیست</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </div>
+
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">گزارش‌ها (آخرین ۲۰)</h2>
   <div class="glass" style="overflow-x:auto;padding:4px;">
     <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:600px;">

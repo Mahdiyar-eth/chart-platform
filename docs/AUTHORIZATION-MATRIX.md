@@ -53,6 +53,9 @@
 | `POST /api/auth/otp/verify` | Public | rate limit + هش OTP (P1-2) |
 | `GET /api/push/vapid-public-key` | Public | کلید عمومی VAPID (503 اگر پیکربندی نشده) |
 | `POST /api/push/subscribe`, `POST /api/push/unsubscribe` | User/Optional | ثبت/حذف اشتراک اعلان مرورگر؛ با ورود → اتصال به user |
+| `GET /api/wallet` | User | موجودی کیف پول + کد دعوت (D3) |
+| `POST /api/wallet/withdraw` | User | درخواست تسویه موجودی (وارد جدول ادمین) |
+| `POST /api/admin/withdrawals/{wid}/resolve` | Admin | تأیید/رد درخواست تسویه + AuditLog |
 | `GET /api/auth/me` | User | کوکی ورود |
 | `POST /api/auth/logout` | User | کوکی ورود |
 | `GET /account` | User | کوکی ورود |

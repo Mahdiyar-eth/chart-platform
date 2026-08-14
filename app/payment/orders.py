@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import os
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select
 
-from app.models import Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent, Subscription
+from app.models import (Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent,
+                        Report, Subscription, User, WithdrawalRequest)
 from app.timeutil import ensure_utc, utcnow
 
 
@@ -165,3 +166,76 @@ def activate_subscription(session: Session, order: Order) -> None:
 
 
 REPORT_PLANS = {"basic", "full", "gold"}
+
+
+def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
+    """D3: once an order is PAID, credit the referrer's wallet (5% of the
+    discounted amount). Idempotent — status pending → rewarded, once."""
+    ev = session.exec(select(ReferralEvent).where(
+        ReferralEvent.order_id == order.id,
+        ReferralEvent.status == "pending",
+    )).first()
+    if not ev or not ev.referrer_user_id:
+        return None
+    referrer = session.get(User, ev.referrer_user_id)
+    if not referrer:
+        return None
+    referrer.balance_rial = (referrer.balance_rial or 0) + ev.reward_rial
+    ev.status = "rewarded"
+    session.flush()
+    return ev
+
+
+def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
+    """D3: queue a cash-out request. One pending at a time; amount must be
+    positive and within balance. Returns False on any refusal."""
+    u = session.get(User, user_id)
+    if not u or amount_rial <= 0 or amount_rial > (u.balance_rial or 0):
+        return False
+    if session.exec(select(WithdrawalRequest).where(
+            WithdrawalRequest.user_id == user_id,
+            WithdrawalRequest.status == "pending")).first():
+        return False
+    session.add(WithdrawalRequest(user_id=user_id, amount_rial=amount_rial))
+    session.commit()
+    return True
+
+
+def resolve_withdrawal(session: Session, wid: str, status: str, note: str = "") -> bool:
+    """D3: admin resolves a withdrawal. Balance is NOT auto-debited — payout is
+    a manual bank transfer; the record is the audit trail."""
+    wr = session.get(WithdrawalRequest, wid)
+    if not wr or wr.status != "pending":
+        return False
+    if status not in ("paid", "rejected"):
+        return False
+    wr.status = status
+    wr.note = note
+    wr.resolved_at = datetime.now(timezone.utc)
+    session.commit()
+    return True
+
+
+def pay_order_with_balance(session: Session, order: Order, user: User | None) -> bool:
+    """D3: settle an order entirely from the wallet. Returns True if paid by
+    balance (order.status = paid, no Zarinpal round-trip). Boundary: balance
+    can only pay the FULL amount — no mixed payments (wallet+gateway)."""
+    if not user:
+        return False
+    if order.status != "pending":
+        return False
+    if (user.balance_rial or 0) < order.amount_rial:
+        return False
+    user.balance_rial -= order.amount_rial
+    order.status = "paid"
+    order.paid_at = datetime.now(timezone.utc)
+    order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {user.balance_rial + order.amount_rial:,} ریال"
+    if order.plan_key == "monthly":
+        activate_subscription(session, order)
+    if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
+        rep = Report(chart_id=order.chart_id, status="queued", plan_key=order.plan_key)
+        session.add(rep)
+        session.flush()
+        order.report_id = rep.id
+    session.commit()
+    return True
