@@ -88,6 +88,11 @@ class LLMRun(SQLModel, table=True):
     ok: bool = Field(default=True)
     error: str | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # H1.3 indexes (match migrations bad790d98ddf): kind + (created_at, kind)
+    __table_args__ = (
+        Index("ix_llm_runs_kind", "kind"),
+        Index("ix_llm_runs_created_kind", "created_at", "kind"),
+    )
 
 
 class ChatMessage(SQLModel, table=True):
@@ -130,8 +135,12 @@ class Report(SQLModel, table=True):
         },
     )
     # H1.5: async report audio (edge-tts via worker) — none|generating|ready|failed
-    audio_status: str = Field(default="none")
+    audio_status: str = Field(default="none", index=True)  # ix_reports_audio_status
     audio_r2_key: str | None = Field(default=None)
+    # H0.4/H1.5 indexes (match migrations cc51bd1b6bf1, 9d34ed9201c2)
+    __table_args__ = (
+        Index("ix_reports_status_updated", "status", "updated_at"),
+    )
 
 
 class Plan(SQLModel, table=True):
