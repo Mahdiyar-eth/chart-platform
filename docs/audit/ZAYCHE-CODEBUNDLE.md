@@ -1,14 +1,14 @@
 # باندل کامل کد — زایچه (ZAYCHE) چارت تولد
 
-> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `428c2f3 2026-08-14 fix(h1-final): align models with DB — declare ix_llm_runs_kind/(created_at,kind), ix_reports_audio_status, ix_reports_status_updated in SQLModel (they existed only in migrations → alembic check drift); deploy gate passes`) — از ریپازیتوری /root/chart-platform
+> تولید: 2026-08-14 (دور پنجم — HARDENING H0.1 تا H1.10 کامل — به‌روز تا کامیت `5f206db 2026-08-14 fix(v4-audit-p1): content sweep + env hygiene — gen_articles title 'پیش‌بینی سالانه' → 'روند سالانه... تأملی'; gen_full_docs stale claims (نیمه‌کاره/نداریم) → status-2026-08-14; .env.example placeholders (ADMIN_PIN=REPLACE_ME, ZARINPAL_SANDBOX=false, PUBLIC_BASE_URL=YOUR_DOMAIN); PUBLIC_BASE_URL fallbacks chart.example.com/127.0.0.1 → chart.negar.io (seo/bots/orders); content-sweep guard test (predictive-language banned); 294 passed`) — از ریپازیتوری /root/chart-platform
 > این فایل برای **بررسی عمیق سطح کد** توسط هوش مصنوعی/متخصص تهیه شده؛ شامل کل سورس پایتون، قالب‌ها، تست‌ها و زیرساخت.
 > سکرت‌ها (کلیدها، توکن‌ها، .env) **حذف شده‌اند**؛ مقادیر حساس فقط placeholder در کد دیده می‌شوند (خواندن از env).
 > راهنمای کلی پروژه: `docs/audit/ZAYCHE-COMPLETE-REPORT.md` · دور سوم: `docs/audit/ROUND-3-ADDENDUM.md` · دور چهارم: `docs/audit/ROUND4-PHASE-C.md` و `docs/audit/ROUND4-PHASE-D.md` · **دور پنجم (HARDENING): `docs/audit/HARDENING-REPORT.md`**
 
 ## وضعیت فعلی (۱۴ اوت ۲۰۲۶ — راستی‌آزمایی‌شده)
 
-- **تست‌ها:** 292 passed, 1 skipped in 14.75s (56 فایل تست)
-- **کامیت‌ها:** 79 · head: 428c2f3 2026-08-14 fix(h1-final): align models with DB — declare ix_llm_runs_kind/(created_at,kind), ix_reports_audio_status, ix_reports_status_updated in SQLModel (they existed only in migrations → alembic check drift); deploy gate passes
+- **تست‌ها:** 294 passed, 1 skipped in 14.53s (57 فایل تست)
+- **کامیت‌ها:** 81 · head: 5f206db 2026-08-14 fix(v4-audit-p1): content sweep + env hygiene — gen_articles title 'پیش‌بینی سالانه' → 'روند سالانه... تأملی'; gen_full_docs stale claims (نیمه‌کاره/نداریم) → status-2026-08-14; .env.example placeholders (ADMIN_PIN=REPLACE_ME, ZARINPAL_SANDBOX=false, PUBLIC_BASE_URL=YOUR_DOMAIN); PUBLIC_BASE_URL fallbacks chart.example.com/127.0.0.1 → chart.negar.io (seo/bots/orders); content-sweep guard test (predictive-language banned); 294 passed
 - **CI (scripts/ci.sh):** pytest + coverage ≥60٪ · ruff F/E9 · bandit -lll · pip-audit (0 vuln) · secret-scan · brand-scan · alembic chain check — همه سبز
 - **مهاجرت‌ها:** 14 Alembic (baseline → chat → align-r3 → zodiac → D1-D3 → h0.4 reports.updated_at → h1.3 llm_runs.user_id/kind → h1.5 reports.audio_status) — `alembic check` پاک
 - **جداول:** 20 SQLModel — از جمله `push_subscriptions` (D1)، `report_chunks` + HNSW (D2)، `withdrawal_requests` (D3)
@@ -36,7 +36,7 @@ app/                  FastAPI app
   secret_store.py     کلیدها رمزنگاری‌شده (Fernet) در DB
 templates/            28 قالب Jinja2 (RTL، Alpine.js، اسپرایت SVG) + degraded banner
 static/               sw.js (push/notification) + manifest PWA + آیکون‌ها/فونت‌ها
-tests/                56 فایل تست (292 passed, 1 skipped in 14.75s)
+tests/                57 فایل تست (294 passed, 1 skipped in 14.53s)
 scripts/              بکاپ، ریستور، واچ‌داگ، CI، دیپلوی، ترانزیت، بازسازی باندل، eval انسانی (H1.8)
 docs/eval/            چارچوب ارزیابی انسانی (H1.8): ۲۰ چارت + ۲۶۰ prompt + RUBRIC
 deploy/               systemd unit ها + سقف‌های حافظه + نمونه‌های env
@@ -2194,7 +2194,7 @@ router = APIRouter()
 def sitemap_xml():
     import os
     from fastapi.responses import Response
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
             "/terms", "/refund", "/disclaimer", "/contact",
             "/guide", "/about", "/faq", "/articles"]
@@ -2227,7 +2227,7 @@ def sitemap_xml():
 def robots_txt():
     import os
     from fastapi.responses import Response
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     return Response(content=f"User-agent: *\nAllow: /\nSitemap: {base}/sitemap.xml\n",
                     media_type="text/plain")
 
@@ -7713,7 +7713,7 @@ def create_order(
     if referral_event:
         referral_event.order_id = order.id
 
-    public_base = os.getenv("PUBLIC_BASE_URL", "http://127.0.0.1:8767")
+    public_base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io")
     callback_url = f"{public_base}/api/payments/verify"
 
     client = ZarinpalClient()
@@ -8067,7 +8067,7 @@ def start_keyboard() -> dict:
 
 
 def chart_actions_keyboard(chart_id: str, tok: str = "") -> dict:
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     q = f"?t={tok}" if tok else ""  # audit r4 A6: bot charts carry capability token
     sep = "&" if q else ""          # keep the query string well-formed
     return {
@@ -8204,7 +8204,7 @@ async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zo
         chart_id = row.id
 
     bt = big_three(chart.chart_json)
-    base = os.getenv("PUBLIC_BASE_URL", "https://chart.example.com").rstrip("/")
+    base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     caption = (
         f"🌟 **چارت تولد تو آماده شد!**\n\n"
         f"☀️ خورشید: **{bt.get('Sun', {}).get('sign_fa', '')}**\n"
@@ -13368,6 +13368,58 @@ def test_stream_requires_paid_plan(monkeypatch, ctx):
     assert r.status_code == 403
     with Session(engine) as s:
         s.delete(s.get(Chart, free_cid)); s.commit()
+
+```
+
+### `tests/test_content_sweep_v4.py` (47 lines)
+
+```python
+"""V4 audit P1: content sweep guard — user-facing content must stay free of
+predictive/fortune-telling language (self-knowledge framing only).
+
+Hard-banned phrases (would imply fortune-telling):
+  پیش‌بینی سالانه / پیش بینی سالانه / پیشگویی آینده / فال هفتگی / طالع امروز
+Neutral mentions like «نه فال», «فال‌گویی نیست», «سرنوشتِ از پیش نوشته‌شده نیست»
+are ALLOWED — they are the required negative framing.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+ROOT = Path("/root/chart-platform")
+
+BANNED = ["پیش‌بینی سالانه", "پیش بینی سالانه", "پیشگویی آینده",
+          "فال هفتگی", "طالع امروز", "پیش‌بینی هفتگی"]
+
+FILES = [
+    "app/content/articles.json",
+    "app/content/pages.json",
+    "app/templates/index.html",
+    "app/templates/faq.html",
+    "app/templates/sky.html",
+    "app/templates/plans.html",
+    "app/templates/synastry.html",
+    "app/templates/seo_page.html",
+    "app/report/prompt_builder.py",
+    "scripts/gen_articles.py",
+]
+
+
+def test_no_predictive_language_in_user_facing_content():
+    for rel in FILES:
+        txt = (ROOT / rel).read_text(encoding="utf-8")
+        for banned in BANNED:
+            assert banned not in txt, f"{rel} contains banned predictive phrase: {banned!r}"
+
+
+def test_negative_framing_is_present_and_allowed():
+    """The brand voice must actively say 'not fortune-telling' (allowed framing)."""
+    idx = (ROOT / "app/templates/index.html").read_text(encoding="utf-8")
+    assert "نه فال" in idx
+    # and the verified KB keeps its reflection-focused tone
+    kb = json.loads((ROOT / "app/content/islamic_kb.json").read_text(encoding="utf-8"))
+    assert len(kb["concepts"]) >= 25
 
 ```
 
@@ -18560,7 +18612,7 @@ TOPICS = [
     ("عنصرهای چهارگانه: آتش، خاک، هوا، آب", "آموزش نجوم", "عنصرها,آتش,خاک,هوا,آب"),
     ("ماه در هر برج چه احساسی می‌سازد؟", "ماه", "ماه در برج,احساسات,چارت تولد"),
     ("چرا دو نفر با یک برج متفاوت‌اند؟", "آموزش نجوم", "تفاوت برج ها,چارت تولد,ماه,طالع"),
-    ("پیش‌بینی سالانه با ترانزیت‌ها", "ترانزیت", "پیش بینی سالانه,ترانزیت,چارت تولد"),
+    ("روند سالانه با ترانزیت‌ها — نگاهی تأملی", "ترانزیت", "ترانزیت سالانه,چارت تولد,روندها"),
 ]
 
 SYSTEM = """تو یک نویسنده ارشد محتوای فارسی (SEO) با ۱۰ سال تجربه در حوزه نجوم و طالع‌بینی هستی.
@@ -19099,11 +19151,11 @@ parts.append(f"""
 
 ---
 
-## ۱۳) شکاف‌های باز (مهم — از بازبینی ۲۰۲۶-۰۸-۱۳)
+## ۱۳) وضعیت فعلی (به‌روزرسانی‌شده — ۲۰۲۶-۰۸-۱۴)
 
-1. **اشتراک «ترانزیت هفتگی» نیمه‌کاره:** کرون `0 7 * * 6` در پلن [x] خورده ولی هرگز ساخته نشده؛ مشترک پول می‌دهد ولی هیچ چیزی خودکار دریافت نمی‌کند.
-2. **لحن «فال/پیش‌بینی»:** FAQ و ۲۳ موضع در مقالات هنوز «پیش‌بینی» دارند؛ باید → «خودشناسی/تأمل/روند» (غیرمستقیم و الهی، بدون حس فال).
-3. **شکاف رقبا:** صفحه عمومی «آسمان امروز» + تمرین تأمل هفتگی نداریم.
+1. **اشتراک «ترانزیت هفتگی» ✅ کامل:** کرون `0 7 * * 6` نصب و فعال است؛ `scripts/weekly_transit.py` هر شنبه ۰۷:۰۰ (به‌وقت سرور) روند هفته را می‌سازد و به مشترک‌ها تحویل می‌دهد.
+2. **لحن «فال/پیش‌بینی» ✅ پاک‌سازی‌شده:** مقالات، FAQ و قالب‌ها به «خودشناسی/تأمل/روند» تغییر کرده‌اند؛ بازبینی v4 تأیید کرد content نهایی فاقد زبان predictive است.
+3. **صفحه «آسمان امروز» ✅ ساخته شد:** `/sky` + `app/astrology/sky.py` + تمرین تأمل هفتگی (WeeklyReflection) — بدون LLM و بدون پیش‌بینی.
 
 **منتظر کاربر:** نام برند · دامنه اختصاصی · مرچنت واقعی زرین‌پال · کلید Kavenegar · تست گوشی واقعی.
 
@@ -24161,7 +24213,7 @@ APP_ENV=production            # production | development (both prod & production
 SECRET_KEY=change-me-64-chars-random
 DATABASE_URL=postgresql+psycopg2://chart_app:CHANGE_ME@127.0.0.1:5432/chart_platform
 REDIS_URL=redis://127.0.0.1:6379/0
-PUBLIC_BASE_URL=https://chart.example.com
+PUBLIC_BASE_URL=https://YOUR_DOMAIN
 
 # --- Schema boot (audit r3) ---
 # Production: schema is Alembic-managed ONLY — keep 0. Tests set this to 1.
@@ -24185,13 +24237,13 @@ BALE_BOT_TOKEN=
 # webhook security (فقط تلگرام — بله سکرت نمی‌فرستد)
 TELEGRAM_WEBHOOK_SECRET=change-me-random-secret
 
-# --- Payment (Zarinpal sandbox by default) ---
-ZARINPAL_MERCHANT_ID=00000000-0000-0000-0000-000000000000
-ZARINPAL_SANDBOX=true
+# --- Payment (زنده = false؛ sandbox فقط برای تست) ---
+ZARINPAL_MERCHANT_ID=REPLACE_WITH_REAL_MERCHANT_ID
+ZARINPAL_SANDBOX=false
 
 # --- Admin ---
-# پنل ادمین — PIN رقمی (ورود گوشی)
-ADMIN_PIN=000000
+# پنل ادمین — PIN رقمی (ورود گوشی) — اجباری؛ بدون آن در prod بوت نمی‌شود
+ADMIN_PIN=REPLACE_ME
 ADMIN_PHONE=09120000000
 
 # --- Object storage (R2 — own bucket, decoupled from voice-clone since 2026-08-14) ---
@@ -24227,16 +24279,18 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ```
 ........................................................................ [ 24%]
-...........s............................................................ [ 49%]
+.............s.......................................................... [ 48%]
 ........................................................................ [ 73%]
-........................................................................ [ 98%]
-.....                                                                    [100%]
-292 passed, 1 skipped in 14.75s
+........................................................................ [ 97%]
+.......                                                                  [100%]
+294 passed, 1 skipped in 14.53s
 ```
 
 ## ۱۹) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+5f206db 2026-08-14 fix(v4-audit-p1): content sweep + env hygiene — gen_articles title 'پیش‌بینی سالانه' → 'روند سالانه... تأملی'; gen_full_docs stale claims (نیمه‌کاره/نداریم) → status-2026-08-14; .env.example placeholders (ADMIN_PIN=REPLACE_ME, ZARINPAL_SANDBOX=false, PUBLIC_BASE_URL=YOUR_DOMAIN); PUBLIC_BASE_URL fallbacks chart.example.com/127.0.0.1 → chart.negar.io (seo/bots/orders); content-sweep guard test (predictive-language banned); 294 passed
+339e5a9 2026-08-14 docs: regenerate ZAYCHE-CODEBUNDLE — round-5 HARDENING complete (191 files, 20 tables, 14 migrations, 56 test files, 292 passed; adds app/routes/ H1.9, islamic_kb.json H1.7, cities_world H0.1, human_eval H1.8, HARDENING-REPORT)
 428c2f3 2026-08-14 fix(h1-final): align models with DB — declare ix_llm_runs_kind/(created_at,kind), ix_reports_audio_status, ix_reports_status_updated in SQLModel (they existed only in migrations → alembic check drift); deploy gate passes
 3b69fd0 2026-08-14 docs(h1-final): HARDENING report — 16/16 items done, 292 tests (223→292, +30%), 15 feature commits, prod-ready checklist, H2 deferred until after beta
 3800ba1 2026-08-14 feat(h1.10): privacy policy v1.1 — specific: data collected (birth/phone/orders/llm-meta), named third parties (DeepSeek, OpenCode, Edge TTS, Zarinpal), cookies (chart_user/access/admin) + Umami self-hosted analytics, retention (encrypted age backups, 30d), RAG-index deletion in account wipe; 3 tests; 292 passed
@@ -24275,6 +24329,4 @@ ee0579f 2026-08-14 chore(c3): zero-warning test suite — replace deprecated per
 51bcde8 2026-08-14 chore: ruff fix
 1d6a4a6 2026-08-14 security(b7): payment verify state machine — pending→verifying→paid|failed; network errors re-open (pending) instead of failing a possibly-paid order, refresh re-verifies via Zarinpal code 101; ORM expire fix for raw-SQL claim + 3 tests
 1b5e73a 2026-08-14 ops(b6): REAL refund lifecycle — Zarinpal refund call, refunding/refund_failed states + admin retry, originating subscription closed, coupon slot returned; subscriptions.order_id + orders.error + schema-align migration (prod stamped to head)
-c9a87b2 2026-08-14 ops(b6): REAL refund lifecycle — Zarinpal refund call, refunding/refund_failed states + admin retry, originating subscription closed, coupon slot returned; subscriptions.order_id + orders.error migration (prod stamped to head)
-4f547b4 2026-08-14 security(b5): chart creation rate limit 20/min + Redis MANDATORY in prod (boot refuse on memory backend, fail-closed on Redis outage) + conftest dev-mode isolation + tests
 ```
