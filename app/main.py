@@ -1151,6 +1151,22 @@ def _chat_quota_info(session: Session, chart_id: str, order, account_key: str | 
     return {"used": used, "limit": daily_limit, "remaining": max(0, daily_limit - used)}
 
 
+def _monthly_sub_active(session: Session, order, chart_id: str) -> bool:
+    """audit r4 A9: a paid monthly ORDER is not forever — chat requires an
+    UNEXPIRED Subscription row. Web (chat_id None) and bot flows both covered."""
+    from app.timeutil import ensure_utc, utcnow
+    if not order or order.plan_key != "monthly":
+        return True  # non-monthly gates handled by the caller
+    q = select(Subscription).where(Subscription.chart_id == chart_id)
+    if order.chat_id:
+        q = q.where(Subscription.chat_id == order.chat_id)
+    else:
+        q = q.where(Subscription.chat_id == None)  # noqa: E711
+    sub = session.exec(q).first()
+    return bool(sub and sub.active and sub.expires_at
+                and ensure_utc(sub.expires_at) > utcnow())
+
+
 @app.get("/api/chat/access/{chart_id}")
 def api_chat_access(chart_id: str, request: Request, session: Session = Depends(get_session)):
     # audit P0 (round 3): ownership BEFORE paid/quota info — bare UUID must not leak
@@ -1163,6 +1179,9 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     allowed = bool(order and order.plan_key in ("gold", "monthly"))
     if not allowed:
         return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
+    if not _monthly_sub_active(session, order, chart_id):  # A9: expired monthly
+        return {"allowed": False, "used": 0, "limit": 0, "remaining": 0,
+                "reason": "subscription_expired"}
     quota = _chat_quota_info(session, chart_id, order,
                              _chat_account_key(session.get(Chart, chart_id), order, request))
     return {"allowed": True, **quota}
@@ -1206,6 +1225,9 @@ def api_chat(
     ).first()
     if not order or order.plan_key not in ("gold", "monthly"):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
+    # audit r4 A9: monthly subscriptions EXPIRE — a paid order alone is not enough
+    if not _monthly_sub_active(session, order, chart_id):
+        raise HTTPException(403, "اشتراک ماهانه‌ات منقضی شده؛ برای ادامه گفت‌وگو آن را تمدید کن")
 
     # daily quota — ATOMIC per-account claim (audit r4 A8): Redis INCR+TTL so
     # concurrent requests can't both pass the last slot; DB count as degraded fallback

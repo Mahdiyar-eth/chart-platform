@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 
 from app.models import Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent, Subscription
+from app.timeutil import ensure_utc, utcnow
 
 
 def get_or_create_referral_code(session: Session, user_id: str) -> str:
@@ -54,7 +55,7 @@ def create_order(
         ).first()
         if not coupon_row or not coupon_row.active:
             raise ValueError("کد تخفیف نامعتبر است")
-        if coupon_row.expires_at and coupon_row.expires_at < datetime.now(timezone.utc):
+        if coupon_row.expires_at and ensure_utc(coupon_row.expires_at) < utcnow():
             raise ValueError("کد تخفیف منقضی شده")
         if coupon_row.used_count >= coupon_row.max_uses:
             raise ValueError("کد تخفیف مصرف شده")
@@ -117,26 +118,32 @@ def create_order(
 
 
 def activate_subscription(session: Session, order: Order) -> None:
-    """After a paid monthly order: activate/refresh the chat subscription."""
-    if not order.chat_id or not order.chart_id:
+    """After a paid monthly order: activate/refresh the chat subscription.
+
+    audit r4 A9: renewal EXTENDS from the later of (current expiry, now) —
+    a user renewing 20 days early keeps those 20 days (was: now+30, discarding
+    the remainder). Works for bot (chat_id set) and web (chat_id None) flows."""
+    if not order.chart_id:
         return
-    sub = session.exec(
-        select(Subscription).where(
-            Subscription.chat_id == order.chat_id,
-            Subscription.chart_id == order.chart_id,
-        )
-    ).first()
-    now = datetime.now(timezone.utc)
+    q = select(Subscription).where(Subscription.chart_id == order.chart_id)
+    if order.chat_id:
+        q = q.where(Subscription.chat_id == order.chat_id)
+    else:
+        q = q.where(Subscription.chat_id == None)  # noqa: E711 — SQLAlchemy IS NULL
+    sub = session.exec(q).first()
+    now = utcnow()
+    base = sub.expires_at if (sub and sub.expires_at
+                              and ensure_utc(sub.expires_at) > now) else now
     if sub:
         sub.active = True
-        sub.expires_at = now + timedelta(days=30)
+        sub.expires_at = base + timedelta(days=30)
         sub.plan_key = order.plan_key
         sub.platform = order.platform or sub.platform
     else:
         session.add(Subscription(
             chat_id=order.chat_id, platform=order.platform or "telegram",
             chart_id=order.chart_id, freq="weekly", plan_key=order.plan_key,
-            active=True, expires_at=now + timedelta(days=30),
+            active=True, expires_at=base + timedelta(days=30),
         ))
 
 

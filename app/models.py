@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, UniqueConstraint
+from sqlalchemy import Column, Index, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
@@ -171,9 +171,14 @@ class Coupon(SQLModel, table=True):
 
 
 class Subscription(SQLModel, table=True):
+    """Paid monthly chat subscription (plan v3.0 §12). One per (chart, account)."""
     __tablename__ = "subscriptions"
+    __table_args__ = (
+        Index("uq_sub_chart_account", "chart_id",
+              text("COALESCE(chat_id, '')"), unique=True),
+    )
     id: str = Field(default_factory=_uuid, primary_key=True)
-    chat_id: str = Field(index=True)
+    chat_id: str | None = Field(default=None, index=True)  # None = web (non-bot) purchase
     platform: str = Field(default="telegram")   # telegram | bale
     chart_id: str = Field(index=True)
     freq: str = Field(default="daily")          # daily | weekly

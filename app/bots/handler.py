@@ -338,11 +338,12 @@ async def _handle_callback(cb: dict, platform: str) -> None:
                     await send_message(chat_id, "چارت پیدا نشد؛ اول یک چارت بساز.", platform)
                     return
                 # existing active subscription → just show status
+                from datetime import datetime as _dt, timezone as _tz
                 sub = s.exec(select(Subscription).where(
                     Subscription.chat_id == str(chat_id),
-                    Subscription.chart_id == chart_id, Subscription.active == True,
+                    Subscription.chart_id == chart_id, Subscription.active == True,  # noqa: E712
                 )).first()
-                if sub:
+                if sub and sub.expires_at and sub.expires_at > _dt.now(_tz.utc):
                     expires = sub.expires_at.strftime("%Y-%m-%d") if sub.expires_at else "نامحدود"
                     await send_message(
                         chat_id,
@@ -350,6 +351,10 @@ async def _handle_callback(cb: dict, platform: str) -> None:
                         platform,
                     )
                     return
+                elif sub and (not sub.expires_at or sub.expires_at <= _dt.now(_tz.utc)):
+                    sub.active = False  # auto-expire (audit r4 A9)
+                    s.add(sub)
+                    s.commit()
             # paid flow: monthly plan order → zarinpal link (plan v3.0 §7)
             from app.payment.orders import create_order
             with _Session(_engine) as s:
