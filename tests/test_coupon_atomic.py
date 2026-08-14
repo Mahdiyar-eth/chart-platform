@@ -59,23 +59,23 @@ def test_atomic_update_reserves_only_while_capacity():
 
 
 def test_coupon_exhausted_second_order_fails(monkeypatch):
+    """audit r4 A10 — NEW semantics: the coupon slot is reserved at CREATION,
+    so the second order cannot even be created once capacity is gone (the old
+    verify-time consume failed a PAID order — P0-7 money-lost regression)."""
     monkeypatch.setattr(main_mod, "ZarinpalClient", lambda: _FakeGW())
     c = TestClient(app_mod())
     cid = _mk_coupon(max_uses=1)
-    a1, a2 = "AUTH" + uuid.uuid4().hex[:8], "AUTH" + uuid.uuid4().hex[:8]
+    a1 = "AUTH" + uuid.uuid4().hex[:8]
     _mk_order(a1, cid)
-    _mk_order(a2, cid)
+    # legacy raw-DB order (created before reservation): verify must still mark
+    # it PAID — a paying user never gets a failed order over coupon capacity
     r1 = _verify(c, a1)
     assert r1.status_code == 303  # paid → redirect to result
-    r2 = _verify(c, a2)
-    assert r2.status_code == 303
     with engine.begin() as conn:
         row = conn.execute(text("SELECT status FROM orders WHERE authority = :a"), {"a": a1}).one()
         assert row[0] == "paid"
-        row2 = conn.execute(text("SELECT status FROM orders WHERE authority = :a"), {"a": a2}).one()
-        assert row2[0] == "failed"  # coupon capacity was gone
         used = conn.execute(text("SELECT used_count FROM coupons WHERE id = :c"), {"c": cid}).one()
-        assert used[0] == 1
+        assert used[0] == 0  # never reserved → never consumed
 
 
 def app_mod():

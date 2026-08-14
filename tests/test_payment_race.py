@@ -71,5 +71,7 @@ def test_concurrent_verify_processes_once(paid_order):
         reports = s.exec(select(Report).where(Report.chart_id == o.chart_id)).all()
     assert FakeZarinpalClient.verify_calls == 1, f"verify called {FakeZarinpalClient.verify_calls}x"
     assert o.status == "paid"
-    assert coupon.used_count == 1, f"coupon consumed {coupon.used_count}x"
+    # audit r4 A10: coupon consumption moved to order CREATION (reservation);
+    # a raw-DB fixture order never reserved → used_count stays 0
+    assert coupon.used_count == 0, f"coupon consumed {coupon.used_count}x"
     assert len(reports) == 1, f"{len(reports)} reports created (expected 1)"
