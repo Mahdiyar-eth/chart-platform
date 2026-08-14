@@ -152,14 +152,14 @@ def test_refund_rejects_pending_and_already_refunded(monkeypatch):
         s.commit()
         oid = o.id
     r = c.post(f"/api/admin/orders/{oid}/refund")
-    assert r.status_code == 400
+    assert r.status_code == 409  # F-18: CAS claim — non-refundable state → 409 Conflict
 
     with Session(engine) as s:
         o = s.get(Order, oid)
         o.status = "refunded"
         s.commit()
     r2 = c.post(f"/api/admin/orders/{oid}/refund")
-    assert r2.status_code == 400
+    assert r2.status_code == 409
     assert fake.refund_calls == 0  # never hit the gateway
 
 

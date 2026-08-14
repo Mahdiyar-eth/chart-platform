@@ -672,6 +672,13 @@ def api_create_order(
         if not sec or not _owns_chart(sec, session, request):
             raise HTTPException(403, "not authorized")
     user = get_current_user(request)
+    # F-20 (audit v8 P2): in the wallet path, fail FAST before creating the
+    # order — no pending order + coupon reservation is left behind when the
+    # balance can't cover even the full (undiscounted) plan price.
+    if request.headers.get("x-pay-with-balance", "") == "1":
+        _plan = session.get(Plan, plan_key)
+        if not user or not _plan or (user.balance_rial or 0) < (_plan.price_rial or 0):
+            raise HTTPException(400, "موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
             session, plan_key, chart_id,
@@ -683,6 +690,12 @@ def api_create_order(
         if request.headers.get("x-pay-with-balance", "") == "1":
             from app.payment.orders import pay_order_with_balance
             if not pay_order_with_balance(session, order, user):
+                # F-20: immediate compensation — cancel the order and release
+                # the coupon RIGHT NOW instead of waiting for the hourly sweep
+                order.status = "cancelled"
+                if order.coupon_id:
+                    _release_coupon(session, order)
+                session.commit()
                 raise HTTPException(400, "موجودی کیف پول کافی نیست")
             pay_url = None
             # F-03 (audit v5 P1): wallet-paid report must be ENQUEUED, exactly
@@ -899,11 +912,11 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
     only the buyer's chart A lands in their account; B's birth data is stored
     as an anonymous profile reachable solely via its capability token."""
     from app.payment.orders import create_order
-    chart_a, _ = _compute_and_save_chart(
+    chart_a, profile_a = _compute_and_save_chart(
         session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
         time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
         province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
-    chart_b, _ = _compute_and_save_chart(
+    chart_b, profile_b = _compute_and_save_chart(
         session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
         time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
         province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
@@ -916,10 +929,22 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
             session, "synastry", chart_a.id, secondary_chart_id=chart_b.id,
             coupon=None, ref_code="", new_user_id=user.id if user else None,
         )
-    except (LookupError, ValueError) as e:
+    except (LookupError, ValueError, RuntimeError) as e:
+        # F-19 (audit v8 P1): failure compensation — the payment order could
+        # not be created, so the JUST-CREATED charts/profiles (including the
+        # anonymous Person B, which has NO user owner and therefore NO other
+        # deletion path) must not be left orphaned in the DB.
+        try:
+            session.rollback()  # drop the uncommitted order first (it holds an FK to chart A)
+            session.delete(chart_a)
+            session.delete(chart_b)
+            session.flush()
+            session.delete(profile_a)
+            session.delete(profile_b)
+            session.commit()
+        except Exception as _e:  # noqa: BLE001 — cleanup is best-effort
+            session.rollback()
         raise HTTPException(400, str(e))
-    except RuntimeError as e:
-        raise HTTPException(502, str(e))
     return {"order_id": order.id, "payment_url": pay_url,
             "chart_a": chart_a.id, "chart_b": chart_b.id,
             "token_b": chart_b.access_token}  # H1.6: guest capability token

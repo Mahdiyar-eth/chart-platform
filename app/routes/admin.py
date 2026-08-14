@@ -83,12 +83,17 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(404, "order not found")
-    # F-04 (audit v5 P1): 'refunding' is retryable too — if the local commit
-    # failed after the gateway succeeded, the admin can re-issue and the
-    # gateway's already-refunded answer lands in the refunded branch below.
-    if order.status not in ("paid", "refund_failed", "refunding"):
-        raise HTTPException(400, "فقط سفارش پرداخت‌شده ریفاند می‌شود")
-    order.status = "refunding"
+    # F-18 (audit v8 P1): the paid → refunding transition is an ATOMIC CAS.
+    # ANY caller may proceed to the gateway (repeats answer 66/67), but the
+    # finalize step below is also CAS — so local side-effects (_release_coupon,
+    # close subscription) run EXACTLY once even under concurrent admins.
+    from sqlalchemy import text as _refund_text
+    claimed = session.exec(_refund_text(
+        "UPDATE orders SET status = 'refunding' WHERE id = :oid "
+        "AND status IN ('paid', 'refund_failed', 'refunding') RETURNING id"
+    ).bindparams(oid=order.id)).first()
+    if not claimed:
+        raise HTTPException(409, "سفارش در وضعیت قابل ریفاند نیست")
     session.commit()
     try:
         from app.payment.zarinpal import ZarinpalClient
@@ -100,17 +105,22 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         # (a timeout message mentioning '66' is NOT 'already refunded').
         gcode = getattr(e, "gateway_code", None)
         if gcode in (66, 67):
-            order.status = "refunded"
-            order.error = None
-            _release_coupon(session, order)
-            if order.chart_id:
-                subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
-                for sub in subs:
-                    sub.active = False
-                    sub.expires_at = datetime.now(timezone.utc)
+            # F-18: finalize is CAS — only the winning caller runs side-effects
+            won = session.exec(_refund_text(
+                "UPDATE orders SET status = 'refunded', error = NULL WHERE id = :oid "
+                "AND status = 'refunding' RETURNING id"
+            ).bindparams(oid=order.id)).first()
             session.commit()
-            audit(session.bind, "admin", "order.refund", order.id,
-                  f"already-refunded (gateway code {gcode})")
+            if won:
+                _release_coupon(session, order)
+                if order.chart_id:
+                    subs = session.exec(select(Subscription).where(Subscription.order_id == order.id)).all()
+                    for sub in subs:
+                        sub.active = False
+                        sub.expires_at = datetime.now(timezone.utc)
+                session.commit()
+                audit(session.bind, "admin", "order.refund", order.id,
+                      f"already-refunded (gateway code {gcode})")
             return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
         order.status = "refund_failed"
         order.error = f"ریفاند ناموفق: {err[:300]}"
@@ -118,7 +128,15 @@ def admin_refund(order_id: str, request: Request, session: Session = Depends(get
         audit(session.bind, "admin", "order.refund_failed", order.id, err[:200])
         raise HTTPException(502, f"ریفاند در درگاه ناموفق بود: {err[:200]} — بعداً دوباره تلاش کنید")
 
-    order.status = "refunded"
+    # F-18: success finalize is also CAS — side-effects run exactly once even
+    # if two admins refund the same order concurrently (loser skips them)
+    won = session.exec(_refund_text(
+        "UPDATE orders SET status = 'refunded', error = NULL WHERE id = :oid "
+        "AND status = 'refunding' RETURNING id"
+    ).bindparams(oid=order.id)).first()
+    session.commit()
+    if not won:
+        return {"ok": True, "status": "refunded", "ref_id": order.ref_id or ""}
     order.ref_id = res.get("ref_id", order.ref_id or "")
     order.error = None
     _release_coupon(session, order)  # audit r4 A10 — return the slot
