@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select
 
-from app.models import (Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent,
+from app.models import (BirthProfile, Chart, Coupon, Order, Plan, ReferralCode, ReferralEvent,
                         Report, Subscription, User, WithdrawalRequest)
 from app.timeutil import ensure_utc, utcnow
 
@@ -80,7 +80,10 @@ def create_order(
         referrer = session.exec(
             select(ReferralCode).where(ReferralCode.code == ref_code.strip())
         ).first()
-        if not existing and referrer:
+        # H1.4: self-referral must be impossible — using your OWN referral code
+        # would grant 10% off + a 5% self-reward (money printer)
+        self_ref = referrer is not None and new_user_id is not None and referrer.user_id == new_user_id
+        if not existing and referrer and not self_ref:
             amount = max(1, int(amount * 0.9))
             referral_event = ReferralEvent(
                 code=ref_code.strip(), referrer_user_id=referrer.user_id,
@@ -177,6 +180,15 @@ def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
     )).first()
     if not ev or not ev.referrer_user_id:
         return None
+    # H1.4: second layer of defense — if the payer IS the referrer (created
+    # before the self-referral guard), void the reward instead of paying out
+    owner = session.get(Chart, order.chart_id)
+    if owner and owner.profile_id:
+        prof = session.get(BirthProfile, owner.profile_id)
+        if prof and prof.user_id == ev.referrer_user_id:
+            ev.status = "voided"
+            session.flush()
+            return ev
     referrer = session.get(User, ev.referrer_user_id)
     if not referrer:
         return None
@@ -189,8 +201,11 @@ def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
 def withdraw_request(session: Session, user_id: str, amount_rial: int) -> bool:
     """D3: queue a cash-out request. One pending at a time; amount must be
     positive and within balance. Returns False on any refusal."""
+    # H1.4: minimum payout — 500k rial (50k toman) keeps manual bank transfers
+    # worth the effort and discourages dust-level abuse
+    MIN_WITHDRAW_RIAL = 500_000
     u = session.get(User, user_id)
-    if not u or amount_rial <= 0 or amount_rial > (u.balance_rial or 0):
+    if not u or amount_rial < MIN_WITHDRAW_RIAL or amount_rial > (u.balance_rial or 0):
         return False
     if session.exec(select(WithdrawalRequest).where(
             WithdrawalRequest.user_id == user_id,

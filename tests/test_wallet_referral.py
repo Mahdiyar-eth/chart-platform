@@ -133,23 +133,24 @@ def test_withdrawal_lifecycle(db_session):
     """User requests cash-out; admin resolves paid/rejected; one pending at a
     time; amount cannot exceed balance."""
     u = _mk_user(db_session)
-    u.balance_rial = 40_000
+    u.balance_rial = 600_000
     db_session.commit()
 
     from app.payment.orders import withdraw_request
-    assert withdraw_request(db_session, u.id, 10_000) is True
-    assert withdraw_request(db_session, u.id, 10_000) is False  # one pending
+    assert withdraw_request(db_session, u.id, 500_000) is True   # at floor
+    assert withdraw_request(db_session, u.id, 500_000) is False  # one pending
 
     wr = db_session.exec(select(WithdrawalRequest).where(
         WithdrawalRequest.user_id == u.id)).first()
-    assert wr.amount_rial == 10_000 and wr.status == "pending"
+    assert wr.amount_rial == 500_000 and wr.status == "pending"
 
     assert withdraw_request(db_session, u.id, 999_999) is False  # overdraw
     assert withdraw_request(db_session, u.id, -5) is False
+    assert withdraw_request(db_session, u.id, 100_000) is False  # H1.4 below floor
 
     from app.payment.orders import resolve_withdrawal
     assert resolve_withdrawal(db_session, wr.id, "paid", "شماره پیگیری 123") is True
     db_session.refresh(wr)
     assert wr.status == "paid" and wr.resolved_at is not None
     db_session.refresh(u)
-    assert u.balance_rial == 40_000  # balance NOT auto-debited (manual payout)
+    assert u.balance_rial == 600_000  # balance NOT auto-debited (manual payout)
