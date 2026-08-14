@@ -1594,8 +1594,16 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # cascade (audit P2-2): everything tied to these charts/profiles must go,
     # otherwise orphans keep piling up (subscriptions would keep messaging a
     # deleted user; R2 PDFs would leak private birth data).
+    # audit r4 C6: two real bugs fixed here — (1) chat_messages were NEVER
+    # deleted (orphans + FK violation), (2) SQLAlchemy's unitofwork does not
+    # topologically order these deletes, so an explicit flush() per FK level
+    # is required (Chart→BirthProfile, Message→Chart). Before this fix,
+    # account deletion 500'd for ANY user with charts/chats.
     from app.storage import delete_object
     for cid in chart_ids:
+        # chat messages (FK → chart) — was missing entirely (audit r4 C6)
+        for msg in session.exec(select(ChatMessage).where(ChatMessage.chart_id == cid)).all():
+            session.delete(msg)
         # reports (+ their R2 objects + LLM runs)
         for rep in session.exec(select(Report).where(Report.chart_id == cid)).all():
             if rep.r2_key:
@@ -1613,6 +1621,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
             session.delete(sub)
         for w in session.exec(select(WeeklyReflection).where(WeeklyReflection.chart_id == cid)).all():
             session.delete(w)
+    session.flush()  # children gone before charts
     # referrals (this user as referrer or referred)
     for e in session.exec(select(ReferralEvent).where(
         (ReferralEvent.referrer_user_id == u.id) | (ReferralEvent.new_user_id == u.id)
@@ -1623,6 +1632,7 @@ def account_delete(request: Request, csrf_token: str = Form(""),
 
     for c in charts:
         session.delete(c)
+    session.flush()  # charts gone before profiles (unitofwork won't order this)
     for p in profiles:
         session.delete(p)
     session.delete(u)

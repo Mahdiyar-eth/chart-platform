@@ -145,6 +145,12 @@ def main() -> int:
             for obj in page.get("Contents", []):
                 if obj["LastModified"].timestamp() < r2_cutoff:
                     client.delete_object(Bucket=bucket, Key=obj["Key"])
+        # audit r4 C6: regenerable TTS audio (chart-audio/) also expires after
+        # 30 days — privacy + cost; reports regenerate on demand (C1)
+        for page in paginator.paginate(Bucket=bucket, Prefix="chart-audio/"):
+            for obj in page.get("Contents", []):
+                if obj["LastModified"].timestamp() < r2_cutoff:
+                    client.delete_object(Bucket=bucket, Key=obj["Key"])
     except Exception:  # noqa: BLE001 — retention must not fail the backup
         pass
 
