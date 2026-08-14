@@ -120,4 +120,51 @@ GOLDEN_CHARTS = [
             "verify_utc": "1994-08-23 01:40:00",  # 06:10 +4:30 DST → UTC
         },
     },
+    # ── H0.1 (HARDENING): world DST coverage — london/newyork summer vs winter,
+    # dubai fixed offset ──
+    {
+        "id": "chart-9-london-summer",
+        "name": "لندن تابستان ۱۹۹۴ (BST +1 → UTC)",
+        "birth": {"lat": 51.5074, "lon": -0.1278, "year": 1994, "month": 7, "day": 10,
+                  "hour": 12, "minute": 30, "time_known": True, "jalali": False,
+                  "tz_name": "Europe/London"},
+        "engine_config": None,
+        "expected": {"verify_utc": "1994-07-10 11:30:00"},  # independent zoneinfo
+    },
+    {
+        "id": "chart-10-london-winter",
+        "name": "لندن زمستان ۱۹۹۴ (GMT +0 → UTC)",
+        "birth": {"lat": 51.5074, "lon": -0.1278, "year": 1994, "month": 1, "day": 10,
+                  "hour": 12, "minute": 30, "time_known": True, "jalali": False,
+                  "tz_name": "Europe/London"},
+        "engine_config": None,
+        "expected": {"verify_utc": "1994-01-10 12:30:00"},
+    },
+    {
+        "id": "chart-11-newyork-summer",
+        "name": "نیویورک تابستان ۱۹۹۴ (EDT −4 → UTC)",
+        "birth": {"lat": 40.7128, "lon": -74.0060, "year": 1994, "month": 7, "day": 10,
+                  "hour": 12, "minute": 30, "time_known": True, "jalali": False,
+                  "tz_name": "America/New_York"},
+        "engine_config": None,
+        "expected": {"verify_utc": "1994-07-10 16:30:00"},
+    },
+    {
+        "id": "chart-12-newyork-winter",
+        "name": "نیویورک زمستان ۱۹۹۴ (EST −5 → UTC)",
+        "birth": {"lat": 40.7128, "lon": -74.0060, "year": 1994, "month": 1, "day": 10,
+                  "hour": 12, "minute": 30, "time_known": True, "jalali": False,
+                  "tz_name": "America/New_York"},
+        "engine_config": None,
+        "expected": {"verify_utc": "1994-01-10 17:30:00"},
+    },
+    {
+        "id": "chart-13-dubai",
+        "name": "دبی (بدون DST — آفست ثابت +4)",
+        "birth": {"lat": 25.2048, "lon": 55.2708, "year": 2024, "month": 7, "day": 10,
+                  "hour": 12, "minute": 30, "time_known": True, "jalali": False,
+                  "tz_name": "Asia/Dubai"},
+        "engine_config": None,
+        "expected": {"verify_utc": "2024-07-10 08:30:00"},
+    },
 ]

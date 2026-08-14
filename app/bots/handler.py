@@ -199,9 +199,11 @@ async def _route_by_state(chat_id: int, platform: str, text: str) -> bool:
 async def _compute_and_send_chart(chat_id: int, platform: str, payload: dict, zodiac: str) -> None:
     """Compute chart from payload + chosen zodiac system, persist, send card."""
     try:
+        from app.astrology.cities_world import tz_from_coords
         chart = compute_from_fields(
             payload["lat"], payload["lon"], payload["year"], payload["month"],
             payload["day"], payload["hour"], payload["minute"], zodiac=zodiac,
+            tz_name=tz_from_coords(payload["lat"], payload["lon"]),
         )
     except Exception as e:  # noqa: BLE001
         logger.error("compute failed: %s", e)

@@ -1,0 +1,11002 @@
+[
+{
+"id": 1796236,
+"name": "Shanghai",
+"ascii": "Shanghai",
+"lat": 31.22222,
+"lon": 121.45806,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 24874500
+},
+{
+"id": 1816670,
+"name": "Beijing",
+"ascii": "Beijing",
+"lat": 39.9075,
+"lon": 116.39723,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 18960744
+},
+{
+"id": 1795565,
+"name": "Shenzhen",
+"ascii": "Shenzhen",
+"lat": 22.54554,
+"lon": 114.0683,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 17494398
+},
+{
+"id": 1809858,
+"name": "Guangzhou",
+"ascii": "Guangzhou",
+"lat": 23.11667,
+"lon": 113.25,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 16096724
+},
+{
+"id": 2314302,
+"name": "Kinshasa",
+"ascii": "Kinshasa",
+"lat": -4.32758,
+"lon": 15.31357,
+"country": "CD",
+"tz": "Africa/Kinshasa",
+"pop": 16000000
+},
+{
+"id": 745044,
+"name": "Istanbul",
+"ascii": "Istanbul",
+"lat": 41.01384,
+"lon": 28.94966,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 15701602
+},
+{
+"id": 2332459,
+"name": "Lagos",
+"ascii": "Lagos",
+"lat": 6.45407,
+"lon": 3.39467,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 15388000
+},
+{
+"id": 1566083,
+"name": "Ho Chi Minh City",
+"ascii": "Ho Chi Minh City",
+"lat": 10.82302,
+"lon": 106.62965,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 14002598
+},
+{
+"id": 1815286,
+"name": "Chengdu",
+"ascii": "Chengdu",
+"lat": 30.66667,
+"lon": 104.06667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 13568357
+},
+{
+"id": 1172451,
+"name": "Lahore",
+"ascii": "Lahore",
+"lat": 31.558,
+"lon": 74.35071,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 13004135
+},
+{
+"id": 1275339,
+"name": "Mumbai",
+"ascii": "Mumbai",
+"lat": 19.07283,
+"lon": 72.88261,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 12691836
+},
+{
+"id": 3448439,
+"name": "São Paulo",
+"ascii": "Sao Paulo",
+"lat": -23.5475,
+"lon": -46.63611,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 12400232
+},
+{
+"id": 3530597,
+"name": "Mexico City",
+"ascii": "Mexico City",
+"lat": 19.42847,
+"lon": -99.12766,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 12294193
+},
+{
+"id": 1174872,
+"name": "Karachi",
+"ascii": "Karachi",
+"lat": 24.8608,
+"lon": 67.0104,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 11624219
+},
+{
+"id": 1792947,
+"name": "Tianjin",
+"ascii": "Tianjin",
+"lat": 39.14222,
+"lon": 117.17667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 11090314
+},
+{
+"id": 1273294,
+"name": "Delhi",
+"ascii": "Delhi",
+"lat": 28.65195,
+"lon": 77.23149,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 11034555
+},
+{
+"id": 1791247,
+"name": "Wuhan",
+"ascii": "Wuhan",
+"lat": 30.58333,
+"lon": 114.26667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 10392693
+},
+{
+"id": 524901,
+"name": "Moscow",
+"ascii": "Moscow",
+"lat": 55.75204,
+"lon": 37.61781,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 10381222
+},
+{
+"id": 1185241,
+"name": "Dhaka",
+"ascii": "Dhaka",
+"lat": 23.7104,
+"lon": 90.40744,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 10356500
+},
+{
+"id": 1835848,
+"name": "Seoul",
+"ascii": "Seoul",
+"lat": 37.566,
+"lon": 126.9784,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 10349312
+},
+{
+"id": 1850147,
+"name": "Tokyo",
+"ascii": "Tokyo",
+"lat": 35.6895,
+"lon": 139.69171,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 9733276
+},
+{
+"id": 1812545,
+"name": "Dongguan",
+"ascii": "Dongguan",
+"lat": 23.01797,
+"lon": 113.74866,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 9644871
+},
+{
+"id": 360630,
+"name": "Cairo",
+"ascii": "Cairo",
+"lat": 30.06263,
+"lon": 31.24967,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 9606916
+},
+{
+"id": 1790630,
+"name": "Xi’an",
+"ascii": "Xi'an",
+"lat": 34.25833,
+"lon": 108.92861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 9600000
+},
+{
+"id": 993800,
+"name": "Johannesburg",
+"ascii": "Johannesburg",
+"lat": -26.20227,
+"lon": 28.04363,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 9418183
+},
+{
+"id": 1799962,
+"name": "Nanjing",
+"ascii": "Nanjing",
+"lat": 32.06167,
+"lon": 118.77778,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 9314685
+},
+{
+"id": 1808926,
+"name": "Hangzhou",
+"ascii": "Hangzhou",
+"lat": 30.29365,
+"lon": 120.16142,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 9236032
+},
+{
+"id": 1811103,
+"name": "Foshan",
+"ascii": "Foshan",
+"lat": 23.02677,
+"lon": 113.13148,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 9042509
+},
+{
+"id": 2643743,
+"name": "London",
+"ascii": "London",
+"lat": 51.50853,
+"lon": -0.12574,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 8961989
+},
+{
+"id": 5128581,
+"name": "New York City",
+"ascii": "New York City",
+"lat": 40.71427,
+"lon": -74.00597,
+"country": "US",
+"tz": "America/New_York",
+"pop": 8804190
+},
+{
+"id": 1642911,
+"name": "Jakarta",
+"ascii": "Jakarta",
+"lat": -6.21462,
+"lon": 106.84513,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 8540121
+},
+{
+"id": 1277333,
+"name": "Bengaluru",
+"ascii": "Bengaluru",
+"lat": 12.97194,
+"lon": 77.59369,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 8495492
+},
+{
+"id": 1581130,
+"name": "Hanoi",
+"ascii": "Hanoi",
+"lat": 21.0245,
+"lon": 105.84117,
+"country": "VN",
+"tz": "Asia/Bangkok",
+"pop": 8053663
+},
+{
+"id": 1668341,
+"name": "Taipei",
+"ascii": "Taipei",
+"lat": 25.05306,
+"lon": 121.52639,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 7871900
+},
+{
+"id": 3936456,
+"name": "Lima",
+"ascii": "Lima",
+"lat": -12.04318,
+"lon": -77.02824,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 7737002
+},
+{
+"id": 3688689,
+"name": "Bogotá",
+"ascii": "Bogota",
+"lat": 4.60971,
+"lon": -74.08175,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 7674366
+},
+{
+"id": 1814906,
+"name": "Chongqing",
+"ascii": "Chongqing",
+"lat": 29.56026,
+"lon": 106.55771,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 7457599
+},
+{
+"id": 1819729,
+"name": "Hong Kong",
+"ascii": "Hong Kong",
+"lat": 22.27832,
+"lon": 114.17469,
+"country": "HK",
+"tz": "Asia/Hong_Kong",
+"pop": 7396076
+},
+{
+"id": 98182,
+"name": "Baghdad",
+"ascii": "Baghdad",
+"lat": 33.34058,
+"lon": 44.40088,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 7216000
+},
+{
+"id": 1790842,
+"name": "Wuzhong",
+"ascii": "Wuzhong",
+"lat": 37.9867,
+"lon": 106.201,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 7202654
+},
+{
+"id": 1797929,
+"name": "Qingdao",
+"ascii": "Qingdao",
+"lat": 36.06488,
+"lon": 120.38042,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 7172451
+},
+{
+"id": 112931,
+"name": "Tehran",
+"ascii": "Tehran",
+"lat": 35.69439,
+"lon": 51.42151,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 7153309
+},
+{
+"id": 2034937,
+"name": "Shenyang",
+"ascii": "Shenyang",
+"lat": 41.79222,
+"lon": 123.43278,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 7050000
+},
+{
+"id": 1269843,
+"name": "Hyderabad",
+"ascii": "Hyderabad",
+"lat": 17.38405,
+"lon": 78.45636,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 6993262
+},
+{
+"id": 3451190,
+"name": "Rio de Janeiro",
+"ascii": "Rio de Janeiro",
+"lat": -22.90642,
+"lon": -43.18223,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 6747815
+},
+{
+"id": 1886760,
+"name": "Suzhou",
+"ascii": "Suzhou",
+"lat": 31.30408,
+"lon": 120.59538,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 6715559
+},
+{
+"id": 11072148,
+"name": "Puxi",
+"ascii": "Puxi",
+"lat": 31.24414,
+"lon": 121.46592,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 6683712
+},
+{
+"id": 1279233,
+"name": "Ahmedabad",
+"ascii": "Ahmedabad",
+"lat": 23.02579,
+"lon": 72.58727,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 6357693
+},
+{
+"id": 2293538,
+"name": "Abidjan",
+"ascii": "Abidjan",
+"lat": 5.35444,
+"lon": -4.00167,
+"country": "CI",
+"tz": "Africa/Abidjan",
+"pop": 6321017
+},
+{
+"id": 1798524,
+"name": "Pudong",
+"ascii": "Pudong",
+"lat": 31.23995,
+"lon": 121.50094,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 5681512
+},
+{
+"id": 2147714,
+"name": "Sydney",
+"ascii": "Sydney",
+"lat": -33.86785,
+"lon": 151.20732,
+"country": "AU",
+"tz": "Australia/Sydney",
+"pop": 5638830
+},
+{
+"id": 1880252,
+"name": "Singapore",
+"ascii": "Singapore",
+"lat": 1.28967,
+"lon": 103.85007,
+"country": "SG",
+"tz": "Asia/Singapore",
+"pop": 5638700
+},
+{
+"id": 2158177,
+"name": "Melbourne",
+"ascii": "Melbourne",
+"lat": -37.814,
+"lon": 144.96332,
+"country": "AU",
+"tz": "Australia/Melbourne",
+"pop": 5435590
+},
+{
+"id": 160263,
+"name": "Dar es Salaam",
+"ascii": "Dar es Salaam",
+"lat": -6.82349,
+"lon": 39.26951,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 5383728
+},
+{
+"id": 498817,
+"name": "Saint Petersburg",
+"ascii": "Saint Petersburg",
+"lat": 59.93863,
+"lon": 30.31413,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 5351935
+},
+{
+"id": 361058,
+"name": "Alexandria",
+"ascii": "Alexandria",
+"lat": 31.20176,
+"lon": 29.91582,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 5263542
+},
+{
+"id": 2037013,
+"name": "Harbin",
+"ascii": "Harbin",
+"lat": 45.75,
+"lon": 126.65,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 5242897
+},
+{
+"id": 1609350,
+"name": "Bangkok",
+"ascii": "Bangkok",
+"lat": 13.75398,
+"lon": 100.50144,
+"country": "TH",
+"tz": "Asia/Bangkok",
+"pop": 5104476
+},
+{
+"id": 1808722,
+"name": "Hefei",
+"ascii": "Hefei",
+"lat": 31.86389,
+"lon": 117.28083,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 5050000
+},
+{
+"id": 1814087,
+"name": "Dalian",
+"ascii": "Dalian",
+"lat": 38.91222,
+"lon": 121.60222,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4913879
+},
+{
+"id": 2335204,
+"name": "Kano",
+"ascii": "Kano",
+"lat": 12.00012,
+"lon": 8.51672,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 4910000
+},
+{
+"id": 3871336,
+"name": "Santiago",
+"ascii": "Santiago",
+"lat": -33.45694,
+"lon": -70.64827,
+"country": "CL",
+"tz": "America/Santiago",
+"pop": 4837295
+},
+{
+"id": 3369157,
+"name": "Cape Town",
+"ascii": "Cape Town",
+"lat": -33.92584,
+"lon": 18.42322,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 4772846
+},
+{
+"id": 1168197,
+"name": "Peshawar",
+"ascii": "Peshawar",
+"lat": 34.008,
+"lon": 71.57849,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 4758762
+},
+{
+"id": 2038180,
+"name": "Changchun",
+"ascii": "Changchun",
+"lat": 43.88,
+"lon": 125.32278,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4714996
+},
+{
+"id": 105343,
+"name": "Jeddah",
+"ascii": "Jeddah",
+"lat": 21.49012,
+"lon": 39.18624,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 4697000
+},
+{
+"id": 1264527,
+"name": "Chennai",
+"ascii": "Chennai",
+"lat": 13.08784,
+"lon": 80.27847,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 4681087
+},
+{
+"id": 1275004,
+"name": "Kolkata",
+"ascii": "Kolkata",
+"lat": 22.56263,
+"lon": 88.36304,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 4631392
+},
+{
+"id": 1790645,
+"name": "Xiamen",
+"ascii": "Xiamen",
+"lat": 24.47979,
+"lon": 118.08187,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4617251
+},
+{
+"id": 1255364,
+"name": "Surat",
+"ascii": "Surat",
+"lat": 21.19594,
+"lon": 72.83023,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 4591246
+},
+{
+"id": 1298824,
+"name": "Yangon",
+"ascii": "Yangon",
+"lat": 16.80528,
+"lon": 96.15611,
+"country": "MM",
+"tz": "Asia/Yangon",
+"pop": 4477638
+},
+{
+"id": 13308620,
+"name": "Bao'an",
+"ascii": "Bao'an",
+"lat": 22.55213,
+"lon": 113.88288,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4476554
+},
+{
+"id": 1138958,
+"name": "Kabul",
+"ascii": "Kabul",
+"lat": 34.52813,
+"lon": 69.17233,
+"country": "AF",
+"tz": "Asia/Kabul",
+"pop": 4434550
+},
+{
+"id": 184745,
+"name": "Nairobi",
+"ascii": "Nairobi",
+"lat": -1.28333,
+"lon": 36.81667,
+"country": "KE",
+"tz": "Africa/Nairobi",
+"pop": 4397073
+},
+{
+"id": 1790923,
+"name": "Wuxi",
+"ascii": "Wuxi",
+"lat": 31.56887,
+"lon": 120.28857,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4396835
+},
+{
+"id": 360995,
+"name": "Giza",
+"ascii": "Giza",
+"lat": 30.00944,
+"lon": 31.20861,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 4367343
+},
+{
+"id": 1805753,
+"name": "Jinan",
+"ascii": "Jinan",
+"lat": 36.66833,
+"lon": 116.99722,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4335989
+},
+{
+"id": 1793511,
+"name": "Taiyuan",
+"ascii": "Taiyuan",
+"lat": 37.86944,
+"lon": 112.56028,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4303673
+},
+{
+"id": 1784658,
+"name": "Zhengzhou",
+"ascii": "Zhengzhou",
+"lat": 34.75778,
+"lon": 113.64861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 4253913
+},
+{
+"id": 2460596,
+"name": "Bamako",
+"ascii": "Bamako",
+"lat": 12.60915,
+"lon": -7.97522,
+"country": "ML",
+"tz": "Africa/Bamako",
+"pop": 4227569
+},
+{
+"id": 108410,
+"name": "Riyadh",
+"ascii": "Riyadh",
+"lat": 24.68773,
+"lon": 46.72185,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 4205961
+},
+{
+"id": 12908892,
+"name": "New Taipei City",
+"ascii": "New Taipei City",
+"lat": 25.06199,
+"lon": 121.45703,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 4004367
+},
+{
+"id": 12747063,
+"name": "New Territories",
+"ascii": "New Territories",
+"lat": 22.42441,
+"lon": 114.11095,
+"country": "HK",
+"tz": "Asia/Hong_Kong",
+"pop": 3984077
+},
+{
+"id": 1795270,
+"name": "Shijiazhuang",
+"ascii": "Shijiazhuang",
+"lat": 38.04139,
+"lon": 114.47861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3938513
+},
+{
+"id": 1205733,
+"name": "Chattogram",
+"ascii": "Chattogram",
+"lat": 22.3384,
+"lon": 91.83168,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 3920222
+},
+{
+"id": 344979,
+"name": "Addis Ababa",
+"ascii": "Addis Ababa",
+"lat": 9.02497,
+"lon": 38.74689,
+"country": "ET",
+"tz": "Africa/Addis_Ababa",
+"pop": 3860000
+},
+{
+"id": 1804651,
+"name": "Kunming",
+"ascii": "Kunming",
+"lat": 25.03889,
+"lon": 102.71833,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3855346
+},
+{
+"id": 6986104,
+"name": "Zhongshan",
+"ascii": "Zhongshan",
+"lat": 22.52306,
+"lon": 113.37912,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3841873
+},
+{
+"id": 1799869,
+"name": "Nanning",
+"ascii": "Nanning",
+"lat": 22.81667,
+"lon": 108.31667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3839800
+},
+{
+"id": 1795940,
+"name": "Shantou",
+"ascii": "Shantou",
+"lat": 23.35489,
+"lon": 116.67876,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3838900
+},
+{
+"id": 5368361,
+"name": "Los Angeles",
+"ascii": "Los Angeles",
+"lat": 34.05223,
+"lon": -118.24368,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 3820914
+},
+{
+"id": 1179400,
+"name": "Faisalabad",
+"ascii": "Faisalabad",
+"lat": 31.41554,
+"lon": 73.08969,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 3800193
+},
+{
+"id": 292223,
+"name": "Dubai",
+"ascii": "Dubai",
+"lat": 25.07725,
+"lon": 55.30927,
+"country": "AE",
+"tz": "Asia/Dubai",
+"pop": 3790000
+},
+{
+"id": 1848354,
+"name": "Yokohama",
+"ascii": "Yokohama",
+"lat": 35.43333,
+"lon": 139.65,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 3777491
+},
+{
+"id": 1810821,
+"name": "Fuzhou",
+"ascii": "Fuzhou",
+"lat": 26.06139,
+"lon": 119.30611,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3740000
+},
+{
+"id": 1799397,
+"name": "Ningbo",
+"ascii": "Ningbo",
+"lat": 29.87819,
+"lon": 121.54945,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3731203
+},
+{
+"id": 2553604,
+"name": "Casablanca",
+"ascii": "Casablanca",
+"lat": 33.58831,
+"lon": -7.61138,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 3665954
+},
+{
+"id": 2339354,
+"name": "Ibadan",
+"ascii": "Ibadan",
+"lat": 7.37756,
+"lon": 3.90591,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 3649000
+},
+{
+"id": 1798425,
+"name": "Puyang",
+"ascii": "Puyang",
+"lat": 29.45679,
+"lon": 119.88872,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3590000
+},
+{
+"id": 323786,
+"name": "Ankara",
+"ascii": "Ankara",
+"lat": 39.91987,
+"lon": 32.85427,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 3517182
+},
+{
+"id": 1794903,
+"name": "Shiyan",
+"ascii": "Shiyan",
+"lat": 32.6475,
+"lon": 110.77806,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3460000
+},
+{
+"id": 2950159,
+"name": "Berlin",
+"ascii": "Berlin",
+"lat": 52.52437,
+"lon": 13.41053,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 3426354
+},
+{
+"id": 1793346,
+"name": "Tangshan",
+"ascii": "Tangshan",
+"lat": 39.64381,
+"lon": 118.18319,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3372102
+},
+{
+"id": 1166993,
+"name": "Rawalpindi",
+"ascii": "Rawalpindi",
+"lat": 33.59733,
+"lon": 73.0479,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 3357612
+},
+{
+"id": 13512505,
+"name": "Lüliang",
+"ascii": "Lueliang",
+"lat": 37.5192,
+"lon": 111.14436,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3346500
+},
+{
+"id": 1007311,
+"name": "Durban",
+"ascii": "Durban",
+"lat": -29.8579,
+"lon": 31.0292,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 3338026
+},
+{
+"id": 1815456,
+"name": "Changzhou",
+"ascii": "Changzhou",
+"lat": 31.77359,
+"lon": 119.95401,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3290918
+},
+{
+"id": 1838524,
+"name": "Busan",
+"ascii": "Busan",
+"lat": 35.10168,
+"lon": 129.03004,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 3285147
+},
+{
+"id": 3117735,
+"name": "Madrid",
+"ascii": "Madrid",
+"lat": 40.4165,
+"lon": -3.70256,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 3255944
+},
+{
+"id": 1871859,
+"name": "Pyongyang",
+"ascii": "Pyongyang",
+"lat": 39.03385,
+"lon": 125.75432,
+"country": "KP",
+"tz": "Asia/Pyongyang",
+"pop": 3222000
+},
+{
+"id": 1785286,
+"name": "Zibo",
+"ascii": "Zibo",
+"lat": 36.79056,
+"lon": 118.06333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3129228
+},
+{
+"id": 1259229,
+"name": "Pune",
+"ascii": "Pune",
+"lat": 18.51957,
+"lon": 73.85535,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 3124458
+},
+{
+"id": 750269,
+"name": "Bursa",
+"ascii": "Bursa",
+"lat": 40.19559,
+"lon": 29.06013,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 3101833
+},
+{
+"id": 1815577,
+"name": "Changsha",
+"ascii": "Changsha",
+"lat": 28.19874,
+"lon": 112.97087,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3093980
+},
+{
+"id": 1692192,
+"name": "Quezon City",
+"ascii": "Quezon City",
+"lat": 14.6488,
+"lon": 121.0509,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 3084270
+},
+{
+"id": 1269515,
+"name": "Jaipur",
+"ascii": "Jaipur",
+"lat": 26.91962,
+"lon": 75.78781,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 3046163
+},
+{
+"id": 1809461,
+"name": "Guiyang",
+"ascii": "Guiyang",
+"lat": 26.58333,
+"lon": 106.71667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3037159
+},
+{
+"id": 1529102,
+"name": "Ürümqi",
+"ascii": "UEruemqi",
+"lat": 43.80096,
+"lon": 87.60046,
+"country": "CN",
+"tz": "Asia/Urumqi",
+"pop": 3029372
+},
+{
+"id": 1625822,
+"name": "Surabaya",
+"ascii": "Surabaya",
+"lat": -7.24917,
+"lon": 112.75083,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 3018022
+},
+{
+"id": 1843564,
+"name": "Incheon",
+"ascii": "Incheon",
+"lat": 37.45646,
+"lon": 126.70515,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 3015482
+},
+{
+"id": 1804430,
+"name": "Lanzhou",
+"ascii": "Lanzhou",
+"lat": 36.05701,
+"lon": 103.83987,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 3000000
+},
+{
+"id": 3646738,
+"name": "Caracas",
+"ascii": "Caracas",
+"lat": 10.48801,
+"lon": -66.87919,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 3000000
+},
+{
+"id": 703448,
+"name": "Kyiv",
+"ascii": "Kyiv",
+"lat": 50.45466,
+"lon": 30.5238,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 2952301
+},
+{
+"id": 311046,
+"name": "İzmir",
+"ascii": "Izmir",
+"lat": 38.41273,
+"lon": 27.13838,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 2938292
+},
+{
+"id": 1806776,
+"name": "Huizhou",
+"ascii": "Huizhou",
+"lat": 23.11147,
+"lon": 114.41523,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2900113
+},
+{
+"id": 3435910,
+"name": "Buenos Aires",
+"ascii": "Buenos Aires",
+"lat": -34.61315,
+"lon": -58.37723,
+"country": "AR",
+"tz": "America/Argentina/Buenos_Aires",
+"pop": 2891082
+},
+{
+"id": 1809078,
+"name": "Haikou",
+"ascii": "Haikou",
+"lat": 20.03421,
+"lon": 110.34651,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2873358
+},
+{
+"id": 1668399,
+"name": "Taichung",
+"ascii": "Taichung",
+"lat": 24.1469,
+"lon": 120.6839,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 2850285
+},
+{
+"id": 1267995,
+"name": "Kanpur",
+"ascii": "Kanpur",
+"lat": 26.46523,
+"lon": 80.34975,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 2823249
+},
+{
+"id": 6167865,
+"name": "Toronto",
+"ascii": "Toronto",
+"lat": 43.70643,
+"lon": -79.39864,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 2794356
+},
+{
+"id": 3652462,
+"name": "Quito",
+"ascii": "Quito",
+"lat": -0.22985,
+"lon": -78.52495,
+"country": "EC",
+"tz": "America/Guayaquil",
+"pop": 2781641
+},
+{
+"id": 2174003,
+"name": "Brisbane",
+"ascii": "Brisbane",
+"lat": -27.46794,
+"lon": 153.02809,
+"country": "AU",
+"tz": "Australia/Brisbane",
+"pop": 2780063
+},
+{
+"id": 2240449,
+"name": "Luanda",
+"ascii": "Luanda",
+"lat": -8.83682,
+"lon": 13.23432,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 2776168
+},
+{
+"id": 1853909,
+"name": "Osaka",
+"ascii": "Osaka",
+"lat": 34.69379,
+"lon": 135.50107,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 2753862
+},
+{
+"id": 1803318,
+"name": "Linyi",
+"ascii": "Linyi",
+"lat": 35.06306,
+"lon": 118.34278,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2743843
+},
+{
+"id": 1816971,
+"name": "Baoding",
+"ascii": "Baoding",
+"lat": 38.87288,
+"lon": 115.46246,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2739887
+},
+{
+"id": 1673820,
+"name": "Kaohsiung",
+"ascii": "Kaohsiung",
+"lat": 22.61626,
+"lon": 120.31333,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 2737660
+},
+{
+"id": 5110302,
+"name": "Brooklyn",
+"ascii": "Brooklyn",
+"lat": 40.6501,
+"lon": -73.94958,
+"country": "US",
+"tz": "America/New_York",
+"pop": 2736074
+},
+{
+"id": 3657509,
+"name": "Guayaquil",
+"ascii": "Guayaquil",
+"lat": -2.19616,
+"lon": -79.88621,
+"country": "EC",
+"tz": "America/Guayaquil",
+"pop": 2723665
+},
+{
+"id": 3470127,
+"name": "Belo Horizonte",
+"ascii": "Belo Horizonte",
+"lat": -19.92083,
+"lon": -43.93778,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 2721564
+},
+{
+"id": 1800480,
+"name": "Minhang",
+"ascii": "Minhang",
+"lat": 31.10881,
+"lon": 121.37471,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2716600
+},
+{
+"id": 11995100,
+"name": "Bazhong",
+"ascii": "Bazhong",
+"lat": 31.8694,
+"lon": 106.74432,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2712894
+},
+{
+"id": 3450554,
+"name": "Salvador",
+"ascii": "Salvador",
+"lat": -12.97563,
+"lon": -38.49096,
+"country": "BR",
+"tz": "America/Bahia",
+"pop": 2711840
+},
+{
+"id": 2352778,
+"name": "Abuja",
+"ascii": "Abuja",
+"lat": 9.05785,
+"lon": 7.49508,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 2690000
+},
+{
+"id": 1200109,
+"name": "Gazipur",
+"ascii": "Gazipur",
+"lat": 23.99844,
+"lon": 90.42234,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 2674697
+},
+{
+"id": 4887398,
+"name": "Chicago",
+"ascii": "Chicago",
+"lat": 41.85003,
+"lon": -87.65005,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 2664452
+},
+{
+"id": 1791388,
+"name": "Wenzhou",
+"ascii": "Wenzhou",
+"lat": 27.99942,
+"lon": 120.66682,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2650000
+},
+{
+"id": 1649378,
+"name": "Bekasi",
+"ascii": "Bekasi",
+"lat": -6.2349,
+"lon": 106.9896,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 2648272
+},
+{
+"id": 2253354,
+"name": "Dakar",
+"ascii": "Dakar",
+"lat": 14.6937,
+"lon": -17.44406,
+"country": "SN",
+"tz": "Africa/Dakar",
+"pop": 2646503
+},
+{
+"id": 1581298,
+"name": "Haiphong",
+"ascii": "Haiphong",
+"lat": 20.86481,
+"lon": 106.68345,
+"country": "VN",
+"tz": "Asia/Bangkok",
+"pop": 2625200
+},
+{
+"id": 1785725,
+"name": "Yunfu",
+"ascii": "Yunfu",
+"lat": 22.92787,
+"lon": 112.03809,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2612800
+},
+{
+"id": 6619347,
+"name": "Navi Mumbai",
+"ascii": "Navi Mumbai",
+"lat": 19.03681,
+"lon": 73.01582,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 2600000
+},
+{
+"id": 53654,
+"name": "Mogadishu",
+"ascii": "Mogadishu",
+"lat": 2.03711,
+"lon": 45.34375,
+"country": "SO",
+"tz": "Africa/Mogadishu",
+"pop": 2587183
+},
+{
+"id": 2298890,
+"name": "Kumasi",
+"ascii": "Kumasi",
+"lat": 6.68848,
+"lon": -1.62443,
+"country": "GH",
+"tz": "Africa/Accra",
+"pop": 2544530
+},
+{
+"id": 1650357,
+"name": "Bandung",
+"ascii": "Bandung",
+"lat": -6.92222,
+"lon": 107.60694,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 2528163
+},
+{
+"id": 1177662,
+"name": "Gujranwala",
+"ascii": "Gujranwala",
+"lat": 32.15567,
+"lon": 74.18705,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 2511118
+},
+{
+"id": 1797873,
+"name": "Huai'an",
+"ascii": "Huai'an",
+"lat": 33.58861,
+"lon": 119.01917,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2494013
+},
+{
+"id": 1214520,
+"name": "Medan",
+"ascii": "Medan",
+"lat": 3.58333,
+"lon": 98.66667,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 2486283
+},
+{
+"id": 1264733,
+"name": "Lucknow",
+"ascii": "Lucknow",
+"lat": 26.83928,
+"lon": 80.92313,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 2472011
+},
+{
+"id": 2357048,
+"name": "Ouagadougou",
+"ascii": "Ouagadougou",
+"lat": 12.36566,
+"lon": -1.53388,
+"country": "BF",
+"tz": "Africa/Ouagadougou",
+"pop": 2415266
+},
+{
+"id": 1262180,
+"name": "Nagpur",
+"ascii": "Nagpur",
+"lat": 21.14631,
+"lon": 79.08491,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 2405665
+},
+{
+"id": 3399415,
+"name": "Fortaleza",
+"ascii": "Fortaleza",
+"lat": -3.71722,
+"lon": -38.54306,
+"country": "BR",
+"tz": "America/Fortaleza",
+"pop": 2400000
+},
+{
+"id": 3687925,
+"name": "Cali",
+"ascii": "Cali",
+"lat": 3.43054,
+"lon": -76.5199,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 2392877
+},
+{
+"id": 2063523,
+"name": "Perth",
+"ascii": "Perth",
+"lat": -31.95224,
+"lon": 115.8614,
+"country": "AU",
+"tz": "Australia/Perth",
+"pop": 2384371
+},
+{
+"id": 1835329,
+"name": "Daegu",
+"ascii": "Daegu",
+"lat": 35.87028,
+"lon": 128.59111,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 2365523
+},
+{
+"id": 2507480,
+"name": "Algiers",
+"ascii": "Algiers",
+"lat": 36.73225,
+"lon": 3.08746,
+"country": "DZ",
+"tz": "Africa/Algiers",
+"pop": 2364230
+},
+{
+"id": 1800163,
+"name": "Nanchang",
+"ascii": "Nanchang",
+"lat": 28.68396,
+"lon": 115.85306,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2357839
+},
+{
+"id": 587084,
+"name": "Baku",
+"ascii": "Baku",
+"lat": 40.37767,
+"lon": 49.89201,
+"country": "AZ",
+"tz": "Asia/Baku",
+"pop": 2351300
+},
+{
+"id": 2036892,
+"name": "Hohhot",
+"ascii": "Hohhot",
+"lat": 40.81056,
+"lon": 111.65222,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2350000
+},
+{
+"id": 1856057,
+"name": "Nagoya",
+"ascii": "Nagoya",
+"lat": 35.18147,
+"lon": 136.90641,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 2332176
+},
+{
+"id": 3169070,
+"name": "Rome",
+"ascii": "Rome",
+"lat": 41.89193,
+"lon": 12.51133,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 2318895
+},
+{
+"id": 5133273,
+"name": "Queens",
+"ascii": "Queens",
+"lat": 40.68149,
+"lon": -73.83652,
+"country": "US",
+"tz": "America/New_York",
+"pop": 2316841
+},
+{
+"id": 4699066,
+"name": "Houston",
+"ascii": "Houston",
+"lat": 29.76328,
+"lon": -95.36327,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 2314157
+},
+{
+"id": 124665,
+"name": "Mashhad",
+"ascii": "Mashhad",
+"lat": 36.29807,
+"lon": 59.60567,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 2307177
+},
+{
+"id": 1795855,
+"name": "Shaoxing",
+"ascii": "Shaoxing",
+"lat": 30.00237,
+"lon": 120.57864,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2300000
+},
+{
+"id": 1799722,
+"name": "Nantong",
+"ascii": "Nantong",
+"lat": 32.03028,
+"lon": 120.87472,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2273326
+},
+{
+"id": 1816917,
+"name": "Baoshan",
+"ascii": "Baoshan",
+"lat": 31.40845,
+"lon": 121.48956,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2265900
+},
+{
+"id": 1819609,
+"name": "Kowloon",
+"ascii": "Kowloon",
+"lat": 22.31667,
+"lon": 114.18333,
+"country": "HK",
+"tz": "Asia/Hong_Kong",
+"pop": 2232339
+},
+{
+"id": 1787093,
+"name": "Yantai",
+"ascii": "Yantai",
+"lat": 37.47649,
+"lon": 121.44081,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2227733
+},
+{
+"id": 314830,
+"name": "Gaziantep",
+"ascii": "Gaziantep",
+"lat": 37.05944,
+"lon": 37.3825,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 2222415
+},
+{
+"id": 922704,
+"name": "Lubumbashi",
+"ascii": "Lubumbashi",
+"lat": -11.66089,
+"lon": 27.47938,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 2221925
+},
+{
+"id": 3663517,
+"name": "Manaus",
+"ascii": "Manaus",
+"lat": -3.10194,
+"lon": -60.025,
+"country": "BR",
+"tz": "America/Manaus",
+"pop": 2219580
+},
+{
+"id": 909137,
+"name": "Lusaka",
+"ascii": "Lusaka",
+"lat": -15.40669,
+"lon": 28.28713,
+"country": "ZM",
+"tz": "Africa/Lusaka",
+"pop": 2212301
+},
+{
+"id": 3469058,
+"name": "Brasília",
+"ascii": "Brasilia",
+"lat": -15.77972,
+"lon": -47.92972,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 2207718
+},
+{
+"id": 1790437,
+"name": "Zhuhai",
+"ascii": "Zhuhai",
+"lat": 22.27694,
+"lon": 113.56778,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2207090
+},
+{
+"id": 3492908,
+"name": "Santo Domingo",
+"ascii": "Santo Domingo",
+"lat": 18.47186,
+"lon": -69.89232,
+"country": "DO",
+"tz": "America/Santo_Domingo",
+"pop": 2201941
+},
+{
+"id": 2365267,
+"name": "Lomé",
+"ascii": "Lome",
+"lat": 6.12874,
+"lon": 1.22154,
+"country": "TG",
+"tz": "Africa/Lome",
+"pop": 2188376
+},
+{
+"id": 1169825,
+"name": "Multan",
+"ascii": "Multan",
+"lat": 30.19679,
+"lon": 71.47824,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 2169915
+},
+{
+"id": 3553478,
+"name": "Havana",
+"ascii": "Havana",
+"lat": 23.13302,
+"lon": -82.38304,
+"country": "CU",
+"tz": "America/Havana",
+"pop": 2163824
+},
+{
+"id": 1645524,
+"name": "Depok",
+"ascii": "Depok",
+"lat": -6.4,
+"lon": 106.81861,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 2163635
+},
+{
+"id": 2038432,
+"name": "Baotou",
+"ascii": "Baotou",
+"lat": 40.6516,
+"lon": 109.84389,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2150000
+},
+{
+"id": 2988507,
+"name": "Paris",
+"ascii": "Paris",
+"lat": 48.85341,
+"lon": 2.3488,
+"country": "FR",
+"tz": "Europe/Paris",
+"pop": 2138551
+},
+{
+"id": 1273865,
+"name": "Coimbatore",
+"ascii": "Coimbatore",
+"lat": 11.00555,
+"lon": 76.96612,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 2136916
+},
+{
+"id": 12359313,
+"name": "Qingyang",
+"ascii": "Qingyang",
+"lat": 35.70976,
+"lon": 107.64455,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2125400
+},
+{
+"id": 2324774,
+"name": "Port Harcourt",
+"ascii": "Port Harcourt",
+"lat": 4.77742,
+"lon": 7.0134,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 2120000
+},
+{
+"id": 964137,
+"name": "Pretoria",
+"ascii": "Pretoria",
+"lat": -25.74486,
+"lon": 28.18783,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 2112693
+},
+{
+"id": 3860259,
+"name": "Córdoba",
+"ascii": "Cordoba",
+"lat": -31.40648,
+"lon": -64.18853,
+"country": "AR",
+"tz": "America/Argentina/Cordoba",
+"pop": 2106734
+},
+{
+"id": 209228,
+"name": "Mbuji-Mayi",
+"ascii": "Mbuji-Mayi",
+"lat": -6.13603,
+"lon": 23.58979,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 2101332
+},
+{
+"id": 170063,
+"name": "Aleppo",
+"ascii": "Aleppo",
+"lat": 36.20124,
+"lon": 37.16117,
+"country": "SY",
+"tz": "Asia/Damascus",
+"pop": 2098210
+},
+{
+"id": 1785623,
+"name": "Kunshan",
+"ascii": "Kunshan",
+"lat": 31.37762,
+"lon": 120.95431,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2092496
+},
+{
+"id": 99071,
+"name": "Al Mawşil al Jadīdah",
+"ascii": "Al Mawsil al Jadidah",
+"lat": 36.33271,
+"lon": 43.10555,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 2065597
+},
+{
+"id": 1791681,
+"name": "Weifang",
+"ascii": "Weifang",
+"lat": 36.71,
+"lon": 119.10194,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2044028
+},
+{
+"id": 1783621,
+"name": "Zunyi",
+"ascii": "Zunyi",
+"lat": 27.68667,
+"lon": 106.90722,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2037775
+},
+{
+"id": 3911925,
+"name": "La Paz",
+"ascii": "La Paz",
+"lat": -16.5,
+"lon": -68.15,
+"country": "BO",
+"tz": "America/La_Paz",
+"pop": 2004652
+},
+{
+"id": 10859300,
+"name": "Lianyungang",
+"ascii": "Lianyungang",
+"lat": 34.59845,
+"lon": 119.21556,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 2001009
+},
+{
+"id": 3674962,
+"name": "Medellín",
+"ascii": "Medellin",
+"lat": 6.245,
+"lon": -75.57151,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 1999979
+},
+{
+"id": 1269743,
+"name": "Indore",
+"ascii": "Indore",
+"lat": 22.71792,
+"lon": 75.8333,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1994397
+},
+{
+"id": 2260535,
+"name": "Brazzaville",
+"ascii": "Brazzaville",
+"lat": -4.26613,
+"lon": 15.28318,
+"country": "CG",
+"tz": "Africa/Brazzaville",
+"pop": 1982000
+},
+{
+"id": 1512569,
+"name": "Tashkent",
+"ascii": "Tashkent",
+"lat": 41.26465,
+"lon": 69.21627,
+"country": "UZ",
+"tz": "Asia/Tashkent",
+"pop": 1978028
+},
+{
+"id": 1810638,
+"name": "Ganzhou",
+"ascii": "Ganzhou",
+"lat": 25.84664,
+"lon": 114.9326,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1977253
+},
+{
+"id": 1526384,
+"name": "Almaty",
+"ascii": "Almaty",
+"lat": 43.25249,
+"lon": 76.9115,
+"country": "KZ",
+"tz": "Asia/Almaty",
+"pop": 1977011
+},
+{
+"id": 379252,
+"name": "Khartoum",
+"ascii": "Khartoum",
+"lat": 15.55177,
+"lon": 32.53241,
+"country": "SD",
+"tz": "Africa/Khartoum",
+"pop": 1974647
+},
+{
+"id": 2911298,
+"name": "Hamburg",
+"ascii": "Hamburg",
+"lat": 53.55073,
+"lon": 9.99302,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 1973896
+},
+{
+"id": 2128295,
+"name": "Sapporo",
+"ascii": "Sapporo",
+"lat": 43.06667,
+"lon": 141.35,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1973832
+},
+{
+"id": 1794035,
+"name": "Songjiang",
+"ascii": "Songjiang",
+"lat": 31.03443,
+"lon": 121.22326,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1973500
+},
+{
+"id": 2306104,
+"name": "Accra",
+"ascii": "Accra",
+"lat": 5.55602,
+"lon": -0.1969,
+"country": "GH",
+"tz": "Africa/Accra",
+"pop": 1963264
+},
+{
+"id": 3464975,
+"name": "Curitiba",
+"ascii": "Curitiba",
+"lat": -25.42778,
+"lon": -49.27306,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 1948626
+},
+{
+"id": 8347664,
+"name": "Ordos",
+"ascii": "Ordos",
+"lat": 39.6086,
+"lon": 109.78157,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1940653
+},
+{
+"id": 71137,
+"name": "Sanaa",
+"ascii": "Sanaa",
+"lat": 15.35452,
+"lon": 44.20646,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 1937451
+},
+{
+"id": 2422465,
+"name": "Conakry",
+"ascii": "Conakry",
+"lat": 9.53795,
+"lon": -13.67729,
+"country": "GN",
+"tz": "Africa/Conakry",
+"pop": 1928389
+},
+{
+"id": 1625084,
+"name": "Tangerang",
+"ascii": "Tangerang",
+"lat": -6.17806,
+"lon": 106.63,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1927815
+},
+{
+"id": 3981609,
+"name": "Tijuana",
+"ascii": "Tijuana",
+"lat": 32.5027,
+"lon": -117.00371,
+"country": "MX",
+"tz": "America/Tijuana",
+"pop": 1922523
+},
+{
+"id": 1176734,
+"name": "Hyderabad",
+"ascii": "Hyderabad",
+"lat": 25.39689,
+"lon": 68.37718,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 1921275
+},
+{
+"id": 276781,
+"name": "Beirut",
+"ascii": "Beirut",
+"lat": 33.89332,
+"lon": 35.50157,
+"country": "LB",
+"tz": "Asia/Beirut",
+"pop": 1916100
+},
+{
+"id": 1797121,
+"name": "Jieyang",
+"ascii": "Jieyang",
+"lat": 23.5418,
+"lon": 116.36581,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1899394
+},
+{
+"id": 2036502,
+"name": "Jilin",
+"ascii": "Jilin",
+"lat": 43.84652,
+"lon": 126.5608,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1895865
+},
+{
+"id": 1806508,
+"name": "Jiading",
+"ascii": "Jiading",
+"lat": 31.38575,
+"lon": 121.24465,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1886100
+},
+{
+"id": 683506,
+"name": "Bucharest",
+"ascii": "Bucharest",
+"lat": 44.43225,
+"lon": 26.10626,
+"country": "RO",
+"tz": "Europe/Bucharest",
+"pop": 1877155
+},
+{
+"id": 2422488,
+"name": "Camayenne",
+"ascii": "Camayenne",
+"lat": 9.535,
+"lon": -13.68778,
+"country": "GN",
+"tz": "Africa/Conakry",
+"pop": 1871242
+},
+{
+"id": 195272,
+"name": "Kakamega",
+"ascii": "Kakamega",
+"lat": 0.28422,
+"lon": 34.75229,
+"country": "KE",
+"tz": "Africa/Nairobi",
+"pop": 1867579
+},
+{
+"id": 1796134,
+"name": "Shangqiu",
+"ascii": "Shangqiu",
+"lat": 34.4143,
+"lon": 115.65613,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1859723
+},
+{
+"id": 1800146,
+"name": "Nanchong",
+"ascii": "Nanchong",
+"lat": 30.79508,
+"lon": 106.08473,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1858875
+},
+{
+"id": 1668355,
+"name": "Tainan",
+"ascii": "Tainan",
+"lat": 22.99083,
+"lon": 120.21333,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 1856642
+},
+{
+"id": 2037799,
+"name": "Datong",
+"ascii": "Datong",
+"lat": 40.09361,
+"lon": 113.29139,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1850000
+},
+{
+"id": 2335727,
+"name": "Kaduna",
+"ascii": "Kaduna",
+"lat": 10.52641,
+"lon": 7.43879,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1850000
+},
+{
+"id": 365137,
+"name": "Omdurman",
+"ascii": "Omdurman",
+"lat": 15.64453,
+"lon": 32.47773,
+"country": "SD",
+"tz": "Africa/Khartoum",
+"pop": 1849659
+},
+{
+"id": 1715348,
+"name": "Davao",
+"ascii": "Davao",
+"lat": 7.07306,
+"lon": 125.61278,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1848947
+},
+{
+"id": 1254661,
+"name": "Thāne",
+"ascii": "Thane",
+"lat": 19.19704,
+"lon": 72.96355,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1841488
+},
+{
+"id": 3526683,
+"name": "Iztapalapa",
+"ascii": "Iztapalapa",
+"lat": 19.35529,
+"lon": -99.06224,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1835486
+},
+{
+"id": 316541,
+"name": "Diyarbakır",
+"ascii": "Diyarbakir",
+"lat": 37.91363,
+"lon": 40.21721,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 1833684
+},
+{
+"id": 3904906,
+"name": "Santa Cruz de la Sierra",
+"ascii": "Santa Cruz de la Sierra",
+"lat": -17.78629,
+"lon": -63.18117,
+"country": "BO",
+"tz": "America/La_Paz",
+"pop": 1831434
+},
+{
+"id": 1253573,
+"name": "Vadodara",
+"ascii": "Vadodara",
+"lat": 22.29941,
+"lon": 73.20812,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1822221
+},
+{
+"id": 325363,
+"name": "Adana",
+"ascii": "Adana",
+"lat": 36.98615,
+"lon": 35.32531,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 1816750
+},
+{
+"id": 1799629,
+"name": "Nanyang",
+"ascii": "Nanyang",
+"lat": 33.00524,
+"lon": 112.54659,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1811812
+},
+{
+"id": 292968,
+"name": "Abu Dhabi",
+"ascii": "Abu Dhabi",
+"lat": 24.45118,
+"lon": 54.39696,
+"country": "AE",
+"tz": "Asia/Dubai",
+"pop": 1807000
+},
+{
+"id": 1633070,
+"name": "Palembang",
+"ascii": "Palembang",
+"lat": -2.91673,
+"lon": 104.7458,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1801367
+},
+{
+"id": 292672,
+"name": "Sharjah",
+"ascii": "Sharjah",
+"lat": 25.3342,
+"lon": 55.41221,
+"country": "AE",
+"tz": "Asia/Dubai",
+"pop": 1800000
+},
+{
+"id": 1275841,
+"name": "Bhopal",
+"ascii": "Bhopal",
+"lat": 23.25469,
+"lon": 77.40289,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1798218
+},
+{
+"id": 1806299,
+"name": "Jiangmen",
+"ascii": "Jiangmen",
+"lat": 22.58333,
+"lon": 113.08333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1795459
+},
+{
+"id": 2347283,
+"name": "Benin City",
+"ascii": "Benin City",
+"lat": 6.33815,
+"lon": 5.62575,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1782000
+},
+{
+"id": 1815251,
+"name": "Jiangyin",
+"ascii": "Jiangyin",
+"lat": 31.91102,
+"lon": 120.26302,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1779515
+},
+{
+"id": 1810845,
+"name": "Fuyang",
+"ascii": "Fuyang",
+"lat": 32.9,
+"lon": 115.81667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1768947
+},
+{
+"id": 6077243,
+"name": "Montréal",
+"ascii": "Montreal",
+"lat": 45.50884,
+"lon": -73.58781,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 1762949
+},
+{
+"id": 11838258,
+"name": "Bayan Nur",
+"ascii": "Bayan Nur",
+"lat": 40.74143,
+"lon": 107.38599,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1760000
+},
+{
+"id": 3633009,
+"name": "Maracaibo",
+"ascii": "Maracaibo",
+"lat": 10.64232,
+"lon": -71.61089,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 1752602
+},
+{
+"id": 1815395,
+"name": "Chaozhou",
+"ascii": "Chaozhou",
+"lat": 23.65396,
+"lon": 116.62262,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1750945
+},
+{
+"id": 625144,
+"name": "Minsk",
+"ascii": "Minsk",
+"lat": 53.90019,
+"lon": 27.56653,
+"country": "BY",
+"tz": "Europe/Minsk",
+"pop": 1742124
+},
+{
+"id": 3054643,
+"name": "Budapest",
+"ascii": "Budapest",
+"lat": 47.49835,
+"lon": 19.04045,
+"country": "HU",
+"tz": "Europe/Budapest",
+"pop": 1741041
+},
+{
+"id": 1797945,
+"name": "Qingyuan",
+"ascii": "Qingyuan",
+"lat": 23.7,
+"lon": 113.03333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1738424
+},
+{
+"id": 1793724,
+"name": "Tai’an",
+"ascii": "Tai'an",
+"lat": 36.18528,
+"lon": 117.12,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1735425
+},
+{
+"id": 1258393,
+"name": "Rasapūdipalem",
+"ascii": "Rasapudipalem",
+"lat": 17.73308,
+"lon": 83.31622,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1728128
+},
+{
+"id": 7626690,
+"name": "Pimpri-Chinchwad",
+"ascii": "Pimpri-Chinchwad",
+"lat": 18.61867,
+"lon": 73.80375,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1727692
+},
+{
+"id": 1720151,
+"name": "Caloocan",
+"ascii": "Caloocan",
+"lat": 14.64953,
+"lon": 120.96788,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1712945
+},
+{
+"id": 756135,
+"name": "Warsaw",
+"ascii": "Warsaw",
+"lat": 52.22977,
+"lon": 21.01178,
+"country": "PL",
+"tz": "Europe/Warsaw",
+"pop": 1702139
+},
+{
+"id": 953781,
+"name": "Soweto",
+"ascii": "Soweto",
+"lat": -26.26781,
+"lon": 27.85849,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 1695047
+},
+{
+"id": 1627896,
+"name": "Semarang",
+"ascii": "Semarang",
+"lat": -6.99306,
+"lon": 110.42083,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1694740
+},
+{
+"id": 3521081,
+"name": "Puebla",
+"ascii": "Puebla",
+"lat": 19.04778,
+"lon": -98.20723,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1692181
+},
+{
+"id": 2761369,
+"name": "Vienna",
+"ascii": "Vienna",
+"lat": 48.20849,
+"lon": 16.37208,
+"country": "AT",
+"tz": "Europe/Vienna",
+"pop": 1691468
+},
+{
+"id": 3128760,
+"name": "Barcelona",
+"ascii": "Barcelona",
+"lat": 41.38879,
+"lon": 2.15899,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 1686208
+},
+{
+"id": 1260086,
+"name": "Patna",
+"ascii": "Patna",
+"lat": 25.59408,
+"lon": 85.13563,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1684297
+},
+{
+"id": 99072,
+"name": "Mosul",
+"ascii": "Mosul",
+"lat": 36.335,
+"lon": 43.11889,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1683000
+},
+{
+"id": 12165956,
+"name": "Kallakurichi",
+"ascii": "Kallakurichi",
+"lat": 11.73379,
+"lon": 78.95925,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1682687
+},
+{
+"id": 232422,
+"name": "Kampala",
+"ascii": "Kampala",
+"lat": 0.31628,
+"lon": 32.58219,
+"country": "UG",
+"tz": "Africa/Kampala",
+"pop": 1680600
+},
+{
+"id": 1788852,
+"name": "Xining",
+"ascii": "Xining",
+"lat": 36.62554,
+"lon": 101.75739,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1677177
+},
+{
+"id": 7283386,
+"name": "Changshu",
+"ascii": "Changshu",
+"lat": 31.64615,
+"lon": 120.74221,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1677050
+},
+{
+"id": 1807681,
+"name": "Huainan",
+"ascii": "Huainan",
+"lat": 32.62639,
+"lon": 116.99694,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1666826
+},
+{
+"id": 2538475,
+"name": "Rabat",
+"ascii": "Rabat",
+"lat": 34.01325,
+"lon": -6.83255,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 1655753
+},
+{
+"id": 3390760,
+"name": "Recife",
+"ascii": "Recife",
+"lat": -8.05389,
+"lon": -34.88111,
+"country": "BR",
+"tz": "America/Recife",
+"pop": 1653461
+},
+{
+"id": 5308655,
+"name": "Phoenix",
+"ascii": "Phoenix",
+"lat": 33.44838,
+"lon": -112.07404,
+"country": "US",
+"tz": "America/Phoenix",
+"pop": 1650070
+},
+{
+"id": 1793743,
+"name": "Suzhou",
+"ascii": "Suzhou",
+"lat": 33.63611,
+"lon": 116.97889,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1647642
+},
+{
+"id": 3529612,
+"name": "Ecatepec de Morelos",
+"ascii": "Ecatepec de Morelos",
+"lat": 19.60492,
+"lon": -99.06064,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1645352
+},
+{
+"id": 1802206,
+"name": "Lu’an",
+"ascii": "Lu'an",
+"lat": 31.73561,
+"lon": 116.51688,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1644344
+},
+{
+"id": 3625549,
+"name": "Valencia",
+"ascii": "Valencia",
+"lat": 10.16153,
+"lon": -68.00044,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 1619470
+},
+{
+"id": 1264728,
+"name": "Ludhiana",
+"ascii": "Ludhiana",
+"lat": 30.91204,
+"lon": 75.85379,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1618879
+},
+{
+"id": 1787746,
+"name": "Yancheng",
+"ascii": "Yancheng",
+"lat": 33.3575,
+"lon": 120.1573,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1615717
+},
+{
+"id": 1496747,
+"name": "Novosibirsk",
+"ascii": "Novosibirsk",
+"lat": 55.02259,
+"lon": 82.93175,
+"country": "RU",
+"tz": "Asia/Novosibirsk",
+"pop": 1612833
+},
+{
+"id": 95446,
+"name": "Erbil",
+"ascii": "Erbil",
+"lat": 36.19117,
+"lon": 44.00943,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1612700
+},
+{
+"id": 1863967,
+"name": "Fukuoka",
+"ascii": "Fukuoka",
+"lat": 33.6,
+"lon": 130.41667,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1612392
+},
+{
+"id": 1793505,
+"name": "Taizhou",
+"ascii": "Taizhou",
+"lat": 32.49069,
+"lon": 119.90812,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1607108
+},
+{
+"id": 2037860,
+"name": "Daqing",
+"ascii": "Daqing",
+"lat": 46.58333,
+"lon": 125.0,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1604027
+},
+{
+"id": 1701668,
+"name": "Manila",
+"ascii": "Manila",
+"lat": 14.6042,
+"lon": 120.9822,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1600000
+},
+{
+"id": 1791236,
+"name": "Wuhu",
+"ascii": "Wuhu",
+"lat": 31.35259,
+"lon": 118.42947,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1598165
+},
+{
+"id": 3991164,
+"name": "Santiago de Querétaro",
+"ascii": "Santiago de Queretaro",
+"lat": 20.58806,
+"lon": -100.38806,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1594212
+},
+{
+"id": 1813325,
+"name": "Dazhou",
+"ascii": "Dazhou",
+"lat": 31.2106,
+"lon": 107.46308,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1589435
+},
+{
+"id": 1787227,
+"name": "Yangzhou",
+"ascii": "Yangzhou",
+"lat": 32.39722,
+"lon": 119.43583,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1584237
+},
+{
+"id": 3998655,
+"name": "León de los Aldama",
+"ascii": "Leon de los Aldama",
+"lat": 21.12183,
+"lon": -101.68253,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1579803
+},
+{
+"id": 104515,
+"name": "Makkah",
+"ascii": "Makkah",
+"lat": 21.42664,
+"lon": 39.82563,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 1578722
+},
+{
+"id": 4560349,
+"name": "Philadelphia",
+"ascii": "Philadelphia",
+"lat": 39.95238,
+"lon": -75.16362,
+"country": "US",
+"tz": "America/New_York",
+"pop": 1573916
+},
+{
+"id": 1821306,
+"name": "Phnom Penh",
+"ascii": "Phnom Penh",
+"lat": 11.56245,
+"lon": 104.91601,
+"country": "KH",
+"tz": "Asia/Phnom_Penh",
+"pop": 1573544
+},
+{
+"id": 1809498,
+"name": "Guilin",
+"ascii": "Guilin",
+"lat": 25.28022,
+"lon": 110.29639,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1572300
+},
+{
+"id": 170654,
+"name": "Damascus",
+"ascii": "Damascus",
+"lat": 33.5102,
+"lon": 36.29128,
+"country": "SY",
+"tz": "Asia/Damascus",
+"pop": 1569394
+},
+{
+"id": 1167528,
+"name": "Quetta",
+"ascii": "Quetta",
+"lat": 30.18414,
+"lon": 67.00141,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 1565546
+},
+{
+"id": 1784853,
+"name": "Zhaoqing",
+"ascii": "Zhaoqing",
+"lat": 23.04893,
+"lon": 112.46091,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1553109
+},
+{
+"id": 2326016,
+"name": "Onitsha",
+"ascii": "Onitsha",
+"lat": 6.14978,
+"lon": 6.78569,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1553000
+},
+{
+"id": 1800627,
+"name": "Mianyang",
+"ascii": "Mianyang",
+"lat": 31.46784,
+"lon": 104.68168,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1550000
+},
+{
+"id": 2193733,
+"name": "Auckland",
+"ascii": "Auckland",
+"lat": -36.84853,
+"lon": 174.76349,
+"country": "NZ",
+"tz": "Pacific/Auckland",
+"pop": 1547200
+},
+{
+"id": 418863,
+"name": "Isfahan",
+"ascii": "Isfahan",
+"lat": 32.65246,
+"lon": 51.67462,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 1547164
+},
+{
+"id": 12358576,
+"name": "Wanzhou",
+"ascii": "Wanzhou",
+"lat": 30.76451,
+"lon": 108.39586,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1545900
+},
+{
+"id": 1526273,
+"name": "Astana",
+"ascii": "Astana",
+"lat": 51.1801,
+"lon": 71.44598,
+"country": "KZ",
+"tz": "Asia/Almaty",
+"pop": 1544142
+},
+{
+"id": 890299,
+"name": "Harare",
+"ascii": "Harare",
+"lat": -17.82772,
+"lon": 31.05337,
+"country": "ZW",
+"tz": "Africa/Harare",
+"pop": 1542813
+},
+{
+"id": 2274895,
+"name": "Monrovia",
+"ascii": "Monrovia",
+"lat": 6.30054,
+"lon": -10.7969,
+"country": "LR",
+"tz": "Africa/Monrovia",
+"pop": 1542549
+},
+{
+"id": 1798449,
+"name": "Putian",
+"ascii": "Putian",
+"lat": 25.43944,
+"lon": 119.01028,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1539389
+},
+{
+"id": 1859642,
+"name": "Kawasaki",
+"ascii": "Kawasaki",
+"lat": 35.52056,
+"lon": 139.71722,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1538262
+},
+{
+"id": 3462377,
+"name": "Goiânia",
+"ascii": "Goiania",
+"lat": -16.67861,
+"lon": -49.25389,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 1536097
+},
+{
+"id": 4726206,
+"name": "San Antonio",
+"ascii": "San Antonio",
+"lat": 29.42412,
+"lon": -98.49363,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 1526656
+},
+{
+"id": 1859171,
+"name": "Kobe",
+"ascii": "Kobe",
+"lat": 34.6913,
+"lon": 135.183,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1525152
+},
+{
+"id": 2673730,
+"name": "Stockholm",
+"ascii": "Stockholm",
+"lat": 59.32938,
+"lon": 18.06871,
+"country": "SE",
+"tz": "Europe/Stockholm",
+"pop": 1515017
+},
+{
+"id": 4013708,
+"name": "Ciudad Juárez",
+"ascii": "Ciudad Juarez",
+"lat": 31.72024,
+"lon": -106.46084,
+"country": "MX",
+"tz": "America/Ciudad_Juarez",
+"pop": 1512450
+},
+{
+"id": 1586203,
+"name": "Cần Thơ",
+"ascii": "Can Tho",
+"lat": 10.03711,
+"lon": 105.78825,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 1507187
+},
+{
+"id": 2867714,
+"name": "Munich",
+"ascii": "Munich",
+"lat": 48.13743,
+"lon": 11.57549,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 1505005
+},
+{
+"id": 1336135,
+"name": "Khulna",
+"ascii": "Khulna",
+"lat": 22.80979,
+"lon": 89.56439,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 1500689
+},
+{
+"id": 3405870,
+"name": "Belém",
+"ascii": "Belem",
+"lat": -1.45583,
+"lon": -48.50444,
+"country": "BR",
+"tz": "America/Belem",
+"pop": 1499641
+},
+{
+"id": 1486209,
+"name": "Yekaterinburg",
+"ascii": "Yekaterinburg",
+"lat": 56.85733,
+"lon": 60.61529,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 1495066
+},
+{
+"id": 3452925,
+"name": "Porto Alegre",
+"ascii": "Porto Alegre",
+"lat": -30.03283,
+"lon": -51.23019,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 1488252
+},
+{
+"id": 1786657,
+"name": "Yinchuan",
+"ascii": "Yinchuan",
+"lat": 38.46806,
+"lon": 106.27306,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1487579
+},
+{
+"id": 5125771,
+"name": "Manhattan",
+"ascii": "Manhattan",
+"lat": 40.78343,
+"lon": -73.96625,
+"country": "US",
+"tz": "America/New_York",
+"pop": 1487536
+},
+{
+"id": 1261731,
+"name": "Nashik",
+"ascii": "Nashik",
+"lat": 19.99727,
+"lon": 73.79096,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1486053
+},
+{
+"id": 8400694,
+"name": "Taizhou",
+"ascii": "Taizhou",
+"lat": 28.66266,
+"lon": 121.43312,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1485502
+},
+{
+"id": 3439389,
+"name": "Asunción",
+"ascii": "Asuncion",
+"lat": -25.28646,
+"lon": -57.647,
+"country": "PY",
+"tz": "America/Asuncion",
+"pop": 1482200
+},
+{
+"id": 1814870,
+"name": "Yiwu",
+"ascii": "Yiwu",
+"lat": 29.31506,
+"lon": 120.07676,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1481384
+},
+{
+"id": 3979770,
+"name": "Zapopan",
+"ascii": "Zapopan",
+"lat": 20.72111,
+"lon": -103.38742,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1476491
+},
+{
+"id": 1622786,
+"name": "Makassar",
+"ascii": "Makassar",
+"lat": -5.14861,
+"lon": 119.43194,
+"country": "ID",
+"tz": "Asia/Makassar",
+"pop": 1474393
+},
+{
+"id": 2078025,
+"name": "Adelaide",
+"ascii": "Adelaide",
+"lat": -34.92866,
+"lon": 138.59863,
+"country": "AU",
+"tz": "Australia/Adelaide",
+"pop": 1469163
+},
+{
+"id": 1797353,
+"name": "Quanzhou",
+"ascii": "Quanzhou",
+"lat": 24.91389,
+"lon": 118.58583,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1469157
+},
+{
+"id": 1264521,
+"name": "Madurai",
+"ascii": "Madurai",
+"lat": 9.919,
+"lon": 78.11953,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1465625
+},
+{
+"id": 1805528,
+"name": "Jinhua",
+"ascii": "Jinhua",
+"lat": 29.10678,
+"lon": 119.64421,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1463990
+},
+{
+"id": 1857910,
+"name": "Kyoto",
+"ascii": "Kyoto",
+"lat": 35.02107,
+"lon": 135.75385,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1463723
+},
+{
+"id": 1806602,
+"name": "Cixi",
+"ascii": "Cixi",
+"lat": 30.1764,
+"lon": 121.2457,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1457510
+},
+{
+"id": 1791121,
+"name": "Changde",
+"ascii": "Changde",
+"lat": 29.03205,
+"lon": 111.69844,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1457419
+},
+{
+"id": 1735161,
+"name": "Kuala Lumpur",
+"ascii": "Kuala Lumpur",
+"lat": 3.1412,
+"lon": 101.68653,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 1453975
+},
+{
+"id": 308464,
+"name": "Kayseri",
+"ascii": "Kayseri",
+"lat": 38.73222,
+"lon": 35.48528,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 1452458
+},
+{
+"id": 1804879,
+"name": "Kaifeng",
+"ascii": "Kaifeng",
+"lat": 34.7986,
+"lon": 114.30742,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1451741
+},
+{
+"id": 2038632,
+"name": "Anshan",
+"ascii": "Anshan",
+"lat": 41.12361,
+"lon": 122.99,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1450000
+},
+{
+"id": 128747,
+"name": "Karaj",
+"ascii": "Karaj",
+"lat": 35.83266,
+"lon": 50.99155,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 1448075
+},
+{
+"id": 1283240,
+"name": "Kathmandu",
+"ascii": "Kathmandu",
+"lat": 27.70169,
+"lon": 85.3206,
+"country": "NP",
+"tz": "Asia/Kathmandu",
+"pop": 1442271
+},
+{
+"id": 1835235,
+"name": "Daejeon",
+"ascii": "Daejeon",
+"lat": 36.34913,
+"lon": 127.38493,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1441203
+},
+{
+"id": 10942359,
+"name": "Baoji",
+"ascii": "Baoji",
+"lat": 34.36775,
+"lon": 107.23705,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1437802
+},
+{
+"id": 1793771,
+"name": "Suqian",
+"ascii": "Suqian",
+"lat": 33.94917,
+"lon": 118.29583,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1437685
+},
+{
+"id": 1803300,
+"name": "Liuzhou",
+"ascii": "Liuzhou",
+"lat": 24.32405,
+"lon": 109.40698,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1436599
+},
+{
+"id": 1254361,
+"name": "Tirunelveli",
+"ascii": "Tirunelveli",
+"lat": 8.72742,
+"lon": 77.6838,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1435844
+},
+{
+"id": 306571,
+"name": "Konya",
+"ascii": "Konya",
+"lat": 37.87135,
+"lon": 32.48464,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 1433861
+},
+{
+"id": 1787331,
+"name": "Zhangjiagang",
+"ascii": "Zhangjiagang",
+"lat": 31.865,
+"lon": 120.53889,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1432044
+},
+{
+"id": 1279259,
+"name": "Agra",
+"ascii": "Agra",
+"lat": 27.18333,
+"lon": 78.01667,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1430055
+},
+{
+"id": 8581443,
+"name": "South Tangerang",
+"ascii": "South Tangerang",
+"lat": -6.28862,
+"lon": 106.71789,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1429529
+},
+{
+"id": 113646,
+"name": "Tabriz",
+"ascii": "Tabriz",
+"lat": 38.08,
+"lon": 46.2919,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 1424641
+},
+{
+"id": 706483,
+"name": "Kharkiv",
+"ascii": "Kharkiv",
+"lat": 49.98177,
+"lon": 36.25475,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 1421125
+},
+{
+"id": 1797658,
+"name": "Jinjiang",
+"ascii": "Jinjiang",
+"lat": 24.81978,
+"lon": 118.57415,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1416151
+},
+{
+"id": 1271951,
+"name": "Faridabad",
+"ascii": "Faridabad",
+"lat": 28.41124,
+"lon": 77.31316,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1414050
+},
+{
+"id": 1816234,
+"name": "Bozhou",
+"ascii": "Bozhou",
+"lat": 33.87722,
+"lon": 115.77028,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1409436
+},
+{
+"id": 1797318,
+"name": "Qujing",
+"ascii": "Qujing",
+"lat": 25.48333,
+"lon": 103.78333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1408500
+},
+{
+"id": 5391811,
+"name": "San Diego",
+"ascii": "San Diego",
+"lat": 32.71571,
+"lon": -117.16472,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 1404452
+},
+{
+"id": 1841811,
+"name": "Gwangju",
+"ascii": "Gwangju",
+"lat": 35.15472,
+"lon": 126.91556,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1401235
+},
+{
+"id": 1784990,
+"name": "Zhanjiang",
+"ascii": "Zhanjiang",
+"lat": 21.23391,
+"lon": 110.38749,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1400709
+},
+{
+"id": 2037355,
+"name": "Fushun",
+"ascii": "Fushun",
+"lat": 41.88669,
+"lon": 123.94363,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1400646
+},
+{
+"id": 1258847,
+"name": "Rājkot",
+"ascii": "Rajkot",
+"lat": 22.29161,
+"lon": 70.79322,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1390640
+},
+{
+"id": 1801792,
+"name": "Luoyang",
+"ascii": "Luoyang",
+"lat": 34.67345,
+"lon": 112.43684,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1390581
+},
+{
+"id": 4005539,
+"name": "Guadalajara",
+"ascii": "Guadalajara",
+"lat": 20.67738,
+"lon": -103.34749,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1385629
+},
+{
+"id": 5110266,
+"name": "The Bronx",
+"ascii": "The Bronx",
+"lat": 40.84985,
+"lon": -73.86641,
+"country": "US",
+"tz": "America/New_York",
+"pop": 1385108
+},
+{
+"id": 1802875,
+"name": "Guankou",
+"ascii": "Guankou",
+"lat": 28.15861,
+"lon": 113.62709,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1380000
+},
+{
+"id": 1580240,
+"name": "Huế",
+"ascii": "Hue",
+"lat": 16.4619,
+"lon": 107.59546,
+"country": "VN",
+"tz": "Asia/Bangkok",
+"pop": 1380000
+},
+{
+"id": 3173435,
+"name": "Milan",
+"ascii": "Milan",
+"lat": 45.46427,
+"lon": 9.18951,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 1371498
+},
+{
+"id": 1262111,
+"name": "Najafgarh",
+"ascii": "Najafgarh",
+"lat": 28.60922,
+"lon": 76.97982,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1365000
+},
+{
+"id": 2427123,
+"name": "N'Djamena",
+"ascii": "N'Djamena",
+"lat": 12.10672,
+"lon": 15.0444,
+"country": "TD",
+"tz": "Africa/Ndjamena",
+"pop": 1359526
+},
+{
+"id": 1808963,
+"name": "Handan",
+"ascii": "Handan",
+"lat": 36.60999,
+"lon": 114.48764,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1358318
+},
+{
+"id": 1183460,
+"name": "Bannu",
+"ascii": "Bannu",
+"lat": 32.98527,
+"lon": 70.60403,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 1357890
+},
+{
+"id": 1786764,
+"name": "Yichang",
+"ascii": "Yichang",
+"lat": 30.71444,
+"lon": 111.28472,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1350150
+},
+{
+"id": 1070940,
+"name": "Antananarivo",
+"ascii": "Antananarivo",
+"lat": -18.91368,
+"lon": 47.53613,
+"country": "MG",
+"tz": "Indian/Antananarivo",
+"pop": 1349501
+},
+{
+"id": 1808198,
+"name": "Heze",
+"ascii": "Heze",
+"lat": 35.23929,
+"lon": 115.47358,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1346717
+},
+{
+"id": 3461786,
+"name": "Guarulhos",
+"ascii": "Guarulhos",
+"lat": -23.46278,
+"lon": -46.53333,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 1345364
+},
+{
+"id": 2293521,
+"name": "Abobo",
+"ascii": "Abobo",
+"lat": 5.41613,
+"lon": -4.0159,
+"country": "CI",
+"tz": "Africa/Abidjan",
+"pop": 1340083
+},
+{
+"id": 1269300,
+"name": "Jamshedpur",
+"ascii": "Jamshedpur",
+"lat": 22.80278,
+"lon": 86.18545,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1339438
+},
+{
+"id": 2232593,
+"name": "Douala",
+"ascii": "Douala",
+"lat": 4.04827,
+"lon": 9.70428,
+"country": "CM",
+"tz": "Africa/Douala",
+"pop": 1338082
+},
+{
+"id": 323777,
+"name": "Antalya",
+"ascii": "Antalya",
+"lat": 36.90812,
+"lon": 30.69556,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 1335002
+},
+{
+"id": 99532,
+"name": "Basrah",
+"ascii": "Basrah",
+"lat": 30.50852,
+"lon": 47.7804,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1326564
+},
+{
+"id": 4684888,
+"name": "Dallas",
+"ascii": "Dallas",
+"lat": 32.78306,
+"lon": -96.80667,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 1326087
+},
+{
+"id": 6940394,
+"name": "Saitama",
+"ascii": "Saitama",
+"lat": 35.90807,
+"lon": 139.65657,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1324854
+},
+{
+"id": 2440485,
+"name": "Niamey",
+"ascii": "Niamey",
+"lat": 13.51366,
+"lon": 2.1098,
+"country": "NE",
+"tz": "Africa/Niamey",
+"pop": 1323691
+},
+{
+"id": 8533133,
+"name": "Liupanshui",
+"ascii": "Liupanshui",
+"lat": 26.59444,
+"lon": 104.83333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1320825
+},
+{
+"id": 1684308,
+"name": "Taguig",
+"ascii": "Taguig",
+"lat": 14.5243,
+"lon": 121.0792,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1308085
+},
+{
+"id": 1801180,
+"name": "Maoming",
+"ascii": "Maoming",
+"lat": 21.66625,
+"lon": 110.91364,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1307802
+},
+{
+"id": 5913490,
+"name": "Calgary",
+"ascii": "Calgary",
+"lat": 51.05011,
+"lon": -114.08529,
+"country": "CA",
+"tz": "America/Edmonton",
+"pop": 1306784
+},
+{
+"id": 2210247,
+"name": "Tripoli",
+"ascii": "Tripoli",
+"lat": 32.88743,
+"lon": 13.18733,
+"country": "LY",
+"tz": "Africa/Tripoli",
+"pop": 1302947
+},
+{
+"id": 109223,
+"name": "Madinah",
+"ascii": "Madinah",
+"lat": 24.46861,
+"lon": 39.61417,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 1300000
+},
+{
+"id": 2220957,
+"name": "Yaoundé",
+"ascii": "Yaounde",
+"lat": 3.86667,
+"lon": 11.51667,
+"country": "CM",
+"tz": "Africa/Douala",
+"pop": 1299369
+},
+{
+"id": 6295587,
+"name": "Batam",
+"ascii": "Batam",
+"lat": 1.14937,
+"lon": 104.02491,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1296960
+},
+{
+"id": 1797551,
+"name": "Qinzhou",
+"ascii": "Qinzhou",
+"lat": 21.98247,
+"lon": 108.65061,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1296300
+},
+{
+"id": 1801934,
+"name": "Luohe",
+"ascii": "Luohe",
+"lat": 33.57424,
+"lon": 114.03261,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1294974
+},
+{
+"id": 1790587,
+"name": "Xiangyang",
+"ascii": "Xiangyang",
+"lat": 32.0422,
+"lon": 112.14479,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1294733
+},
+{
+"id": 1806408,
+"name": "Yangjiang",
+"ascii": "Yangjiang",
+"lat": 21.85563,
+"lon": 111.96272,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1292987
+},
+{
+"id": 1786760,
+"name": "Yixing",
+"ascii": "Yixing",
+"lat": 31.36059,
+"lon": 119.82016,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1285785
+},
+{
+"id": 1259652,
+"name": "Pimpri",
+"ascii": "Pimpri",
+"lat": 18.62292,
+"lon": 73.80696,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1284606
+},
+{
+"id": 1583992,
+"name": "Da Nang",
+"ascii": "Da Nang",
+"lat": 16.06778,
+"lon": 108.22083,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 1276000
+},
+{
+"id": 250441,
+"name": "Amman",
+"ascii": "Amman",
+"lat": 31.95522,
+"lon": 35.94503,
+"country": "JO",
+"tz": "Asia/Amman",
+"pop": 1275857
+},
+{
+"id": 1723510,
+"name": "Budta",
+"ascii": "Budta",
+"lat": 7.20417,
+"lon": 124.43972,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1273715
+},
+{
+"id": 792680,
+"name": "Belgrade",
+"ascii": "Belgrade",
+"lat": 44.80401,
+"lon": 20.46513,
+"country": "RS",
+"tz": "Europe/Belgrade",
+"pop": 1273651
+},
+{
+"id": 1587923,
+"name": "Biên Hòa",
+"ascii": "Bien Hoa",
+"lat": 10.94469,
+"lon": 106.82432,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 1272235
+},
+{
+"id": 1797798,
+"name": "Qingpu",
+"ascii": "Qingpu",
+"lat": 31.15394,
+"lon": 121.11408,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1271424
+},
+{
+"id": 3441575,
+"name": "Montevideo",
+"ascii": "Montevideo",
+"lat": -34.90328,
+"lon": -56.18816,
+"country": "UY",
+"tz": "America/Montevideo",
+"pop": 1270737
+},
+{
+"id": 1788046,
+"name": "Xuchang",
+"ascii": "Xuchang",
+"lat": 34.03189,
+"lon": 113.86299,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1265536
+},
+{
+"id": 1268295,
+"name": "Kalyān",
+"ascii": "Kalyan",
+"lat": 19.2437,
+"lon": 73.13554,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1262255
+},
+{
+"id": 1783745,
+"name": "Zigong",
+"ascii": "Zigong",
+"lat": 29.34162,
+"lon": 104.77689,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1262064
+},
+{
+"id": 520555,
+"name": "Nizhniy Novgorod",
+"ascii": "Nizhniy Novgorod",
+"lat": 56.32867,
+"lon": 44.00205,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 1259013
+},
+{
+"id": 1642548,
+"name": "Jepara",
+"ascii": "Jepara",
+"lat": -6.5924,
+"lon": 110.671,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1257912
+},
+{
+"id": 1040652,
+"name": "Maputo",
+"ascii": "Maputo",
+"lat": -25.96553,
+"lon": 32.58322,
+"country": "MZ",
+"tz": "Africa/Maputo",
+"pop": 1254837
+},
+{
+"id": 10630003,
+"name": "Xuzhou",
+"ascii": "Xuzhou",
+"lat": 34.20442,
+"lon": 117.28386,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1253991
+},
+{
+"id": 110336,
+"name": "Dammam",
+"ascii": "Dammam",
+"lat": 26.43442,
+"lon": 50.10326,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 1252523
+},
+{
+"id": 268743,
+"name": "Ra’s Bayrūt",
+"ascii": "Ra's Bayrut",
+"lat": 33.9,
+"lon": 35.48333,
+"country": "LB",
+"tz": "Asia/Beirut",
+"pop": 1251739
+},
+{
+"id": 1799491,
+"name": "Neijiang",
+"ascii": "Neijiang",
+"lat": 29.58354,
+"lon": 105.06216,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1251095
+},
+{
+"id": 115019,
+"name": "Shiraz",
+"ascii": "Shiraz",
+"lat": 29.61031,
+"lon": 52.53113,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 1249942
+},
+{
+"id": 1808316,
+"name": "Heshan",
+"ascii": "Heshan",
+"lat": 28.56938,
+"lon": 112.34733,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1249807
+},
+{
+"id": 1272423,
+"name": "Dombivali",
+"ascii": "Dombivali",
+"lat": 19.21667,
+"lon": 73.08333,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1247327
+},
+{
+"id": 214481,
+"name": "Kananga",
+"ascii": "Kananga",
+"lat": -5.89624,
+"lon": 22.41659,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 1247168
+},
+{
+"id": 551487,
+"name": "Kazan",
+"ascii": "Kazan",
+"lat": 55.78874,
+"lon": 49.12214,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 1243500
+},
+{
+"id": 1805518,
+"name": "Jining",
+"ascii": "Jining",
+"lat": 35.405,
+"lon": 116.58139,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1241012
+},
+{
+"id": 3648522,
+"name": "Barquisimeto",
+"ascii": "Barquisimeto",
+"lat": 10.0647,
+"lon": -69.35703,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 1240714
+},
+{
+"id": 349076,
+"name": "Shubrā al Khaymah",
+"ascii": "Shubra al Khaymah",
+"lat": 30.12511,
+"lon": 31.25053,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 1240289
+},
+{
+"id": 1798439,
+"name": "Putuo",
+"ascii": "Putuo",
+"lat": 31.251,
+"lon": 121.3897,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1239100
+},
+{
+"id": 3718426,
+"name": "Port-au-Prince",
+"ascii": "Port-au-Prince",
+"lat": 18.54349,
+"lon": -72.33881,
+"country": "HT",
+"tz": "America/Port-au-Prince",
+"pop": 1234742
+},
+{
+"id": 1835553,
+"name": "Suwon",
+"ascii": "Suwon",
+"lat": 37.29111,
+"lon": 127.00889,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1234582
+},
+{
+"id": 1788534,
+"name": "Xinyang",
+"ascii": "Xinyang",
+"lat": 32.12278,
+"lon": 114.06556,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1230042
+},
+{
+"id": 1803834,
+"name": "Liaocheng",
+"ascii": "Liaocheng",
+"lat": 36.45064,
+"lon": 116.00247,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1229768
+},
+{
+"id": 10942283,
+"name": "Jinzhong",
+"ascii": "Jinzhong",
+"lat": 37.68403,
+"lon": 112.75471,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1226617
+},
+{
+"id": 3946083,
+"name": "Callao",
+"ascii": "Callao",
+"lat": -12.05162,
+"lon": -77.13452,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 1226200
+},
+{
+"id": 1263214,
+"name": "Meerut",
+"ascii": "Meerut",
+"lat": 28.98002,
+"lon": 77.70636,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1223184
+},
+{
+"id": 1253133,
+"name": "Virār",
+"ascii": "Virar",
+"lat": 19.45591,
+"lon": 72.81136,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1222390
+},
+{
+"id": 1261162,
+"name": "Nowrangapur",
+"ascii": "Nowrangapur",
+"lat": 19.23114,
+"lon": 82.54826,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1220946
+},
+{
+"id": 94824,
+"name": "Karbala",
+"ascii": "Karbala",
+"lat": 32.61603,
+"lon": 44.02488,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1218732
+},
+{
+"id": 1808956,
+"name": "Changzhi",
+"ascii": "Changzhi",
+"lat": 36.18389,
+"lon": 113.10528,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1214940
+},
+{
+"id": 1792892,
+"name": "Tianshui",
+"ascii": "Tianshui",
+"lat": 34.57952,
+"lon": 105.74238,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1212791
+},
+{
+"id": 7802746,
+"name": "Sadr City",
+"ascii": "Sadr City",
+"lat": 33.3889,
+"lon": 44.4583,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1211849
+},
+{
+"id": 1787375,
+"name": "Yangpu",
+"ascii": "Yangpu",
+"lat": 31.26193,
+"lon": 121.51904,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1210800
+},
+{
+"id": 186301,
+"name": "Mombasa",
+"ascii": "Mombasa",
+"lat": -4.05466,
+"lon": 39.66359,
+"country": "KE",
+"tz": "Africa/Nairobi",
+"pop": 1208333
+},
+{
+"id": 1311874,
+"name": "Mandalay",
+"ascii": "Mandalay",
+"lat": 21.97473,
+"lon": 96.08359,
+"country": "MM",
+"tz": "Asia/Yangon",
+"pop": 1208099
+},
+{
+"id": 1255634,
+"name": "Srinagar",
+"ascii": "Srinagar",
+"lat": 34.08565,
+"lon": 74.80555,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1206419
+},
+{
+"id": 3689147,
+"name": "Barranquilla",
+"ascii": "Barranquilla",
+"lat": 10.96854,
+"lon": -74.78132,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 1206319
+},
+{
+"id": 1508291,
+"name": "Chelyabinsk",
+"ascii": "Chelyabinsk",
+"lat": 55.1611,
+"lon": 61.42877,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 1202371
+},
+{
+"id": 3523349,
+"name": "Mérida",
+"ascii": "Merida",
+"lat": 20.967,
+"lon": -89.62318,
+"country": "MX",
+"tz": "America/Merida",
+"pop": 1201000
+},
+{
+"id": 1862415,
+"name": "Hiroshima",
+"ascii": "Hiroshima",
+"lat": 34.4,
+"lon": 132.45,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1200754
+},
+{
+"id": 3492914,
+"name": "Santiago de los Caballeros",
+"ascii": "Santiago de los Caballeros",
+"lat": 19.45036,
+"lon": -70.69085,
+"country": "DO",
+"tz": "America/Santo_Domingo",
+"pop": 1200000
+},
+{
+"id": 1518980,
+"name": "Shymkent",
+"ascii": "Shymkent",
+"lat": 42.30988,
+"lon": 69.60042,
+"country": "KZ",
+"tz": "Asia/Almaty",
+"pop": 1200000
+},
+{
+"id": 1791636,
+"name": "Weinan",
+"ascii": "Weinan",
+"lat": 34.50355,
+"lon": 109.50891,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1199290
+},
+{
+"id": 1271308,
+"name": "Ghāziābād",
+"ascii": "Ghaziabad",
+"lat": 28.66535,
+"lon": 77.43915,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1199191
+},
+{
+"id": 1039854,
+"name": "Matola",
+"ascii": "Matola",
+"lat": -25.96222,
+"lon": 32.45889,
+"country": "MZ",
+"tz": "Africa/Maputo",
+"pop": 1198988
+},
+{
+"id": 1272979,
+"name": "Dhanbad",
+"ascii": "Dhanbad",
+"lat": 23.79759,
+"lon": 86.42992,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1196214
+},
+{
+"id": 3947322,
+"name": "Arequipa",
+"ascii": "Arequipa",
+"lat": -16.39899,
+"lon": -71.53747,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 1195700
+},
+{
+"id": 12747064,
+"name": "Hong Kong Island",
+"ascii": "Hong Kong Island",
+"lat": 22.26302,
+"lon": 114.18419,
+"country": "HK",
+"tz": "Asia/Hong_Kong",
+"pop": 1195529
+},
+{
+"id": 2548885,
+"name": "Fes",
+"ascii": "Fes",
+"lat": 34.03313,
+"lon": -5.00028,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 1191905
+},
+{
+"id": 3514674,
+"name": "Gustavo Adolfo Madero",
+"ascii": "Gustavo Adolfo Madero",
+"lat": 19.49392,
+"lon": -99.11075,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1185772
+},
+{
+"id": 2377450,
+"name": "Nouakchott",
+"ascii": "Nouakchott",
+"lat": 18.08581,
+"lon": -15.9785,
+"country": "MR",
+"tz": "Africa/Nouakchott",
+"pop": 1184530
+},
+{
+"id": 212730,
+"name": "Kisangani",
+"ascii": "Kisangani",
+"lat": 0.51528,
+"lon": 25.19099,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 1181788
+},
+{
+"id": 1805953,
+"name": "Jiaxing",
+"ascii": "Jiaxing",
+"lat": 30.7522,
+"lon": 120.75,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1180000
+},
+{
+"id": 1278149,
+"name": "Aurangabad",
+"ascii": "Aurangabad",
+"lat": 19.87757,
+"lon": 75.34226,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1175116
+},
+{
+"id": 1784285,
+"name": "Zhongwei",
+"ascii": "Zhongwei",
+"lat": 37.51129,
+"lon": 105.19067,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1174600
+},
+{
+"id": 1496153,
+"name": "Omsk",
+"ascii": "Omsk",
+"lat": 54.99244,
+"lon": 73.36859,
+"country": "RU",
+"tz": "Asia/Omsk",
+"pop": 1172070
+},
+{
+"id": 2246678,
+"name": "Pikine",
+"ascii": "Pikine",
+"lat": 14.76457,
+"lon": -17.39071,
+"country": "SN",
+"tz": "Africa/Dakar",
+"pop": 1170791
+},
+{
+"id": 1631761,
+"name": "Pekanbaru",
+"ascii": "Pekanbaru",
+"lat": 0.51667,
+"lon": 101.44167,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1167599
+},
+{
+"id": 10794003,
+"name": "Panjin",
+"ascii": "Panjin",
+"lat": 41.121,
+"lon": 122.0739,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1166481
+},
+{
+"id": 1624917,
+"name": "Bandar Lampung",
+"ascii": "Bandar Lampung",
+"lat": -5.42917,
+"lon": 105.26111,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1166066
+},
+{
+"id": 3067696,
+"name": "Prague",
+"ascii": "Prague",
+"lat": 50.08804,
+"lon": 14.42076,
+"country": "CZ",
+"tz": "Europe/Prague",
+"pop": 1165581
+},
+{
+"id": 1253405,
+"name": "Varanasi",
+"ascii": "Varanasi",
+"lat": 25.31668,
+"lon": 83.01041,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1164404
+},
+{
+"id": 1805179,
+"name": "Jiujiang",
+"ascii": "Jiujiang",
+"lat": 29.70475,
+"lon": 116.00206,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1164268
+},
+{
+"id": 499099,
+"name": "Samara",
+"ascii": "Samara",
+"lat": 53.20767,
+"lon": 50.13553,
+"country": "RU",
+"tz": "Europe/Samara",
+"pop": 1163399
+},
+{
+"id": 2353151,
+"name": "Aba",
+"ascii": "Aba",
+"lat": 5.10658,
+"lon": 7.36667,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1160000
+},
+{
+"id": 1278710,
+"name": "Amritsar",
+"ascii": "Amritsar",
+"lat": 31.62234,
+"lon": 74.87534,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1159227
+},
+{
+"id": 2655603,
+"name": "Birmingham",
+"ascii": "Birmingham",
+"lat": 52.48142,
+"lon": -1.89983,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 1157603
+},
+{
+"id": 2618425,
+"name": "Copenhagen",
+"ascii": "Copenhagen",
+"lat": 55.67594,
+"lon": 12.56553,
+"country": "DK",
+"tz": "Europe/Copenhagen",
+"pop": 1153615
+},
+{
+"id": 727011,
+"name": "Sofia",
+"ascii": "Sofia",
+"lat": 42.69751,
+"lon": 23.32415,
+"country": "BG",
+"tz": "Europe/Sofia",
+"pop": 1152556
+},
+{
+"id": 1785294,
+"name": "Anyang",
+"ascii": "Anyang",
+"lat": 36.096,
+"lon": 114.38278,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1146839
+},
+{
+"id": 616052,
+"name": "Yerevan",
+"ascii": "Yerevan",
+"lat": 40.17765,
+"lon": 44.5126,
+"country": "AM",
+"tz": "Asia/Yerevan",
+"pop": 1144700
+},
+{
+"id": 13405906,
+"name": "Luohu District",
+"ascii": "Luohu District",
+"lat": 22.54721,
+"lon": 114.13149,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1143801
+},
+{
+"id": 1253184,
+"name": "Vijayawada",
+"ascii": "Vijayawada",
+"lat": 16.50745,
+"lon": 80.6466,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1143232
+},
+{
+"id": 13608002,
+"name": "Fengxiang",
+"ascii": "Fengxiang",
+"lat": 30.85841,
+"lon": 121.46779,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1140872
+},
+{
+"id": 1816373,
+"name": "Bijie",
+"ascii": "Bijie",
+"lat": 27.30193,
+"lon": 105.28627,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1137383
+},
+{
+"id": 3995465,
+"name": "Monterrey",
+"ascii": "Monterrey",
+"lat": 25.68435,
+"lon": -100.31721,
+"country": "MX",
+"tz": "America/Monterrey",
+"pop": 1135512
+},
+{
+"id": 202061,
+"name": "Kigali",
+"ascii": "Kigali",
+"lat": -1.94995,
+"lon": 30.05885,
+"country": "RW",
+"tz": "Africa/Kigali",
+"pop": 1132686
+},
+{
+"id": 501175,
+"name": "Rostov-on-Don",
+"ascii": "Rostov-on-Don",
+"lat": 47.21997,
+"lon": 39.70769,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 1130305
+},
+{
+"id": 1783763,
+"name": "Zhuzhou",
+"ascii": "Zhuzhou",
+"lat": 27.83333,
+"lon": 113.15,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1129687
+},
+{
+"id": 1978681,
+"name": "Malingao",
+"ascii": "Malingao",
+"lat": 7.16083,
+"lon": 124.475,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1121974
+},
+{
+"id": 2244322,
+"name": "Touba",
+"ascii": "Touba",
+"lat": 14.86229,
+"lon": -15.87532,
+"country": "SN",
+"tz": "Africa/Dakar",
+"pop": 1120824
+},
+{
+"id": 479561,
+"name": "Ufa",
+"ascii": "Ufa",
+"lat": 54.74306,
+"lon": 55.96779,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 1120547
+},
+{
+"id": 1258526,
+"name": "Ranchi",
+"ascii": "Ranchi",
+"lat": 23.34316,
+"lon": 85.3094,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1120374
+},
+{
+"id": 1787858,
+"name": "Shangrao",
+"ascii": "Shangrao",
+"lat": 28.45179,
+"lon": 117.94287,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1116486
+},
+{
+"id": 927967,
+"name": "Lilongwe",
+"ascii": "Lilongwe",
+"lat": -13.96692,
+"lon": 33.78725,
+"country": "MW",
+"tz": "Africa/Blantyre",
+"pop": 1115815
+},
+{
+"id": 1807700,
+"name": "Huaibei",
+"ascii": "Huaibei",
+"lat": 33.97444,
+"lon": 116.79167,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1113321
+},
+{
+"id": 2331447,
+"name": "Maiduguri",
+"ascii": "Maiduguri",
+"lat": 11.84692,
+"lon": 13.15712,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1110000
+},
+{
+"id": 1787957,
+"name": "Xuhui",
+"ascii": "Xuhui",
+"lat": 31.19594,
+"lon": 121.44709,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1109800
+},
+{
+"id": 1800818,
+"name": "Meishan",
+"ascii": "Meishan",
+"lat": 30.04392,
+"lon": 103.83696,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1107742
+},
+{
+"id": 152224,
+"name": "Mwanza",
+"ascii": "Mwanza",
+"lat": -2.51667,
+"lon": 32.9,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 1104521
+},
+{
+"id": 1833747,
+"name": "Ulsan",
+"ascii": "Ulsan",
+"lat": 35.53722,
+"lon": 129.31667,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1098421
+},
+{
+"id": 2111149,
+"name": "Sendai",
+"ascii": "Sendai",
+"lat": 38.26667,
+"lon": 140.86667,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 1096704
+},
+{
+"id": 1502026,
+"name": "Krasnoyarsk",
+"ascii": "Krasnoyarsk",
+"lat": 56.03742,
+"lon": 92.93136,
+"country": "RU",
+"tz": "Asia/Krasnoyarsk",
+"pop": 1090811
+},
+{
+"id": 1810820,
+"name": "Fuzhou",
+"ascii": "Fuzhou",
+"lat": 27.95999,
+"lon": 116.33333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1089888
+},
+{
+"id": 1809532,
+"name": "Guigang",
+"ascii": "Guigang",
+"lat": 23.11603,
+"lon": 109.59472,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1086327
+},
+{
+"id": 3143244,
+"name": "Oslo",
+"ascii": "Oslo",
+"lat": 59.91273,
+"lon": 10.74609,
+"country": "NO",
+"tz": "Europe/Oslo",
+"pop": 1082575
+},
+{
+"id": 1269633,
+"name": "Jabalpur",
+"ascii": "Jabalpur",
+"lat": 23.16697,
+"lon": 79.95006,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1081677
+},
+{
+"id": 2337639,
+"name": "Ilorin",
+"ascii": "Ilorin",
+"lat": 8.49664,
+"lon": 4.54214,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1080000
+},
+{
+"id": 415189,
+"name": "Aden",
+"ascii": "Aden",
+"lat": 12.77957,
+"lon": 45.03852,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 1079670
+},
+{
+"id": 1648473,
+"name": "Bogor",
+"ascii": "Bogor",
+"lat": -6.59444,
+"lon": 106.78917,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 1078351
+},
+{
+"id": 3530589,
+"name": "Ciudad Nezahualcoyotl",
+"ascii": "Ciudad Nezahualcoyotl",
+"lat": 19.40061,
+"lon": -99.01483,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 1077208
+},
+{
+"id": 1808370,
+"name": "Hengyang",
+"ascii": "Hengyang",
+"lat": 26.88946,
+"lon": 112.61888,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1075516
+},
+{
+"id": 1278994,
+"name": "Prayagraj",
+"ascii": "Prayagraj",
+"lat": 25.44478,
+"lon": 81.84322,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1073438
+},
+{
+"id": 3691175,
+"name": "Trujillo",
+"ascii": "Trujillo",
+"lat": -8.11599,
+"lon": -79.02998,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 1067700
+},
+{
+"id": 1253102,
+"name": "Visakhapatnam",
+"ascii": "Visakhapatnam",
+"lat": 17.68009,
+"lon": 83.20161,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1063178
+},
+{
+"id": 1842485,
+"name": "Goyang-si",
+"ascii": "Goyang-si",
+"lat": 37.65639,
+"lon": 126.835,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1061752
+},
+{
+"id": 1785781,
+"name": "Yulin",
+"ascii": "Yulin",
+"lat": 22.6305,
+"lon": 110.14686,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1056743
+},
+{
+"id": 1268865,
+"name": "Jodhpur",
+"ascii": "Jodhpur",
+"lat": 26.26841,
+"lon": 73.00594,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1056191
+},
+{
+"id": 1270583,
+"name": "Gwalior",
+"ascii": "Gwalior",
+"lat": 26.22983,
+"lon": 78.17337,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1054420
+},
+{
+"id": 1805540,
+"name": "Jingzhou",
+"ascii": "Jingzhou",
+"lat": 30.35028,
+"lon": 112.19028,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1052282
+},
+{
+"id": 964420,
+"name": "Gqeberha",
+"ascii": "Gqeberha",
+"lat": -33.96109,
+"lon": 25.61494,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 1050078
+},
+{
+"id": 611717,
+"name": "Tbilisi",
+"ascii": "Tbilisi",
+"lat": 41.69143,
+"lon": 44.83412,
+"country": "GE",
+"tz": "Asia/Tbilisi",
+"pop": 1049498
+},
+{
+"id": 472045,
+"name": "Voronezh",
+"ascii": "Voronezh",
+"lat": 51.66833,
+"lon": 39.19204,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 1047549
+},
+{
+"id": 1788572,
+"name": "Xinxiang",
+"ascii": "Xinxiang",
+"lat": 35.19033,
+"lon": 113.80151,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1047088
+},
+{
+"id": 1786746,
+"name": "Yichun",
+"ascii": "Yichun",
+"lat": 27.83333,
+"lon": 114.4,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1045952
+},
+{
+"id": 2322911,
+"name": "Sokoto",
+"ascii": "Sokoto",
+"lat": 13.06269,
+"lon": 5.24322,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1040000
+},
+{
+"id": 2335953,
+"name": "Jos",
+"ascii": "Jos",
+"lat": 9.92849,
+"lon": 8.89212,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 1040000
+},
+{
+"id": 2530335,
+"name": "Tangier",
+"ascii": "Tangier",
+"lat": 35.76727,
+"lon": -5.79975,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 1035141
+},
+{
+"id": 1254745,
+"name": "Teni",
+"ascii": "Teni",
+"lat": 10.01115,
+"lon": 77.47772,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1034724
+},
+{
+"id": 1790353,
+"name": "Xianyang",
+"ascii": "Xianyang",
+"lat": 34.33778,
+"lon": 108.70261,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1034081
+},
+{
+"id": 3996069,
+"name": "Mexicali",
+"ascii": "Mexicali",
+"lat": 32.62781,
+"lon": -115.45446,
+"country": "MX",
+"tz": "America/Tijuana",
+"pop": 1032686
+},
+{
+"id": 2255414,
+"name": "Pointe-Noire",
+"ascii": "Pointe-Noire",
+"lat": -4.77609,
+"lon": 11.86352,
+"country": "CG",
+"tz": "Africa/Brazzaville",
+"pop": 1032000
+},
+{
+"id": 3395981,
+"name": "Maceió",
+"ascii": "Maceio",
+"lat": -9.66583,
+"lon": -35.73528,
+"country": "BR",
+"tz": "America/Maceio",
+"pop": 1031597
+},
+{
+"id": 3467865,
+"name": "Campinas",
+"ascii": "Campinas",
+"lat": -22.90556,
+"lon": -47.06083,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 1031554
+},
+{
+"id": 1796556,
+"name": "Sanya",
+"ascii": "Sanya",
+"lat": 18.25435,
+"lon": 109.50947,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1031396
+},
+{
+"id": 1185188,
+"name": "Rangpur",
+"ascii": "Rangpur",
+"lat": 25.74664,
+"lon": 89.25166,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 1031388
+},
+{
+"id": 94787,
+"name": "Kirkuk",
+"ascii": "Kirkuk",
+"lat": 35.46806,
+"lon": 44.39222,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 1031000
+},
+{
+"id": 162183,
+"name": "Ashgabat",
+"ascii": "Ashgabat",
+"lat": 37.95,
+"lon": 58.38333,
+"country": "TM",
+"tz": "Asia/Ashgabat",
+"pop": 1030063
+},
+{
+"id": 1795874,
+"name": "Shaoguan",
+"ascii": "Shaoguan",
+"lat": 24.8,
+"lon": 113.58333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1028460
+},
+{
+"id": 1270396,
+"name": "Howrah",
+"ascii": "Howrah",
+"lat": 22.57688,
+"lon": 88.31857,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1027672
+},
+{
+"id": 1258980,
+"name": "Raipur",
+"ascii": "Raipur",
+"lat": 21.23333,
+"lon": 81.63333,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1027264
+},
+{
+"id": 1846326,
+"name": "Changwon",
+"ascii": "Changwon",
+"lat": 35.22806,
+"lon": 128.68111,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 1025702
+},
+{
+"id": 1802276,
+"name": "Longyan",
+"ascii": "Longyan",
+"lat": 25.07485,
+"lon": 117.01775,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1025087
+},
+{
+"id": 2886242,
+"name": "Köln",
+"ascii": "Koeln",
+"lat": 50.93333,
+"lon": 6.95,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 1024621
+},
+{
+"id": 2964574,
+"name": "Dublin",
+"ascii": "Dublin",
+"lat": 53.33306,
+"lon": -6.24889,
+"country": "IE",
+"tz": "Europe/Dublin",
+"pop": 1024027
+},
+{
+"id": 1254388,
+"name": "Tiruchirappalli",
+"ascii": "Tiruchirappalli",
+"lat": 10.8155,
+"lon": 78.69651,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1022518
+},
+{
+"id": 1786217,
+"name": "Yongzhou",
+"ascii": "Yongzhou",
+"lat": 26.42389,
+"lon": 111.61306,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1020715
+},
+{
+"id": 2800866,
+"name": "Brussels",
+"ascii": "Brussels",
+"lat": 50.85045,
+"lon": 4.34878,
+"country": "BE",
+"tz": "Europe/Brussels",
+"pop": 1019022
+},
+{
+"id": 1679432,
+"name": "Zamboanga",
+"ascii": "Zamboanga",
+"lat": 6.91028,
+"lon": 122.07389,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 1018849
+},
+{
+"id": 6094817,
+"name": "Ottawa",
+"ascii": "Ottawa",
+"lat": 45.41117,
+"lon": -75.69812,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 1017449
+},
+{
+"id": 1806535,
+"name": "Huzhou",
+"ascii": "Huzhou",
+"lat": 30.8703,
+"lon": 120.0933,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1015937
+},
+{
+"id": 472757,
+"name": "Volgograd",
+"ascii": "Volgograd",
+"lat": 48.71378,
+"lon": 44.4976,
+"country": "RU",
+"tz": "Europe/Volgograd",
+"pop": 1013533
+},
+{
+"id": 379251,
+"name": "Khartoum North",
+"ascii": "Khartoum North",
+"lat": 15.64925,
+"lon": 32.53458,
+"country": "SD",
+"tz": "Africa/Khartoum",
+"pop": 1012211
+},
+{
+"id": 5946768,
+"name": "Edmonton",
+"ascii": "Edmonton",
+"lat": 53.55014,
+"lon": -113.46871,
+"country": "CA",
+"tz": "America/Edmonton",
+"pop": 1010899
+},
+{
+"id": 698740,
+"name": "Odesa",
+"ascii": "Odesa",
+"lat": 46.48572,
+"lon": 30.74383,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 1010537
+},
+{
+"id": 1803936,
+"name": "Wuwei",
+"ascii": "Wuwei",
+"lat": 37.92672,
+"lon": 102.63202,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1010295
+},
+{
+"id": 4160021,
+"name": "Jacksonville",
+"ascii": "Jacksonville",
+"lat": 30.33218,
+"lon": -81.65565,
+"country": "US",
+"tz": "America/New_York",
+"pop": 1009833
+},
+{
+"id": 4691930,
+"name": "Fort Worth",
+"ascii": "Fort Worth",
+"lat": 32.72541,
+"lon": -97.32085,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 1008106
+},
+{
+"id": 1808857,
+"name": "Hanzhong",
+"ascii": "Hanzhong",
+"lat": 33.07507,
+"lon": 107.02214,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1006557
+},
+{
+"id": 7576887,
+"name": "Hezhou",
+"ascii": "Hezhou",
+"lat": 24.40357,
+"lon": 111.56675,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1005490
+},
+{
+"id": 3046446,
+"name": "Pest",
+"ascii": "Pest",
+"lat": 47.5,
+"lon": 19.08333,
+"country": "HU",
+"tz": "Europe/Budapest",
+"pop": 1001748
+},
+{
+"id": 1266049,
+"name": "Kota",
+"ascii": "Kota",
+"lat": 25.18254,
+"lon": 75.83907,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1001694
+},
+{
+"id": 7602670,
+"name": "Zhu Cheng City",
+"ascii": "Zhu Cheng City",
+"lat": 35.99502,
+"lon": 119.40259,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 1000000
+},
+{
+"id": 6943660,
+"name": "Shivaji Nagar",
+"ascii": "Shivaji Nagar",
+"lat": 18.53017,
+"lon": 73.85263,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 1000000
+},
+{
+"id": 1812101,
+"name": "Dongying",
+"ascii": "Dongying",
+"lat": 37.46271,
+"lon": 118.49165,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 998968
+},
+{
+"id": 1801640,
+"name": "Luzhou",
+"ascii": "Luzhou",
+"lat": 28.8903,
+"lon": 105.42575,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 998900
+},
+{
+"id": 5392171,
+"name": "San Jose",
+"ascii": "San Jose",
+"lat": 37.33939,
+"lon": -121.89496,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 997368
+},
+{
+"id": 1256436,
+"name": "Sholapur",
+"ascii": "Sholapur",
+"lat": 17.67152,
+"lon": 75.91044,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 997281
+},
+{
+"id": 2542997,
+"name": "Marrakesh",
+"ascii": "Marrakesh",
+"lat": 31.63416,
+"lon": -7.99994,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 995871
+},
+{
+"id": 3598132,
+"name": "Guatemala City",
+"ascii": "Guatemala City",
+"lat": 14.64072,
+"lon": -90.51327,
+"country": "GT",
+"tz": "America/Guatemala",
+"pop": 994938
+},
+{
+"id": 1800779,
+"name": "Meizhou",
+"ascii": "Meizhou",
+"lat": 24.28859,
+"lon": 116.11768,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 992351
+},
+{
+"id": 1927639,
+"name": "Yueyang",
+"ascii": "Yueyang",
+"lat": 29.37455,
+"lon": 113.09481,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 991465
+},
+{
+"id": 1804591,
+"name": "Laiwu",
+"ascii": "Laiwu",
+"lat": 36.19278,
+"lon": 117.65694,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 989535
+},
+{
+"id": 2038300,
+"name": "Benxi",
+"ascii": "Benxi",
+"lat": 41.28861,
+"lon": 123.765,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 987717
+},
+{
+"id": 747323,
+"name": "Esenyurt",
+"ascii": "Esenyurt",
+"lat": 41.02697,
+"lon": 28.67732,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 983571
+},
+{
+"id": 511196,
+"name": "Perm",
+"ascii": "Perm",
+"lat": 58.01046,
+"lon": 56.25017,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 982419
+},
+{
+"id": 2317765,
+"name": "Zaria",
+"ascii": "Zaria",
+"lat": 11.11128,
+"lon": 7.7227,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 980000
+},
+{
+"id": 7033318,
+"name": "Kennedy",
+"ascii": "Kennedy",
+"lat": 4.6165,
+"lon": -74.14597,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 979914
+},
+{
+"id": 2113015,
+"name": "Chiba",
+"ascii": "Chiba",
+"lat": 35.6,
+"lon": 140.11667,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 979768
+},
+{
+"id": 1798827,
+"name": "Pingdingshan",
+"ascii": "Pingdingshan",
+"lat": 33.73091,
+"lon": 113.31554,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 979130
+},
+{
+"id": 3645528,
+"name": "Ciudad Guayana",
+"ascii": "Ciudad Guayana",
+"lat": 8.35122,
+"lon": -62.64102,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 978202
+},
+{
+"id": 1166000,
+"name": "Sargodha",
+"ascii": "Sargodha",
+"lat": 32.08586,
+"lon": 72.67418,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 975886
+},
+{
+"id": 4671654,
+"name": "Austin",
+"ascii": "Austin",
+"lat": 30.26715,
+"lon": -97.74306,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 974447
+},
+{
+"id": 3617763,
+"name": "Managua",
+"ascii": "Managua",
+"lat": 12.13282,
+"lon": -86.2504,
+"country": "NI",
+"tz": "America/Managua",
+"pop": 973087
+},
+{
+"id": 1816440,
+"name": "Bengbu",
+"ascii": "Bengbu",
+"lat": 32.94083,
+"lon": 117.36083,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 972784
+},
+{
+"id": 2537763,
+"name": "Salé",
+"ascii": "Sale",
+"lat": 34.0531,
+"lon": -6.79846,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 972299
+},
+{
+"id": 281184,
+"name": "Jerusalem",
+"ascii": "Jerusalem",
+"lat": 31.76904,
+"lon": 35.21633,
+"country": "IL",
+"tz": "Asia/Jerusalem",
+"pop": 971800
+},
+{
+"id": 1274746,
+"name": "Chandigarh",
+"ascii": "Chandigarh",
+"lat": 30.73629,
+"lon": 76.7884,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 970602
+},
+{
+"id": 709930,
+"name": "Dnipro",
+"ascii": "Dnipro",
+"lat": 48.46664,
+"lon": 35.04066,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 968502
+},
+{
+"id": 1717512,
+"name": "Cebu City",
+"ascii": "Cebu City",
+"lat": 10.31672,
+"lon": 123.89071,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 965332
+},
+{
+"id": 1796823,
+"name": "Sanhe",
+"ascii": "Sanhe",
+"lat": 39.98049,
+"lon": 117.06887,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 965075
+},
+{
+"id": 1254348,
+"name": "Tiruppur",
+"ascii": "Tiruppur",
+"lat": 11.11541,
+"lon": 77.35456,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 963173
+},
+{
+"id": 1271476,
+"name": "Guwahati",
+"ascii": "Guwahati",
+"lat": 26.1844,
+"lon": 91.7458,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 962334
+},
+{
+"id": 1790492,
+"name": "Xiangtan",
+"ascii": "Xiangtan",
+"lat": 27.85,
+"lon": 112.9,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 959303
+},
+{
+"id": 1803567,
+"name": "Linfen",
+"ascii": "Linfen",
+"lat": 36.08889,
+"lon": 111.51889,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 959198
+},
+{
+"id": 1931681,
+"name": "Victoria",
+"ascii": "Victoria",
+"lat": 22.2875,
+"lon": 114.14417,
+"country": "HK",
+"tz": "Asia/Hong_Kong",
+"pop": 956800
+},
+{
+"id": 1784642,
+"name": "Zhenjiang",
+"ascii": "Zhenjiang",
+"lat": 32.21086,
+"lon": 119.45508,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 950516
+},
+{
+"id": 2343279,
+"name": "Enugu",
+"ascii": "Enugu",
+"lat": 6.44132,
+"lon": 7.49883,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 950000
+},
+{
+"id": 3838583,
+"name": "Rosario",
+"ascii": "Rosario",
+"lat": -32.94682,
+"lon": -60.63932,
+"country": "AR",
+"tz": "America/Argentina/Cordoba",
+"pop": 948312
+},
+{
+"id": 101760,
+"name": "Sulţānah",
+"ascii": "Sultanah",
+"lat": 24.49258,
+"lon": 39.58572,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 946697
+},
+{
+"id": 2036662,
+"name": "Huludao",
+"ascii": "Huludao",
+"lat": 40.75243,
+"lon": 120.83552,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 944495
+},
+{
+"id": 1269920,
+"name": "Hubballi",
+"ascii": "Hubballi",
+"lat": 15.34776,
+"lon": 75.13378,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 943788
+},
+{
+"id": 1633419,
+"name": "Padang",
+"ascii": "Padang",
+"lat": -0.94924,
+"lon": 100.35427,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 942938
+},
+{
+"id": 1859307,
+"name": "Kitakyushu",
+"ascii": "Kitakyushu",
+"lat": 33.85181,
+"lon": 130.85034,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 940978
+},
+{
+"id": 70225,
+"name": "Taiz",
+"ascii": "Taiz",
+"lat": 13.57952,
+"lon": 44.02091,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 940600
+},
+{
+"id": 11790342,
+"name": "Setagaya",
+"ascii": "Setagaya",
+"lat": 35.64188,
+"lon": 139.64715,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 940071
+},
+{
+"id": 3489854,
+"name": "Kingston",
+"ascii": "Kingston",
+"lat": 17.99702,
+"lon": -76.79358,
+"country": "JM",
+"tz": "America/Jamaica",
+"pop": 937700
+},
+{
+"id": 1805701,
+"name": "Jing’an",
+"ascii": "Jing'an",
+"lat": 31.22,
+"lon": 121.41583,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 936500
+},
+{
+"id": 1281673,
+"name": "Baoshan",
+"ascii": "Baoshan",
+"lat": 25.11626,
+"lon": 99.16366,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 935618
+},
+{
+"id": 1797063,
+"name": "Rui’an",
+"ascii": "Rui'an",
+"lat": 27.77605,
+"lon": 120.65859,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 927383
+},
+{
+"id": 4014338,
+"name": "Chihuahua",
+"ascii": "Chihuahua",
+"lat": 28.63528,
+"lon": -106.08889,
+"country": "MX",
+"tz": "America/Chihuahua",
+"pop": 925762
+},
+{
+"id": 6611854,
+"name": "Nay Pyi Taw",
+"ascii": "Nay Pyi Taw",
+"lat": 19.745,
+"lon": 96.12972,
+"country": "MM",
+"tz": "Asia/Yangon",
+"pop": 925000
+},
+{
+"id": 315202,
+"name": "Eskişehir",
+"ascii": "Eskisehir",
+"lat": 39.77667,
+"lon": 30.52056,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 921630
+},
+{
+"id": 1262321,
+"name": "Mysuru",
+"ascii": "Mysuru",
+"lat": 12.29791,
+"lon": 76.63925,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 920550
+},
+{
+"id": 1257629,
+"name": "Salem",
+"ascii": "Salem",
+"lat": 11.65376,
+"lon": 78.15538,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 917414
+},
+{
+"id": 3388368,
+"name": "São Luís",
+"ascii": "Sao Luis",
+"lat": -2.52972,
+"lon": -44.30278,
+"country": "BR",
+"tz": "America/Fortaleza",
+"pop": 917237
+},
+{
+"id": 1897000,
+"name": "Seongnam-si",
+"ascii": "Seongnam-si",
+"lat": 37.43861,
+"lon": 127.13778,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 914832
+},
+{
+"id": 3687238,
+"name": "Cartagena",
+"ascii": "Cartagena",
+"lat": 10.39817,
+"lon": -75.49328,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 914552
+},
+{
+"id": 1730501,
+"name": "Antipolo",
+"ascii": "Antipolo",
+"lat": 14.62578,
+"lon": 121.12251,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 913712
+},
+{
+"id": 4509177,
+"name": "Columbus",
+"ascii": "Columbus",
+"lat": 39.96118,
+"lon": -82.99879,
+"country": "US",
+"tz": "America/New_York",
+"pop": 913175
+},
+{
+"id": 1164909,
+"name": "Sialkot",
+"ascii": "Sialkot",
+"lat": 32.49268,
+"lon": 74.53134,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 911817
+},
+{
+"id": 4460243,
+"name": "Charlotte",
+"ascii": "Charlotte",
+"lat": 35.22709,
+"lon": -80.84313,
+"country": "US",
+"tz": "America/New_York",
+"pop": 911311
+},
+{
+"id": 1804609,
+"name": "Laibin",
+"ascii": "Laibin",
+"lat": 23.74743,
+"lon": 109.22222,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 910282
+},
+{
+"id": 2319133,
+"name": "Warri",
+"ascii": "Warri",
+"lat": 5.51737,
+"lon": 5.75006,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 910000
+},
+{
+"id": 3172394,
+"name": "Naples",
+"ascii": "Naples",
+"lat": 40.85216,
+"lon": 14.26811,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 909048
+},
+{
+"id": 1790254,
+"name": "Xiaogan",
+"ascii": "Xiaogan",
+"lat": 30.92689,
+"lon": 113.92221,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 908266
+},
+{
+"id": 3467747,
+"name": "Campo Grande",
+"ascii": "Campo Grande",
+"lat": -20.44278,
+"lon": -54.64639,
+"country": "BR",
+"tz": "America/Campo_Grande",
+"pop": 906092
+},
+{
+"id": 1783683,
+"name": "Ziyang",
+"ascii": "Ziyang",
+"lat": 30.12108,
+"lon": 104.64811,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 905729
+},
+{
+"id": 2362344,
+"name": "Bobo-Dioulasso",
+"ascii": "Bobo-Dioulasso",
+"lat": 11.18064,
+"lon": -4.29489,
+"country": "BF",
+"tz": "Africa/Ouagadougou",
+"pop": 904920
+},
+{
+"id": 1183880,
+"name": "Bahawalpur",
+"ascii": "Bahawalpur",
+"lat": 29.39779,
+"lon": 71.6752,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 903795
+},
+{
+"id": 1797264,
+"name": "Quzhou",
+"ascii": "Quzhou",
+"lat": 28.95944,
+"lon": 118.86861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 902767
+},
+{
+"id": 931755,
+"name": "Blantyre",
+"ascii": "Blantyre",
+"lat": -15.78499,
+"lon": 35.00854,
+"country": "MW",
+"tz": "Africa/Blantyre",
+"pop": 902588
+},
+{
+"id": 709717,
+"name": "Donetsk",
+"ascii": "Donetsk",
+"lat": 48.023,
+"lon": 37.80224,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 901645
+},
+{
+"id": 100077,
+"name": "Abū Ghurayb",
+"ascii": "Abu Ghurayb",
+"lat": 33.30563,
+"lon": 44.18477,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 900000
+},
+{
+"id": 119208,
+"name": "Qom",
+"ascii": "Qom",
+"lat": 34.6401,
+"lon": 50.8764,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 900000
+},
+{
+"id": 1528675,
+"name": "Bishkek",
+"ascii": "Bishkek",
+"lat": 42.87,
+"lon": 74.59,
+"country": "KG",
+"tz": "Asia/Bishkek",
+"pop": 900000
+},
+{
+"id": 1785453,
+"name": "Zaozhuang",
+"ascii": "Zaozhuang",
+"lat": 34.86472,
+"lon": 117.55417,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 899753
+},
+{
+"id": 542420,
+"name": "Krasnodar",
+"ascii": "Krasnodar",
+"lat": 45.04534,
+"lon": 38.98178,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 899541
+},
+{
+"id": 3394023,
+"name": "Natal",
+"ascii": "Natal",
+"lat": -5.795,
+"lon": -35.20944,
+"country": "BR",
+"tz": "America/Fortaleza",
+"pop": 896708
+},
+{
+"id": 1798654,
+"name": "Pingxiang",
+"ascii": "Pingxiang",
+"lat": 27.61672,
+"lon": 113.85353,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 893550
+},
+{
+"id": 1636722,
+"name": "Malang",
+"ascii": "Malang",
+"lat": -7.9797,
+"lon": 112.6304,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 889359
+},
+{
+"id": 3531673,
+"name": "Cancún",
+"ascii": "Cancun",
+"lat": 21.17429,
+"lon": -86.84656,
+"country": "MX",
+"tz": "America/Cancun",
+"pop": 888797
+},
+{
+"id": 4259418,
+"name": "Indianapolis",
+"ascii": "Indianapolis",
+"lat": 39.76838,
+"lon": -86.15804,
+"country": "US",
+"tz": "America/Indiana/Indianapolis",
+"pop": 887642
+},
+{
+"id": 1270642,
+"name": "Gurugram",
+"ascii": "Gurugram",
+"lat": 28.4601,
+"lon": 77.02635,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 886519
+},
+{
+"id": 1275817,
+"name": "Bhubaneswar",
+"ascii": "Bhubaneswar",
+"lat": 20.27241,
+"lon": 85.83385,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 885363
+},
+{
+"id": 1886762,
+"name": "Zhoushan",
+"ascii": "Zhoushan",
+"lat": 29.98869,
+"lon": 122.20488,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 882932
+},
+{
+"id": 2035265,
+"name": "Qiqihar",
+"ascii": "Qiqihar",
+"lat": 47.33922,
+"lon": 123.96154,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 882364
+},
+{
+"id": 8307074,
+"name": "Mulenvos",
+"ascii": "Mulenvos",
+"lat": -8.86695,
+"lon": 13.3344,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 882014
+},
+{
+"id": 98463,
+"name": "Sulaymaniyah",
+"ascii": "Sulaymaniyah",
+"lat": 35.56496,
+"lon": 45.4329,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 878146
+},
+{
+"id": 2995469,
+"name": "Marseille",
+"ascii": "Marseille",
+"lat": 43.29695,
+"lon": 5.38107,
+"country": "FR",
+"tz": "Europe/Paris",
+"pop": 877215
+},
+{
+"id": 1802940,
+"name": "Puning",
+"ascii": "Puning",
+"lat": 23.31072,
+"lon": 116.16869,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 874954
+},
+{
+"id": 1275901,
+"name": "Bhiwandi",
+"ascii": "Bhiwandi",
+"lat": 19.30023,
+"lon": 73.05881,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 874032
+},
+{
+"id": 954013,
+"name": "Soshanguve",
+"ascii": "Soshanguve",
+"lat": -25.47288,
+"lon": 28.09919,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 872309
+},
+{
+"id": 3386496,
+"name": "Teresina",
+"ascii": "Teresina",
+"lat": -5.08917,
+"lon": -42.80194,
+"country": "BR",
+"tz": "America/Fortaleza",
+"pop": 871126
+},
+{
+"id": 1789065,
+"name": "Ankang",
+"ascii": "Ankang",
+"lat": 32.68,
+"lon": 109.01722,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 870126
+},
+{
+"id": 1268782,
+"name": "Jalandhar",
+"ascii": "Jalandhar",
+"lat": 31.32556,
+"lon": 75.57917,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 868929
+},
+{
+"id": 2747891,
+"name": "Rotterdam",
+"ascii": "Rotterdam",
+"lat": 51.9225,
+"lon": 4.47917,
+"country": "NL",
+"tz": "Europe/Amsterdam",
+"pop": 868135
+},
+{
+"id": 1804540,
+"name": "Langfang",
+"ascii": "Langfang",
+"lat": 39.52079,
+"lon": 116.71471,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 868066
+},
+{
+"id": 3464374,
+"name": "Duque de Caxias",
+"ascii": "Duque de Caxias",
+"lat": -22.78556,
+"lon": -43.31167,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 866347
+},
+{
+"id": 2236500,
+"name": "Viana",
+"ascii": "Viana",
+"lat": -8.90553,
+"lon": 13.37499,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 865863
+},
+{
+"id": 1805987,
+"name": "Jiaozuo",
+"ascii": "Jiaozuo",
+"lat": 35.23925,
+"lon": 113.23914,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 865413
+},
+{
+"id": 1629001,
+"name": "Samarinda",
+"ascii": "Samarinda",
+"lat": -0.49167,
+"lon": 117.14583,
+"country": "ID",
+"tz": "Asia/Makassar",
+"pop": 865306
+},
+{
+"id": 12069922,
+"name": "Rohini",
+"ascii": "Rohini",
+"lat": 28.74322,
+"lon": 77.06778,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 860000
+},
+{
+"id": 1791748,
+"name": "Wanxian",
+"ascii": "Wanxian",
+"lat": 30.81601,
+"lon": 108.37407,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 859662
+},
+{
+"id": 1799194,
+"name": "Guang’an",
+"ascii": "Guang'an",
+"lat": 30.47413,
+"lon": 106.63696,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 858159
+},
+{
+"id": 1732752,
+"name": "Johor Bahru",
+"ascii": "Johor Bahru",
+"lat": 1.4655,
+"lon": 103.7578,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 858118
+},
+{
+"id": 1184370,
+"name": "Arifwala",
+"ascii": "Arifwala",
+"lat": 30.29058,
+"lon": 73.06574,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 854462
+},
+{
+"id": 7290466,
+"name": "Pasig City",
+"ascii": "Pasig City",
+"lat": 14.58691,
+"lon": 121.0614,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 853050
+},
+{
+"id": 1845604,
+"name": "Cheongju-si",
+"ascii": "Cheongju-si",
+"lat": 36.63722,
+"lon": 127.48972,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 852147
+},
+{
+"id": 12501153,
+"name": "Kanayannur",
+"ascii": "Kanayannur",
+"lat": 9.96667,
+"lon": 76.26667,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 851406
+},
+{
+"id": 3600949,
+"name": "Tegucigalpa",
+"ascii": "Tegucigalpa",
+"lat": 14.0818,
+"lon": -87.20681,
+"country": "HN",
+"tz": "America/Tegucigalpa",
+"pop": 850848
+},
+{
+"id": 1838716,
+"name": "Bucheon-si",
+"ascii": "Bucheon-si",
+"lat": 37.49889,
+"lon": 126.78306,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 850731
+},
+{
+"id": 1566166,
+"name": "Thanh Hóa",
+"ascii": "Thanh Hoa",
+"lat": 19.8,
+"lon": 105.76667,
+"country": "VN",
+"tz": "Asia/Bangkok",
+"pop": 850000
+},
+{
+"id": 3165524,
+"name": "Turin",
+"ascii": "Turin",
+"lat": 45.07049,
+"lon": 7.68682,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 847287
+},
+{
+"id": 292913,
+"name": "Al Ain City",
+"ascii": "Al Ain City",
+"lat": 24.19167,
+"lon": 55.76056,
+"country": "AE",
+"tz": "Asia/Dubai",
+"pop": 846747
+},
+{
+"id": 2399697,
+"name": "Libreville",
+"ascii": "Libreville",
+"lat": 0.39241,
+"lon": 9.45356,
+"country": "GA",
+"tz": "Africa/Libreville",
+"pop": 846090
+},
+{
+"id": 498677,
+"name": "Saratov",
+"ascii": "Saratov",
+"lat": 51.54048,
+"lon": 45.9901,
+"country": "RU",
+"tz": "Europe/Saratov",
+"pop": 844858
+},
+{
+"id": 2028462,
+"name": "Ulan Bator",
+"ascii": "Ulan Bator",
+"lat": 47.90771,
+"lon": 106.88324,
+"country": "MN",
+"tz": "Asia/Ulaanbaatar",
+"pop": 844818
+},
+{
+"id": 1791673,
+"name": "Weihai",
+"ascii": "Weihai",
+"lat": 37.50914,
+"lon": 122.11356,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 844310
+},
+{
+"id": 1821940,
+"name": "Takeo",
+"ascii": "Takeo",
+"lat": 10.99081,
+"lon": 104.78498,
+"country": "KH",
+"tz": "Asia/Phnom_Penh",
+"pop": 843931
+},
+{
+"id": 3456160,
+"name": "Nova Iguaçu",
+"ascii": "Nova Iguacu",
+"lat": -22.75917,
+"lon": -43.45111,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 843046
+},
+{
+"id": 3919968,
+"name": "Cochabamba",
+"ascii": "Cochabamba",
+"lat": -17.38195,
+"lon": -66.15995,
+"country": "BO",
+"tz": "America/La_Paz",
+"pop": 841276
+},
+{
+"id": 144448,
+"name": "Ahvaz",
+"ascii": "Ahvaz",
+"lat": 31.31901,
+"lon": 48.6842,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 841145
+},
+{
+"id": 1651944,
+"name": "Vientiane",
+"ascii": "Vientiane",
+"lat": 17.96667,
+"lon": 102.6,
+"country": "LA",
+"tz": "Asia/Vientiane",
+"pop": 840940
+},
+{
+"id": 3449344,
+"name": "São Bernardo do Campo",
+"ascii": "Sao Bernardo do Campo",
+"lat": -23.69389,
+"lon": -46.565,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 840499
+},
+{
+"id": 1785412,
+"name": "Zhabei",
+"ascii": "Zhabei",
+"lat": 31.25861,
+"lon": 121.45972,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 840000
+},
+{
+"id": 1788508,
+"name": "Xinyu",
+"ascii": "Xinyu",
+"lat": 27.80429,
+"lon": 114.93335,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 839488
+},
+{
+"id": 965301,
+"name": "Pietermaritzburg",
+"ascii": "Pietermaritzburg",
+"lat": -29.61679,
+"lon": 30.39278,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 839327
+},
+{
+"id": 1786770,
+"name": "Yibin",
+"ascii": "Yibin",
+"lat": 28.7593,
+"lon": 104.63994,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 836340
+},
+{
+"id": 3522790,
+"name": "Naucalpan de Juárez",
+"ascii": "Naucalpan de Juarez",
+"lat": 19.47851,
+"lon": -99.23963,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 834434
+},
+{
+"id": 1771023,
+"name": "Kampung Baru Subang",
+"ascii": "Kampung Baru Subang",
+"lat": 3.15,
+"lon": 101.53333,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 833571
+},
+{
+"id": 2290956,
+"name": "Bouaké",
+"ascii": "Bouake",
+"lat": 7.69385,
+"lon": -5.03031,
+"country": "CI",
+"tz": "Africa/Abidjan",
+"pop": 832371
+},
+{
+"id": 1793703,
+"name": "Taicang",
+"ascii": "Taicang",
+"lat": 31.44778,
+"lon": 121.09389,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 831113
+},
+{
+"id": 5391959,
+"name": "San Francisco",
+"ascii": "San Francisco",
+"lat": 37.77493,
+"lon": -122.41942,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 827526
+},
+{
+"id": 1853195,
+"name": "Sakai",
+"ascii": "Sakai",
+"lat": 34.58216,
+"lon": 135.46653,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 826161
+},
+{
+"id": 2509954,
+"name": "Valencia",
+"ascii": "Valencia",
+"lat": 39.47391,
+"lon": -0.37966,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 824340
+},
+{
+"id": 13608000,
+"name": "Jinshan",
+"ascii": "Jinshan",
+"lat": 30.83556,
+"lon": 121.29373,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 822776
+},
+{
+"id": 1815059,
+"name": "Chenzhou",
+"ascii": "Chenzhou",
+"lat": 25.8,
+"lon": 113.03333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 822534
+},
+{
+"id": 3397277,
+"name": "João Pessoa",
+"ascii": "Joao Pessoa",
+"lat": -7.115,
+"lon": -34.86306,
+"country": "BR",
+"tz": "America/Fortaleza",
+"pop": 817511
+},
+{
+"id": 217831,
+"name": "Bukavu",
+"ascii": "Bukavu",
+"lat": -2.49077,
+"lon": 28.84281,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 816811
+},
+{
+"id": 3094802,
+"name": "Kraków",
+"ascii": "Krakow",
+"lat": 50.06143,
+"lon": 19.93658,
+"country": "PL",
+"tz": "Europe/Warsaw",
+"pop": 816614
+},
+{
+"id": 3648559,
+"name": "Barcelona",
+"ascii": "Barcelona",
+"lat": 10.1384,
+"lon": -64.68769,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 815141
+},
+{
+"id": 2389853,
+"name": "Bangui",
+"ascii": "Bangui",
+"lat": 4.36122,
+"lon": 18.55496,
+"country": "CF",
+"tz": "Africa/Bangui",
+"pop": 812407
+},
+{
+"id": 4004898,
+"name": "Hermosillo",
+"ascii": "Hermosillo",
+"lat": 29.08874,
+"lon": -110.96677,
+"country": "MX",
+"tz": "America/Hermosillo",
+"pop": 812229
+},
+{
+"id": 1276014,
+"name": "Bhayandar",
+"ascii": "Bhayandar",
+"lat": 19.30157,
+"lon": 72.85107,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 809378
+},
+{
+"id": 4012176,
+"name": "Culiacán",
+"ascii": "Culiacan",
+"lat": 24.80209,
+"lon": -107.39421,
+"country": "MX",
+"tz": "America/Mazatlan",
+"pop": 808416
+},
+{
+"id": 1735158,
+"name": "Petaling Jaya",
+"ascii": "Petaling Jaya",
+"lat": 3.10726,
+"lon": 101.60671,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 807879
+},
+{
+"id": 1817993,
+"name": "Anqing",
+"ascii": "Anqing",
+"lat": 30.51365,
+"lon": 117.04723,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 804493
+},
+{
+"id": 2485926,
+"name": "Oran",
+"ascii": "Oran",
+"lat": 35.69906,
+"lon": -0.63588,
+"country": "DZ",
+"tz": "Africa/Algiers",
+"pop": 803329
+},
+{
+"id": 2409306,
+"name": "Freetown",
+"ascii": "Freetown",
+"lat": 8.48714,
+"lon": -13.2356,
+"country": "SL",
+"tz": "Africa/Freetown",
+"pop": 802639
+},
+{
+"id": 3601782,
+"name": "San Pedro Sula",
+"ascii": "San Pedro Sula",
+"lat": 15.50585,
+"lon": -88.02588,
+"country": "HN",
+"tz": "America/Tegucigalpa",
+"pop": 801259
+},
+{
+"id": 1261809,
+"name": "Narela",
+"ascii": "Narela",
+"lat": 28.85267,
+"lon": 77.09288,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 800000
+},
+{
+"id": 1788927,
+"name": "Xingtai",
+"ascii": "Xingtai",
+"lat": 37.06217,
+"lon": 114.49272,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 798770
+},
+{
+"id": 1855431,
+"name": "Niigata",
+"ascii": "Niigata",
+"lat": 37.92259,
+"lon": 139.04125,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 797591
+},
+{
+"id": 287286,
+"name": "Muscat",
+"ascii": "Muscat",
+"lat": 23.58413,
+"lon": 58.40778,
+"country": "OM",
+"tz": "Asia/Muscat",
+"pop": 797000
+},
+{
+"id": 250090,
+"name": "Zarqa",
+"ascii": "Zarqa",
+"lat": 32.07275,
+"lon": 36.08796,
+"country": "JO",
+"tz": "Asia/Amman",
+"pop": 792665
+},
+{
+"id": 6955677,
+"name": "Çankaya",
+"ascii": "Cankaya",
+"lat": 39.9179,
+"lon": 32.86268,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 792189
+},
+{
+"id": 742394,
+"name": "Küçükçekmece",
+"ascii": "Kuecuekcekmece",
+"lat": 40.99104,
+"lon": 28.77123,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 792030
+},
+{
+"id": 1863289,
+"name": "Hamamatsu",
+"ascii": "Hamamatsu",
+"lat": 34.7,
+"lon": 137.73333,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 791707
+},
+{
+"id": 922773,
+"name": "Kolwezi",
+"ascii": "Kolwezi",
+"lat": -10.71484,
+"lon": 25.46674,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 790248
+},
+{
+"id": 1562798,
+"name": "Vinh",
+"ascii": "Vinh",
+"lat": 18.67337,
+"lon": 105.69232,
+"country": "VN",
+"tz": "Asia/Bangkok",
+"pop": 790000
+},
+{
+"id": 1254163,
+"name": "Thiruvananthapuram",
+"ascii": "Thiruvananthapuram",
+"lat": 8.4855,
+"lon": 76.94924,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 788271
+},
+{
+"id": 1784841,
+"name": "Zhaotong",
+"ascii": "Zhaotong",
+"lat": 27.31667,
+"lon": 103.71667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 787845
+},
+{
+"id": 6929460,
+"name": "Panzhihua",
+"ascii": "Panzhihua",
+"lat": 26.58509,
+"lon": 101.71276,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 787177
+},
+{
+"id": 1814757,
+"name": "Chuzhou",
+"ascii": "Chuzhou",
+"lat": 32.32194,
+"lon": 118.29778,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 782671
+},
+{
+"id": 5809844,
+"name": "Seattle",
+"ascii": "Seattle",
+"lat": 47.60621,
+"lon": -122.33207,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 780995
+},
+{
+"id": 358619,
+"name": "Port Said",
+"ascii": "Port Said",
+"lat": 31.26531,
+"lon": 32.3019,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 780515
+},
+{
+"id": 3685533,
+"name": "Cúcuta",
+"ascii": "Cucuta",
+"lat": 7.90745,
+"lon": -72.5049,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 777106
+},
+{
+"id": 169577,
+"name": "Homs",
+"ascii": "Homs",
+"lat": 34.72405,
+"lon": 36.72559,
+"country": "SY",
+"tz": "Asia/Damascus",
+"pop": 775404
+},
+{
+"id": 1788081,
+"name": "Xuancheng",
+"ascii": "Xuancheng",
+"lat": 30.9525,
+"lon": 118.75528,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 774332
+},
+{
+"id": 74477,
+"name": "Ibb",
+"ascii": "Ibb",
+"lat": 13.96667,
+"lon": 44.18333,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 771514
+},
+{
+"id": 1624647,
+"name": "Tasikmalaya",
+"ascii": "Tasikmalaya",
+"lat": -7.3274,
+"lon": 108.2207,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 770839
+},
+{
+"id": 1033356,
+"name": "Nampula",
+"ascii": "Nampula",
+"lat": -15.11646,
+"lon": 39.2666,
+"country": "MZ",
+"tz": "Africa/Maputo",
+"pop": 770379
+},
+{
+"id": 1817720,
+"name": "Shangyu",
+"ascii": "Shangyu",
+"lat": 30.01556,
+"lon": 120.87111,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 770000
+},
+{
+"id": 425378,
+"name": "Bujumbura",
+"ascii": "Bujumbura",
+"lat": -3.38193,
+"lon": 29.36142,
+"country": "BI",
+"tz": "Africa/Bujumbura",
+"pop": 769317
+},
+{
+"id": 1488754,
+"name": "Tyumen",
+"ascii": "Tyumen",
+"lat": 57.15222,
+"lon": 65.52722,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 768358
+},
+{
+"id": 315368,
+"name": "Erzurum",
+"ascii": "Erzurum",
+"lat": 39.90861,
+"lon": 41.27694,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 767848
+},
+{
+"id": 1817968,
+"name": "Anshun",
+"ascii": "Anshun",
+"lat": 26.25,
+"lon": 105.93333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 765313
+},
+{
+"id": 160196,
+"name": "Dodoma",
+"ascii": "Dodoma",
+"lat": -6.17221,
+"lon": 35.73947,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 765179
+},
+{
+"id": 1185128,
+"name": "Rajshahi",
+"ascii": "Rajshahi",
+"lat": 24.374,
+"lon": 88.60114,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 763580
+},
+{
+"id": 1180281,
+"name": "Dera Ismail Khan",
+"ascii": "Dera Ismail Khan",
+"lat": 31.83129,
+"lon": 70.9017,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 763195
+},
+{
+"id": 3447399,
+"name": "Sorocaba",
+"ascii": "Sorocaba",
+"lat": -23.50167,
+"lon": -47.45806,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 762172
+},
+{
+"id": 1790840,
+"name": "Wuzhou",
+"ascii": "Wuzhou",
+"lat": 23.48054,
+"lon": 111.28848,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 761948
+},
+{
+"id": 1734634,
+"name": "Ipoh",
+"ascii": "Ipoh",
+"lat": 4.5841,
+"lon": 101.0829,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 759952
+},
+{
+"id": 1797595,
+"name": "Qinhuangdao",
+"ascii": "Qinhuangdao",
+"lat": 39.94104,
+"lon": 119.58936,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 759718
+},
+{
+"id": 88319,
+"name": "Benghazi",
+"ascii": "Benghazi",
+"lat": 32.11486,
+"lon": 20.06859,
+"country": "LY",
+"tz": "Africa/Tripoli",
+"pop": 757490
+},
+{
+"id": 3445831,
+"name": "Uberlândia",
+"ascii": "Uberlandia",
+"lat": -18.91861,
+"lon": -48.27722,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 754954
+},
+{
+"id": 1279017,
+"name": "Alīgarh",
+"ascii": "Aligarh",
+"lat": 27.88145,
+"lon": 78.07464,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 753207
+},
+{
+"id": 1816920,
+"name": "Shaoyang",
+"ascii": "Shaoyang",
+"lat": 27.23818,
+"lon": 111.46214,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 753194
+},
+{
+"id": 304922,
+"name": "Malatya",
+"ascii": "Malatya",
+"lat": 38.35018,
+"lon": 38.31667,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 750491
+},
+{
+"id": 6183235,
+"name": "Winnipeg",
+"ascii": "Winnipeg",
+"lat": 49.8844,
+"lon": -97.14704,
+"country": "CA",
+"tz": "America/Winnipeg",
+"pop": 749607
+},
+{
+"id": 8469289,
+"name": "Ōta",
+"ascii": "Ota",
+"lat": 35.56126,
+"lon": 139.71605,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 748081
+},
+{
+"id": 1514588,
+"name": "Andijon",
+"ascii": "Andijon",
+"lat": 40.78338,
+"lon": 72.35067,
+"country": "UZ",
+"tz": "Asia/Tashkent",
+"pop": 747800
+},
+{
+"id": 1277013,
+"name": "Bareilly",
+"ascii": "Bareilly",
+"lat": 28.36678,
+"lon": 79.43167,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 745435
+},
+{
+"id": 107304,
+"name": "Buraydah",
+"ascii": "Buraydah",
+"lat": 26.32599,
+"lon": 43.97497,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 745353
+},
+{
+"id": 2036986,
+"name": "Hegang",
+"ascii": "Hegang",
+"lat": 47.34727,
+"lon": 130.29033,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 743307
+},
+{
+"id": 3995402,
+"name": "Morelia",
+"ascii": "Morelia",
+"lat": 19.70078,
+"lon": -101.18443,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 743275
+},
+{
+"id": 456172,
+"name": "Riga",
+"ascii": "Riga",
+"lat": 56.946,
+"lon": 24.10589,
+"country": "LV",
+"tz": "Europe/Riga",
+"pop": 742572
+},
+{
+"id": 2759794,
+"name": "Amsterdam",
+"ascii": "Amsterdam",
+"lat": 52.37403,
+"lon": 4.88969,
+"country": "NL",
+"tz": "Europe/Amsterdam",
+"pop": 741636
+},
+{
+"id": 1721080,
+"name": "Cagayan de Oro",
+"ascii": "Cagayan de Oro",
+"lat": 8.48222,
+"lon": 124.64722,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 741617
+},
+{
+"id": 1801620,
+"name": "Ma’anshan",
+"ascii": "Ma'anshan",
+"lat": 31.68579,
+"lon": 118.51008,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 741531
+},
+{
+"id": 1732903,
+"name": "Shah Alam",
+"ascii": "Shah Alam",
+"lat": 3.08507,
+"lon": 101.53281,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 740750
+},
+{
+"id": 751324,
+"name": "Bağcılar",
+"ascii": "Bagcilar",
+"lat": 41.03903,
+"lon": 28.85671,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 740069
+},
+{
+"id": 12324556,
+"name": "Shizuishan",
+"ascii": "Shizuishan",
+"lat": 38.98082,
+"lon": 106.3892,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 739400
+},
+{
+"id": 1858421,
+"name": "Kumamoto",
+"ascii": "Kumamoto",
+"lat": 32.80589,
+"lon": 130.69181,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 738907
+},
+{
+"id": 2325200,
+"name": "Oyo",
+"ascii": "Oyo",
+"lat": 7.85367,
+"lon": 3.93235,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 736072
+},
+{
+"id": 1627549,
+"name": "Serang",
+"ascii": "Serang",
+"lat": -6.11528,
+"lon": 106.15417,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 735651
+},
+{
+"id": 3981254,
+"name": "Torreón",
+"ascii": "Torreon",
+"lat": 25.54389,
+"lon": -103.41898,
+"country": "MX",
+"tz": "America/Monterrey",
+"pop": 735340
+},
+{
+"id": 1812961,
+"name": "Deyang",
+"ascii": "Deyang",
+"lat": 31.13019,
+"lon": 104.38198,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 735070
+},
+{
+"id": 2352947,
+"name": "Abeokuta",
+"ascii": "Abeokuta",
+"lat": 7.15571,
+"lon": 3.34509,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 735000
+},
+{
+"id": 79415,
+"name": "Al Ḩudaydah",
+"ascii": "Al Hudaydah",
+"lat": 14.79781,
+"lon": 42.95452,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 734699
+},
+{
+"id": 1787351,
+"name": "Yangquan",
+"ascii": "Yangquan",
+"lat": 37.8575,
+"lon": 113.56333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 731228
+},
+{
+"id": 2350841,
+"name": "Akure",
+"ascii": "Akure",
+"lat": 7.25256,
+"lon": 5.19312,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 730000
+},
+{
+"id": 5419384,
+"name": "Denver",
+"ascii": "Denver",
+"lat": 39.73915,
+"lon": -104.9847,
+"country": "US",
+"tz": "America/Denver",
+"pop": 729019
+},
+{
+"id": 3455775,
+"name": "Osasco",
+"ascii": "Osasco",
+"lat": -23.5325,
+"lon": -46.79167,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 728615
+},
+{
+"id": 7758790,
+"name": "Kikolo",
+"ascii": "Kikolo",
+"lat": -8.7815,
+"lon": 13.33384,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 728205
+},
+{
+"id": 2239888,
+"name": "Maianga",
+"ascii": "Maianga",
+"lat": -8.84693,
+"lon": 13.23698,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 727681
+},
+{
+"id": 3448636,
+"name": "São José dos Campos",
+"ascii": "Sao Jose dos Campos",
+"lat": -23.17944,
+"lon": -45.88694,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 727078
+},
+{
+"id": 3514663,
+"name": "Álvaro Obregón",
+"ascii": "Alvaro Obregon",
+"lat": 19.35867,
+"lon": -99.20329,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 726664
+},
+{
+"id": 1865689,
+"name": "Aihara",
+"ascii": "Aihara",
+"lat": 35.6,
+"lon": 139.31667,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 725493
+},
+{
+"id": 1004866,
+"name": "Evaton",
+"ascii": "Evaton",
+"lat": -26.53333,
+"lon": 27.85,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 725468
+},
+{
+"id": 1680102,
+"name": "Valenzuela",
+"ascii": "Valenzuela",
+"lat": 14.7,
+"lon": 120.9667,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 725173
+},
+{
+"id": 1169607,
+"name": "Muzaffarābād",
+"ascii": "Muzaffarabad",
+"lat": 34.37002,
+"lon": 73.47082,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 725000
+},
+{
+"id": 1854383,
+"name": "Okayama",
+"ascii": "Okayama",
+"lat": 34.65,
+"lon": 133.93333,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 724691
+},
+{
+"id": 3985606,
+"name": "San Luis Potosí",
+"ascii": "San Luis Potosi",
+"lat": 22.15234,
+"lon": -100.97135,
+"country": "MX",
+"tz": "America/Monterrey",
+"pop": 722772
+},
+{
+"id": 4019233,
+"name": "Aguascalientes",
+"ascii": "Aguascalientes",
+"lat": 21.88262,
+"lon": -102.2843,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 722250
+},
+{
+"id": 1713022,
+"name": "General Santos",
+"ascii": "General Santos",
+"lat": 6.11278,
+"lon": 125.17167,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 722059
+},
+{
+"id": 1783873,
+"name": "Zhumadian",
+"ascii": "Zhumadian",
+"lat": 32.98385,
+"lon": 114.02586,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 721670
+},
+{
+"id": 1262801,
+"name": "Morādābād",
+"ascii": "Moradabad",
+"lat": 28.83893,
+"lon": 78.77684,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 721139
+},
+{
+"id": 11611609,
+"name": "Sagamihara",
+"ascii": "Sagamihara",
+"lat": 35.56707,
+"lon": 139.24167,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 720780
+},
+{
+"id": 6075357,
+"name": "Mississauga",
+"ascii": "Mississauga",
+"lat": 43.5789,
+"lon": -79.6583,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 717961
+},
+{
+"id": 702550,
+"name": "Lviv",
+"ascii": "Lviv",
+"lat": 49.83826,
+"lon": 24.02324,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 717273
+},
+{
+"id": 1513157,
+"name": "Namangan",
+"ascii": "Namangan",
+"lat": 40.9983,
+"lon": 71.67257,
+"country": "UZ",
+"tz": "Asia/Tashkent",
+"pop": 713220
+},
+{
+"id": 687700,
+"name": "Zaporizhzhya",
+"ascii": "Zaporizhzhya",
+"lat": 47.85167,
+"lon": 35.11714,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 710052
+},
+{
+"id": 148730,
+"name": "Zanzibar",
+"ascii": "Zanzibar",
+"lat": -6.16394,
+"lon": 39.19793,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 709809
+},
+{
+"id": 3988086,
+"name": "Saltillo",
+"ascii": "Saltillo",
+"lat": 25.42595,
+"lon": -100.97963,
+"country": "MX",
+"tz": "America/Monterrey",
+"pop": 709671
+},
+{
+"id": 173576,
+"name": "Latakia",
+"ascii": "Latakia",
+"lat": 35.53125,
+"lon": 35.79088,
+"country": "SY",
+"tz": "Asia/Damascus",
+"pop": 709000
+},
+{
+"id": 8504423,
+"name": "Subang Jaya",
+"ascii": "Subang Jaya",
+"lat": 3.04384,
+"lon": 101.58062,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 708296
+},
+{
+"id": 1252948,
+"name": "Warangal",
+"ascii": "Warangal",
+"lat": 18.0,
+"lon": 79.58333,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 704570
+},
+{
+"id": 1694781,
+"name": "Paranaque City",
+"ascii": "Paranaque City",
+"lat": 14.48156,
+"lon": 121.01749,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 703245
+},
+{
+"id": 482283,
+"name": "Tolyatti",
+"ascii": "Tolyatti",
+"lat": 53.5303,
+"lon": 49.3461,
+"country": "RU",
+"tz": "Europe/Samara",
+"pop": 702879
+},
+{
+"id": 7874116,
+"name": "Santo Domingo Oeste",
+"ascii": "Santo Domingo Oeste",
+"lat": 18.5,
+"lon": -70.0,
+"country": "DO",
+"tz": "America/Santo_Domingo",
+"pop": 701269
+},
+{
+"id": 8601412,
+"name": "Santo Domingo Este",
+"ascii": "Santo Domingo Este",
+"lat": 18.48511,
+"lon": -69.84757,
+"country": "DO",
+"tz": "America/Santo_Domingo",
+"pop": 700000
+},
+{
+"id": 1272866,
+"name": "Dhārāvi",
+"ascii": "Dharavi",
+"lat": 19.05,
+"lon": 72.86667,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 700000
+},
+{
+"id": 1183105,
+"name": "Battagram",
+"ascii": "Battagram",
+"lat": 34.67719,
+"lon": 73.02329,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 700000
+},
+{
+"id": 359796,
+"name": "Suez",
+"ascii": "Suez",
+"lat": 29.97371,
+"lon": 32.52627,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 699541
+},
+{
+"id": 1815463,
+"name": "Changzhi",
+"ascii": "Changzhi",
+"lat": 35.20889,
+"lon": 111.73861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 699514
+},
+{
+"id": 3451328,
+"name": "Ribeirão Preto",
+"ascii": "Ribeirao Preto",
+"lat": -21.1775,
+"lon": -47.81028,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 698642
+},
+{
+"id": 2561668,
+"name": "Agadir",
+"ascii": "Agadir",
+"lat": 30.42018,
+"lon": -9.59815,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 698310
+},
+{
+"id": 11071717,
+"name": "Edogawe",
+"ascii": "Edogawe",
+"lat": 35.69225,
+"lon": 139.87308,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 697932
+},
+{
+"id": 3191281,
+"name": "Sarajevo",
+"ascii": "Sarajevo",
+"lat": 43.84864,
+"lon": 18.35644,
+"country": "BA",
+"tz": "Europe/Sarajevo",
+"pop": 696731
+},
+{
+"id": 1650527,
+"name": "Balikpapan",
+"ascii": "Balikpapan",
+"lat": -1.26753,
+"lon": 116.82887,
+"country": "ID",
+"tz": "Asia/Makassar",
+"pop": 695287
+},
+{
+"id": 10987897,
+"name": "Adachi",
+"ascii": "Adachi",
+"lat": 35.76318,
+"lon": 139.80761,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 695043
+},
+{
+"id": 1815611,
+"name": "Changning",
+"ascii": "Changning",
+"lat": 31.21739,
+"lon": 121.42105,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 694900
+},
+{
+"id": 2347470,
+"name": "Bauchi",
+"ascii": "Bauchi",
+"lat": 10.31032,
+"lon": 9.84388,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 693700
+},
+{
+"id": 1851717,
+"name": "Shizuoka",
+"ascii": "Shizuoka",
+"lat": 34.98333,
+"lon": 138.38333,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 693389
+},
+{
+"id": 2464470,
+"name": "Tunis",
+"ascii": "Tunis",
+"lat": 36.81897,
+"lon": 10.16579,
+"country": "TN",
+"tz": "Africa/Tunis",
+"pop": 693210
+},
+{
+"id": 2033196,
+"name": "Zhangjiakou",
+"ascii": "Zhangjiakou",
+"lat": 40.78341,
+"lon": 114.87139,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 692602
+},
+{
+"id": 4140963,
+"name": "Washington",
+"ascii": "Washington",
+"lat": 38.89511,
+"lon": -77.03637,
+"country": "US",
+"tz": "America/New_York",
+"pop": 689545
+},
+{
+"id": 4644585,
+"name": "Nashville",
+"ascii": "Nashville",
+"lat": 36.16589,
+"lon": -86.78444,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 689447
+},
+{
+"id": 2037346,
+"name": "Fuxin",
+"ascii": "Fuxin",
+"lat": 42.01556,
+"lon": 121.65889,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 689050
+},
+{
+"id": 107968,
+"name": "Ta’if",
+"ascii": "Ta'if",
+"lat": 21.27028,
+"lon": 40.41583,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 688693
+},
+{
+"id": 1796989,
+"name": "Changsha",
+"ascii": "Changsha",
+"lat": 22.38124,
+"lon": 112.68492,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 688242
+},
+{
+"id": 1807234,
+"name": "Huangshi",
+"ascii": "Huangshi",
+"lat": 30.24706,
+"lon": 115.04814,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 688090
+},
+{
+"id": 2036113,
+"name": "Liaoyang",
+"ascii": "Liaoyang",
+"lat": 41.27194,
+"lon": 123.17306,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 687890
+},
+{
+"id": 8740157,
+"name": "Hlaingthaya",
+"ascii": "Hlaingthaya",
+"lat": 16.85,
+"lon": 96.06667,
+"country": "MM",
+"tz": "Asia/Yangon",
+"pop": 687867
+},
+{
+"id": 1052373,
+"name": "Beira",
+"ascii": "Beira",
+"lat": -19.84361,
+"lon": 34.83889,
+"country": "MZ",
+"tz": "Africa/Maputo",
+"pop": 687764
+},
+{
+"id": 1808090,
+"name": "Hongkou",
+"ascii": "Hongkou",
+"lat": 31.25,
+"lon": 121.48917,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 687500
+},
+{
+"id": 3104324,
+"name": "Zaragoza",
+"ascii": "Zaragoza",
+"lat": 41.65606,
+"lon": -0.87734,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 686986
+},
+{
+"id": 2510911,
+"name": "Sevilla",
+"ascii": "Sevilla",
+"lat": 37.38283,
+"lon": -5.97317,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 686741
+},
+{
+"id": 1816269,
+"name": "Baise",
+"ascii": "Baise",
+"lat": 23.89013,
+"lon": 106.62684,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 686078
+},
+{
+"id": 1630789,
+"name": "Pontianak",
+"ascii": "Pontianak",
+"lat": -0.03194,
+"lon": 109.325,
+"country": "ID",
+"tz": "Asia/Pontianak",
+"pop": 686019
+},
+{
+"id": 1626801,
+"name": "Situbondo",
+"ascii": "Situbondo",
+"lat": -7.70623,
+"lon": 114.00976,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 685967
+},
+{
+"id": 2351943,
+"name": "Agege",
+"ascii": "Agege",
+"lat": 6.61563,
+"lon": 3.33337,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 683600
+},
+{
+"id": 1816336,
+"name": "Binzhou",
+"ascii": "Binzhou",
+"lat": 37.36667,
+"lon": 118.01667,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 682717
+},
+{
+"id": 4544349,
+"name": "Oklahoma City",
+"ascii": "Oklahoma City",
+"lat": 35.46756,
+"lon": -97.51643,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 681054
+},
+{
+"id": 1785738,
+"name": "Yuncheng",
+"ascii": "Yuncheng",
+"lat": 35.02306,
+"lon": 110.99278,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 680036
+},
+{
+"id": 1812955,
+"name": "Dezhou",
+"ascii": "Dezhou",
+"lat": 37.44661,
+"lon": 116.36706,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 679535
+},
+{
+"id": 1221874,
+"name": "Dushanbe",
+"ascii": "Dushanbe",
+"lat": 38.53575,
+"lon": 68.77905,
+"country": "TJ",
+"tz": "Asia/Dushanbe",
+"pop": 679400
+},
+{
+"id": 2394819,
+"name": "Cotonou",
+"ascii": "Cotonou",
+"lat": 6.36536,
+"lon": 2.41833,
+"country": "BJ",
+"tz": "Africa/Porto-Novo",
+"pop": 679012
+},
+{
+"id": 5520993,
+"name": "El Paso",
+"ascii": "El Paso",
+"lat": 31.75872,
+"lon": -106.48693,
+"country": "US",
+"tz": "America/Denver",
+"pop": 678815
+},
+{
+"id": 1270927,
+"name": "Gorakhpur",
+"ascii": "Gorakhpur",
+"lat": 26.76628,
+"lon": 83.36889,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 674246
+},
+{
+"id": 4005492,
+"name": "Guadalupe",
+"ascii": "Guadalupe",
+"lat": 25.67663,
+"lon": -100.25907,
+"country": "MX",
+"tz": "America/Monterrey",
+"pop": 673616
+},
+{
+"id": 3081368,
+"name": "Wrocław",
+"ascii": "Wroclaw",
+"lat": 51.10286,
+"lon": 17.03006,
+"country": "PL",
+"tz": "Europe/Warsaw",
+"pop": 672545
+},
+{
+"id": 1645528,
+"name": "Denpasar",
+"ascii": "Denpasar",
+"lat": -8.65,
+"lon": 115.21667,
+"country": "ID",
+"tz": "Asia/Makassar",
+"pop": 670210
+},
+{
+"id": 1270668,
+"name": "Guntur",
+"ascii": "Guntur",
+"lat": 16.29974,
+"lon": 80.45729,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 670073
+},
+{
+"id": 2334802,
+"name": "Katsina",
+"ascii": "Katsina",
+"lat": 12.99082,
+"lon": 7.60177,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 670000
+},
+{
+"id": 1796669,
+"name": "Sanmenxia",
+"ascii": "Sanmenxia",
+"lat": 34.78081,
+"lon": 111.19287,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 669307
+},
+{
+"id": 6642286,
+"name": "E’zhou",
+"ascii": "E'zhou",
+"lat": 30.39607,
+"lon": 114.88655,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 668727
+},
+{
+"id": 353225,
+"name": "Madīnat an Naşr",
+"ascii": "Madinat an Nasr",
+"lat": 30.06667,
+"lon": 31.3,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 668413
+},
+{
+"id": 2591957,
+"name": "Camama",
+"ascii": "Camama",
+"lat": -8.93611,
+"lon": 13.26518,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 667094
+},
+{
+"id": 101628,
+"name": "Tabuk",
+"ascii": "Tabuk",
+"lat": 28.3998,
+"lon": 36.57151,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 667000
+},
+{
+"id": 911148,
+"name": "Kitwe",
+"ascii": "Kitwe",
+"lat": -12.80243,
+"lon": 28.21323,
+"country": "ZM",
+"tz": "Africa/Lusaka",
+"pop": 665961
+},
+{
+"id": 894701,
+"name": "Bulawayo",
+"ascii": "Bulawayo",
+"lat": -20.15,
+"lon": 28.58333,
+"country": "ZW",
+"tz": "Africa/Harare",
+"pop": 665952
+},
+{
+"id": 2035715,
+"name": "Mudanjiang",
+"ascii": "Mudanjiang",
+"lat": 44.54804,
+"lon": 129.62594,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 665915
+},
+{
+"id": 3471872,
+"name": "Aracaju",
+"ascii": "Aracaju",
+"lat": -10.91111,
+"lon": -37.07167,
+"country": "BR",
+"tz": "America/Maceio",
+"pop": 664908
+},
+{
+"id": 3459712,
+"name": "Joinville",
+"ascii": "Joinville",
+"lat": -26.30444,
+"lon": -48.84556,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 664500
+},
+{
+"id": 264371,
+"name": "Athens",
+"ascii": "Athens",
+"lat": 37.98376,
+"lon": 23.72784,
+"country": "GR",
+"tz": "Europe/Athens",
+"pop": 664046
+},
+{
+"id": 3186886,
+"name": "Zagreb",
+"ascii": "Zagreb",
+"lat": 45.81444,
+"lon": 15.97798,
+"country": "HR",
+"tz": "Europe/Zagreb",
+"pop": 663592
+},
+{
+"id": 1804153,
+"name": "Leshan",
+"ascii": "Leshan",
+"lat": 29.56227,
+"lon": 103.76386,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 662814
+},
+{
+"id": 3449701,
+"name": "Santo André",
+"ascii": "Santo Andre",
+"lat": -23.66389,
+"lon": -46.53833,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 662373
+},
+{
+"id": 6173331,
+"name": "Vancouver",
+"ascii": "Vancouver",
+"lat": 49.24966,
+"lon": -123.11934,
+"country": "CA",
+"tz": "America/Vancouver",
+"pop": 662248
+},
+{
+"id": 9072919,
+"name": "Rizhao",
+"ascii": "Rizhao",
+"lat": 35.41414,
+"lon": 119.52908,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 661943
+},
+{
+"id": 658225,
+"name": "Helsinki",
+"ascii": "Helsinki",
+"lat": 60.16952,
+"lon": 24.93545,
+"country": "FI",
+"tz": "Europe/Helsinki",
+"pop": 658864
+},
+{
+"id": 1845759,
+"name": "Cheonan",
+"ascii": "Cheonan",
+"lat": 36.8065,
+"lon": 127.1522,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 658831
+},
+{
+"id": 3533462,
+"name": "Acapulco de Juárez",
+"ascii": "Acapulco de Juarez",
+"lat": 16.84942,
+"lon": -99.90891,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 658609
+},
+{
+"id": 1650213,
+"name": "Banjarmasin",
+"ascii": "Banjarmasin",
+"lat": -3.31987,
+"lon": 114.59075,
+"country": "ID",
+"tz": "Asia/Makassar",
+"pop": 657663
+},
+{
+"id": 1259425,
+"name": "Puducherry",
+"ascii": "Puducherry",
+"lat": 11.93381,
+"lon": 79.82979,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 657209
+},
+{
+"id": 1793900,
+"name": "Suining",
+"ascii": "Suining",
+"lat": 30.50802,
+"lon": 105.57332,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 656760
+},
+{
+"id": 5907364,
+"name": "Brampton",
+"ascii": "Brampton",
+"lat": 43.68341,
+"lon": -79.76633,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 656480
+},
+{
+"id": 2591953,
+"name": "Golfe",
+"ascii": "Golfe",
+"lat": -8.86639,
+"lon": 13.26173,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 655796
+},
+{
+"id": 9181182,
+"name": "Puyang",
+"ascii": "Puyang",
+"lat": 35.75641,
+"lon": 115.04363,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 655674
+},
+{
+"id": 3667905,
+"name": "Soacha",
+"ascii": "Soacha",
+"lat": 4.57937,
+"lon": -74.21682,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 655025
+},
+{
+"id": 4930956,
+"name": "Boston",
+"ascii": "Boston",
+"lat": 42.35843,
+"lon": -71.05977,
+"country": "US",
+"tz": "America/New_York",
+"pop": 653833
+},
+{
+"id": 3515431,
+"name": "Tlalnepantla",
+"ascii": "Tlalnepantla",
+"lat": 19.54005,
+"lon": -99.19538,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 653410
+},
+{
+"id": 10581114,
+"name": "Jājmau",
+"ascii": "Jajmau",
+"lat": 26.4304,
+"lon": 80.4095,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 652831
+},
+{
+"id": 5746545,
+"name": "Portland",
+"ascii": "Portland",
+"lat": 45.52345,
+"lon": -122.67621,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 652503
+},
+{
+"id": 2242906,
+"name": "Calumbo",
+"ascii": "Calumbo",
+"lat": -9.14692,
+"lon": 13.41936,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 652270
+},
+{
+"id": 3981461,
+"name": "Tlaquepaque",
+"ascii": "Tlaquepaque",
+"lat": 20.64121,
+"lon": -103.29342,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 650123
+},
+{
+"id": 2925533,
+"name": "Frankfurt am Main",
+"ascii": "Frankfurt am Main",
+"lat": 50.11552,
+"lon": 8.68417,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 650000
+},
+{
+"id": 1821274,
+"name": "Macau",
+"ascii": "Macau",
+"lat": 22.20056,
+"lon": 113.54611,
+"country": "MO",
+"tz": "Asia/Macau",
+"pop": 649335
+},
+{
+"id": 2523920,
+"name": "Palermo",
+"ascii": "Palermo",
+"lat": 38.1166,
+"lon": 13.3636,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 648260
+},
+{
+"id": 554840,
+"name": "Izhevsk",
+"ascii": "Izhevsk",
+"lat": 56.85225,
+"lon": 53.19862,
+"country": "RU",
+"tz": "Europe/Samara",
+"pop": 648213
+},
+{
+"id": 1248991,
+"name": "Colombo",
+"ascii": "Colombo",
+"lat": 6.93548,
+"lon": 79.84868,
+"country": "LK",
+"tz": "Asia/Colombo",
+"pop": 648034
+},
+{
+"id": 3778045,
+"name": "Maturín",
+"ascii": "Maturin",
+"lat": 9.74569,
+"lon": -63.18323,
+"country": "VE",
+"tz": "America/Caracas",
+"pop": 647459
+},
+{
+"id": 1278718,
+"name": "Amravati",
+"ascii": "Amravati",
+"lat": 20.93333,
+"lon": 77.75,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 647057
+},
+{
+"id": 4990729,
+"name": "Detroit",
+"ascii": "Detroit",
+"lat": 42.33143,
+"lon": -83.04575,
+"country": "US",
+"tz": "America/Detroit",
+"pop": 645705
+},
+{
+"id": 2325590,
+"name": "Osogbo",
+"ascii": "Osogbo",
+"lat": 7.77104,
+"lon": 4.55698,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 645000
+},
+{
+"id": 1863905,
+"name": "Honchō",
+"ascii": "Honcho",
+"lat": 35.70129,
+"lon": 139.98648,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 644668
+},
+{
+"id": 1275665,
+"name": "Bikaner",
+"ascii": "Bikaner",
+"lat": 28.01762,
+"lon": 73.31495,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 644406
+},
+{
+"id": 6317344,
+"name": "Jaboatão dos Guararapes",
+"ascii": "Jaboatao dos Guararapes",
+"lat": -8.11278,
+"lon": -35.01472,
+"country": "BR",
+"tz": "America/Recife",
+"pop": 644037
+},
+{
+"id": 13631351,
+"name": "Hoji ya Henda",
+"ascii": "Hoji ya Henda",
+"lat": -8.80523,
+"lon": 13.2897,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 642050
+},
+{
+"id": 5506956,
+"name": "Las Vegas",
+"ascii": "Las Vegas",
+"lat": 36.17497,
+"lon": -115.13722,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 641903
+},
+{
+"id": 4645421,
+"name": "New South Memphis",
+"ascii": "New South Memphis",
+"lat": 35.08676,
+"lon": -90.05676,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 641608
+},
+{
+"id": 1843847,
+"name": "Hwaseong-si",
+"ascii": "Hwaseong-si",
+"lat": 37.20682,
+"lon": 126.8169,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 640890
+},
+{
+"id": 2165087,
+"name": "Gold Coast",
+"ascii": "Gold Coast",
+"lat": -28.00029,
+"lon": 153.43088,
+"country": "AU",
+"tz": "Australia/Brisbane",
+"pop": 640778
+},
+{
+"id": 3093133,
+"name": "Łódź",
+"ascii": "Lodz",
+"lat": 51.77058,
+"lon": 19.47395,
+"country": "PL",
+"tz": "Europe/Warsaw",
+"pop": 639890
+},
+{
+"id": 1845457,
+"name": "Jeonju",
+"ascii": "Jeonju",
+"lat": 35.82194,
+"lon": 127.14889,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 638421
+},
+{
+"id": 13608003,
+"name": "Chongming",
+"ascii": "Chongming",
+"lat": 31.61852,
+"lon": 121.69621,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 637921
+},
+{
+"id": 285839,
+"name": "Al Aḩmadī",
+"ascii": "Al Ahmadi",
+"lat": 29.07694,
+"lon": 48.08389,
+"country": "KW",
+"tz": "Asia/Kuwait",
+"pop": 637411
+},
+{
+"id": 3658666,
+"name": "Cuenca",
+"ascii": "Cuenca",
+"lat": -2.8953,
+"lon": -78.9963,
+"country": "EC",
+"tz": "America/Guayaquil",
+"pop": 636996
+},
+{
+"id": 618426,
+"name": "Chisinau",
+"ascii": "Chisinau",
+"lat": 47.00902,
+"lon": 28.85938,
+"country": "MD",
+"tz": "Europe/Chisinau",
+"pop": 635994
+},
+{
+"id": 922741,
+"name": "Likasi",
+"ascii": "Likasi",
+"lat": -10.98303,
+"lon": 26.7384,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 635768
+},
+{
+"id": 1642858,
+"name": "Jambi City",
+"ascii": "Jambi City",
+"lat": -1.6,
+"lon": 103.61667,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 635101
+},
+{
+"id": 1808770,
+"name": "Hebi",
+"ascii": "Hebi",
+"lat": 35.73231,
+"lon": 114.28616,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 634721
+},
+{
+"id": 1185186,
+"name": "Comilla",
+"ascii": "Comilla",
+"lat": 23.46186,
+"lon": 91.18503,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 634654
+},
+{
+"id": 204953,
+"name": "Tshikapa",
+"ascii": "Tshikapa",
+"lat": -6.41621,
+"lon": 20.79995,
+"country": "CD",
+"tz": "Africa/Lubumbashi",
+"pop": 634529
+},
+{
+"id": 1180942,
+"name": "Chunian",
+"ascii": "Chunian",
+"lat": 30.96621,
+"lon": 73.97908,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 634236
+},
+{
+"id": 1273874,
+"name": "Kochi",
+"ascii": "Kochi",
+"lat": 9.93988,
+"lon": 76.26022,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 633553
+},
+{
+"id": 4641239,
+"name": "Memphis",
+"ascii": "Memphis",
+"lat": 35.14953,
+"lon": -90.04898,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 633104
+},
+{
+"id": 1805611,
+"name": "Jingmen",
+"ascii": "Jingmen",
+"lat": 31.03361,
+"lon": 112.20472,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 632954
+},
+{
+"id": 1510853,
+"name": "Barnaul",
+"ascii": "Barnaul",
+"lat": 53.36199,
+"lon": 83.72786,
+"country": "RU",
+"tz": "Asia/Barnaul",
+"pop": 632372
+},
+{
+"id": 2037886,
+"name": "Dandong",
+"ascii": "Dandong",
+"lat": 40.12917,
+"lon": 124.39472,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 631973
+},
+{
+"id": 3693528,
+"name": "Piura",
+"ascii": "Piura",
+"lat": -5.18192,
+"lon": -80.65715,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 630000
+},
+{
+"id": 1275971,
+"name": "Bhilai",
+"ascii": "Bhilai",
+"lat": 21.20919,
+"lon": 81.4285,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 627734
+},
+{
+"id": 901344,
+"name": "Ndola",
+"ascii": "Ndola",
+"lat": -12.95867,
+"lon": 28.63659,
+"country": "ZM",
+"tz": "Africa/Lusaka",
+"pop": 627503
+},
+{
+"id": 3465624,
+"name": "Contagem",
+"ascii": "Contagem",
+"lat": -19.93167,
+"lon": -44.05361,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 627123
+},
+{
+"id": 479123,
+"name": "Ulyanovsk",
+"ascii": "Ulyanovsk",
+"lat": 54.32824,
+"lon": 48.38657,
+"country": "RU",
+"tz": "Europe/Ulyanovsk",
+"pop": 626540
+},
+{
+"id": 223817,
+"name": "Djibouti",
+"ascii": "Djibouti",
+"lat": 11.58901,
+"lon": 43.14503,
+"country": "DJ",
+"tz": "Africa/Djibouti",
+"pop": 626512
+},
+{
+"id": 2648579,
+"name": "Glasgow",
+"ascii": "Glasgow",
+"lat": 55.86515,
+"lon": -4.25763,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 626410
+},
+{
+"id": 2035513,
+"name": "Panshan",
+"ascii": "Panshan",
+"lat": 41.18806,
+"lon": 122.04944,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 625040
+},
+{
+"id": 4299276,
+"name": "Louisville",
+"ascii": "Louisville",
+"lat": 38.25424,
+"lon": -85.75941,
+"country": "US",
+"tz": "America/Kentucky/Louisville",
+"pop": 624444
+},
+{
+"id": 2023469,
+"name": "Irkutsk",
+"ascii": "Irkutsk",
+"lat": 52.29566,
+"lon": 104.29076,
+"country": "RU",
+"tz": "Asia/Irkutsk",
+"pop": 623869
+},
+{
+"id": 1846918,
+"name": "Ansan-si",
+"ascii": "Ansan-si",
+"lat": 37.32361,
+"lon": 126.82194,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 623256
+},
+{
+"id": 360761,
+"name": "Al Mansurah",
+"ascii": "Al Mansurah",
+"lat": 31.03637,
+"lon": 31.38069,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 621953
+},
+{
+"id": 128226,
+"name": "Kermanshah",
+"ascii": "Kermanshah",
+"lat": 34.31417,
+"lon": 47.065,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 621100
+},
+{
+"id": 1806096,
+"name": "Jiaozhou",
+"ascii": "Jiaozhou",
+"lat": 36.28389,
+"lon": 120.00333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 619266
+},
+{
+"id": 2934246,
+"name": "Düsseldorf",
+"ascii": "Duesseldorf",
+"lat": 51.22319,
+"lon": 6.77927,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 618685
+},
+{
+"id": 1793879,
+"name": "Suizhou",
+"ascii": "Suizhou",
+"lat": 31.71111,
+"lon": 113.36306,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 618582
+},
+{
+"id": 3587902,
+"name": "Villa Nueva",
+"ascii": "Villa Nueva",
+"lat": 14.52512,
+"lon": -90.58544,
+"country": "GT",
+"tz": "America/Guatemala",
+"pop": 618397
+},
+{
+"id": 2022890,
+"name": "Khabarovsk",
+"ascii": "Khabarovsk",
+"lat": 48.46204,
+"lon": 135.0971,
+"country": "RU",
+"tz": "Asia/Vladivostok",
+"pop": 618150
+},
+{
+"id": 3465038,
+"name": "Cuiabá",
+"ascii": "Cuiaba",
+"lat": -15.59611,
+"lon": -56.09667,
+"country": "BR",
+"tz": "America/Cuiaba",
+"pop": 618124
+},
+{
+"id": 161325,
+"name": "Arusha",
+"ascii": "Arusha",
+"lat": -3.36667,
+"lon": 36.68333,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 617631
+},
+{
+"id": 3463478,
+"name": "Feira de Santana",
+"ascii": "Feira de Santana",
+"lat": -12.26667,
+"lon": -38.96667,
+"country": "BR",
+"tz": "America/Bahia",
+"pop": 616272
+},
+{
+"id": 1707174,
+"name": "Las Piñas",
+"ascii": "Las Pinas",
+"lat": 14.45056,
+"lon": 120.98278,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 615549
+},
+{
+"id": 1814934,
+"name": "Chizhou",
+"ascii": "Chizhou",
+"lat": 30.66134,
+"lon": 117.47783,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 615274
+},
+{
+"id": 3530139,
+"name": "Coyoacán",
+"ascii": "Coyoacan",
+"lat": 19.3467,
+"lon": -99.16174,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 614447
+},
+{
+"id": 2825297,
+"name": "Stuttgart",
+"ascii": "Stuttgart",
+"lat": 48.78232,
+"lon": 9.17702,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 612663
+},
+{
+"id": 1787816,
+"name": "Ya'an",
+"ascii": "Ya'an",
+"lat": 29.98521,
+"lon": 102.999,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 612056
+},
+{
+"id": 1273780,
+"name": "Cuttack",
+"ascii": "Cuttack",
+"lat": 20.46497,
+"lon": 85.87927,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 610189
+},
+{
+"id": 1275248,
+"name": "Borivli",
+"ascii": "Borivli",
+"lat": 19.23496,
+"lon": 72.85976,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 609617
+},
+{
+"id": 3698350,
+"name": "Chiclayo",
+"ascii": "Chiclayo",
+"lat": -6.77008,
+"lon": -79.85495,
+"country": "PE",
+"tz": "America/Lima",
+"pop": 609400
+},
+{
+"id": 468902,
+"name": "Yaroslavl",
+"ascii": "Yaroslavl",
+"lat": 57.62987,
+"lon": 39.87368,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 608722
+},
+{
+"id": 2711537,
+"name": "Gothenburg",
+"ascii": "Gothenburg",
+"lat": 57.70716,
+"lon": 11.96679,
+"country": "SE",
+"tz": "Europe/Stockholm",
+"pop": 608462
+},
+{
+"id": 1859730,
+"name": "Kawaguchi",
+"ascii": "Kawaguchi",
+"lat": 35.80521,
+"lon": 139.71072,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 607373
+},
+{
+"id": 13118225,
+"name": "Bukit Rahman Putra",
+"ascii": "Bukit Rahman Putra",
+"lat": 3.21727,
+"lon": 101.5608,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 607000
+},
+{
+"id": 1175892,
+"name": "Jhang Sadr",
+"ascii": "Jhang Sadr",
+"lat": 31.26981,
+"lon": 72.31687,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 606533
+},
+{
+"id": 106281,
+"name": "Ha'il",
+"ascii": "Ha'il",
+"lat": 27.52188,
+"lon": 41.69073,
+"country": "SA",
+"tz": "Asia/Riyadh",
+"pop": 605930
+},
+{
+"id": 1276032,
+"name": "Bhavnagar",
+"ascii": "Bhavnagar",
+"lat": 21.76287,
+"lon": 72.15331,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 605882
+},
+{
+"id": 1020098,
+"name": "Benoni",
+"ascii": "Benoni",
+"lat": -26.18848,
+"lon": 28.32078,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 605344
+},
+{
+"id": 2013348,
+"name": "Vladivostok",
+"ascii": "Vladivostok",
+"lat": 43.10562,
+"lon": 131.87353,
+"country": "RU",
+"tz": "Asia/Vladivostok",
+"pop": 604901
+},
+{
+"id": 2036427,
+"name": "Jinzhou",
+"ascii": "Jinzhou",
+"lat": 41.10778,
+"lon": 121.14167,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 604269
+},
+{
+"id": 3515001,
+"name": "Tuxtla",
+"ascii": "Tuxtla",
+"lat": 16.75357,
+"lon": -93.11578,
+"country": "MX",
+"tz": "America/Merida",
+"pop": 604147
+},
+{
+"id": 703845,
+"name": "Kryvyy Rih",
+"ascii": "Kryvyy Rih",
+"lat": 47.90572,
+"lon": 33.39404,
+"country": "UA",
+"tz": "Europe/Kyiv",
+"pop": 603904
+},
+{
+"id": 1796663,
+"name": "Sanming",
+"ascii": "Sanming",
+"lat": 26.24861,
+"lon": 117.61861,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 602166
+},
+{
+"id": 1176615,
+"name": "Islamabad",
+"ascii": "Islamabad",
+"lat": 33.72148,
+"lon": 73.04329,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 601600
+},
+{
+"id": 1257416,
+"name": "Sāngli",
+"ascii": "Sangli",
+"lat": 16.85438,
+"lon": 74.56417,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 601214
+},
+{
+"id": 1269317,
+"name": "Jamnagar",
+"ascii": "Jamnagar",
+"lat": 22.47292,
+"lon": 70.06673,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 600943
+},
+{
+"id": 3347762,
+"name": "Lubango",
+"ascii": "Lubango",
+"lat": -14.91717,
+"lon": 13.4925,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 600751
+},
+{
+"id": 1282898,
+"name": "Pokhara",
+"ascii": "Pokhara",
+"lat": 28.26689,
+"lon": 83.96851,
+"country": "NP",
+"tz": "Asia/Kathmandu",
+"pop": 600051
+},
+{
+"id": 2034786,
+"name": "Shuangyashan",
+"ascii": "Shuangyashan",
+"lat": 46.67686,
+"lon": 131.13273,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 600000
+},
+{
+"id": 64021,
+"name": "Borama",
+"ascii": "Borama",
+"lat": 9.93611,
+"lon": 43.18278,
+"country": "SO",
+"tz": "Africa/Mogadishu",
+"pop": 597842
+},
+{
+"id": 7696679,
+"name": "Pallabi",
+"ascii": "Pallabi",
+"lat": 23.825,
+"lon": 90.37,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 597574
+},
+{
+"id": 1802204,
+"name": "Luancheng",
+"ascii": "Luancheng",
+"lat": 37.88452,
+"lon": 114.64629,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 597130
+},
+{
+"id": 532096,
+"name": "Makhachkala",
+"ascii": "Makhachkala",
+"lat": 42.97782,
+"lon": 47.50027,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 596356
+},
+{
+"id": 1846898,
+"name": "Anyang-si",
+"ascii": "Anyang-si",
+"lat": 37.3925,
+"lon": 126.92694,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 595644
+},
+{
+"id": 3348313,
+"name": "Huambo",
+"ascii": "Huambo",
+"lat": -12.77611,
+"lon": 15.73917,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 595304
+},
+{
+"id": 1216265,
+"name": "Samarkand",
+"ascii": "Samarkand",
+"lat": 39.65456,
+"lon": 66.96445,
+"country": "UZ",
+"tz": "Asia/Samarkand",
+"pop": 595200
+},
+{
+"id": 13512502,
+"name": "Mengzi",
+"ascii": "Mengzi",
+"lat": 23.36779,
+"lon": 103.38212,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 595100
+},
+{
+"id": 1860827,
+"name": "Kagoshima",
+"ascii": "Kagoshima",
+"lat": 31.56667,
+"lon": 130.55,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 595049
+},
+{
+"id": 78754,
+"name": "Mukalla",
+"ascii": "Mukalla",
+"lat": 14.54248,
+"lon": 49.12424,
+"country": "YE",
+"tz": "Asia/Aden",
+"pop": 594951
+},
+{
+"id": 118743,
+"name": "Rasht",
+"ascii": "Rasht",
+"lat": 37.27611,
+"lon": 49.58862,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 594590
+},
+{
+"id": 3430863,
+"name": "Mar del Plata",
+"ascii": "Mar del Plata",
+"lat": -38.00042,
+"lon": -57.5562,
+"country": "AR",
+"tz": "America/Argentina/Buenos_Aires",
+"pop": 593337
+},
+{
+"id": 2928810,
+"name": "Essen",
+"ascii": "Essen",
+"lat": 51.45657,
+"lon": 7.01228,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 593085
+},
+{
+"id": 360829,
+"name": "Al Maḩallah al Kubrá",
+"ascii": "Al Mahallah al Kubra",
+"lat": 30.97063,
+"lon": 31.1669,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 592573
+},
+{
+"id": 2514256,
+"name": "Málaga",
+"ascii": "Malaga",
+"lat": 36.72016,
+"lon": -4.42034,
+"country": "ES",
+"tz": "Europe/Madrid",
+"pop": 592346
+},
+{
+"id": 1165221,
+"name": "Shekhupura",
+"ascii": "Shekhupura",
+"lat": 31.71287,
+"lon": 73.98556,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 591424
+},
+{
+"id": 2033370,
+"name": "Yingkou",
+"ascii": "Yingkou",
+"lat": 40.66472,
+"lon": 122.23176,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 591159
+},
+{
+"id": 1785018,
+"name": "Zhangzhou",
+"ascii": "Zhangzhou",
+"lat": 24.51333,
+"lon": 117.65556,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 589831
+},
+{
+"id": 3520339,
+"name": "Reynosa",
+"ascii": "Reynosa",
+"lat": 26.08005,
+"lon": -98.28456,
+"country": "MX",
+"tz": "America/Matamoros",
+"pop": 589466
+},
+{
+"id": 12382296,
+"name": "Thuận An",
+"ascii": "Thuan An",
+"lat": 10.9239,
+"lon": 106.71428,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 588616
+},
+{
+"id": 2935517,
+"name": "Dortmund",
+"ascii": "Dortmund",
+"lat": 51.51494,
+"lon": 7.466,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 588462
+},
+{
+"id": 11836117,
+"name": "Suginami",
+"ascii": "Suginami",
+"lat": 36.2013,
+"lon": 140.28406,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 588354
+},
+{
+"id": 4347778,
+"name": "Baltimore",
+"ascii": "Baltimore",
+"lat": 39.29038,
+"lon": -76.61219,
+"country": "US",
+"tz": "America/New_York",
+"pop": 585708
+},
+{
+"id": 1861321,
+"name": "Itabashi",
+"ascii": "Itabashi",
+"lat": 35.74893,
+"lon": 139.71497,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 584483
+},
+{
+"id": 3489297,
+"name": "New Kingston",
+"ascii": "New Kingston",
+"lat": 18.00747,
+"lon": -76.78319,
+"country": "JM",
+"tz": "America/Jamaica",
+"pop": 583958
+},
+{
+"id": 1732747,
+"name": "Pelentong",
+"ascii": "Pelentong",
+"lat": 1.5243,
+"lon": 103.824,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 583640
+},
+{
+"id": 1646448,
+"name": "Cimahi",
+"ascii": "Cimahi",
+"lat": -6.87222,
+"lon": 107.5425,
+"country": "ID",
+"tz": "Asia/Jakarta",
+"pop": 581994
+},
+{
+"id": 3458449,
+"name": "Londrina",
+"ascii": "Londrina",
+"lat": -23.31028,
+"lon": -51.16278,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 581382
+},
+{
+"id": 3688465,
+"name": "Bucaramanga",
+"ascii": "Bucaramanga",
+"lat": 7.125,
+"lon": -73.11895,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 581130
+},
+{
+"id": 3176219,
+"name": "Genoa",
+"ascii": "Genoa",
+"lat": 44.40478,
+"lon": 8.94439,
+"country": "IT",
+"tz": "Europe/Rome",
+"pop": 580097
+},
+{
+"id": 1863440,
+"name": "Hachiōji",
+"ascii": "Hachioji",
+"lat": 35.65583,
+"lon": 139.32389,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 579355
+},
+{
+"id": 1734759,
+"name": "Malacca",
+"ascii": "Malacca",
+"lat": 2.196,
+"lon": 102.2405,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 579000
+},
+{
+"id": 1572151,
+"name": "Nha Trang",
+"ascii": "Nha Trang",
+"lat": 12.24507,
+"lon": 109.19432,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 579000
+},
+{
+"id": 128234,
+"name": "Kerman",
+"ascii": "Kerman",
+"lat": 30.28321,
+"lon": 57.07879,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 577514
+},
+{
+"id": 121801,
+"name": "Orūmīyeh",
+"ascii": "Orumiyeh",
+"lat": 37.55274,
+"lon": 45.07605,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 577307
+},
+{
+"id": 7627067,
+"name": "Bahçelievler",
+"ascii": "Bahcelievler",
+"lat": 41.00231,
+"lon": 28.8598,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 576799
+},
+{
+"id": 347497,
+"name": "Tanta",
+"ascii": "Tanta",
+"lat": 30.78847,
+"lon": 31.00192,
+"country": "EG",
+"tz": "Africa/Cairo",
+"pop": 576648
+},
+{
+"id": 1269321,
+"name": "Jammu",
+"ascii": "Jammu",
+"lat": 32.73528,
+"lon": 74.86167,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 576198
+},
+{
+"id": 10063567,
+"name": "Iskandar Puteri",
+"ascii": "Iskandar Puteri",
+"lat": 1.39324,
+"lon": 103.62322,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 575977
+},
+{
+"id": 1720681,
+"name": "Calamba",
+"ascii": "Calamba",
+"lat": 14.21167,
+"lon": 121.16528,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 575046
+},
+{
+"id": 3515428,
+"name": "Tlalpan",
+"ascii": "Tlalpan",
+"lat": 19.29513,
+"lon": -99.16206,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 574577
+},
+{
+"id": 1140026,
+"name": "Herāt",
+"ascii": "Herat",
+"lat": 34.34817,
+"lon": 62.19967,
+"country": "AF",
+"tz": "Asia/Kabul",
+"pop": 574300
+},
+{
+"id": 1177654,
+"name": "Gujrat",
+"ascii": "Gujrat",
+"lat": 32.5742,
+"lon": 74.07542,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 574240
+},
+{
+"id": 1489425,
+"name": "Tomsk",
+"ascii": "Tomsk",
+"lat": 56.50049,
+"lon": 84.98216,
+"country": "RU",
+"tz": "Asia/Tomsk",
+"pop": 574002
+},
+{
+"id": 738377,
+"name": "Umraniye",
+"ascii": "Umraniye",
+"lat": 41.01643,
+"lon": 29.12476,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 573265
+},
+{
+"id": 1529195,
+"name": "Shihezi",
+"ascii": "Shihezi",
+"lat": 44.3023,
+"lon": 86.03694,
+"country": "CN",
+"tz": "Asia/Urumqi",
+"pop": 572772
+},
+{
+"id": 4951305,
+"name": "South Boston",
+"ascii": "South Boston",
+"lat": 42.33343,
+"lon": -71.04949,
+"country": "US",
+"tz": "America/New_York",
+"pop": 571281
+},
+{
+"id": 184622,
+"name": "Nakuru",
+"ascii": "Nakuru",
+"lat": -0.30719,
+"lon": 36.07225,
+"country": "KE",
+"tz": "Africa/Nairobi",
+"pop": 570674
+},
+{
+"id": 5969782,
+"name": "Hamilton",
+"ascii": "Hamilton",
+"lat": 43.25011,
+"lon": -79.84963,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 569353
+},
+{
+"id": 248946,
+"name": "Irbid",
+"ascii": "Irbid",
+"lat": 32.55556,
+"lon": 35.85,
+"country": "JO",
+"tz": "Asia/Amman",
+"pop": 569068
+},
+{
+"id": 2643123,
+"name": "Manchester",
+"ascii": "Manchester",
+"lat": 53.48095,
+"lon": -2.23743,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 568996
+},
+{
+"id": 1736376,
+"name": "Kota Bharu",
+"ascii": "Kota Bharu",
+"lat": 6.12361,
+"lon": 102.24333,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 568900
+},
+{
+"id": 6159905,
+"name": "Surrey",
+"ascii": "Surrey",
+"lat": 49.10635,
+"lon": -122.82509,
+"country": "CA",
+"tz": "America/Vancouver",
+"pop": 568322
+},
+{
+"id": 2542715,
+"name": "Meknes",
+"ascii": "Meknes",
+"lat": 33.89352,
+"lon": -5.54727,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 568295
+},
+{
+"id": 3875024,
+"name": "Puente Alto",
+"ascii": "Puente Alto",
+"lat": -33.61169,
+"lon": -70.57577,
+"country": "CL",
+"tz": "America/Santiago",
+"pop": 568106
+},
+{
+"id": 369004,
+"name": "Nyala",
+"ascii": "Nyala",
+"lat": 12.04888,
+"lon": 24.88069,
+"country": "SD",
+"tz": "Africa/Khartoum",
+"pop": 565734
+},
+{
+"id": 2935022,
+"name": "Dresden",
+"ascii": "Dresden",
+"lat": 51.05089,
+"lon": 13.73832,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 564904
+},
+{
+"id": 515003,
+"name": "Orenburg",
+"ascii": "Orenburg",
+"lat": 51.76712,
+"lon": 55.09883,
+"country": "RU",
+"tz": "Asia/Yekaterinburg",
+"pop": 564773
+},
+{
+"id": 5454711,
+"name": "Albuquerque",
+"ascii": "Albuquerque",
+"lat": 35.08449,
+"lon": -106.65114,
+"country": "US",
+"tz": "America/Denver",
+"pop": 564559
+},
+{
+"id": 1275362,
+"name": "Bokāro",
+"ascii": "Bokaro",
+"lat": 23.66934,
+"lon": 86.15161,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 564319
+},
+{
+"id": 343300,
+"name": "Asmara",
+"ascii": "Asmara",
+"lat": 15.33805,
+"lon": 38.93184,
+"country": "ER",
+"tz": "Africa/Asmara",
+"pop": 563930
+},
+{
+"id": 1164408,
+"name": "Sukkur",
+"ascii": "Sukkur",
+"lat": 27.70323,
+"lon": 68.85889,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 563851
+},
+{
+"id": 5263045,
+"name": "Milwaukee",
+"ascii": "Milwaukee",
+"lat": 43.0389,
+"lon": -87.90647,
+"country": "US",
+"tz": "America/Chicago",
+"pop": 563531
+},
+{
+"id": 1585330,
+"name": "Chợ Lớn",
+"ascii": "Cho Lon",
+"lat": 10.75,
+"lon": 106.65,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 561000
+},
+{
+"id": 1791544,
+"name": "Wenchang",
+"ascii": "Wenchang",
+"lat": 19.55158,
+"lon": 110.80279,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 560894
+},
+{
+"id": 2338900,
+"name": "Ile-Ife",
+"ascii": "Ile-Ife",
+"lat": 7.4824,
+"lon": 4.56032,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 560000
+},
+{
+"id": 2340451,
+"name": "Gombe",
+"ascii": "Gombe",
+"lat": 10.28969,
+"lon": 11.16729,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 560000
+},
+{
+"id": 1877449,
+"name": "Hamhŭng",
+"ascii": "Hamhung",
+"lat": 39.91833,
+"lon": 127.53639,
+"country": "KP",
+"tz": "Asia/Pyongyang",
+"pop": 559056
+},
+{
+"id": 1503901,
+"name": "Kemerovo",
+"ascii": "Kemerovo",
+"lat": 55.35417,
+"lon": 86.10435,
+"country": "RU",
+"tz": "Asia/Novokuznetsk",
+"pop": 558973
+},
+{
+"id": 98854,
+"name": "Nasiriyah",
+"ascii": "Nasiriyah",
+"lat": 31.05799,
+"lon": 46.25726,
+"country": "IQ",
+"tz": "Asia/Baghdad",
+"pop": 558400
+},
+{
+"id": 1018725,
+"name": "Bloemfontein",
+"ascii": "Bloemfontein",
+"lat": -29.12107,
+"lon": 26.214,
+"country": "ZA",
+"tz": "Africa/Johannesburg",
+"pop": 556637
+},
+{
+"id": 2638077,
+"name": "Sheffield",
+"ascii": "Sheffield",
+"lat": 53.38297,
+"lon": -1.4659,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 556500
+},
+{
+"id": 3536729,
+"name": "Santiago de Cuba",
+"ascii": "Santiago de Cuba",
+"lat": 20.02287,
+"lon": -75.82171,
+"country": "CU",
+"tz": "America/Havana",
+"pop": 555865
+},
+{
+"id": 2034714,
+"name": "Siping",
+"ascii": "Siping",
+"lat": 43.16143,
+"lon": 124.37785,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 555609
+},
+{
+"id": 3515807,
+"name": "Cuautitlán Izcalli",
+"ascii": "Cuautitlan Izcalli",
+"lat": 19.64388,
+"lon": -99.21598,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 555163
+},
+{
+"id": 3351663,
+"name": "Benguela",
+"ascii": "Benguela",
+"lat": -12.57674,
+"lon": 13.40268,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 555124
+},
+{
+"id": 1814760,
+"name": "Chuxiong",
+"ascii": "Chuxiong",
+"lat": 25.03639,
+"lon": 101.54556,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 555081
+},
+{
+"id": 7648070,
+"name": "Balbala",
+"ascii": "Balbala",
+"lat": 11.56194,
+"lon": 43.10666,
+"country": "DJ",
+"tz": "Africa/Djibouti",
+"pop": 554350
+},
+{
+"id": 1807689,
+"name": "Huaihua",
+"ascii": "Huaihua",
+"lat": 27.56337,
+"lon": 110.00404,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 552622
+},
+{
+"id": 1699076,
+"name": "Muntinlupa",
+"ascii": "Muntinlupa",
+"lat": 14.39028,
+"lon": 121.0475,
+"country": "PH",
+"tz": "Asia/Manila",
+"pop": 552225
+},
+{
+"id": 1904564,
+"name": "Bình Thạnh",
+"ascii": "Binh Thanh",
+"lat": 10.811,
+"lon": 106.706,
+"country": "VN",
+"tz": "Asia/Ho_Chi_Minh",
+"pop": 552164
+},
+{
+"id": 1159301,
+"name": "Zahedan",
+"ascii": "Zahedan",
+"lat": 29.4963,
+"lon": 60.8629,
+"country": "IR",
+"tz": "Asia/Tehran",
+"pop": 551980
+},
+{
+"id": 1670029,
+"name": "Banqiao",
+"ascii": "Banqiao",
+"lat": 25.01427,
+"lon": 121.46719,
+"country": "TW",
+"tz": "Asia/Taipei",
+"pop": 551221
+},
+{
+"id": 1261977,
+"name": "Nanded",
+"ascii": "Nanded",
+"lat": 19.16023,
+"lon": 77.31497,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 550564
+},
+{
+"id": 1265873,
+"name": "Kozhikode",
+"ascii": "Kozhikode",
+"lat": 11.24802,
+"lon": 75.7804,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 550440
+},
+{
+"id": 8335361,
+"name": "Ulanqab",
+"ascii": "Ulanqab",
+"lat": 40.993,
+"lon": 113.133,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 550231
+},
+{
+"id": 2243271,
+"name": "Cabinda",
+"ascii": "Cabinda",
+"lat": -5.56198,
+"lon": 12.19476,
+"country": "AO",
+"tz": "Africa/Luanda",
+"pop": 550000
+},
+{
+"id": 2566636,
+"name": "Ajegunle",
+"ascii": "Ajegunle",
+"lat": 6.45197,
+"lon": 3.33115,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 550000
+},
+{
+"id": 786714,
+"name": "Pristina",
+"ascii": "Pristina",
+"lat": 42.67272,
+"lon": 21.16688,
+"country": "XK",
+"tz": "Europe/Belgrade",
+"pop": 550000
+},
+{
+"id": 2036581,
+"name": "Jiamusi",
+"ascii": "Jiamusi",
+"lat": 46.79711,
+"lon": 130.31118,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 549549
+},
+{
+"id": 1529376,
+"name": "Korla",
+"ascii": "Korla",
+"lat": 41.76055,
+"lon": 86.15231,
+"country": "CN",
+"tz": "Asia/Urumqi",
+"pop": 549324
+},
+{
+"id": 1266285,
+"name": "Kolhāpur",
+"ascii": "Kolhapur",
+"lat": 16.69563,
+"lon": 74.23167,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 549236
+},
+{
+"id": 3662762,
+"name": "Porto Velho",
+"ascii": "Porto Velho",
+"lat": -8.76194,
+"lon": -63.90389,
+"country": "BR",
+"tz": "America/Porto_Velho",
+"pop": 548952
+},
+{
+"id": 3836873,
+"name": "San Miguel de Tucumán",
+"ascii": "San Miguel de Tucuman",
+"lat": -26.81601,
+"lon": -65.21051,
+"country": "AR",
+"tz": "America/Argentina/Tucuman",
+"pop": 548866
+},
+{
+"id": 1735227,
+"name": "Kuantan",
+"ascii": "Kuantan",
+"lat": 3.8077,
+"lon": 103.326,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 548014
+},
+{
+"id": 694423,
+"name": "Sevastopol",
+"ascii": "Sevastopol",
+"lat": 44.60795,
+"lon": 33.52134,
+"country": "UA",
+"tz": "Europe/Simferopol",
+"pop": 547820
+},
+{
+"id": 1261529,
+"name": "Nellore",
+"ascii": "Nellore",
+"lat": 14.44992,
+"lon": 79.98697,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 547621
+},
+{
+"id": 11395976,
+"name": "Mirpur Model Thana",
+"ascii": "Mirpur Model Thana",
+"lat": 23.80931,
+"lon": 90.36093,
+"country": "BD",
+"tz": "Asia/Dhaka",
+"pop": 546503
+},
+{
+"id": 2944388,
+"name": "Bremen",
+"ascii": "Bremen",
+"lat": 53.07582,
+"lon": 8.80717,
+"country": "DE",
+"tz": "Europe/Berlin",
+"pop": 546501
+},
+{
+"id": 1791779,
+"name": "Wanning",
+"ascii": "Wanning",
+"lat": 18.79931,
+"lon": 110.3841,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 545992
+},
+{
+"id": 2325330,
+"name": "Owerri",
+"ascii": "Owerri",
+"lat": 5.48363,
+"lon": 7.03325,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 545000
+},
+{
+"id": 6847550,
+"name": "Kota Kuala Muda",
+"ascii": "Kota Kuala Muda",
+"lat": 5.58822,
+"lon": 100.37085,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 544984
+},
+{
+"id": 1735498,
+"name": "Sungai Petani",
+"ascii": "Sungai Petani",
+"lat": 5.647,
+"lon": 100.48772,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 544851
+},
+{
+"id": 1788450,
+"name": "Xinzhou",
+"ascii": "Xinzhou",
+"lat": 38.40917,
+"lon": 112.73333,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 544683
+},
+{
+"id": 11209896,
+"name": "Kotō",
+"ascii": "Koto",
+"lat": 32.77856,
+"lon": 130.74537,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 543730
+},
+{
+"id": 1270752,
+"name": "Kalaburagi",
+"ascii": "Kalaburagi",
+"lat": 17.33583,
+"lon": 76.83757,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 543147
+},
+{
+"id": 5318313,
+"name": "Tucson",
+"ascii": "Tucson",
+"lat": 32.22174,
+"lon": -110.92648,
+"country": "US",
+"tz": "America/Phoenix",
+"pop": 542629
+},
+{
+"id": 7795834,
+"name": "Selayang Baru Utara",
+"ascii": "Selayang Baru Utara",
+"lat": 3.2549,
+"lon": 101.6668,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 542409
+},
+{
+"id": 593116,
+"name": "Vilnius",
+"ascii": "Vilnius",
+"lat": 54.68916,
+"lon": 25.2798,
+"country": "LT",
+"tz": "Europe/Vilnius",
+"pop": 542366
+},
+{
+"id": 1279159,
+"name": "Ajmer",
+"ascii": "Ajmer",
+"lat": 26.4521,
+"lon": 74.63867,
+"country": "IN",
+"tz": "Asia/Kolkata",
+"pop": 542321
+},
+{
+"id": 1798821,
+"name": "Pingdu",
+"ascii": "Pingdu",
+"lat": 36.78444,
+"lon": 119.94639,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 542234
+},
+{
+"id": 5350937,
+"name": "Fresno",
+"ascii": "Fresno",
+"lat": 36.74773,
+"lon": -119.77237,
+"country": "US",
+"tz": "America/Los_Angeles",
+"pop": 542107
+},
+{
+"id": 154380,
+"name": "Mbeya",
+"ascii": "Mbeya",
+"lat": -8.9,
+"lon": 33.45,
+"country": "TZ",
+"tz": "Africa/Dar_es_Salaam",
+"pop": 541603
+},
+{
+"id": 3459505,
+"name": "Juiz de Fora",
+"ascii": "Juiz de Fora",
+"lat": -21.76417,
+"lon": -43.35028,
+"country": "BR",
+"tz": "America/Sao_Paulo",
+"pop": 540756
+},
+{
+"id": 2346229,
+"name": "Calabar",
+"ascii": "Calabar",
+"lat": 4.95893,
+"lon": 8.32695,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 540000
+},
+{
+"id": 2540483,
+"name": "Oujda",
+"ascii": "Oujda",
+"lat": 34.68139,
+"lon": -1.90858,
+"country": "MA",
+"tz": "Africa/Casablanca",
+"pop": 539711
+},
+{
+"id": 1496990,
+"name": "Novokuznetsk",
+"ascii": "Novokuznetsk",
+"lat": 53.75752,
+"lon": 87.13599,
+"country": "RU",
+"tz": "Asia/Novokuznetsk",
+"pop": 539616
+},
+{
+"id": 500096,
+"name": "Ryazan’",
+"ascii": "Ryazan'",
+"lat": 54.62696,
+"lon": 39.70415,
+"country": "RU",
+"tz": "Europe/Moscow",
+"pop": 538962
+},
+{
+"id": 1806445,
+"name": "Ji’an",
+"ascii": "Ji'an",
+"lat": 27.11716,
+"lon": 114.97927,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 538699
+},
+{
+"id": 1166547,
+"name": "Sahiwal",
+"ascii": "Sahiwal",
+"lat": 31.97386,
+"lon": 72.33109,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 538344
+},
+{
+"id": 1166548,
+"name": "Sahiwal",
+"ascii": "Sahiwal",
+"lat": 30.66595,
+"lon": 73.10186,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 538344
+},
+{
+"id": 304531,
+"name": "Mersin",
+"ascii": "Mersin",
+"lat": 36.81196,
+"lon": 34.63886,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 537842
+},
+{
+"id": 10346824,
+"name": "Nilüfer",
+"ascii": "Niluefer",
+"lat": 40.21401,
+"lon": 28.91567,
+"country": "TR",
+"tz": "Europe/Istanbul",
+"pop": 536365
+},
+{
+"id": 2644688,
+"name": "Leeds",
+"ascii": "Leeds",
+"lat": 53.79648,
+"lon": -1.54785,
+"country": "GB",
+"tz": "Europe/London",
+"pop": 536280
+},
+{
+"id": 3088171,
+"name": "Poznań",
+"ascii": "Poznan",
+"lat": 52.40692,
+"lon": 16.92993,
+"country": "PL",
+"tz": "Europe/Warsaw",
+"pop": 536151
+},
+{
+"id": 1809412,
+"name": "Guli",
+"ascii": "Guli",
+"lat": 28.88162,
+"lon": 120.03308,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 536000
+},
+{
+"id": 1529660,
+"name": "Aqsu",
+"ascii": "Aqsu",
+"lat": 41.18418,
+"lon": 80.27921,
+"country": "CN",
+"tz": "Asia/Urumqi",
+"pop": 535657
+},
+{
+"id": 2344082,
+"name": "Ebute Ikorodu",
+"ascii": "Ebute Ikorodu",
+"lat": 6.60086,
+"lon": 3.48818,
+"country": "NG",
+"tz": "Africa/Lagos",
+"pop": 535619
+},
+{
+"id": 3407669,
+"name": "Ananindeua",
+"ascii": "Ananindeua",
+"lat": -1.36556,
+"lon": -48.37222,
+"country": "BR",
+"tz": "America/Belem",
+"pop": 535547
+},
+{
+"id": 1793424,
+"name": "Tanggu",
+"ascii": "Tanggu",
+"lat": 39.02111,
+"lon": 117.64694,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 535298
+},
+{
+"id": 1732722,
+"name": "Pasir Gudang",
+"ascii": "Pasir Gudang",
+"lat": 1.462,
+"lon": 103.9053,
+"country": "MY",
+"tz": "Asia/Kuala_Lumpur",
+"pop": 534659
+},
+{
+"id": 580497,
+"name": "Astrakhan",
+"ascii": "Astrakhan",
+"lat": 46.34968,
+"lon": 48.04076,
+"country": "RU",
+"tz": "Europe/Astrakhan",
+"pop": 533925
+},
+{
+"id": 1168718,
+"name": "Okara",
+"ascii": "Okara",
+"lat": 30.81029,
+"lon": 73.45155,
+"country": "PK",
+"tz": "Asia/Karachi",
+"pop": 533693
+},
+{
+"id": 10943053,
+"name": "Nansana",
+"ascii": "Nansana",
+"lat": 0.36389,
+"lon": 32.52861,
+"country": "UG",
+"tz": "Africa/Kampala",
+"pop": 532800
+},
+{
+"id": 1842943,
+"name": "Kimhae",
+"ascii": "Kimhae",
+"lat": 35.23417,
+"lon": 128.88111,
+"country": "KR",
+"tz": "Asia/Seoul",
+"pop": 531966
+},
+{
+"id": 172955,
+"name": "Ar Raqqah",
+"ascii": "Ar Raqqah",
+"lat": 35.95283,
+"lon": 39.00788,
+"country": "SY",
+"tz": "Asia/Damascus",
+"pop": 531952
+},
+{
+"id": 6325494,
+"name": "Québec",
+"ascii": "Quebec",
+"lat": 46.81228,
+"lon": -71.21454,
+"country": "CA",
+"tz": "America/Toronto",
+"pop": 531902
+},
+{
+"id": 3827409,
+"name": "Cuauhtémoc",
+"ascii": "Cuauhtemoc",
+"lat": 19.44506,
+"lon": -99.14612,
+"country": "MX",
+"tz": "America/Mexico_City",
+"pop": 531831
+},
+{
+"id": 1796068,
+"name": "Shangluo",
+"ascii": "Shangluo",
+"lat": 33.86667,
+"lon": 109.93056,
+"country": "CN",
+"tz": "Asia/Shanghai",
+"pop": 531696
+},
+{
+"id": 1862627,
+"name": "Himeji",
+"ascii": "Himeji",
+"lat": 34.81667,
+"lon": 134.7,
+"country": "JP",
+"tz": "Asia/Tokyo",
+"pop": 530495
+},
+{
+"id": 3680656,
+"name": "Ibagué",
+"ascii": "Ibague",
+"lat": 4.43573,
+"lon": -75.20289,
+"country": "CO",
+"tz": "America/Bogota",
+"pop": 529635
+}
+]

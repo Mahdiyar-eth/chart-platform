@@ -93,7 +93,7 @@ def test_chart1_saturn_mercury_opposition():
 def test_chart7_sidereal_lahiri_positions():
     """audit r3: sidereal chart — positions shifted ~24° (Lahiri ayanamsa),
     Moon & ASC cross sign boundaries vs tropical chart-1."""
-    g = GOLDEN_CHARTS[-1]
+    g = next(x for x in GOLDEN_CHARTS if x["id"] == "chart-7-sidereal-lahiri")
     c = _chart(g).chart_json
     p, a = c["planets"], c["angles"]
     exp = g["expected"]

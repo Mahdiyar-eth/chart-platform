@@ -26,6 +26,7 @@ from app.auth import get_current_user, request_otp, set_user_cookie, verify_otp
 from app.security import security_guard, chat_quota_claim, chat_quota_release, chat_quota_used
 from app.astrology.big_three import big_three
 from app.astrology.cities_ir import search_cities
+from app.astrology.cities_world import tz_from_coords
 from app.astrology.engine import compute_from_fields
 from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
@@ -202,7 +203,18 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
 
 @app.get("/api/cities")
 def api_cities(q: str = Query(default="", max_length=50), limit: int = 10):
-    return {"results": search_cities(q, limit)}
+    """Iran + world city search (H0.1): Iranian cities keep province_fa;
+    world cities carry country + tz so the form can pass coords."""
+    from app.astrology.cities_world import search_cities_world
+    results = search_cities(q, limit)
+    if not results:
+        results = [{"province_fa": c["country"], "city_fa": c["name"],
+                    "lat": c["lat"], "lon": c["lon"], "country": c["country"],
+                    "tz": c["tz"]} for c in search_cities_world(q, limit)]
+    else:
+        for r in results:
+            r["country"] = "ایران"
+    return {"results": results}
 
 
 @app.post("/api/charts")
@@ -246,6 +258,7 @@ def api_create_chart(
         "access_token": chart.access_token,
         "utc": chart.chart_json["birth"]["utc_time"],
         "engine_config": chart.chart_json["engine_config"],
+        "tz_name": chart.chart_json["birth"].get("tz_name", "Asia/Tehran"),  # H0.1
     })
     # remember ownership for anonymous (and logged-in) browsers (P0-1)
     tokens = _chart_tokens(request)
@@ -298,12 +311,14 @@ def _compute_and_save_chart(
     )
     assert lat is not None and lon is not None
     try:
+        from app.astrology.cities_world import tz_from_coords
+        tz_name = tz_from_coords(lat, lon)  # H0.1: real IANA tz, not hardcoded
         result = compute_from_fields(
             lat=lat, lon=lon, year=year, month=month, day=day,
             hour=hour if time_known else 12,
             minute=minute if time_known else 0,
             time_known=time_known, jalali=(calendar == "jalali"),
-            tz_name="Asia/Tehran", zodiac=zodiac,
+            tz_name=tz_name, zodiac=zodiac,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -1005,10 +1020,12 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
     city_b = search_cities(city_b or "", 1)
     if not city_a or not city_b:
         raise HTTPException(400, "شهرها را انتخاب کنید")
-    ca = compute_from_fields(city_a[0]["lat"], city_a[0]["lon"], year_a, month_a, day_a,
-                             hour_a, minute_a, True, calendar_a == "jalali", "Asia/Tehran", zodiac=zodiac_a)
-    cb = compute_from_fields(city_b[0]["lat"], city_b[0]["lon"], year_b, month_b, day_b,
-                             hour_b, minute_b, True, calendar_b == "jalali", "Asia/Tehran", zodiac=zodiac_b)
+    ca = compute_from_fields(float(city_a[0]["lat"]), float(city_a[0]["lon"]), year_a, month_a, day_a,
+                             hour_a, minute_a, True, calendar_a == "jalali",
+                             tz_from_coords(float(city_a[0]["lat"]), float(city_a[0]["lon"])), zodiac=zodiac_a)
+    cb = compute_from_fields(float(city_b[0]["lat"]), float(city_b[0]["lon"]), year_b, month_b, day_b,
+                             hour_b, minute_b, True, calendar_b == "jalali",
+                             tz_from_coords(float(city_b[0]["lat"]), float(city_b[0]["lon"])), zodiac=zodiac_b)
     r = synastry(ca.chart_json, cb.chart_json)
     return {
         "a": name_a or "شخص اول", "b": name_b or "شخص دوم",
