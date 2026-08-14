@@ -601,10 +601,20 @@ def api_payment_verify(
         return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
 
     if Status == "OK":
+        # Atomic claim (audit r3 — payment race): only ONE of N concurrent
+        # duplicate callbacks may transition pending→paid; the losers redirect.
+        # Without this, two callbacks could double-activate a subscription
+        # (+60 days) or enqueue two reports for the same order.
+        from sqlalchemy import text as _text
+        claimed = session.exec(_text(
+            "UPDATE orders SET status = 'paid' WHERE id = :oid AND status = 'pending' RETURNING id"
+        ), params={"oid": order.id}).first()
+        if not claimed:
+            # another request already claimed/paid this order → just redirect
+            return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
         client = ZarinpalClient()
         try:
             v = client.verify(Authority, order.amount_rial)
-            order.status = "paid"
             order.ref_id = v["ref_id"]
             order.card_pan = v.get("card_pan")
             from datetime import datetime, timezone

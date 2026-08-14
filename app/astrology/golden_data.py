@@ -95,4 +95,28 @@ GOLDEN_CHARTS = [
         "engine_config": None,
         "expected": {"has_retrograde": True},  # at least one retrograde planet
     },
+    {
+        "id": "chart-7-sidereal-lahiri",
+        "name": "سایدریال لاهیری — همان تولد مهدی (audit r3: انتخاب سیستم زودیاک)",
+        "birth": {
+            "lat": 35.6892, "lon": 51.3890,
+            "year": 1994, "month": 8, "day": 23, "hour": 6, "minute": 10,
+            "time_known": True, "jalali": False, "tz_name": "Asia/Tehran",
+        },
+        "engine_config": {
+            "house_system": "P", "zodiac": "sidereal", "ayanamsa": None,
+            "orb_rules": {"conjunction": 8.0, "sextile": 6.0, "square": 7.0,
+                          "trine": 8.0, "opposition": 8.0},
+            "node_type": "mean", "lilith": "mean", "chiron": True,
+        },
+        "expected": {  # degrees — Lahiri ayanamsa ≈ 23.78° (tropical − sidereal)
+            "Sun": 125.934, "Moon": 327.220, "ASC": 121.156, "MC": 26.180,
+            "sun_sign": 4, "moon_sign": 10,       # Leo stays, Pisces→Aquarius
+            "sun_house": 1, "moon_house": 8,
+            "moon_phase": "Waning",
+            "moon_phase_deg": 201.286,
+            "saturn_retrograde": True, "saturn_house": 7,
+        },
+        "verify_utc": "1994-08-23 01:40:00",
+    },
 ]
