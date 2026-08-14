@@ -647,12 +647,13 @@ def api_payment_verify(
 
     if Status == "OK":
         # Atomic claim (audit r3 — payment race): only ONE of N concurrent
-        # duplicate callbacks may transition pending→paid; the losers redirect.
-        # Without this, two callbacks could double-activate a subscription
-        # (+60 days) or enqueue two reports for the same order.
+        # duplicate callbacks may transition pending→verifying; the losers
+        # redirect. audit r4 B7 state machine: pending → verifying → paid |
+        # failed, and NETWORK errors re-open (pending) instead of failing —
+        # money may have moved even though our verify() call died.
         from sqlalchemy import text as _text
         claimed = session.exec(_text(
-            "UPDATE orders SET status = 'paid' WHERE id = :oid AND status = 'pending' RETURNING id"
+            "UPDATE orders SET status = 'verifying' WHERE id = :oid AND status = 'pending' RETURNING id"
         ), params={"oid": order.id}).first()
         if not claimed:
             # another request already claimed/paid this order → just redirect
@@ -664,9 +665,10 @@ def api_payment_verify(
             order.card_pan = v.get("card_pan")
             from datetime import datetime, timezone
             order.paid_at = datetime.now(timezone.utc)
+            order.status = "paid"
             # Coupon was RESERVED atomically at order creation (audit r4 A10) —
             # nothing to consume here; idempotency holds because the
-            # pending→paid claim above runs at most once per order.
+            # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
             from app.payment.orders import REPORT_PLANS, activate_subscription
             if order.plan_key == "monthly":
@@ -690,8 +692,22 @@ def api_payment_verify(
                         session.add(rep)
                         session.commit()
         except ZarinpalError:
+            # gateway definitively rejected the payment (authority invalid /
+            # expired / transaction refused) — money did NOT move → failed
             order.status = "failed"
             _release_coupon(session, order)  # audit r4 A10
+            session.commit()
+        except Exception as e:  # noqa: BLE001 — network/timeout: money state UNKNOWN
+            # audit r4 B7: NEVER mark failed when the payment may have gone
+            # through — put the order back to pending so the user's refresh
+            # (or a retry) re-verifies; Zarinpal answers code 101 on repeat
+            # verifies, which lands in the paid branch above.
+            # NOTE: the claim set status='verifying' via RAW SQL — the ORM still
+            # holds 'pending' in memory, so assigning 'pending' back would look
+            # like "no change" and never flush. Expire first so the ORM re-reads.
+            session.expire(order, ["status"])
+            order.status = "pending"
+            order.error = f"تأیید پرداخت موقتاً ناموفق بود؛ صفحه را رفرش کنید: {str(e)[:150]}"
             session.commit()
     else:
         order.status = "failed"
