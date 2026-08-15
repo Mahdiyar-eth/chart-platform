@@ -1,108 +1,120 @@
 {% extends "base.html" %}
 {% block title %}امروز — زایچه{% endblock %}
 {% block description %}هر روز یک لحظه برای دیدن آسمان و دیدن خودت: گذرهای امروز، یک سؤال برای تأمل و یک اقدام کوچک.{% endblock %}
+
 {% block content %}
-<div class="mx-auto max-w-3xl px-4 py-6" x-data="todayApp()" x-init="init()">
-  <div class="rounded-3xl bg-gradient-to-br from-sky-600/25 to-indigo-600/15 p-5 sm:p-7 border border-sky-400/20">
-    <h1 class="text-2xl sm:text-3xl font-black text-white">هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
-    <p class="mt-2 text-sm text-slate-300 leading-7" x-text="status ? status.today_fa : ''"></p>
-    {% if charts %}
-    <select id="chart-select" class="mt-3 rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-xs text-slate-200">
-      {% for ch in charts %}<option value="{{ ch.id }}" {% if ch.id == active_chart %}selected{% endif %}>چارت {{ loop.index }} — {{ ch.created_at.strftime('%Y-%m-%d') }}</option>{% endfor %}
-    </select>
-    {% endif %}
-  </div>
+<div class="wrap" style="padding-top:18px;">
+  <h1 style="font-size:1.45rem;font-weight:800;line-height:1.5;margin-bottom:14px;">هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
 
-  {% if not charts %}
-  <div class="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
-    برای شروع، اول چارت تولدت را بساز: <a href="/birth-form" class="font-bold underline">ساخت چارت تولد</a>
-  </div>
-  {% else %}
-  <template x-if="status">
-  <div>
-    <!-- streak -->
-    <div class="mt-5 flex items-center justify-between rounded-2xl border border-slate-700/70 bg-slate-800/60 px-4 py-3">
-      <div class="text-sm font-bold text-white">🔥 پیوستگی روزانه</div>
-      <div class="text-sm text-slate-300" x-text="`${status.streak} روز متوالی`"></div>
-    </div>
-
-    <!-- E1 step 1+2: sky facts -->
-    <div class="mt-4 rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4">
-      <h2 class="text-base font-extrabold text-white">امروز در آسمان</h2>
-      <div class="mt-3 space-y-2.5">
-        <template x-for="(f, i) in status.facts" :key="i">
-          <div class="flex items-start gap-3 rounded-xl bg-slate-900/60 p-3">
-            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sm font-black text-sky-300" x-text="f.planet_fa.charAt(0)"></span>
-            <p class="text-sm leading-6 text-slate-300">
-              <span class="font-bold text-slate-100" x-text="f.planet_fa"></span>
-              امروز در <span class="font-bold text-sky-300" x-text="f.sign_fa"></span> با
-              <span class="font-bold text-slate-100" x-text="f.target_fa"></span>
-              در <span class="font-bold text-sky-300" x-text="f.aspect_fa"></span> است.
-            </p>
-          </div>
+  <div x-data="todayApp()" x-init="init()">
+    <!-- chart picker -->
+    <div class="glass" style="padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;justify-content:space-between;">
+      <div>
+        <div class="muted" style="font-size:.78rem;">تاریخ</div>
+        <div style="font-weight:700;" x-text="status.today_label"></div>
+      </div>
+      <select class="input" x-model="chartId" x-on:change="load()" style="max-width:190px;min-height:44px;">
+        <template x-for="ch in charts" :key="ch.id">
+          <option :value="ch.id" x-text="ch.label"></option>
         </template>
+      </select>
+    </div>
+
+    <!-- streak -->
+    <div class="glass" style="padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:1.6rem;">🔥</span>
+      <div>
+        <div class="muted" style="font-size:.8rem;">پیوستگی روزانه</div>
+        <div style="font-weight:800;font-size:1.05rem;" x-text="status.streak + ' روز متوالی'"></div>
+      </div>
+      <div style="margin-left:auto;text-align:left;" class="muted" x-show="status.streak > 0" x-cloak>
+        <span x-text="status.best_streak"></span> بیشترین
       </div>
     </div>
 
-    <!-- E1 step 3: question + step 4: action -->
-    <div class="mt-4 rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4">
-      <h2 class="text-base font-extrabold text-white">سؤال امروز</h2>
-      <p class="mt-2 text-sm leading-7 text-slate-200" x-text="status.question"></p>
-
-      <template x-if="status.access === 'full'">
-      <div class="mt-4">
-        <textarea x-model="answer" rows="4" maxlength="2000" placeholder="چند جمله برای خودت بنویس…"
-          class="w-full rounded-xl border border-slate-600 bg-slate-900 p-3 text-sm leading-6 text-slate-200 placeholder-slate-500 focus:border-sky-400 focus:outline-none"></textarea>
-        <div class="mt-3 flex flex-wrap items-center gap-3">
-          <button type="button" @click="submit()" :disabled="status.today_done"
-            class="rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-bold text-white transition active:scale-[0.98] disabled:opacity-40"
-            x-text="status.today_done ? 'ثبت شد ✓' : 'ثبت تأمل امروز'"></button>
-          <span class="text-xs text-slate-400" x-text="status.today_done ? 'فردا دوباره برمی‌گردی' : ''"></span>
+    <!-- sky facts -->
+    <div class="glass" style="padding:16px;margin-bottom:12px;">
+      <div style="font-weight:800;margin-bottom:12px;font-size:1.02rem;">✨ امروز در آسمان</div>
+      <div x-show="!status.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
+      <template x-for="(f, i) in status.facts" :key="i">
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--stroke);">
+          <span style="flex:none;width:30px;height:30px;border-radius:50%;background:rgba(124,108,240,.22);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#c9c2ff;" x-text="f.planet_fa.charAt(0)"></span>
+          <p style="font-size:.92rem;line-height:1.7;color:var(--txt);">
+            <span style="font-weight:800;" x-text="f.planet_fa"></span>
+            امروز در <span style="font-weight:800;color:#8fb6ff;" x-text="f.sign_fa"></span> با
+            <span style="font-weight:800;" x-text="f.target_fa"></span> تو در
+            <span style="font-weight:800;color:#f5c518;" x-text="f.aspect_fa"></span> است.
+          </p>
         </div>
-        <p class="mt-2 text-xs text-red-300" x-text="error"></p>
-      </div>
-      </template>
-
-      <template x-if="status.access !== 'full'">
-      <div class="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-200">
-        ثبت تأمل روزانه مخصوص <span class="font-bold">پلن طلایی</span> و <span class="font-bold">اشتراک</span> است.
-        <a href="/plans" class="font-bold underline">مشاهده پلن‌ها</a>
-      </div>
       </template>
     </div>
 
-    <!-- E1 step 4 -->
-    <div class="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-      <h3 class="text-sm font-extrabold text-emerald-300">اقدام کوچک امروز</h3>
-      <p class="mt-1.5 text-sm leading-6 text-slate-300">ده دقیقه به سؤال بالا فکر کن — بدون قضاوت، فقط بنویس هرچه می‌آید. همین.</p>
+    <!-- question -->
+    <div class="glass" style="padding:16px;margin-bottom:12px;">
+      <div style="font-weight:800;margin-bottom:10px;font-size:1.02rem;">🪞 سؤال امروز</div>
+      <p style="font-size:.95rem;line-height:1.8;" x-text="status.question"></p>
+      <div x-show="status.access === 'preview'" x-cloak style="margin-top:12px;">
+        <div class="glass" style="padding:12px;background:rgba(245,197,24,.07);">
+          <p class="muted" style="font-size:.85rem;margin-bottom:10px;">ثبت تأمل روزانه و پیوستگی مخصوص پلن طلایی و اشتراک ماهانه است.</p>
+          <a class="btn btn-lg" href="/plans" style="text-decoration:none;">مشاهده پلن‌ها</a>
+        </div>
+      </div>
+      <div x-show="status.access === 'full' && status.done" x-cloak style="margin-top:12px;padding:12px;border:1px solid rgba(76,209,123,.4);border-radius:14px;background:rgba(76,209,123,.08);">
+        <div style="font-weight:700;color:#7ddf9d;">✓ تأمل امروز ثبت شد</div>
+        <p class="muted" style="font-size:.85rem;margin-top:4px;" x-text="'ساعت ' + status.done_at"></p>
+      </div>
+      <div x-show="status.access === 'full' && !status.done" x-cloak style="margin-top:12px;">
+        <textarea class="input" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" style="width:100%;resize:vertical;padding:12px;"></textarea>
+        <button class="btn btn-lg" style="width:100%;margin-top:10px;" x-on:click="submit()" :disabled="busy">
+          <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- action -->
+    <div class="glass" style="padding:16px;margin-bottom:12px;">
+      <div style="font-weight:800;margin-bottom:8px;font-size:1.02rem;">🌱 اقدام کوچک امروز</div>
+      <p style="font-size:.95rem;line-height:1.8;" x-text="status.action"></p>
     </div>
   </div>
-  </template>
-  {% endif %}
 </div>
 
 <script>
-document.addEventListener('alpine:init', () => {
-  Alpine.data('todayApp', () => ({
-    status: {{ status_json | safe }},
-    answer: {{ status.answer | tojson }} || '',
-    error: '',
-    init() { this.refresh(); },
-    refresh() {
-      const chartId = document.getElementById('chart-select')?.value;
-      if (!chartId) return;
-      fetch('/api/today?chart_id=' + chartId).then(r => r.json()).then(j => { this.status = j; }).catch(() => {});
+function todayApp() {
+  return {
+    charts: {{ charts_json|safe }},
+    chartId: {{ active_chart_json|safe }},
+    status: {{ status_json|safe }},
+    answer: "",
+    busy: false,
+    init() {
+      if (!this.chartId) { this.chartId = this.charts.length ? this.charts[0].id : ""; }
+      if (this.chartId) this.load();
     },
-    async submit() {
-      this.error = '';
-      const chartId = document.getElementById('chart-select')?.value;
-      const fd = new FormData(); fd.append('chart_id', chartId); fd.append('answer', this.answer);
-      const res = await fetch('/api/today/reflection', { method: 'POST', body: fd });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok) { this.error = j.detail || 'خطا'; return; }
-      this.status.streak = j.streak; this.status.today_done = true;
-    }
-  }));
-});
+    load() {
+      const self = this;
+      fetch("/api/today?chart_id=" + encodeURIComponent(this.chartId))
+        .then(r => r.json())
+        .then(d => { self.status = d; })
+        .catch(() => { self.status = { ...self.status, facts: [] }; });
+    },
+    submit() {
+      if (!this.answer.trim()) return;
+      const self = this;
+      this.busy = true;
+      const fd = new FormData();
+      fd.append("chart_id", this.chartId);
+      fd.append("answer", this.answer);
+      fetch("/api/today/reflection", { method: "POST", body: fd })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (ok) { self.status = { ...self.status, ...d, done: true }; self.answer = ""; }
+          else { alert(d.detail || "خطا"); }
+        })
+        .catch(() => alert("خطا در ثبت تأمل"))
+        .finally(() => { self.busy = false; });
+    },
+  };
+}
 </script>
 {% endblock %}

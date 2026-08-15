@@ -90,6 +90,22 @@ def compute_streak(session: Session, chart_id: str, tz_name: str) -> int:
     return streak
 
 
+def today_action(facts: list[dict]) -> str:
+    """E1 step 4 — one small action today (deterministic)."""
+    if not facts:
+        return "ده دقیقه در سکوت به حال خوبت فکر کن و یک جمله بنویس: «امروز چه چیزی به من انرژی داد؟»"
+    p = facts[0]["planet_fa"]
+    return {
+        "مشتری": "ده دقیقه به یک فرصتِ امروز نگاه کن و یک قدم کوچک برای استفاده از آن بردار.",
+        "زحل": "ده دقیقه به یک تعهدِ امروزت اختصاص بده؛ حتی نصف کار بهتر از هیچ است.",
+        "اورانوس": "ده دقیقه یک روال تکراری را آگاهانه تغییر بده (مسیر، جای نشستن، ترتیب کارها).",
+        "نپتون": "ده دقیقه بدون قضاوت، یک رؤیای قدیمی را روی کاغذ بنویس.",
+        "پلوتو": "ده دقیقه به چیزی فکر کن که باید رها شود و اولین قدم رها کردن را بردار.",
+        "مریخ": "ده دقیقه با انرژی حرکت کن؛ قدم بزن یا کاری را که عقب انداخته‌ای شروع کن.",
+        "ناهید": "ده دقیقه از چیزی که دوست داری لذت ببر و شکرگزارش باش.",
+    }.get(p, "ده دقیقه به سؤال امروز فکر کن و پاسخ را بدون قضاوت بنویس.")
+
+
 def today_status(session: Session, chart: Chart) -> dict:
     """Everything the /today page needs (E2/E3/E5)."""
     tz_name = _chart_tz(session, chart)
@@ -103,9 +119,10 @@ def today_status(session: Session, chart: Chart) -> dict:
     return {
         "tz_name": tz_name,
         "today": today.isoformat(),
-        "today_fa": f"{today.day} {MONTHS_FA[today.month]}",
+        "today_label": f"{today.day} {MONTHS_FA[today.month]}",
         "facts": facts,
         "question": reflection_question(facts),
+        "action": today_action(facts),
         "streak": compute_streak(session, chart.id, tz_name),
         "today_done": bool(existing),
         "answer": existing.answer if existing else "",

@@ -1939,7 +1939,9 @@ def page_explore(request: Request, chart: str = "", session: Session = Depends(g
         {"cards": CARD_CATALOG, "cards_json": json.dumps(
             [{"key": c.key, "title_fa": c.title_fa, "benefit_fa": c.benefit_fa}
              for c in CARD_CATALOG], ensure_ascii=False),
-         "charts": charts, "active_chart": active_chart,
+         "charts": charts,
+         "charts_json": json.dumps([{"id": c.id, "label": f"چارت {i + 1} — {c.created_at:%Y-%m-%d}"} for i, c in enumerate(charts)], ensure_ascii=False),
+         "active_chart_json": json.dumps(active_chart),
          "credits": user.credits if user else 0},
     )
 
@@ -2103,8 +2105,14 @@ def page_today(request: Request, chart: str = "", session: Session = Depends(get
         active_chart = charts[0].id if charts else ""
     status = today_status(session, ch) if charts and (ch := next((c for c in charts if c.id == active_chart), None)) else None
     access = _today_plan_access(session, next((c for c in charts if c.id == active_chart), None)) if charts else "preview"
+    if status:
+        status["access"] = access
+    charts_meta = [{"id": c.id, "label": f"چارت {i + 1} — {c.created_at:%Y-%m-%d}"} for i, c in enumerate(charts)]
     return templates.TemplateResponse(request, "today.html", {
-        "charts": charts, "active_chart": active_chart, "status": status,
+        "charts": charts, "charts_json": json.dumps(charts_meta, ensure_ascii=False),
+        "active_chart": active_chart,
+        "active_chart_json": json.dumps(active_chart),
+        "status": status,
         "status_json": json.dumps(status, ensure_ascii=False) if status else "null",
         "access": access,
     })
