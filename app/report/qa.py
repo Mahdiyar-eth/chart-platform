@@ -144,6 +144,26 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
         _active_factors = set()
     _allow_any = not _active_factors
 
+    # F-§11 (final audit): FORBIDDEN patterns were only checked inside
+    # insight bodies — intro/practical_advice/strengths/challenges slipped
+    # through with banned words. Scan ALL free text of the section.
+    def _free_text() -> str:
+        parts = [section.get("title_fa") or "", section.get("intro") or ""]
+        for ins in section.get("insights", []):
+            if isinstance(ins, dict):
+                parts.extend([
+                    ins.get("insight") or "",
+                    *(ins.get("strengths") or []),
+                    *(ins.get("challenges") or []),
+                    ins.get("practical_advice") or "",
+                ])
+        return "\n".join(str(p) for p in parts if isinstance(p, str))
+
+    for pat in FORBIDDEN_PATTERNS:
+        if re.search(pat, _free_text().replace("\u200c", "")):
+            errors.append(f"{domain}: عبارت ممنوع «{pat}» در متن")
+            break
+
     insights = section.get("insights", [])
     if not isinstance(insights, list) or len(insights) < 2:
         errors.append(f"{domain}: تعداد insight کافی نیست ({len(insights)})")
