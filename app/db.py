@@ -76,9 +76,17 @@ def seed_plans() -> None:
     from app.models import Coupon
     c = s.exec(select(Coupon).where(Coupon.code == "LANCH20")).first()
     if not c:
-        s.add(Coupon(code="LANCH20", percent=20, max_uses=10_000,
-                     active=True, report_only=True))
-        s.commit()
+        # atomic insert — two startup workers may race here
+        from sqlalchemy import text as _text
+        try:
+            s.exec(_text(
+                "INSERT INTO coupons (id, code, percent, max_uses, used_count, "
+                "active, report_only, created_at) VALUES "
+                "(gen_random_uuid()::text, 'LANCH20', 20, 10000, 0, true, true, now()) "
+                "ON CONFLICT (code) DO NOTHING"))
+            s.commit()
+        except Exception:  # noqa: BLE001 — another worker won the race
+            s.rollback()
 
 
 def get_session():
