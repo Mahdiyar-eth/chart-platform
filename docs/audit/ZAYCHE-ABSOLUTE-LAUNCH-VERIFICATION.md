@@ -199,7 +199,27 @@ F-27c/F-31/F-32c) × ۵ chart متفاوت (تهران ۱۹۹۴، شیراز ۱�
 و fallback نهایی **همیشه fail-safe** است (هرگز محتوای نجومی غلط منتشر
 نمی‌شود). با MAX_RETRIES=6 در ۵ chart نمونه صفر fallback مشاهده شد.
 
-## 16. SEO / Content — ✅ PASS
+## 15b. Latency / Cost Gate (گزارش full واقعی — NEW 2026-08-15)
+
+یک گزارش کامل real (همان birth طلایی، کلید go جدید، مسیر worker واقعی — همان
+که bot ها استفاده می‌کنند) اندازه‌گیری شد:
+
+| متریک | مقدار |
+|---|---|
+| بخش‌ها | 13 (plan full) |
+| زمان کل | **۲۰ دقیقه** (۱٬۱۹۹s) |
+| LLM calls | 25 |
+| retries | 12 (همه با feedback اصلاح شدند) |
+| qa_failures | 12 — همه در retry نجات یافتند |
+| **fallback نهایی** | **صفر** |
+| tokens کل | ۱۲۴٬۹۲۴ (۴۱٬۳۷۰ input + ۸۳٬۵۵۴ output) |
+| latency هر call | avg **۴۸s** · p95 **۵۷s** · max ۵۸s |
+| cost | ~$۰٫۱۰/گزارش (تخمین با قیمت عمومی deepseek — go بر اساس credits محاسبه می‌کند، نه USD؛ tokens واقعی ثبت شد) |
+
+> تأیید تجربی الگوی MaHDi: «مدل در تلاش اول همیشه درست نیست؛ سیستم
+> LLM→QA→feedback→retry→PASS به خروجی درست می‌رسد». هر ۱۳ بخش با حداکثر
+> ۷ تلاش به PASS رسیدند؛ خروجی منتشرشده صفر fallback دارد.
+> برای basic plan (۵ بخش): ~۸-۱۳ دقیقه، ۹-۱۵ calls.
 
 - ۵۰ مقاله: میانه ۶۰۸ کلمه (min 342)، همه با meta description/keywords/
   image/date_fa؛ صفر تکراری؛ صفر پاراگراف خالی؛ اسلاگ‌های تمیز.
