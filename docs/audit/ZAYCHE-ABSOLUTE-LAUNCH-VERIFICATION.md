@@ -227,6 +227,33 @@ F-27c/F-31/F-32c) × ۵ chart متفاوت (تهران ۱۹۹۴، شیراز ۱�
 - canonical + meta description + JSON-LD در مقالات؛ OG/Twitter در home.
 - یادداشت P2 (post-launch): internal linking بین مقالات صفر است.
 
+## 15c. USER-FACING LATENCY TEST — کاوش کوتاه (NEW 2026-08-15)
+
+اندازه‌گیری واقعی روی کلید go زنده (birth طلایی، مسیرهای واقعی):
+
+| سناریو | اولین token | اولین جمله | کل | calls/retry | مدل |
+|---|---|---|---|---|---|
+| **Chat (SSE تعاملی)** — سؤال کوتاه دربارهٔ chart | **۱٫۱s** | ۱٫۸s | **۵٫۱s** | ۱ / ۰ | deepseek-v4-flash |
+| **کاوش کوتاه** (۱ بخش، ۴ insight، QA gate) | ~۱۰s | — | ۵۵٫۳s | ۳ / ۲ | deepseek-v4-pro |
+| Deep report (۱۳ بخش) — baseline §15b | — | — | ۲۰ دقیقه | ۲۵ / ۱۲ | deepseek-v4-pro |
+
+**تحلیل (مقایسه با اهداف محصولی MaHDi):**
+
+| هدف محصولی | اندازه‌گیری | verdict |
+|---|---|---|
+| اولین token < 5–10s | ۱٫۱s (chat) | ✅ |
+| اولین insight مفید < 15–20s | ۱٫۸s (chat)؛ ~۱۰s (کاوش) | ✅ |
+| تحلیل کوتاه کامل < 60–120s | ۵۵s (کاوش ۱ بخش با retry) | ✅ |
+| Deep report async (۸–۲۰ دقیقه) | ۲۰ دقیقه | ✅ |
+
+نکته‌های ساختاری:
+- چت از **flash** (مدل سریع) و گزارش از **pro** (مدل عمیق) استفاده می‌کند — دو مسیر
+  عمدی؛ latency چت ۵ ثانیه است.
+- کاوش کوتاه: بدون retry ~۱۸-۲۰s؛ ۲ QA failure (whitelist) باعث ۵۵s شد —
+  با بهینه‌سازی prompt کاوش (P0 محصولی بعدی) به ~۲۰-۳۰s می‌رسد.
+- `stream_complete` (SSE) در چت فعال است؛ کاوش جدید باید از همین مکانیزم
+  استفاده کند تا اولین token زیر ۵s بماند.
+
 ## 17. Accessibility — ✅ PASS (قبلاً در پروتکل ۵۹)
 
 - Lighthouse axe: صفر critical؛ کنتراست، alt، focus، landmark بررسی شد.
