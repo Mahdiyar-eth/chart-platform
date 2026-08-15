@@ -35,6 +35,37 @@ def _bypass_rate_limit(monkeypatch):
     monkeypatch.setattr(_m, "_rate_limit", lambda *a, **k: True)
 
 
+class _FakeZarinpal:
+    """F-P1: tests must NEVER hit the real Zarinpal sandbox — repeated suite
+    runs trip its rate limit ('Too many attempts', -12) and make unrelated
+    tests flake (synastry/ownership 502). Payment-focused tests that assert
+    gateway behavior monkeypatch their own client AFTER this fixture."""
+
+    def __init__(self, *a, **k):
+        self.last_request = None
+
+    def request(self, amount_rial, callback_url, description, meta=None):
+        import secrets
+        return f"S{fake_authority(16)}", "https://sandbox.zarinpal.com/pg/StartPay/S-fake"
+
+    def verify(self, authority, amount_rial):
+        return {"ref_id": "fake-ref", "code": 100}
+
+
+def fake_authority(n: int = 16) -> str:
+    import secrets
+    return secrets.token_hex(n // 2)
+
+
+@pytest.fixture(autouse=True)
+def _no_real_zarinpal(monkeypatch):
+    """Replace the real gateway with a deterministic fake for every test.
+    Tests needing explicit gateway behavior override this by setting
+    app.payment.zarinpal.ZarinpalClient (create_order imports it lazily)."""
+    import app.payment.zarinpal as _zp
+    monkeypatch.setattr(_zp, "ZarinpalClient", _FakeZarinpal)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _db():
     yield

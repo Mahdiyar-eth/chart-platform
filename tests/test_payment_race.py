@@ -35,6 +35,7 @@ class FakeZarinpalClient:
 @pytest.fixture
 def paid_order(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", FakeZarinpalClient)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", FakeZarinpalClient)
     FakeZarinpalClient.verify_calls = 0
     auth = f"S{int(time.time())}{'R' * 20}"
     with Session(engine) as s:

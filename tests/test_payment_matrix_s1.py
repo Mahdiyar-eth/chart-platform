@@ -51,6 +51,7 @@ class RejectZarinpal:
 @pytest.fixture
 def ok_gateway(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", OkZarinpal)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", OkZarinpal)
     OkZarinpal.verify_calls = 0
     OkZarinpal.last_amount = None
     yield OkZarinpal
@@ -59,6 +60,7 @@ def ok_gateway(monkeypatch):
 @pytest.fixture
 def reject_gateway(monkeypatch):
     monkeypatch.setattr("app.main.ZarinpalClient", RejectZarinpal)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", RejectZarinpal)
     yield RejectZarinpal
 
 
@@ -151,8 +153,11 @@ def test_network_error_reopens_pending():
             raise TimeoutError("connection reset")
 
     from app import main as m
+    from app.payment import zarinpal as _zp
     orig = m.ZarinpalClient
+    orig_zp = _zp.ZarinpalClient
     m.ZarinpalClient = NetErr
+    _zp.ZarinpalClient = NetErr
     try:
         o = _order()
         r = _verify(o["auth"])
@@ -163,6 +168,7 @@ def test_network_error_reopens_pending():
             assert db.error and "رفرش" in db.error
     finally:
         m.ZarinpalClient = orig
+        _zp.ZarinpalClient = orig_zp
 
 
 def test_concurrent_callbacks_single_paid_single_report(ok_gateway):

@@ -10,7 +10,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import pytest
 import swisseph as swe
 
 from app.astrology.engine import compute_chart, BirthData

@@ -15,7 +15,7 @@ from sqlmodel import Session, select  # noqa: E402
 
 from app.db import engine  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import LLMRun, User  # noqa: E402
+from app.models import LLMRun, User, ChatMessage, BirthProfile  # noqa: E402
 
 SUF = uuid.uuid4().hex[:8]
 
@@ -23,6 +23,14 @@ SUF = uuid.uuid4().hex[:8]
 def _seed_runs() -> tuple[str, str]:
     """Two users; three runs: report (u1), chat (u1), chat (u2, failed)."""
     with Session(engine) as s:
+        # F-P1: this test reads GLOBAL 7d aggregates (fail_rate, top_users),
+        # so any LLMRun left behind by earlier/heavier tests (report QA runs,
+        # metering seeds from interrupted runs…) breaks the assertions.
+        # Purge ALL runs before seeding — this file is the only one asserting
+        # global aggregates, and every run here is self-seeded.
+        for r in s.exec(select(LLMRun)).all():
+            s.delete(r)
+        s.commit()
         u1 = User(phone=f"+98h13a{SUF}")
         u2 = User(phone=f"+98h13b{SUF}")
         s.add(u1)
@@ -89,33 +97,49 @@ def test_llm_cost_breakdowns_are_consistent():
         s.commit()
 
 
-def test_chat_answer_writes_llm_run():
-    """A chat call must land a kind='chat' llm_run (user-scoped) — via the
-    real /api/chat guarded path is heavy; instead assert the wiring exists by
-    checking that chat metering code path records runs with kind='chat'."""
-    from app.chat.service import chat_answer
-
-    class FakeRes:
-        provider = "go"
-        model = "deepseek-v4-flash"
-        usage = type("U", (), {"prompt_tokens": 7, "completion_tokens": 3, "total": 10})()
-        cost = 0.0001
-        ok = True
-        error = None
-        text = '{"answer": "پاسخ تست"}'
-
-    class FakeRouter:
-        async def complete(self, *a, **k):
-            return FakeRes()
+def test_chat_answer_writes_llm_run(monkeypatch):
+    """F-P1: the real /api/chat path must land a kind='chat' llm_run
+    (user-scoped) — chat_answer itself is pure; metering lives in the
+    route (main.py), so we drive the route with a stubbed answer."""
+    import app.main as main
+    from app.models import Chart, Order
 
     with Session(engine) as s:
         u = User(phone=f"+98h13c{SUF}")
-        s.add(u)
-        s.commit()
-    res = chat_answer("سلام", {"planets": {}, "angles": {}},
-                      router=FakeRouter())
-    assert res.get("provider") == "go"
+        s.add(u); s.commit()
+        p = BirthProfile(user_id=u.id, name="تست", raw_year=1373, raw_month=6,
+                         raw_day=1, city_fa="تهران", lat=35.6889, lon=51.3897)
+        s.add(p); s.commit()
+        ch = Chart(chart_json={"planets": {}, "angles": {}, "birth": {}},
+                   profile_id=p.id)
+        s.add(ch); s.commit()
+        o = Order(chart_id=ch.id, plan_key="gold", amount_rial=500_000,
+                  status="paid", authority=f"auth-{uuid.uuid4().hex[:12]}")
+        s.add(o); s.commit()
+        ids = {"uid": u.id, "cid": ch.id, "oid": o.id, "pid": p.id}
+
+    def _stub_answer(*a, **k):
+        return {"answer": "پاسخ تست", "intent": "general", "domains": [],
+                "provider": "go", "model": "deepseek-v4-flash",
+                "cost_usd": 0.0001, "tokens": 10, "ok": True}
+
+    monkeypatch.setattr(main, "chat_answer", _stub_answer)
+    monkeypatch.setattr(main, "_rate_limit", lambda *a, **k: True)
+    c = TestClient(main.app)
+    from app.auth import _user_cookie_value
+    c.cookies.set("chart_user", _user_cookie_value(ids["uid"]))
+    r = c.post("/api/chat", data={"chart_id": ids["cid"], "question": "سلام"})
+    assert r.status_code == 200
     with Session(engine) as s:
         runs = s.exec(select(LLMRun).where(LLMRun.kind == "chat",
-                                           LLMRun.user_id.is_(None))).all()
-        assert runs, "chat runs must be recorded"
+                                           LLMRun.user_id == ids["uid"])).all()
+        assert runs, "chat runs must be recorded by the route"
+        assert runs[0].model == "deepseek-v4-flash" and runs[0].cost_usd > 0
+        # teardown
+        for m in s.exec(select(ChatMessage).where(ChatMessage.chart_id == ids["cid"])).all():
+            s.delete(m)
+        s.flush()
+        o2 = s.get(Order, ids["oid"]); s.delete(o2); s.commit()
+        s.delete(s.get(Chart, ch.id)); s.commit()
+        s.delete(s.get(BirthProfile, ids["pid"])); s.commit()
+        s.delete(s.get(User, ids["uid"])); s.commit()
