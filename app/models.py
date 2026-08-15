@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, Index, Integer, UniqueConstraint, text
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, UniqueConstraint, text
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
@@ -244,8 +244,9 @@ class Subscription(SQLModel, table=True):
     freq: str = Field(default="daily")          # daily | weekly
     plan_key: str = Field(default="monthly")    # paid monthly plan (plan v3.0 §12)
     active: bool = Field(default=True)
-    expires_at: datetime | None = Field(default=None)
+    expires_at: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True)))
     order_id: str | None = Field(default=None, index=True)  # audit r4 B6 — originating order (refund closes the sub)
+    last_credit_grant_at: datetime | None = Field(default=None)  # H — monthly 5-credit grant (once per month)
     last_sent_at: datetime | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

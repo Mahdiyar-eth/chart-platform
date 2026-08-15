@@ -76,7 +76,8 @@ def test_order_status_transitions():
 def test_plans_seed_shape():
     from app.main import PLANS_SEED
     assert [p.key for p in PLANS_SEED] == ["basic", "full", "gold",
-                                           "credit3", "credit6", "credit12"]
+                                           "credit3", "credit6", "credit12",
+                                           "monthly", "yearly"]
     assert all(p.price_toman > 0 for p in PLANS_SEED)
     assert all(p.features for p in PLANS_SEED)
     # P6 — every credit pack carries a positive grant; others carry 0
@@ -84,3 +85,6 @@ def test_plans_seed_shape():
     assert all(p.credits_grant > 0 for p in packs)
     assert all(not p.key.startswith("credit") or p.credits_grant > 0
                for p in PLANS_SEED)
+    # H — subscription prices per plan v2.0 §11
+    prices = {p.key: p.price_toman for p in PLANS_SEED}
+    assert prices["monthly"] == 99_000 and prices["yearly"] == 890_000

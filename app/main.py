@@ -67,6 +67,15 @@ PLANS_SEED = [
     Plan(key="credit12", name_fa="۱۲ اعتبار", subtitle_fa="دوازده کاوش خودشناسی",
          price_toman=600_000, sort=6, active=True, credits_grant=12,
          features=["بهترین ارزش — ۲۰٪ ارزان‌تر از ۳+۳+۶", "بدون تاریخ انقضا", "اعتبار باقی می‌ماند"]),
+    # H — همراه ماهانه/سالانه (plan v2.0 §11): Today + weekly + transit notif + 5 credits/mo
+    Plan(key="monthly", name_fa="اشتراک ماهانه", subtitle_fa="همراه ماهانه‌ی زایچه — برای دنبال‌کنندگان آسمان",
+         price_toman=99_000, sort=7, active=True,
+         features=["نگاهی به آسمان امروز (Today) — هر روز", "تأمل هفتگی کوتاه", "اعلان گذرهای مهم",
+                   "۵ اعتبار کاوش در هر ماه"]),
+    Plan(key="yearly", name_fa="اشتراک سالانه", subtitle_fa="همراه سالانه — دو ماه هدیه",
+         price_toman=890_000, sort=8, active=True,
+         features=["همه‌ی امکانات ماهانه", "۲ ماه رایگان (به‌جای ۱۲ ماه، ۱۰ ماه پرداخت)", "اعلان گذرهای مهم",
+                   "۵ اعتبار کاوش در هر ماه"]),
 ]
 
 
@@ -778,6 +787,52 @@ def _release_coupon(session: Session, order) -> None:
             c.used_count -= 1
 
 
+@app.get("/api/subscriptions")
+def api_my_subscriptions(request: Request, session: Session = Depends(get_session)):
+    """H — list the caller's active subscriptions across their charts."""
+    from app.timeutil import ensure_utc, utcnow
+    from app.payment.orders import SUBSCRIPTION_MONTHLY_CREDITS
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "not logged in")
+    profile_ids = [p.id for p in session.exec(
+        select(BirthProfile).where(BirthProfile.user_id == user.id)).all()]
+    chart_ids = [c.id for c in session.exec(
+        select(Chart).where(Chart.profile_id.in_(profile_ids))).all()] if profile_ids else []
+    subs = session.exec(select(Subscription).where(
+        Subscription.chart_id.in_(chart_ids)).order_by(Subscription.created_at.desc())
+    ).all() if chart_ids else []
+    now = utcnow()
+    return [{
+        "id": s.id, "chart_id": s.chart_id, "plan_key": s.plan_key,
+        "active": s.active and (s.expires_at is None or ensure_utc(s.expires_at) > now),
+        "expires_at": s.expires_at.isoformat() if s.expires_at else None,
+        "monthly_credits": SUBSCRIPTION_MONTHLY_CREDITS,
+    } for s in subs]
+
+
+@app.post("/api/subscriptions/{sub_id}/cancel")
+def api_cancel_subscription(sub_id: str, request: Request,
+                            session: Session = Depends(get_session)):
+    """H — cancellation: entitlement ends immediately."""
+    from app.payment.orders import cancel_subscription
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "not logged in")
+    sub = session.get(Subscription, sub_id)
+    if not sub:
+        raise HTTPException(404, "subscription not found")
+    ch = session.get(Chart, sub.chart_id) if sub.chart_id else None
+    owner = None
+    if ch and ch.profile_id:
+        prof = session.get(BirthProfile, ch.profile_id)
+        owner = prof.user_id if prof else None
+    if owner != user.id:
+        raise HTTPException(403, "not authorized")
+    cancel_subscription(session, sub)
+    return {"ok": True, "id": sub.id}
+
+
 @app.get("/api/payments/verify")
 def api_payment_verify(
     request: Request,
@@ -820,9 +875,17 @@ def api_payment_verify(
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
-            from app.payment.orders import REPORT_PLANS, activate_subscription, CREDIT_PACKS, grant_credits
-            if order.plan_key == "monthly":
+            from app.payment.orders import REPORT_PLANS, activate_subscription, CREDIT_PACKS, grant_credits, SUBSCRIPTION_PLANS, grant_subscription_credits
+            if order.plan_key in SUBSCRIPTION_PLANS:
                 activate_subscription(session, order)
+                sub = session.exec(
+                    select(Subscription).where(
+                        Subscription.chart_id == order.chart_id,
+                        Subscription.chat_id == (order.chat_id if order.chat_id else None),
+                    )
+                ).first()
+                if sub:
+                    grant_subscription_credits(session, sub)  # H — first month granted on purchase
             # P6 — credit packs: grant credits atomically + ledger row
             if order.plan_key in CREDIT_PACKS:
                 grant_credits(session, order)

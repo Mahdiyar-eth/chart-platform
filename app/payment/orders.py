@@ -140,11 +140,12 @@ def create_order(
 
 
 def activate_subscription(session: Session, order: Order) -> None:
-    """After a paid monthly order: activate/refresh the chat subscription.
+    """After a paid order: activate/refresh the subscription.
 
     audit r4 A9: renewal EXTENDS from the later of (current expiry, now) —
     a user renewing 20 days early keeps those 20 days (was: now+30, discarding
-    the remainder). Works for bot (chat_id set) and web (chat_id None) flows."""
+    the remainder). Works for bot (chat_id set) and web (chat_id None) flows.
+    H: yearly = 365 days, monthly = 30 days (plan v2.0 §11)."""
     if not order.chart_id:
         return
     q = select(Subscription).where(Subscription.chart_id == order.chart_id)
@@ -156,9 +157,10 @@ def activate_subscription(session: Session, order: Order) -> None:
     now = utcnow()
     base = sub.expires_at if (sub and sub.expires_at
                               and ensure_utc(sub.expires_at) > now) else now
+    days = 365 if order.plan_key == "yearly" else 30  # H
     if sub:
         sub.active = True
-        sub.expires_at = base + timedelta(days=30)
+        sub.expires_at = base + timedelta(days=days)
         sub.plan_key = order.plan_key
         sub.platform = order.platform or sub.platform
         sub.order_id = order.id  # audit r4 B6 — latest originating order
@@ -166,13 +168,90 @@ def activate_subscription(session: Session, order: Order) -> None:
         session.add(Subscription(
             chat_id=order.chat_id, platform=order.platform or "telegram",
             chart_id=order.chart_id, freq="weekly", plan_key=order.plan_key,
-            active=True, expires_at=base + timedelta(days=30),
+            active=True, expires_at=base + timedelta(days=days),
             order_id=order.id,  # audit r4 B6
         ))
+    session.commit()  # H — caller runs inside a short-lived session
 
 
 REPORT_PLANS = {"basic", "full", "gold"}
 CREDIT_PACKS = {"credit3", "credit6", "credit12"}
+SUBSCRIPTION_PLANS = {"monthly", "yearly"}   # H — همراه ماهانه/سالانه
+SUBSCRIPTION_MONTHLY_CREDITS = 5             # H — 5 credits/month
+
+
+def _local_month_key(dt: datetime, tz_name: str = "Asia/Tehran") -> tuple[int, int]:
+    """H — timezone-aware month key for the once-per-month credit grant."""
+    from zoneinfo import ZoneInfo
+    try:
+        local = ensure_utc(dt).astimezone(ZoneInfo(tz_name))
+    except Exception:
+        local = ensure_utc(dt).astimezone(ZoneInfo("Asia/Tehran"))
+    return (local.year, local.month)
+
+
+def grant_subscription_credits(session: Session, sub: Subscription,
+                               tz_name: str = "Asia/Tehran") -> bool:
+    """H — monthly 5-credit grant, ONCE per local month per subscription.
+
+    Idempotent: re-running within the same month is a no-op. The user is
+    resolved from the sub's chart → profile chain. Returns True when granted.
+    """
+    from sqlalchemy import text
+    from app.models import CreditTransaction, BirthProfile
+    now = utcnow()
+    last = sub.last_credit_grant_at
+    if last and _local_month_key(ensure_utc(last), tz_name) == _local_month_key(now, tz_name):
+        return False
+    ch = session.get(Chart, sub.chart_id)
+    uid = None
+    if ch and ch.profile_id:
+        prof = session.get(BirthProfile, ch.profile_id)
+        uid = prof.user_id if prof else None
+    if not uid:
+        return False
+    session.exec(text(
+        "UPDATE users SET credits = credits + :n WHERE id = :uid"
+    ), params={"n": SUBSCRIPTION_MONTHLY_CREDITS, "uid": uid})
+    session.add(CreditTransaction(
+        user_id=uid, amount=SUBSCRIPTION_MONTHLY_CREDITS,
+        reason="subscription", ref_id=sub.id,
+    ))
+    sub.last_credit_grant_at = now
+    session.commit()
+    return True
+
+
+def grant_due_subscription_credits(session: Session) -> int:
+    """H — cron entry: grant for every active, unexpired subscription whose
+    local month has turned. Returns the number of grants performed."""
+    from app.models import BirthProfile
+    now = utcnow()
+    subs = session.exec(
+        select(Subscription).where(
+            Subscription.active == True,  # noqa: E712
+            (Subscription.expires_at == None) | (Subscription.expires_at > now),  # noqa: E711
+        )
+    ).all()
+    granted = 0
+    for sub in subs:
+        tz = "Asia/Tehran"
+        ch = session.get(Chart, sub.chart_id) if sub.chart_id else None
+        if ch and ch.profile_id:
+            prof = session.get(BirthProfile, ch.profile_id)
+            if prof and prof.tz_name:
+                tz = prof.tz_name
+        if grant_subscription_credits(session, sub, tz):
+            granted += 1
+    return granted
+
+
+def cancel_subscription(session: Session, sub: Subscription) -> None:
+    """H — cancellation: entitlement ends now (no refund on the platform side;
+    gateway refunds stay an admin action)."""
+    sub.active = False
+    sub.expires_at = utcnow()
+    session.commit()
 
 
 def _order_user_id(session: Session, order: Order) -> str | None:

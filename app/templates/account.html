@@ -91,10 +91,32 @@
     </div>
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
-    <h2 style="font-size:1.05rem;">اشتراک هفتگی «نگاهی به آسمان هفته»</h2>
-    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">هر هفته، نگاهی تأملی به گذرهای سیارهای چارتت — مستقیم در تلگرام.</p>
-    <a class="btn" href="https://t.me/Astrology_chartx_bot" target="_blank" rel="noopener" style="display:inline-block; padding:10px 22px;">فعال‌سازی در تلگرام</a>
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;" x-data="subs()" x-init="init()" x-cloak>
+    <h2 style="font-size:1.05rem;">اشتراک همراه «آسمان امروز»</h2>
+    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
+    <template x-for="s in items" :key="s.id">
+      <div style="padding:10px 0;border-top:1px solid var(--stroke);" :data-sub="s.id">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="text-align:right;">
+            <b style="color:#dfe6ff;" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
+            <span class="chip" style="font-size:.72rem;margin-inline-start:6px;"
+                  x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
+            <div class="muted" style="font-size:.75rem;margin-top:3px;"
+                 x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a class="btn" style="font-size:.78rem;padding:6px 12px;" href="/plans">تمدید</a>
+            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;color:#ff9d9d;"
+                    x-show="s.active && $el.dataset.confirm !== '1'" @click="cancel(s.id)">لغو</button>
+            <button class="btn" style="font-size:.78rem;padding:6px 12px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);"
+                    x-show="s.active && $el.dataset.confirm === '1'" @click="doCancel(s.id)">مطمئنی؟</button>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div x-show="!items.length" class="muted" style="font-size:.85rem;padding:8px 0;">
+      اشتراک فعالی نداری — <a href="/plans" style="color:var(--gold);">شروع کن</a>
+    </div>
   </section>
 
   <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
@@ -205,6 +227,25 @@ function wallet() {
       const r = await fetch('/api/wallet/withdraw', { method: 'POST', body: fd });
       const j = await r.json();
       alert(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'));
+      if (r.ok) location.reload();
+    }
+  };
+}
+function subs() {
+  return {
+    items: [],
+    async init() {
+      try {
+        const r = await fetch('/api/subscriptions');
+        if (r.ok) this.items = await r.json();
+      } catch (e) { /* anonymous */ }
+    },
+    async cancel(id) {
+      const row = document.querySelector('[data-sub="' + id + '"]');
+      if (row) row.dataset.confirm = '1';
+    },
+    async doCancel(id) {
+      const r = await fetch('/api/subscriptions/' + id + '/cancel', { method: 'POST' });
       if (r.ok) location.reload();
     }
   };

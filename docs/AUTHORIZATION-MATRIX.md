@@ -103,6 +103,8 @@
 | `GET /today` | User | `get_current_user` + `_owns_chart` (or redirect) |
 | `GET /api/today` | User | `get_current_user` + `_owns_chart` |
 | `POST /api/today/reflection` | User (gold/monthly) | `get_current_user` + `_owns_chart` + `_today_plan_access == full` |
+| `GET /api/subscriptions` | User | `get_current_user` + profile/chart chain (owner) |
+| `POST /api/subscriptions/{id}/cancel` | User (owner) | `get_current_user` + chart→profile→user match |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.
