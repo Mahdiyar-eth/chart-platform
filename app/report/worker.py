@@ -74,6 +74,7 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                                   model=res.model, gateway=res.provider,
                                   prompt_tokens=res.usage.prompt_tokens,
                                   completion_tokens=res.usage.completion_tokens,
+                                  latency_ms=getattr(res, "latency_ms", 0) or 0,
                                   cost_usd=res.cost, ok=res.ok,
                                   error=(res.error or "")[:300]))
                     _s.commit()
