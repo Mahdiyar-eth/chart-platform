@@ -79,6 +79,9 @@
 | `GET /articles` | Public | — |
 | `GET /articles/{slug}` | Public | — |
 | `GET /sky` | Public | — |
+| `GET /deep-report` | Public | Landing 2 — گزارش عمیق (§14) |
+| `GET /self-discovery` | Public | Landing 3 — کاوش خودشناسی (§14) |
+| `GET /sky-today` | Public | Landing 4 — آسمان امروز (§14) |
 | `GET /admin/login` | Public | rate limit |
 | `POST /admin/login` | Public | rate limit |
 | `GET /admin/logout` | Public | — |

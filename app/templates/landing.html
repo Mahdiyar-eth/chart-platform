@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ h1 }} — زایچه{% endblock %}
+{% block content %}
+<style>
+  .l-hero{text-align:center;padding:38px 0 20px;}
+  .l-hero h1{font-size:clamp(1.7rem,4.6vw,2.4rem);font-weight:800;line-height:1.45;}
+  .l-hero p{max-width:640px;margin:14px auto 0;line-height:2.05;color:var(--muted);font-size:.98rem;}
+  .l-card{background:rgba(255,255,255,.045);border:1px solid var(--stroke);border-radius:18px;padding:20px 18px;}
+  .l-card b{display:block;font-size:.98rem;color:#fff;margin-bottom:7px;}
+  .l-card p{margin:0;font-size:.86rem;line-height:1.9;color:var(--muted);}
+  .l-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .l-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;
+          background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.32);color:#ffd782;font-size:.8rem;font-weight:700;}
+  .l-svg{width:26px;height:26px;color:var(--gold);}
+</style>
+
+<div class="l-hero">
+  <h1>{{ h1 }}</h1>
+  <p>{{ sub }}</p>
+  <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
+    <a class="btn btn-ghost" href="/plans">مشاهده پلن‌ها</a>
+  </div>
+  {% if cta_note %}<p class="muted" style="margin-top:12px;font-size:.85rem;">{{ cta_note }}</p>{% endif %}
+</div>
+
+<div class="l-row" style="margin-top:10px;">
+  {% for chip in chips %}<span class="l-chip">{{ chip }}</span>{% endfor %}
+</div>
+
+<div class="l-row" style="margin-top:22px;">
+  {% for card in cards %}
+  <div class="l-card" style="flex:1;min-width:240px;max-width:330px;text-align:right;">
+    {% if card.icon %}<svg class="l-svg" aria-hidden="true"><use href="#icon-{{ card.icon }}"/></svg>{% endif %}
+    <b>{{ card.title }}</b>
+    <p>{{ card.body }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div style="max-width:720px;margin:26px auto 0;" x-data="{open:false}">
+  <div class="glass" style="padding:18px 20px;text-align:right;">
+    <b style="font-size:.95rem;color:#fff;">پاسخ صادقانه به یک سؤال رایج</b>
+    <p style="color:var(--muted);font-size:.87rem;line-height:1.95;margin:10px 0 0;">{{ faq }}</p>
+  </div>
+</div>
+
+<div style="text-align:center;margin-top:26px;padding-bottom:40px;">
+  <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
+</div>
+{% endblock %}

@@ -228,3 +228,20 @@ def test_coupon_check_endpoint():
     assert j["percent"] == 20 and "اولین گزارش" in j["scope"]
     r2 = c.get("/api/coupons/check?code=NOPE123")
     assert r2.status_code == 404
+
+
+# ── P9 — landing pages render with plan-v2.0 headlines ──────────────────────
+def test_landing_pages_render():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    c = TestClient(app)
+    for path, headline in [
+        ("/deep-report", "فقط یک چارت نبین"),
+        ("/self-discovery", "سؤال‌های سخت درباره‌ی خودت"),
+        ("/sky-today", "هر روز یک لحظه برای دیدن آسمان"),
+    ]:
+        r = c.get(path)
+        assert r.status_code == 200, path
+        assert headline in r.text, path
+    sm = c.get("/sitemap.xml").text
+    assert "/deep-report" in sm and "/self-discovery" in sm and "/sky-today" in sm
