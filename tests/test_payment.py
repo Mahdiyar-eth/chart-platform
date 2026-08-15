@@ -75,6 +75,12 @@ def test_order_status_transitions():
 
 def test_plans_seed_shape():
     from app.main import PLANS_SEED
-    assert [p.key for p in PLANS_SEED] == ["basic", "full", "gold"]
+    assert [p.key for p in PLANS_SEED] == ["basic", "full", "gold",
+                                           "credit3", "credit6", "credit12"]
     assert all(p.price_toman > 0 for p in PLANS_SEED)
     assert all(p.features for p in PLANS_SEED)
+    # P6 — every credit pack carries a positive grant; others carry 0
+    packs = [p for p in PLANS_SEED if p.key.startswith("credit")]
+    assert all(p.credits_grant > 0 for p in packs)
+    assert all(not p.key.startswith("credit") or p.credits_grant > 0
+               for p in PLANS_SEED)

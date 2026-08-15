@@ -57,6 +57,16 @@ PLANS_SEED = [
          price_toman=699_000, sort=3, active=True,
          features=["همه‌ی امکانات کامل", "گفت‌وگو با هوش مصنوعی (۵ سوال در روز)",
                    "به‌روزرسانی‌های آینده رایگان", "اولویت در صف تولید"]),
+    # P6 — credit packs (phase G): 3/6/12 credits
+    Plan(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی",
+         price_toman=180_000, sort=4, active=True, credits_grant=3,
+         features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا", "اعتبار باقی می‌ماند"]),
+    Plan(key="credit6", name_fa="۶ اعتبار", subtitle_fa="شش کاوش خودشناسی",
+         price_toman=330_000, sort=5, active=True, credits_grant=6,
+         features=["ارزش ۲۰٪ بیشتر از پک ۳تایی", "بدون تاریخ انقضا", "اعتبار باقی می‌ماند"]),
+    Plan(key="credit12", name_fa="۱۲ اعتبار", subtitle_fa="دوازده کاوش خودشناسی",
+         price_toman=600_000, sort=6, active=True, credits_grant=12,
+         features=["بهترین ارزش — ۲۰٪ ارزان‌تر از ۳+۳+۶", "بدون تاریخ انقضا", "اعتبار باقی می‌ماند"]),
 ]
 
 
@@ -668,7 +678,7 @@ def api_plans(session: Session = Depends(get_session)):
 def api_create_order(
     request: Request,
     plan_key: str = Form(...),
-    chart_id: str = Form(...),
+    chart_id: str | None = Form(None),
     coupon: str | None = Form(None),
     secondary_chart_id: str | None = Form(None),
     chat_id: str | None = Form(None),
@@ -676,12 +686,14 @@ def api_create_order(
     session: Session = Depends(get_session),
 ):
     """Create order + payment URL (shared helper — also used by bots)."""
-    from app.payment.orders import create_order
-    chart = session.get(Chart, chart_id)
-    if not chart:
+    from app.payment.orders import create_order, CREDIT_PACKS
+    chart = session.get(Chart, chart_id) if chart_id else None
+    if chart_id and not chart:
         raise HTTPException(404, "chart not found")
-    if not _owns_chart(chart, session, request):  # audit r4 A5: order ownership
+    if chart and not _owns_chart(chart, session, request):  # audit r4 A5: order ownership
         raise HTTPException(403, "not authorized")
+    if not chart and plan_key not in CREDIT_PACKS:
+        raise HTTPException(400, "برای این پلن ابتدا چارت بسازید")
     if secondary_chart_id:
         sec = session.get(Chart, secondary_chart_id)
         if not sec or not _owns_chart(sec, session, request):
@@ -707,7 +719,7 @@ def api_create_order(
             raise HTTPException(400, "موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
-            session, plan_key, chart_id,
+            session, plan_key, chart_id or "",
             secondary_chart_id=secondary_chart_id, chat_id=chat_id, platform=platform,
             coupon=coupon, ref_code=request.cookies.get("chart_ref", ""),
             new_user_id=user.id if user else None,
@@ -808,9 +820,12 @@ def api_payment_verify(
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
-            from app.payment.orders import REPORT_PLANS, activate_subscription
+            from app.payment.orders import REPORT_PLANS, activate_subscription, CREDIT_PACKS, grant_credits
             if order.plan_key == "monthly":
                 activate_subscription(session, order)
+            # P6 — credit packs: grant credits atomically + ledger row
+            if order.plan_key in CREDIT_PACKS:
+                grant_credits(session, order)
             # auto-generate report for report plans (basic/full/gold — NOT synastry/sub)
             if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
                 rep = Report(chart_id=order.chart_id, status="queued",
@@ -1560,8 +1575,18 @@ def account_page(request: Request, session: Session = Depends(get_session)):
         select(Report).where(Report.chart_id.in_(chart_ids)).order_by(Report.created_at.desc())
     ).all() if chart_ids else []
     orders = session.exec(
-        select(Order).where(Order.profile_id.in_(profile_ids)).order_by(Order.created_at.desc())
-    ).all() if profile_ids else []
+        select(Order).where(
+            (Order.profile_id.in_(profile_ids)) | (Order.user_id == u.id)
+        ).order_by(Order.created_at.desc())
+    ).all() if profile_ids else session.exec(
+        select(Order).where(Order.user_id == u.id).order_by(Order.created_at.desc())
+    ).all()
+    # P6 — credit ledger history for the wallet card
+    from app.models import CreditTransaction
+    ledger = session.exec(
+        select(CreditTransaction).where(CreditTransaction.user_id == u.id)
+        .order_by(CreditTransaction.created_at.desc()).limit(20)
+    ).all() if u.id else []
     # latest weekly reflections for the user's charts («نگاهی به آسمان هفته»)
     weekly = {}
     if chart_ids:
@@ -1579,6 +1604,7 @@ def account_page(request: Request, session: Session = Depends(get_session)):
     resp = templates.TemplateResponse(request, "account.html", {
         "title": "حساب کاربری", "user": u, "profiles": profiles,
         "charts": charts, "reports": reports, "orders": orders,
+        "ledger": ledger,
         "ref_url": f"{os.getenv('PUBLIC_BASE_URL', 'https://chart.negar.io')}/?ref={ref_code}",
         "csrf_token": csrf, "weekly": weekly,
     })

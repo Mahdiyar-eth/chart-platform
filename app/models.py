@@ -184,6 +184,7 @@ class Plan(SQLModel, table=True):
     subtitle_fa: str = Field(default="")
     price_toman: int  # e.g. 149_000 (تومان) — stored for display
     features: list[str] = Field(default_factory=list, sa_column=Column(JSONB))
+    credits_grant: int = Field(default=0, sa_column=Column(Integer, default=0, server_default="0"))
     sort: int = Field(default=0)
     active: bool = Field(default=True)
 
@@ -201,6 +202,7 @@ class Order(SQLModel, table=True):
     note: str | None = Field(default=None)   # D3 — payment method note (wallet)
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
+    user_id: str | None = Field(default=None, foreign_key="users.id", index=True)  # P6: pack orders without chart
     plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
     amount_rial: int
     status: str = Field(default="pending")  # pending | paid | failed | expired

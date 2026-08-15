@@ -58,6 +58,28 @@
   {% endif %}
 
   <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
+    <h2 style="font-size:1.05rem;">اعتبار کاوش من</h2>
+    <div style="font-size:1.7rem;font-weight:800;color:var(--gold);">{{ user.credits }} <span style="font-size:.95rem;color:#b8c2f0;font-weight:600;">اعتبار</span></div>
+    <p class="muted" style="font-size:.8rem;margin:8px 0;">هر کاوش در «خودت را کشف کن» ۱ اعتبار مصرف می‌کند. اعتبارت منقضی نمی‌شود.</p>
+    <a class="btn" href="/plans" style="display:inline-block;padding:10px 22px;">خرید پک اعتبار</a>
+    {% if ledger %}
+    <div style="text-align:right;margin-top:14px;border-top:1px solid var(--stroke);padding-top:10px;">
+      <div class="muted" style="font-size:.78rem;margin-bottom:6px;">آخرین تراکنش‌ها</div>
+      {% for t in ledger %}
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:4px 0;">
+        <span style="color:#dfe6ff;">
+          {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% else %}{{ t.reason }}{% endif %}
+        </span>
+        <span style="font-weight:700;{% if t.amount >= 0 %}color:#7ee2a8;{% else %}color:#ff9d9d;{% endif %}">
+          {% if t.amount >= 0 %}+{% endif %}{{ t.amount }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
     <h2 style="font-size:1.05rem;">کیف پول من</h2>
     <div x-data="wallet()" x-init="init()" x-cloak>
       <p class="muted" style="font-size:.85rem;margin-bottom:8px;">اعتبار حاصل از دعوت دوستان</p>

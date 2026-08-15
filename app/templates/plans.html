@@ -7,6 +7,8 @@
   'synastry': 'اگر می‌خواهی سازگاری رابطه‌ات را با شریک، همسر یا همکارت بسنجی',
   'monthly': 'اگر می‌خواهی هر هفته نگاهی به آسمان و تأمل هفتگی داشته باشی'
 } %}
+{% set report_plans = plans | rejectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
+{% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
 <div style="max-width:1040px;margin:0 auto;padding:28px 18px 70px;" x-data="purchase()">
   <h1 style="text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;">پلن‌های گزارش چارت تولد</h1>
   <p style="text-align:center;color:#b8c2f0;margin-bottom:10px;line-height:2;max-width:680px;margin-inline:auto;">
@@ -18,7 +20,7 @@
 
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
 
-    {% for p in plans %}
+    {% for p in report_plans %}
     <div class="glass" style="flex:1;min-width:260px;max-width:320px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if p.key == 'full' %}border:2px solid var(--gold);{% endif %}">
       {% if p.key == 'full' %}<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c518,#e08e0b);color:#1a1400;font-size:11px;font-weight:800;padding:3px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(245,197,24,.4);">پیشنهاد ما</div>{% endif %}
       <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 4px;">{{ p.name_fa }}</h2>
@@ -49,6 +51,33 @@
     {% endfor %}
 
   </div>
+
+  {% if credit_packs %}
+  <h2 style="text-align:center;font-size:22px;font-weight:800;color:#fff;margin:44px 0 6px;">پک اعتبار کاوش</h2>
+  <p style="text-align:center;color:#b8c2f0;font-size:13.5px;margin-bottom:18px;line-height:1.9;">
+    هر کاوش در «خودت را کشف کن» ۱ اعتبار می‌خواهد. اعتبارت <b style="color:#dfe6ff;">هرگز منقضی نمی‌شود</b> — هرچه بخواهی نگهش می‌داری.
+  </p>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
+    {% for p in credit_packs %}
+    <div class="glass" style="flex:1;min-width:220px;max-width:280px;padding:24px 20px;border-radius:20px;display:flex;flex-direction:column;border:1px solid rgba(124,108,240,.45);">
+      <div style="font-size:30px;font-weight:800;color:#c9c2ff;margin-bottom:2px;">{{ p.credits_grant }}<span style="font-size:14px;color:#9aa2c4;font-weight:600;"> اعتبار</span></div>
+      <div style="font-size:26px;font-weight:800;color:var(--gold);margin:6px 0 12px;">
+        {{ "{:,}".format(p.price_toman) }} <span style="font-size:12.5px;color:#b8c2f0;font-weight:500;">تومان</span>
+      </div>
+      <ul style="list-style:none;padding:0;margin:0 0 18px;flex:1;">
+        {% for f in p.features %}
+        <li style="padding:5px 0;font-size:13px;color:#dfe6ff;display:flex;gap:8px;align-items:flex-start;line-height:1.6;">
+          <svg style="width:15px;height:15px;color:#7c6cf0;flex:none;margin-top:2px;" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <button class="btn btn-lg" @click="buy('{{ p.key }}')" style="width:100%;background:rgba(124,108,240,.22);border:1px solid rgba(124,108,240,.5);">
+        خرید پک {{ p.credits_grant }}تایی
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <p style="text-align:center;color:#b8c2f0;font-size:12.5px;margin-top:26px;">
     پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود.
@@ -113,8 +142,9 @@ function purchase() {
       this.walletLoaded = true;
     },
     async buy(planKey, useBalance) {
-      const chartId = new URLSearchParams(location.search).get('chart') || '';
-      if (!chartId) {
+      const isPack = planKey.startsWith('credit');
+      const chartId = isPack ? '' : (new URLSearchParams(location.search).get('chart') || '');
+      if (!chartId && !isPack) {
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
         return;
       }

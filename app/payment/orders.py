@@ -98,9 +98,11 @@ def create_order(
     # actually appears in their account (audit P1-4: was hardcoded to None).
     _chart = session.get(Chart, chart_id)
     profile_id = _chart.profile_id if _chart else None
+    if not _chart:
+        chart_id = None  # P6: pack orders carry no chart (FK-safe)
 
-    order = Order(chart_id=chart_id, profile_id=profile_id, plan_key=plan.key,
-                  amount_rial=amount, status="pending",
+    order = Order(chart_id=chart_id, profile_id=profile_id, user_id=new_user_id,
+                  plan_key=plan.key, amount_rial=amount, status="pending",
                   coupon_id=coupon_row.id if coupon_row else None,
                   secondary_chart_id=secondary_chart_id,
                   chat_id=chat_id, platform=platform)
@@ -170,6 +172,44 @@ def activate_subscription(session: Session, order: Order) -> None:
 
 
 REPORT_PLANS = {"basic", "full", "gold"}
+CREDIT_PACKS = {"credit3", "credit6", "credit12"}
+
+
+def _order_user_id(session: Session, order: Order) -> str | None:
+    """Resolve the buyer from the order (P6: direct user_id) or chart chain."""
+    from app.models import Chart, BirthProfile
+    if order.user_id:
+        return order.user_id
+    if order.chart_id:
+        ch = session.get(Chart, order.chart_id)
+        if ch and ch.profile_id:
+            p = session.get(BirthProfile, ch.profile_id)
+            if p:
+                return p.user_id
+    if order.profile_id:
+        p = session.get(BirthProfile, order.profile_id)
+        if p:
+            return p.user_id
+    return None
+
+
+def grant_credits(session: Session, order: Order) -> None:
+    """P6 — credit-pack purchase: atomic credit grant + ledger row.
+    The amount is taken from plans.credits_grant (never parsed from the key)."""
+    from sqlalchemy import text
+    from app.models import CreditTransaction
+    plan = session.get(Plan, order.plan_key)
+    grant = plan.credits_grant if plan else 0
+    if grant <= 0:
+        raise ValueError(f"credit pack {order.plan_key} has no credits_grant")
+    uid = _order_user_id(session, order)
+    if not uid:
+        raise ValueError(f"order {order.id} has no resolvable buyer")
+    session.exec(text(
+        "UPDATE users SET credits = credits + :g WHERE id = :uid"
+    ), params={"g": grant, "uid": uid})
+    session.add(CreditTransaction(user_id=uid, amount=grant,
+                                  reason="purchase", ref_id=order.id))
 
 
 def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
