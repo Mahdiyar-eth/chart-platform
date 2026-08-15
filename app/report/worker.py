@@ -162,7 +162,6 @@ async def generate_report_audio(ctx: dict, report_id: str) -> None:
     """H1.5: queued edge-tts audio generation — no more inline TTS in the
     request path. Bounded text (9k chars) → mp3 → R2 → status=ready."""
     import asyncio
-    from pathlib import Path
 
     with Session(db_engine) as session:
         rep = session.get(Report, report_id)
