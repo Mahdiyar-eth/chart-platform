@@ -36,7 +36,7 @@ def upgrade() -> None:
     op.create_table('explorations',
     sa.Column('id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('chart_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('chart_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('card_key', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('title_fa', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('status', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
