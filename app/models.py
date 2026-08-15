@@ -257,6 +257,20 @@ class WeeklyReflection(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class DailyReflection(SQLModel, table=True):
+    """P4/E — daily reflection per chart per LOCAL day.
+    Unique (chart_id, day_local) → duplicate-day submissions are impossible
+    (E5: cannot duplicate same day, cannot fake streak)."""
+    __tablename__ = "daily_reflections"
+    __table_args__ = (UniqueConstraint("chart_id", "day_local", name="uq_daily_reflection_chart_day"),)
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    chart_id: str = Field(default=None, foreign_key="charts.id", index=True)
+    day_local: str = Field(default="", index=True)   # 'YYYY-MM-DD' in USER tz
+    tz_name: str = Field(default="Asia/Tehran")
+    answer: str = Field(default="")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class ReferralEvent(SQLModel, table=True):
     __tablename__ = "referral_events"
     id: str = Field(default_factory=_uuid, primary_key=True)

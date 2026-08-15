@@ -2069,3 +2069,72 @@ def api_explore_delete(exploration_id: str, request: Request,
     session.commit()
     return {"ok": True}
 
+
+# ── P4: Today + daily reflection + streak ────────────────────────────────────
+
+def _today_plan_access(session: Session, chart: Chart) -> str:
+    """E3 — 'full' for gold/monthly subscribers, else 'preview'."""
+    order = session.exec(
+        select(Order).where(Order.chart_id == chart.id, Order.status == "paid")
+    ).first()
+    if order and order.plan_key in ("gold", "monthly") and _monthly_sub_active(session, order, chart.id):
+        return "full"
+    return "preview"
+
+
+@app.get("/today", response_class=HTMLResponse)
+def page_today(request: Request, chart: str = "", session: Session = Depends(get_session)):
+    from app.today.service import today_status
+    user = get_current_user(request)
+    charts = []
+    if user:
+        rows = session.exec(
+            select(Chart, BirthProfile).join(BirthProfile, Chart.profile_id == BirthProfile.id)
+            .where(BirthProfile.user_id == user.id)
+            .order_by(Chart.created_at.desc()).limit(10)
+        ).all()
+        charts = [c for c, _p in rows]
+    if chart:
+        ch = session.get(Chart, chart)
+        if not ch or not _owns_chart(ch, session, request):
+            raise HTTPException(403, "دسترسی به این چارت ندارید")
+        active_chart = chart
+    else:
+        active_chart = charts[0].id if charts else ""
+    status = today_status(session, ch) if charts and (ch := next((c for c in charts if c.id == active_chart), None)) else None
+    access = _today_plan_access(session, next((c for c in charts if c.id == active_chart), None)) if charts else "preview"
+    return templates.TemplateResponse(request, "today.html", {
+        "charts": charts, "active_chart": active_chart, "status": status,
+        "status_json": json.dumps(status, ensure_ascii=False) if status else "null",
+        "access": access,
+    })
+
+
+@app.get("/api/today")
+def api_today(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """E2 — status for the today page: facts, question, streak, done-flag."""
+    from app.today.service import today_status
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    return {**today_status(session, chart), "access": _today_plan_access(session, chart)}
+
+
+@app.post("/api/today/reflection")
+def api_today_reflection(request: Request, chart_id: str = Form(...),
+                         answer: str = Form(...), session: Session = Depends(get_session)):
+    """E2/E3/E5 — save today's reflection (full access only) with streak."""
+    from app.today.service import submit_reflection, compute_streak, _chart_tz
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    if _today_plan_access(session, chart) != "full":
+        raise HTTPException(403, "تأمل روزانه مخصوص پلن طلایی و اشتراک است")
+    if not _rate_limit(f"today:{_rl_client(request)}", 10, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    tz = _chart_tz(session, chart)
+    status, err = submit_reflection(session, chart_id, answer, tz)
+    if err:
+        raise HTTPException(400, err)
+    return {**status, "streak": compute_streak(session, chart_id, tz)}
+

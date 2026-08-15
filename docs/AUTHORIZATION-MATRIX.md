@@ -100,6 +100,9 @@
 | `POST /api/explore/{card_key}` | User | `get_current_user` + `_owns_chart` + credit spend (atomic, 1 credit) |
 | `GET /api/explore/history` | User | `get_current_user` (own rows) |
 | `DELETE /api/explore/{exploration_id}` | User | `get_current_user` + row.user_id == user.id |
+| `GET /today` | User | `get_current_user` + `_owns_chart` (or redirect) |
+| `GET /api/today` | User | `get_current_user` + `_owns_chart` |
+| `POST /api/today/reflection` | User (gold/monthly) | `get_current_user` + `_owns_chart` + `_today_plan_access == full` |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.
