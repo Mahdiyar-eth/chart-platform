@@ -26,16 +26,22 @@
 
     <!-- cards grid -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">
-      <template x-for="card in cards" :key="card.key">
-        <div class="glass" style="padding:16px;display:flex;flex-direction:column;gap:8px;min-height:150px;">
+      <template x-for="(card, i) in cards" :key="card.key">
+        <div class="glass" style="padding:16px;display:flex;flex-direction:column;gap:10px;"
+             x-show="i < showLimit || showAll">
           <div style="font-weight:800;font-size:1.02rem;" x-text="card.title_fa"></div>
           <p class="muted" style="font-size:.87rem;line-height:1.7;flex:1;" x-text="card.benefit_fa"></p>
           <button class="btn" x-on:click="run(card)" :disabled="busy" style="justify-content:center;">
-            <span x-text="busyKey === card.key ? 'در حال تحلیل…' : 'شروع (۱ اعتبار)'"></span>
+            <span x-text="busyKey === card.key ? 'در حال تحلیل…' : (freeAvailable ? 'اولین کاوش — رایگان' : 'شروع (۱ اعتبار)')"></span>
           </button>
         </div>
       </template>
     </div>
+
+    <button class="btn btn-ghost" x-show="cards.length > showLimit" x-on:click="showAll = !showAll"
+            style="margin-top:14px;justify-content:center;" x-cloak>
+      <span x-text="showAll ? 'نمایش کمتر' : 'همه تحلیل‌ها (' + cards.length + ' کارت)'"></span>
+    </button>
 
     <!-- running state -->
     <div class="glass" style="padding:16px;margin-top:16px;" x-show="busy" x-cloak>
@@ -68,6 +74,18 @@
           <span x-text="'⏱ ' + result.metrics.duration_s + ' ثانیه · ' + result.metrics.calls + ' تماس'"></span>
         </div>
       </div>
+
+      <!-- deeper layer CTA (funnel: free exploration → deeper) -->
+      <div class="glass glow" style="padding:16px;margin-top:14px;border:1px solid rgba(245,197,24,.4);">
+        <div style="font-weight:800;margin-bottom:6px;">یک لایه عمیق‌تر</div>
+        <p class="muted" style="font-size:.87rem;line-height:1.8;margin-bottom:12px;">
+          این یک کارت از چارت تو بود. گزارش کامل ۱۳ حوزه‌ای، مسیر شغلی، روابط، پول و الگوهای تکرارشونده را با شواهد دقیق بررسی می‌کند — و چارتت را در کنار «امروز» دنبال می‌کند.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn" href="/plans?chart={{ active_chart }}" style="text-decoration:none;flex:1;min-width:150px;">مشاهده پلن‌ها</a>
+          <a class="btn btn-ghost" href="/today?chart={{ active_chart }}" style="text-decoration:none;flex:1;min-width:150px;">امروز در چارت من</a>
+        </div>
+      </div>
     </div>
 
     <!-- insufficient credit -->
@@ -86,6 +104,9 @@ function exploreApp() {
     charts: {{ charts_json|safe }},
     chartId: {{ active_chart_json|safe }},
     credits: {{ credits }},
+    freeAvailable: {{ 'true' if free_available else 'false' }},
+    showLimit: 6,
+    showAll: false,
     busy: false,
     busyKey: "",
     busyCard: null,
@@ -126,7 +147,8 @@ function exploreApp() {
               const payload = JSON.parse(data.slice(5));
               if (ev && ev.includes("done")) {
                 self.result = { ...payload.result, title_fa: card.title_fa, metrics: payload.metrics };
-                self.credits = Math.max(0, self.credits - 1);
+                if (self.freeAvailable) self.freeAvailable = false;
+                else self.credits = Math.max(0, self.credits - 1);
               } else if (ev && ev.includes("error")) {
                 throw new Error(payload.detail || "خطا");
               }

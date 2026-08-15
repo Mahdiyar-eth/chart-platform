@@ -1942,7 +1942,8 @@ def page_explore(request: Request, chart: str = "", session: Session = Depends(g
          "charts": charts,
          "charts_json": json.dumps([{"id": c.id, "label": f"چارت {i + 1} — {c.created_at:%Y-%m-%d}"} for i, c in enumerate(charts)], ensure_ascii=False),
          "active_chart_json": json.dumps(active_chart),
-         "credits": user.credits if user else 0},
+         "credits": user.credits if user else 0,
+         "free_available": bool(user and user.credits <= 0 and not user.free_exploration_used)},
     )
 
 
@@ -1967,7 +1968,7 @@ async def api_explore_start(
     SSE: status → done(result) | error. Failed generation → auto refund."""
     from fastapi.responses import StreamingResponse
     from app.explore.cards import CARD_MAP
-    from app.explore.service import generate_exploration, spend_credit, refund_credit
+    from app.explore.service import generate_exploration, spend_credit, refund_credit, mark_free_exploration
     from app.models import Exploration
 
     card = CARD_MAP.get(card_key)
@@ -1981,18 +1982,26 @@ async def api_explore_start(
     chart = session.get(Chart, chart_id)
     if not chart or not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این چارت ندارید")
-    # D5: no negative balance, no double spend — atomic UPDATE guarded by
-    # `credits >= cost` inside the same statement.
+    # D5/F5: atomic spend — credits >= cost, else first-ever exploration is
+    # FREE (loss-aversion copy «اولین کاوش رایگان»), else 402.
     exp = Exploration(user_id=user.id, chart_id=chart_id, card_key=card_key,
                       title_fa=card.title_fa)
     session.add(exp)
     session.commit()
     session.refresh(exp)
-    if not spend_credit(session, user.id, exp.id, exp.credits_cost):
-        exp.status = "failed"
-        exp.error = "اعتبار کافی نیست"
-        session.commit()
-        raise HTTPException(402, "اعتبار کافی نیست")
+    cost = exp.credits_cost
+    charged = cost
+    if not spend_credit(session, user.id, exp.id, cost):
+        if user.credits <= 0 and not user.free_exploration_used:
+            mark_free_exploration(session, user, exp.id)
+            exp.status = "running"
+            session.commit()
+            charged = 0  # free — nothing to refund on failure
+        else:
+            exp.status = "failed"
+            exp.error = "اعتبار کافی نیست"
+            session.commit()
+            raise HTTPException(402, "اعتبار کافی نیست")
 
     async def event_stream():
         try:
@@ -2002,7 +2011,7 @@ async def api_explore_start(
                 build_chat_router(), chart.chart_json, card,
                 exploration_id=exp.id, user_id=user.id)
             if result is None:
-                refund_credit(session, user.id, exp.id, exp.credits_cost)
+                refund_credit(session, user.id, exp.id, charged)
                 with Session(engine) as s2:
                     e = s2.get(Exploration, exp.id)
                     e.status = "failed"
@@ -2021,7 +2030,7 @@ async def api_explore_start(
             yield f"event: done\ndata: {json.dumps({'exploration_id': exp.id, 'result': result, 'metrics': {k: v for k, v in metrics.items() if k != 'provider'}}, ensure_ascii=False)}\n\n"
         except Exception as e:  # noqa: BLE001 — stream must not hang the client
             try:
-                refund_credit(session, user.id, exp.id, exp.credits_cost)
+                refund_credit(session, user.id, exp.id, charged)
                 with Session(engine) as s2:
                     e2 = s2.get(Exploration, exp.id)
                     e2.status = "failed"

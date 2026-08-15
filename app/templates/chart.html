@@ -6,6 +6,13 @@
   <h1 style="margin-top:8px;">چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
+  <!-- funnel progress (F3): chart → explore → deep -->
+  <div style="display:flex;gap:8px;margin-top:12px;font-size:.8rem;flex-wrap:wrap;">
+    <span style="background:rgba(245,197,24,.14);color:var(--gold);padding:6px 12px;border-radius:999px;font-weight:700;">۱ · چارت تو ✓</span>
+    <a href="/explore?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;border-radius:999px;text-decoration:none;">۲ · خودت را کشف کن</a>
+    <a href="/plans?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;border-radius:999px;text-decoration:none;">۳ · گزارش عمیق</a>
+  </div>
+
   <!-- chart wheel -->
   <div class="glass glow" style="margin-top:14px; padding:14px; max-width:560px; margin-left:auto; margin-right:auto;">
     {{ svg | safe }}

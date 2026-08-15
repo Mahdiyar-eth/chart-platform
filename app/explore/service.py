@@ -223,8 +223,23 @@ def spend_credit(session, user_id: str, exploration_id: str, cost: int = 1) -> b
     return True
 
 
+def mark_free_exploration(session, user, exploration_id: str) -> None:
+    """F5 — first-ever exploration is free (loss-aversion funnel)."""
+    from sqlalchemy import text
+    from app.models import CreditTransaction
+    session.exec(text(
+        "UPDATE users SET free_exploration_used = true WHERE id = :uid"
+    ), params={"uid": user.id})
+    session.add(CreditTransaction(user_id=user.id, amount=0,
+                                  reason="free_exploration", ref_id=exploration_id))
+    session.commit()
+
+
 def refund_credit(session, user_id: str, exploration_id: str, cost: int = 1) -> None:
-    """Refund on failed generation (D5: failed generation policy)."""
+    """Refund on failed generation (D5: failed generation policy).
+    No-op for free explorations (cost=0) — nothing was charged."""
+    if cost <= 0:
+        return
     from sqlalchemy import text
     from app.models import CreditTransaction
     session.exec(text(

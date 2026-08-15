@@ -198,11 +198,13 @@ def test_explore_spends_one_credit_atomically(monkeypatch):
 
 
 def test_explore_insufficient_credit_is_402_no_negative(monkeypatch):
+    """D5 — broke AND free-exploration already used → 402, never negative."""
     c = TestClient(app)
     uid = _mk_user(c)
     with Session(engine) as s:
         u = s.get(User, uid)
         u.credits = 0
+        u.free_exploration_used = True  # freebie already consumed
         s.commit()
     cid = _mk_chart(uid)
     monkeypatch.setattr("app.core.llm.build_chat_router", lambda: FakeRouter())
@@ -321,3 +323,48 @@ def test_build_prompt_only_uses_card_domains():
     prompt, ctx = build_explore_prompt(chart, CARD_MAP["money"])
     assert set(ctx["domains"]) == {"money"}  # only allowed domains
     assert "سؤال کاربر" in prompt and "عوامل فعال" in prompt
+
+
+# ── F5 funnel: first exploration free (loss aversion) ───────────────────────
+def test_first_exploration_free_when_broke(monkeypatch):
+    """F5 — 0-credit user gets ONE free exploration, then 402."""
+    c = TestClient(app)
+    uid = _mk_user(c)
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        u.credits = 0
+        s.commit()
+    cid = _mk_chart(uid)
+    monkeypatch.setattr("app.core.llm.build_chat_router",
+                        lambda: FakeRouter([GOOD_JSON]))
+    r = c.post("/api/explore/personality", data={"chart_id": cid})
+    assert r.status_code == 200 and "event: done" in r.text
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        assert u.credits == 0 and u.free_exploration_used is True
+        free_rows = s.exec(select(CreditTransaction).where(
+            CreditTransaction.reason == "free_exploration",
+            CreditTransaction.user_id == uid)).all()
+        assert len(free_rows) == 1 and free_rows[0].amount == 0
+    r2 = c.post("/api/explore/personality", data={"chart_id": cid})
+    assert r2.status_code == 402
+
+
+def test_free_exploration_failure_grants_no_refund(monkeypatch):
+    """F5 — a failed free exploration must NOT mint credits."""
+    c = TestClient(app)
+    uid = _mk_user(c)
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        u.credits = 0
+        s.commit()
+    cid = _mk_chart(uid)
+    bad = FakeResult("not json at all", ok=False, error="boom")
+    monkeypatch.setattr("app.core.llm.build_chat_router",
+                        lambda: FakeRouter([bad] * 10))
+    r = c.post("/api/explore/personality", data={"chart_id": cid})
+    assert r.status_code == 200 and "event: error" in r.text
+    with Session(engine) as s:
+        u = s.get(User, uid)
+        assert u.credits == 0  # nothing minted
+        assert u.free_exploration_used is True  # still consumed

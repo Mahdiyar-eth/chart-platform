@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Index, Integer, UniqueConstraint, text
+from sqlalchemy import Boolean, Column, Index, Integer, UniqueConstraint, text
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
@@ -27,6 +27,7 @@ class User(SQLModel, table=True):
     status: str = Field(default="active")
     balance_rial: int = Field(default=0)  # referral wallet (D3)
     credits: int = Field(default=0, sa_column=Column(Integer, default=0, server_default="0"))
+    free_exploration_used: bool = Field(default=False, sa_column=Column(Boolean, default=False, server_default="false"))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
