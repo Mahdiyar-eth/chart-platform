@@ -71,3 +71,42 @@
 
 تمام فیکس‌ها از طریق `scripts/deploy.sh` روی prod رفته‌اند و با بازتولیدهای
 گزارش واقعی (LLM واقعی از طریق OmniRoute) تأیید شده‌اند.
+
+---
+
+## پیوست نهایی — 2026-08-15 (پروتکل Absolute Launch، ادامه)
+
+### تصحیح مهم
+در بازتولیدهای قبلی این سند، worker بهصورت آزمایشی به OmniRoute محلی متصل شد.
+**این اشتباه بود** — OmniRoute (127.0.0.1:20128) فقط برای vision خودِ Hermes است و
+هیچ ربطی به chart-platform ندارد. پس از تذکر کاربر، drop-in حذف و GO_API_KEY به
+اکانت جدید opencode (تأمینشده توسط کاربر) تغییر کرد. worker با provider=`go`
+و کلید جدید بازتولید را کامل انجام داد.
+
+### یافتهٔ P1 (نهایی): cascade stop بعد از chaos-Redis
+- chart-web و chart-worker هر دو `Requires=redis-server.service` دارند.
+- توقف redis (مثلاً در تست chaos) → systemd هر دو سرویس را متوقف میکند (طبیعی).
+- پس از بازگشت redis، سرویسها **خودکار restart نمیشوند** (نیاز به `systemctl start`).
+- اتفاق افتاده: 2026-08-15 09:09 → 11:27 (prod 502 به مدت ~2.2h) — خطای عملیاتی
+  (بعد از chaos، worker restart شد ولی web فراموش شد).
+- **درس:** در RUNBOOK و اسکریپتهای chaos، restore باید `systemctl start chart-web chart-worker` را شامل شود. watchdog (cron 5min) سالم است.
+
+### گیتهای اجراشده (این دور)
+| گیت | نتیجه | شواهد |
+|---|---|---|
+| بازتولید gold با کلید جدید go | ✅ PASS | done، error=None، **sections_count=14**، fallback_domains=[]، calls=25، qa_failures=11 (همه رفع شد)، provider=['go'] |
+| Mobile viewport 390×844 + 360×800 | ✅ PASS | 16 تست Playwright: صفر horizontal overflow، صفر tap<36px |
+| A11y (کیبورد) + Performance | ✅ PASS | 12 Tab-stop، TTFB 3-6ms، DOM<35ms، همه 200 |
+| SEO crawl | ✅ PASS | sitemap 102 URL، **صفر broken**؛ meta/title/description فارسی |
+| Legal pages | ✅ PASS | /privacy /terms /refund /disclaimer /contact /guide /about /learn همه 200 |
+| Production smoke | ✅ PASS | 16 مسیر 200/302؛ /dashboard بدون auth=404 (fail-closed) |
+| Security headers | ✅ PASS | HSTS، X-Frame-Options DENY، CSP قوی، nosniff، referrer-policy، permissions-policy |
+| HTTP→HTTPS + TLS | ✅ PASS | 301 دائمی؛ TLSv1.3 AES-256-GCM |
+| Worker restart mid-job | ✅ PASS | job بعد از restart ادامه یافت و تمام شد (با provider سالم) |
+| OmniRoute misuse | ✅ FIXED | drop-in حذف، بازگشت کامل به opencode go |
+
+### وضعیت نهایی
+- 337 تست (3× سبز)؛ ruff پاک؛ ci.sh سبز
+- گزارش gold: **done — 14 بخش، صفر fallback، provider=go (کلید جدید)**
+- FINAL PASS منوط به تکمیل موارد BLOCKED/UNVERIFIED کاربر (merchant واقعی زرینپال،
+  تست موبایل واقعی کاربر، Web Push device واقعی) — اینها محیطیاند نه کد.
