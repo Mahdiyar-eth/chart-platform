@@ -115,11 +115,20 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                     _allowed = []
                 if _allowed:
                     errors.append("عوامل مجاز این بخش فقط: " + "، ".join(_allowed))
+                # F-§11: numeric demands — «تعداد insight کافی نیست» needs an
+                # explicit number, not a vague «بیشتر بنویس» (career fell back
+                # 5× with 1 short insight on the go account).
+                _hard = []
+                for e in errors[:5]:
+                    if "کافی نیست" in e or "کوتاه" in e:
+                        _hard.append(e + " (حداقل ۴ insight، هرکدام ۵-۷ جمله، جمعاً ۷۰۰-۱۰۰۰ کلمه)")
+                    else:
+                        _hard.append(e)
                 fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
                             "این موارد را دقیقاً رفع کن (به‌ویژه واژه‌های ممنوع را با "
                             "جایگزین پیشنهادی عوض کن و فقط از عوامل مجاز استفاده کن) "
                             "و دوباره بنویس:\n- "
-                            + "\n- ".join(errors[:5]))
+                            + "\n- ".join(_hard))
                 prompt = prompt + fix_hint
 
         if not ok:
