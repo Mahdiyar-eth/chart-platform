@@ -46,7 +46,31 @@ SIGKILL میدجاب بدون از دست رفتن job، نرخ ۱۴۶۳ req/s �
   astrology golden §12 (۸)، QA coverage §11 (۵) = ۳۲ تست جدید.
 - CI سبز؛ worker از temp-DB استفاده می‌کند (هرگز prod).
 
-## 5. Payment E2E — ✅ PASS (با شبیه‌سازی واقعی درگاه)
+## 5. Payment E2E — ✅ PASS + 🟢 REAL ZarinPal sandbox integration (NEW)
+
+### 5a. Business logic matrix (mock network, real state machine) — 19 tests PASS
+callback idempotency/duplicate، race همزمان دو callback، gateway rejection +
+کوپن آزاد، network-error → pending، authority mismatch → 404/403،
+server-side amount — همه سبز (test_payment + race + state_machine +
+payment_matrix_s1).
+
+### 5b. REAL ZarinPal sandbox end-to-end (2026-08-15، هیچ mock ای) — ✅ PASS
+
+جریان کامل روی sandbox واقعی (sandbox.zarinpal.com) با کد اپ + مرورگر واقعی:
+
+| مرحله | جزئیات | نتیجه |
+|---|---|---|
+| 1. سفارش | `create_order` کد اپ → DB prod | order pending، ۱٬۴۹۰٬۰۰۰ ریال |
+| 2. request | `ZarinpalClient.request` → API واقعی sandbox | authority `S000…y12qq6` + pay_url |
+| 3. پرداخت | Chromium روی صفحهٔ واقعی sandbox → کلیک «پرداخت» | شبیه‌سازی موفق |
+| 4. callback | sandbox → `chart.negar.io/api/payments/verify` (اپ prod زنده) | 200 |
+| 5. verify | اپ → verify واقعی sandbox | **ref_id=435522808** |
+| 6. نتیجه | order در DB | **status=PAID** ✓ |
+
+> همان چیزی که MaHDi خواست: «یک تست end-to-end واقعی با sandbox». کد ↔
+> gateway واقعی (request/verify) با شواهد بسته شد؛ فقط merchant واقعی
+> (ZARINPAL_SANDBOX=false + merchant_id واقعی) برای activation باقی است —
+> صرفاً تغییر env بدون تغییر کد.
 
 تست‌های unit با ZarinpalClient واقعی (mock network) روی temp-DB:
 
@@ -224,7 +248,7 @@ docker برای سرویس‌های آماده (Umami) نگه داشته شده.
 | merchant واقعی زرین‌پال | محیطی | BLOCKED — اقدام کاربر |
 | تست موبایل فیزیکی | محیطی | BLOCKED — اقدام کاربر |
 | Web Push delivery واقعی | محیطی | UNVERIFIED — نیاز device |
-| fallback بخش‌های LLM (~10-15٪ بسته به chart) | P2 | fail-safe (هرگز محتوای غلط منتشر نمی‌شود) — §15 |
+| fallback بخش‌های LLM در تلاش اول (~10-15٪ بسته به chart — در retry اصلاح می‌شود؛ **خروجی نهایی منتشرشده: صفر fallback** — §15) | P2 | fail-safe (هرگز محتوای غلط منتشر نمی‌شود) — §15 |
 | وابستگی به یک provider LLM (go) | P2 | circuit + fallback deterministic موجود |
 | نرخ واژه‌های ممنوع در خروجی مدل | P2 | QA + feedback loop + MAX_RETRIES=6 |
 
