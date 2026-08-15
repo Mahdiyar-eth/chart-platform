@@ -72,7 +72,10 @@ async def lifespan(app: FastAPI):
     await _close_arq_pool()
 
 
-app = FastAPI(title="چارت تولد", lifespan=lifespan)
+_APP_ENV = os.getenv("APP_ENV", "dev").lower()
+app = FastAPI(title="چارت تولد", lifespan=lifespan,
+              docs_url=None if _APP_ENV in ("prod", "production") else "/docs",
+              openapi_url=None if _APP_ENV in ("prod", "production") else "/openapi.json")
 app.middleware("http")(security_guard)   # security.py: CSRF origin check + rate limits
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
