@@ -2,6 +2,19 @@
 
 آخرین بهروزرسانی: ۲۲ مرداد ۱۴۰۵ (v0.6.0)
 
+## Disaster Recovery — ماتریس RTO/RPO (تأیید شده ۲۰۲۶-۰۸-۱۵)
+
+| # | سناریو | تشخیص | اقدام | RTO | RPO | وضعیت |
+|---|--------|--------|--------|-----|-----|--------|
+| 1 | Redis down | `/health` → 503، خطای 429 flood در UI | خودکار (بدون Requires= در systemd؛ worker-entry.sh wait-loop) | <20 ثانیه | 0 | ✅ chaos ×5 تست شد |
+| 2 | کارگر mid-job crash | job در وضعیت running میماند | خودکار (Restart=always)؛ job دوباره گرفته میشود | <10 ثانیه | 0 | ✅ SIGKILL تست شد |
+| 3 | Postgres خراب/گمشده | خطای 500 در همه مسیرها | `scripts/restore_db.sh` بکاپ → target DB | ~10-15 دقیقه | ≤24h (بکاپ روزانه ۰۳:۱۵) | ✅ restore drill واقعی |
+| 4 | دیسک پر (≥85%) | هشدار watchdog دیسک | `docker builder prune -af` + بکاپ قدیمی حذف | دستی ~10 دقیقه | 0 (قبل از فاجعه) | ✅ تجربه ۱۰۰٪ ۲۰۲۶-۰۸-۱۱ |
+| 5 | LLM provider down (429/500/timeout) | لاگ `HTTP 429` در worker؛ degraded در UI | خودکار (circuit breaker + fallback + deterministic fallback) | خودکار | 0 | ✅ fake-server تست شد |
+| 6 | سرور کامل down | دسترسی از دست میرود | دیپلوی مجدد: بکاپ DB (R2) + `.env.age` + `scripts/migrate.sh` | ~1 ساعت | ≤24h | ✅ docs/MIGRATION.md |
+
+قانون: هر بکاپ شامل DB + config است (رسانهها در R2، در بکاپ نیستند). بکاپها در R2 با پیشوند `backups/` نگهداری میشوند. بازیابی کامل: `scripts/restore_db.sh <backup.zip> <target_db>` (بعد از CREATE EXTENSION با superuser — F-35b).
+
 ## معماری
 - **FastAPI** (uvicorn, پورت dev 8767) — `app/main.py`
 - **Postgres 16** — دیتابیس `chart_platform` (کاربر `chart_app`) / تست: `chart_platform_test` (`chart_test`)
