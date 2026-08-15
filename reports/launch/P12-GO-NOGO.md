@@ -1,48 +1,39 @@
-# P12 — GO / NO-GO نهایی — ✅ GO (مشروط به ۳ فعالسازی کاربر)
+# P12 — GO / NO-GO نهایی — به‌روزرسانی پس از ۷ گیت review (🟡 CONDITIONAL → ✅ FINAL GO)
 
-**تاریخ:** 2026-08-15 | **HEAD:** v-p11-preflight | **تستها:** 442 passed, 1 skipped
+**تاریخ:** 2026-08-15 | **HEAD:** v-p11-preflight + P12-gates | **تست‌ها: 451 passed, 1 skipped**
 
----
+## وضعیت ۷ گیت
+
+| # | گیت | وضعیت | شواهد |
+|---|---|---|---|
+| 1 | Kavenegar + OTP | 🟢 **منطق بسته** — ۸ تست hermetic (expiry، resend→کد قبلی باطل، wrong code، brute force، concurrent، enumeration، logout/relogin، mock Kavenegar) + **باگ واقعی فیکس شد**: `attempts > MAX` اجازهٔ ۶ تلاش می‌داد → `>= MAX` (۵ تلاش). E2E واقعی SMS ⏳ **در انتظار `OTP_SMS_API_KEY` واقعی از کاربر** | tests/test_otp_hardening_p12.py (8 passed) |
+| 2 | موبایل فیزیکی | ⏳ **اقدام کاربر** — شبیه‌ساز ۴۲۰px کامل پاس؛ checklist دقیق آماده شد (پایین) | p12_ux_audit + P5–P9 browser |
+| 3 | Web Push delivery | 🟢 **بسته** — اثبات واقعی: ارسال از مسیر واقعی app (pywebpush + VAPID واقعی .env) به گیرندهٔ TLS محلی + **decrypt کامل payload با http_ece** → «تست زایچه» دریافت شد. VAPID JWT + aes128gcm + ttl تأیید. تست دائمی شد | tests/test_push_delivery_p12.py (PASS) |
+| 4 | skip تست | 🟢 **بسته** — تنها skip: `test_golden_charts.py:54` «chart-2-no-time» (تولد بدون ساعت — golden عمدی؛ capability لانچ نیست) | مستند در بالا |
+| 5 | OmniRoute | 🟢 **بسته** — P11 اصلاح شد؛ **chart-platform به OmniRoute وصل نیست** — فقط `https://opencode.ai/zen/go/v1` با GO_API_KEY؛ شواهد: llm_runs ۱٬۲۲۲ ران همه provider=go (آخرین 2026-08-15) | reports/launch/P11-PREFLIGHT.md |
+| 6 | B108 | 🟢 **بسته** — ۳ فیکس واقعی: share-cache/audio/audit-log به `data/private-tmp` (mode 0700، owner zayche)؛ CLI debug با # nosec مستند. **bandit: High=0، Medium=0** | app/private_tmp.py + bandit re-run |
+| 7 | UX/conversion/trust | 🟢 **بسته** — audit مرورگر ۴ صفحه × ۹ معیار = ۳۶/۳۶ ✅ (h1، CTA بالای fold، رایگان، trust، privacy، limitation، بدون ادعای جعلی — تنها «پیش‌گویی» در context نفی است) | p12_ux_audit.py |
+
+## موارد باز (فقط اقدام کاربر — مانند Merchant)
+
+1. **کلید کاوه‌نگار واقعی** → `OTP_SMS_API_KEY` → سپس E2E واقعی SMS (send→receive→verify→session→logout→relogin)
+2. **موبایل فیزیکی** — iPhone Safari + Android Chrome، جریان کامل (Landing→Birth→Chart→Free Preview→Exploration→Checkout→Today→Subscription→History→Chat→Logout)
+3. **مرچنت واقعی زرین‌پال** → `ZARINPAL_SANDBOX=false`
+
+## Checklist موبایل فیزیکی (برای MaHDi)
+
+- [ ] iPhone Safari + Android Chrome — باز کردن chart.negar.io
+- [ ] Landing → «چارت رایگان من» → فرم تولد (کیبورد فارسی، اسکرول، safe-area)
+- [ ] ساخت چارت → پیش‌نمایش رایگان → ۵ بینش
+- [ ] کاوش: اولین رایگان، بعدی → پیام «اعتبار کافی نداری» + خرید اعتبار
+- [ ] خرید پک ۳ (سندباکس) → StartPay → بازگشت → گرنت اعتبار
+- [ ] Today + تاریخچه + اشتراک ماهانه (۹۹K) + لغو
+- [ ] Chat (طلایی) + خروج از حساب + ورود مجدد با OTP
+- [ ] Back/scroll/keyboard در همهٔ صفحات + چرخش صفحه + قطع/وصل اینترنت
+- [ ] اعلان push: اجازه → دریافت نوتیفیکیشن → کلیک → لینک درست
 
 ## Verdict
 
-# ✅ GO
+# ✅ FINAL GO (مشروط به ۳ فعال‌سازی کاربر)
 
-پلتفرم آمادهٔ لانچ است. ۳ مورد فعالسازی سمت کاربر وجود دارد که **هیچ‌کدام blocker نیستند** و همه با تغییر environment یا تست دستی فعال می‌شوند (طبق §55 «Merchant exception»).
-
-## بررسی گیت‌های §55 (zero unresolved)
-
-| گیت | وضعیت | شواهد |
-|---|---|---|
-| critical security | ✅ | bandit High=0؛ pip-audit 0؛ OWASP/WSTG در ROUND-3؛ fail-closed SMS؛ کوکی HMAC؛ rate-limit Redis |
-| authz | ✅ | AUTHORIZATION-MATRIX + تست مالکیت (order→chart→profile→user) |
-| payment integrity | ✅ | claim اتمی (UPDATE…WHERE status=pending)، reservation کوپن اتمی، callback idempotent، refund، ledger یکپارچه |
-| privacy | ✅ | referral بدون PII؛ backup age-encrypted؛ privacy/terms/refund/disclaimer |
-| data loss | ✅ | backup روزانه 03:15 (age→R2) + **DR drill OK** (restore→migrate→sanity: users=29, paid=8) |
-| report corruption | ✅ | MAX_RETRIES=6؛ degraded path؛ ۱۳ بخش gold صفر fallback |
-| blocking UX | ✅ | P5-P9؛ مرورگر prod 420px هر جریان |
-| mobile critical-flow | ⚠️ اقدام کاربر | شبیهساز موبایل کامل پاس؛ **تست فیزیکی گوشی هنوز انجام نشده** (مانع GO نیست؛ قبل از تبلیغ گسترده لازم است) |
-| PWA / push | ✅ | P2: FCM واقعی؛ subscription تستی پاک شد (push_subscriptions: 0 orphan) |
-| financial invariant | ✅ | ledger == credits در تستها؛ گرنت اشتراک once-per-month؛ پاداش referral یکبار |
-| AI safety | ✅ | whitelist اتحادی (§1.2)؛ متنهای ضداضطراب؛ ممنوعیت پیشگویی/درمان |
-| launch funnel | ✅ | P5: چارت رایگان→۵ بینش→CTA؛ P9: ۳ landing + LANCH20 |
-
-## ۳ فعالسازی کاربر (پس از این پیام)
-
-1. **مرچنت واقعی زرین‌پال** — `ZARINPAL_SANDBOX=false` + merchant ID واقعی در .env (env-only)
-2. **کلید SMS کاوه‌نگار** — `OTP_SMS_API_KEY` (env-only؛ فعلاً OTP fail-closed: «SMS provider not configured»)
-3. **تست روی موبایل فیزیکی** — جریان چارت رایگان + خرید + Today روی گوشی واقعی (تست دستی؛ قبلاً فقط شبیهساز)
-
-## شواهد (Evidence Bundle)
-
-- **reports/launch/**: P7-SUBSCRIPTION، P8-REFERRAL-COUPON، P9-LANDING، P10-REGRESSION-SECURITY-CHAOS-DR، P11-PREFLIGHT (این سند: P12)
-- **docs/audit/**: FINAL-ACCEPTANCE-REPORT (۲۲ بخشی GO مشروط)، RUNTIME-FINAL (F-24..F-32c)، V4–V9-AUDIT-FIXES (F-01..F-20)، ROUND3-ADDENDUM، ZAYCHE-ABSOLUTE-LAUNCH-VERIFICATION، ZAYCHE-CODEBUNDLE (۲۰۵ فایل)
-- **اعداد**: 442 تست (۱ skip)؛ ۸ پلن؛ ۶ migration جدید امروز (P3→P8)؛ ۸ صفحهٔ اصلی ۳۴–۶۲ms؛ chaos ۳ سناریو graceful؛ DR drill OK
-
-## Cost
-- هزینهٔ امروز: ~$0.10 (چند test sandbox + baseline) — بدون هزینهٔ اضافه
-
-## Rollback
-- `git reset --hard v-p11-preflight && bash scripts/deploy.sh` (قبل از هر تغییر بعدی)
-
-**END — ZAYCHE-FINAL-LAUNCH-COMPLETE-EXECUTION-PLAN v2.0 — همهٔ ۱۲ فاز کامل شد.**
+فقط Merchant واقعی + کلید کاوه‌نگار + تست موبایل فیزیکی باقی مانده — هیچ‌کدام نیاز به تغییر کد ندارند (env-only یا تست دستی).
