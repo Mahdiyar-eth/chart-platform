@@ -17,8 +17,14 @@ from app.models import (BirthProfile, Chart, Coupon, Order, Plan, ReferralCode, 
 from app.timeutil import ensure_utc, utcnow
 
 
+REFERRAL_REWARD_PERCENT = 10  # plan v2.0 §13 — 10% of the discounted amount
+
+
+def _referral_reward_rial(amount_rial: int) -> int:
+    return int(amount_rial * REFERRAL_REWARD_PERCENT / 100)
+
+
 def get_or_create_referral_code(session: Session, user_id: str) -> str:
-    """Return the user's stable random referral code (no PII in the URL)."""
     rc = session.exec(select(ReferralCode).where(ReferralCode.user_id == user_id)).first()
     if rc:
         return rc.code
@@ -59,6 +65,19 @@ def create_order(
             raise ValueError("کد تخفیف نامعتبر است")
         if coupon_row.expires_at and ensure_utc(coupon_row.expires_at) < utcnow():
             raise ValueError("کد تخفیف منقضی شده")
+        # §13 — LANCH20: only on the user's FIRST deep report. Enforced before
+        # the atomic slot reservation so the slot is never burned for nothing.
+        if coupon_row.report_only:
+            from app.payment.orders import REPORT_PLANS
+            if plan_key not in REPORT_PLANS:
+                raise ValueError("این کد تخفیف فقط برای گزارش عمیق است")
+            prior = session.exec(select(Order).where(
+                Order.user_id == new_user_id,
+                Order.status == "paid",
+                Order.plan_key.in_(REPORT_PLANS),
+            )).first() if new_user_id else None
+            if prior:
+                raise ValueError("این کد تخفیف فقط برای اولین گزارش عمیق است")
         # audit r4 A10 — RESERVATION PATTERN: reserve the slot ATOMICALLY at
         # creation. A stale pre-check would let two users both pass with the
         # last slot and then lose money at payment time; the atomic UPDATE is
@@ -82,14 +101,15 @@ def create_order(
             select(ReferralCode).where(ReferralCode.code == ref_code.strip())
         ).first()
         # H1.4: self-referral must be impossible — using your OWN referral code
-        # would grant 10% off + a 5% self-reward (money printer)
+        # would grant 10% off + a 10% self-reward (money printer)
         self_ref = referrer is not None and new_user_id is not None and referrer.user_id == new_user_id
         if not existing and referrer and not self_ref:
             amount = max(1, int(amount * 0.9))
             referral_event = ReferralEvent(
                 code=ref_code.strip(), referrer_user_id=referrer.user_id,
                 new_user_id=new_user_id,
-                amount_rial=amount, reward_rial=int(amount * 0.05), status="pending",
+                amount_rial=amount, reward_rial=_referral_reward_rial(amount),
+                status="pending",
             )
             session.add(referral_event)
             session.flush()
@@ -292,8 +312,10 @@ def grant_credits(session: Session, order: Order) -> None:
 
 
 def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
-    """D3: once an order is PAID, credit the referrer's wallet (5% of the
-    discounted amount). Idempotent — status pending → rewarded, once."""
+    """D3: once an order is PAID, credit the referrer's wallet (10% of the
+    discounted amount — plan v2.0 §13) and, on the referred user's FIRST paid
+    order, grant 1 exploration credit to the buyer. Idempotent — status
+    pending → rewarded, once. Referral cycles (A→B→A) are voided."""
     ev = session.exec(select(ReferralEvent).where(
         ReferralEvent.order_id == order.id,
         ReferralEvent.status == "pending",
@@ -309,12 +331,50 @@ def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
             ev.status = "voided"
             session.flush()
             return ev
+    # §13 referral cycles: the referrer must not be inside the referred
+    # user's own referral ancestry (A→B→A rewards nothing)
+    from app.models import User as _U
+    buyer = session.get(_U, ev.new_user_id) if ev.new_user_id else None
+    if buyer:
+        chain: set[str] = {buyer.id}
+        cur = session.get(_U, ev.referrer_user_id)
+        hops = 0
+        while cur and cur.id not in chain and hops < 8:
+            chain.add(cur.id)
+            prev = session.exec(select(ReferralEvent).where(
+                ReferralEvent.new_user_id == cur.id,
+                ReferralEvent.status.in_(("pending", "rewarded")),
+            )).first()
+            cur = session.get(_U, prev.referrer_user_id) if (prev and prev.referrer_user_id) else None
+            hops += 1
+        if cur and cur.id in chain:
+            ev.status = "voided"  # cycle → no reward
+            session.flush()
+            return ev
     referrer = session.get(User, ev.referrer_user_id)
     if not referrer:
         return None
     referrer.balance_rial = (referrer.balance_rial or 0) + ev.reward_rial
     ev.status = "rewarded"
     session.flush()
+    # §13: 1 exploration credit to the referred user after their first paid order
+    if buyer and ev.reward_rial > 0:
+        paid_before = session.exec(select(Order).where(
+            Order.user_id == buyer.id,
+            Order.status == "paid",
+            Order.id != order.id,
+        )).first()
+        if not paid_before:
+            from sqlalchemy import text as _text
+            from app.models import CreditTransaction
+            session.exec(_text(
+                "UPDATE users SET credits = credits + 1 WHERE id = :uid"
+            ), params={"uid": buyer.id})
+            session.add(CreditTransaction(
+                user_id=buyer.id, amount=1, reason="referral_bonus",
+                ref_id=ev.id,
+            ))
+            session.flush()
     return ev
 
 

@@ -811,6 +811,32 @@ def api_my_subscriptions(request: Request, session: Session = Depends(get_sessio
     } for s in subs]
 
 
+@app.get("/api/coupons/check")
+def api_coupon_check(code: str = Query(default=""), request: Request = None,
+                     session: Session = Depends(get_session)):
+    """§13 — validate a coupon WITHOUT consuming it; report_only coupons also
+    check the caller's first-deep-report eligibility."""
+    from app.payment.orders import REPORT_PLANS
+    from app.timeutil import ensure_utc, utcnow
+    cp = session.exec(select(Coupon).where(Coupon.code == code.strip().upper())).first()
+    if not cp or not cp.active:
+        raise HTTPException(404, "کد تخفیف نامعتبر است")
+    if cp.expires_at and ensure_utc(cp.expires_at) < utcnow():
+        raise HTTPException(400, "کد تخفیف منقضی شده")
+    if cp.used_count >= cp.max_uses:
+        raise HTTPException(400, "کد تخفیف مصرف شده")
+    scope = "اولین گزارش عمیق" if cp.report_only else "همه‌ی پلن‌ها"
+    if cp.report_only:
+        user = get_current_user(request)
+        if user:
+            prior = session.exec(select(Order).where(
+                Order.user_id == user.id, Order.status == "paid",
+                Order.plan_key.in_(REPORT_PLANS))).first()
+            if prior:
+                raise HTTPException(400, "این کد فقط برای اولین گزارش عمیق است")
+    return {"code": cp.code, "percent": cp.percent, "scope": scope}
+
+
 @app.post("/api/subscriptions/{sub_id}/cancel")
 def api_cancel_subscription(sub_id: str, request: Request,
                             session: Session = Depends(get_session)):

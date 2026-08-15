@@ -72,6 +72,13 @@ def seed_plans() -> None:
             else:
                 s.add(Plan(**item))
         s.commit()
+    # §13 — launch coupon LANCH20: 20% off the FIRST deep report, 1 use/phone
+    from app.models import Coupon
+    c = s.exec(select(Coupon).where(Coupon.code == "LANCH20")).first()
+    if not c:
+        s.add(Coupon(code="LANCH20", percent=20, max_uses=10_000,
+                     active=True, report_only=True))
+        s.commit()
 
 
 def get_session():

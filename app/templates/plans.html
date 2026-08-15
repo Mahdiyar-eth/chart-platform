@@ -18,6 +18,14 @@
     <a href="/birth-form" class="btn btn-lg"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان بساز</a>
   </div>
 
+  <div class="glass" x-show="true" style="max-width:520px;margin:0 auto 26px;padding:14px 18px;display:flex;gap:10px;align-items:center;border-color:rgba(255,215,130,.35);">
+    <input x-model="coupon" @input="couponMsg=''"
+           placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr"
+           style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#eee;font-size:.9rem;text-align:left;">
+    <button class="btn" @click="applyCoupon()" style="flex:none;">اعمال</button>
+    <span x-show="couponMsg" x-text="couponMsg" style="font-size:.8rem;color:#ffd782;"></span>
+  </div>
+
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
 
     {% for p in report_plans %}
@@ -97,6 +105,10 @@
       <b style="font-size:.9rem;color:#fff;">اگر پلن پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
       <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">چارت و گزارش‌هایت ذخیره می‌مانند. کافیست پلن بالاتر را بخری؛ گزارش کامل‌تر روی همان چارت تولید می‌شود.</p>
     </div>
+    <div class="glass" style="padding:16px 18px;margin-top:10px;border-color:rgba(255,215,130,.35);">
+      <b style="font-size:.9rem;color:#ffd782;">کد تخفیف شروع: LANCH20</b>
+      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">۲۰٪ تخفیف روی اولین گزارش عمیق (پایه، کامل یا طلایی). در مرحله‌ی پرداخت کد را وارد کن — فقط یک بار، برای اولین گزارشت.</p>
+    </div>
     <div class="glass" style="padding:16px 18px;margin-top:10px;">
       <b style="font-size:.9rem;color:#fff;">تولید گزارش چقدر طول می‌کشد؟</b>
       <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">معمولاً ۳ تا ۵ دقیقه. می‌توانی صفحه را ببندی؛ به‌محض آماده شدن، گزارش در «حساب من» و (اگر اشتراک اعلان دادی) با نوتیفیکیشن در دسترس است.</p>
@@ -131,6 +143,9 @@ function purchase() {
     busy: false,
     balance: null,
     walletLoaded: false,
+    coupon: '',
+    couponMsg: '',
+    couponPercent: 0,
     async init() {
       try {
         const r = await fetch('/api/wallet');
@@ -140,6 +155,21 @@ function purchase() {
         }
       } catch (e) { /* anonymous visitor — no wallet */ }
       this.walletLoaded = true;
+    },
+    async applyCoupon() {
+      const code = this.coupon.trim().toUpperCase();
+      if (!code) { this.couponMsg = ''; return; }
+      try {
+        const r = await fetch('/api/coupons/check?code=' + encodeURIComponent(code));
+        const j = await r.json();
+        if (r.ok) {
+          this.couponPercent = j.percent || 0;
+          this.couponMsg = 'کد معتبر است: ' + j.percent + '٪ تخفیف' + (j.scope ? ' (' + j.scope + ')' : '');
+        } else {
+          this.couponPercent = 0;
+          this.couponMsg = j.detail || 'کد نامعتبر است';
+        }
+      } catch (e) { this.couponMsg = 'خطا در بررسی کد'; }
     },
     async buy(planKey, useBalance) {
       const isPack = planKey.startsWith('credit');
@@ -153,6 +183,7 @@ function purchase() {
         const fd = new FormData();
         fd.append('plan_key', planKey);
         fd.append('chart_id', chartId);
+        if (this.coupon.trim()) fd.append('coupon', this.coupon.trim().toUpperCase());
         const r = await fetch('/api/orders', {
           method: 'POST',
           body: fd,

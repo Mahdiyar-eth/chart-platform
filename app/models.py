@@ -227,6 +227,7 @@ class Coupon(SQLModel, table=True):
     used_count: int = Field(default=0)
     expires_at: datetime | None = Field(default=None)
     active: bool = Field(default=True)
+    report_only: bool = Field(default=False)  # §13 — only on the FIRST deep report
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

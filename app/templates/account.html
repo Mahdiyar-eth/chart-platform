@@ -130,7 +130,7 @@
       {% for t in ledger %}
       <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:4px 0;">
         <span style="color:#dfe6ff;">
-          {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% else %}{{ t.reason }}{% endif %}
+          {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% elif t.reason == 'subscription' %}اعتبار ماهانه اشتراک{% elif t.reason == 'referral_bonus' %}هدیه معرفی{% else %}{{ t.reason }}{% endif %}
         </span>
         <span style="font-weight:700;{% if t.amount >= 0 %}color:#7ee2a8;{% else %}color:#ff9d9d;{% endif %}">
           {% if t.amount >= 0 %}+{% endif %}{{ t.amount }}
@@ -142,8 +142,8 @@
   </section>
 
   <div class="glass glow" style="margin-top:14px; padding:20px; text-align:right;">
-    <h2 style="font-size:1.05rem;">🎁 دعوت از دوستان</h2>
-    <p class="muted" style="font-size:.85rem;">نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۵٪ پاداش ثبت می‌کنی.</p>
+    <h2 style="font-size:1.05rem;">دعوت از دوستان</h2>
+    <p class="muted" style="font-size:.85rem;">نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش ثبت می‌کنی و او ۱ اعتبار کاوش هدیه می‌گیرد.</p>
     <div style="display:flex; gap:8px; margin-top:10px; direction:ltr;">
       <input id="refLink" readonly value="{{ ref_url }}" style="flex:1; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#eee; font-size:.85rem;">
       <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn" style="padding:10px 14px;">کپی</button>
