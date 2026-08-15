@@ -38,7 +38,7 @@
       <div x-show="!status.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
       <template x-for="(f, i) in status.facts" :key="i">
         <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--stroke);">
-          <span style="flex:none;width:30px;height:30px;border-radius:50%;background:rgba(124,108,240,.22);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#c9c2ff;" x-text="f.planet_fa.charAt(0)"></span>
+          <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#7c6cf0;margin-top:10px;" aria-hidden="true"></span>
           <p style="font-size:.92rem;line-height:1.7;color:var(--txt);">
             <span style="font-weight:800;" x-text="f.planet_fa"></span>
             امروز در <span style="font-weight:800;color:#8fb6ff;" x-text="f.sign_fa"></span> با
