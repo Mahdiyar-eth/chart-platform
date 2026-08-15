@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}خودت را کشف کن — زایچه{% endblock %}
+{% block description %}ده کارت خودشناسی بر پایهٔ چارت تولدت: شخصیت، مسیر شغلی، روابط، پول و بیشتر. هر کارت با شواهد نجومی واقعی و یک اعتبار.{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 py-6">
+  <!-- hero (D2) -->
+  <div class="rounded-3xl bg-gradient-to-br from-indigo-600/25 to-violet-600/15 p-5 sm:p-7 border border-indigo-400/20">
+    <h1 class="text-2xl sm:text-3xl font-black text-white">دربارهٔ خودت چه چیزی را می‌خواهی بیشتر بفهمی؟</h1>
+    <p class="mt-2 text-slate-300 text-sm sm:text-base leading-7">هر کارت یک سؤال را با شواهد واقعی چارت تولدت بررسی می‌کند — ۲ تا ۴ بینش مشخص، بدون پیش‌گویی.</p>
+    <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+      <span class="rounded-full bg-white/10 px-3 py-1 font-bold" x-text="`${credits} اعتبار`" x-data="{credits: {{ credits }}}">اعتبار</span>
+      <span class="rounded-full bg-white/10 px-3 py-1">هر کاوش = ۱ اعتبار</span>
+    </div>
+  </div>
+
+  {% if not charts %}
+  <div class="mt-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
+    برای شروع، اول چارت تولدت را بساز:
+    <a href="/birth-form" class="font-bold underline">ساخت چارت تولد</a>
+  </div>
+  {% else %}
+  <div class="mt-4 text-xs text-slate-400">چارت: <select id="chart-select" class="rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-slate-200">
+    {% for ch in charts %}<option value="{{ ch.id }}" {% if ch.id == active_chart %}selected{% endif %}>چارت {{ loop.index }} — {{ ch.created_at.strftime('%Y-%m-%d') }}</option>{% endfor %}
+  </select></div>
+
+  <!-- cards grid (D1) -->
+  <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data="exploreApp()" x-init="init()">
+    <template x-for="card in cards" :key="card.key">
+      <button type="button" @click="run(card)"
+        class="group relative overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4 text-right transition active:scale-[0.98] hover:border-indigo-400/50">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-base font-extrabold text-white" x-text="card.title_fa"></h3>
+            <p class="mt-1 text-xs leading-5 text-slate-400" x-text="card.benefit_fa"></p>
+          </div>
+          <span class="shrink-0 rounded-full bg-indigo-500/20 px-2.5 py-1 text-[10px] font-bold text-indigo-300">۱ اعتبار</span>
+        </div>
+        <div class="mt-3 text-xs font-bold text-indigo-300 opacity-0 transition group-hover:opacity-100" x-show="$store.explore.loading !== card.key">شروع کاوش ←</div>
+        <div x-show="$store.explore.loading === card.key" class="mt-2 flex items-center gap-2 text-xs text-indigo-300">
+          <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          در حال تحلیل چارت…
+        </div>
+      </button>
+    </template>
+  </div>
+
+  <!-- result panel -->
+  <div id="explore-result" class="mt-6 hidden rounded-3xl border border-slate-700 bg-slate-900/80 p-5" x-data x-show="$store.explore.show">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-black text-white" x-text="$store.explore.title"></h2>
+      <button type="button" class="rounded-lg bg-slate-800 px-2.5 py-1 text-xs text-slate-400" @click="$store.explore.show=false">بستن</button>
+    </div>
+    <p class="mt-2 text-sm leading-7 text-slate-300" x-text="$store.explore.intro"></p>
+    <div class="mt-4 space-y-4">
+      <template x-for="(ins, i) in $store.explore.insights" :key="i">
+        <div class="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-4">
+          <p class="text-sm leading-7 text-slate-200" x-text="ins.insight"></p>
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            <template x-for="ev in ins.evidence" :key="ev">
+              <span class="rounded-full bg-emerald-500/10 border border-emerald-400/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300" x-text="ev"></span>
+            </template>
+          </div>
+          <p class="mt-3 rounded-xl bg-indigo-500/10 border border-indigo-400/20 px-3 py-2 text-xs leading-6 text-indigo-200">
+            <span class="font-bold">امروز: </span><span x-text="ins.practical_advice"></span>
+          </p>
+        </div>
+      </template>
+    </div>
+    <p class="mt-4 text-[10px] text-slate-500">این برداشت بر پایهٔ عوامل واقعی چارت تولدت شکل گرفته — ابزاری برای تأمل، نه پیش‌گویی.</p>
+  </div>
+
+  <div id="explore-error" class="mt-4 hidden rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-200" x-data x-show="$store.explore.error">
+    <span x-text="$store.explore.error"></span>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.store('explore', { loading: '', show: false, title: '', intro: '', insights: [], error: '' });
+  Alpine.data('exploreApp', () => ({
+    cards: {{ cards_json | safe }},
+    init() {},
+    async run(card) {
+      const st = Alpine.store('explore');
+      const chartId = document.getElementById('chart-select')?.value;
+      if (!chartId) { st.error = 'اول چارت تولدت را بساز'; st.show = true; return; }
+      st.loading = card.key; st.error = ''; st.show = false;
+      const fd = new FormData(); fd.append('chart_id', chartId);
+      try {
+        const res = await fetch('/api/explore/' + card.key, { method: 'POST', body: fd });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          st.error = body.detail || ('خطا ' + res.status);
+          st.show = true;
+          if (res.status === 402) { st.error = 'اعتبار کافی نیست — از پنل کاربری اعتبار بخر'; }
+          return;
+        }
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const parts = buf.split('\n\n');
+          buf = parts.pop();
+          for (const part of parts) {
+            const ev = part.split('\n').find(l => l.startsWith('event: '))?.slice(7);
+            const data = part.split('\n').find(l => l.startsWith('data: '))?.slice(6);
+            if (!data) continue;
+            const j = JSON.parse(data);
+            if (ev === 'done') {
+              st.loading = ''; st.show = true;
+              st.title = card.title_fa; st.intro = j.result.intro;
+              st.insights = (j.result.insights || []).map(x => ({ insight: x.insight, evidence: x.evidence || [], practical_advice: x.practical_advice }));
+            } else if (ev === 'error') {
+              st.loading = ''; st.error = j.detail; st.show = true;
+            }
+          }
+        }
+        st.loading = '';
+      } catch (e) {
+        st.loading = ''; st.error = 'ارتباط قطع شد — اعتبار برگشت داده می‌شود'; st.show = true;
+      }
+    }
+  }));
+});
+</script>
+{% endblock %}

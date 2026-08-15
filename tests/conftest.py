@@ -45,7 +45,6 @@ class _FakeZarinpal:
         self.last_request = None
 
     def request(self, amount_rial, callback_url, description, meta=None):
-        import secrets
         return f"S{fake_authority(16)}", "https://sandbox.zarinpal.com/pg/StartPay/S-fake"
 
     def verify(self, authority, amount_rial):

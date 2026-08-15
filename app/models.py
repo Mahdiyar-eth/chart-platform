@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Index, UniqueConstraint, text
+from sqlalchemy import Column, Index, Integer, UniqueConstraint, text
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
@@ -26,6 +26,7 @@ class User(SQLModel, table=True):
     role: str = Field(default="user")  # user | admin
     status: str = Field(default="active")
     balance_rial: int = Field(default=0)  # referral wallet (D3)
+    credits: int = Field(default=0, sa_column=Column(Integer, default=0, server_default="0"))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -110,6 +111,37 @@ class ChatMessage(SQLModel, table=True):
     completion_tokens: int = Field(default=0)
     cost_usd: float = Field(default=0.0)
     ok: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Exploration(SQLModel, table=True):
+    """P3 — self-discovery card exploration: 2–4 evidence-backed insights
+    produced from chart factors via the same LLM→QA→retry pipeline."""
+    __tablename__ = "explorations"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str | None = Field(default=None, foreign_key="users.id", index=True)
+    chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
+    card_key: str = Field(default="")            # intent id from CARD_CATALOG
+    title_fa: str = Field(default="")            # card title snapshot
+    status: str = Field(default="running")       # running | done | failed
+    result: dict = Field(default_factory=dict, sa_column=Column(JSONB))  # {insights[], evidence[]}
+    metrics: dict = Field(default_factory=dict, sa_column=Column(JSONB))  # calls/retries/tokens/duration
+    credits_cost: int = Field(default=1)
+    refunded: bool = Field(default=False)
+    error: str | None = Field(default=None)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class CreditTransaction(SQLModel, table=True):
+    """Ledger for credit economy (P3/P6) — accounting invariant:
+    sum(amount) per user == current credits, every row links a reason."""
+    __tablename__ = "credit_transactions"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str = Field(default=None, foreign_key="users.id", index=True)
+    amount: int = Field(default=0)               # +gift/topup, -exploration, +refund
+    reason: str = Field(default="")              # free_gift|exploration|refund|topup|subscription
+    ref_id: str | None = Field(default=None)     # exploration/order id
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

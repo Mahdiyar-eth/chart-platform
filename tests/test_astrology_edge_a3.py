@@ -33,7 +33,6 @@ def _bd(**kw) -> BirthData:
 def _crosscheck(birth: BirthData, sidereal: bool = False) -> tuple[dict, dict]:
     app_chart = compute_chart(birth, {"zodiac": "sidereal"} if sidereal else None)
     local = birth.local_dt()
-    import datetime as _dt
     from zoneinfo import ZoneInfo
     utc = local.replace(tzinfo=ZoneInfo(birth.tz_name)).astimezone(ZoneInfo("UTC"))
     jd = swe.julday(utc.year, utc.month, utc.day, utc.hour + utc.minute / 60.0)

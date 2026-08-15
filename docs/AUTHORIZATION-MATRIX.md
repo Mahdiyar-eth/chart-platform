@@ -95,6 +95,11 @@
 | `POST /api/admin/secrets/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/secrets/{key}/reveal` | Admin | `_is_admin` |
 | `POST /api/admin/llm/test` | Admin | `_is_admin` |
+| `GET /api/explore/cards` | Public | none (catalog) |
+| `GET /explore` | User | `get_current_user` + `_owns_chart` (or redirect) |
+| `POST /api/explore/{card_key}` | User | `get_current_user` + `_owns_chart` + credit spend (atomic, 1 credit) |
+| `GET /api/explore/history` | User | `get_current_user` (own rows) |
+| `DELETE /api/explore/{exploration_id}` | User | `get_current_user` + row.user_id == user.id |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.

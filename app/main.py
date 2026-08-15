@@ -15,7 +15,7 @@ from pathlib import Path
 import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -32,7 +32,7 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
@@ -1910,4 +1910,162 @@ async def admin_llm_test(request: Request):
     else:
         results["deepseek"] = {"ok": False, "error": "کلید مستقیم DeepSeek تنظیم نشده است (اختیاری)"}
     return results
+
+
+# ── P3: Self-discovery catalog («خودت را کشف کن») ───────────────────────────
+
+@app.get("/explore", response_class=HTMLResponse)
+def page_explore(request: Request, chart: str = "", session: Session = Depends(get_session)):
+    """D2 — catalog page. Requires an owned chart (self-discovery runs on it)."""
+    from app.explore.cards import CARD_CATALOG
+    user = get_current_user(request)
+    charts = []
+    if user:
+        rows = session.exec(
+            select(Chart, BirthProfile).join(BirthProfile, Chart.profile_id == BirthProfile.id)
+            .where(BirthProfile.user_id == user.id)
+            .order_by(Chart.created_at.desc()).limit(10)
+        ).all()
+        charts = [c for c, _p in rows]
+    if chart:
+        ch = session.get(Chart, chart)
+        if not ch or not _owns_chart(ch, session, request):
+            raise HTTPException(403, "دسترسی به این چارت ندارید")
+        active_chart = chart
+    else:
+        active_chart = charts[0].id if charts else ""
+    return templates.TemplateResponse(
+        request, "explore.html",
+        {"cards": CARD_CATALOG, "cards_json": json.dumps(
+            [{"key": c.key, "title_fa": c.title_fa, "benefit_fa": c.benefit_fa}
+             for c in CARD_CATALOG], ensure_ascii=False),
+         "charts": charts, "active_chart": active_chart,
+         "credits": user.credits if user else 0},
+    )
+
+
+@app.get("/api/explore/cards")
+def api_explore_cards():
+    """D2 — public catalog: every card with title + one-line benefit."""
+    from app.explore.cards import CARD_CATALOG
+    return {"cards": [
+        {"key": c.key, "title_fa": c.title_fa, "benefit_fa": c.benefit_fa}
+        for c in CARD_CATALOG
+    ]}
+
+
+@app.post("/api/explore/{card_key}", response_class=StreamingResponse)
+async def api_explore_start(
+    request: Request,
+    card_key: str,
+    chart_id: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    """D3/D5 — run one card on an owned chart. Costs 1 credit, ATOMIC.
+    SSE: status → done(result) | error. Failed generation → auto refund."""
+    from fastapi.responses import StreamingResponse
+    from app.explore.cards import CARD_MAP
+    from app.explore.service import generate_exploration, spend_credit, refund_credit
+    from app.models import Exploration
+
+    card = CARD_MAP.get(card_key)
+    if not card:
+        raise HTTPException(404, "کارت نامعتبر است")
+    if not _rate_limit(f"explore:{_rl_client(request)}", 10, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "ابتدا وارد شوید")
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    # D5: no negative balance, no double spend — atomic UPDATE guarded by
+    # `credits >= cost` inside the same statement.
+    exp = Exploration(user_id=user.id, chart_id=chart_id, card_key=card_key,
+                      title_fa=card.title_fa)
+    session.add(exp)
+    session.commit()
+    session.refresh(exp)
+    if not spend_credit(session, user.id, exp.id, exp.credits_cost):
+        exp.status = "failed"
+        exp.error = "اعتبار کافی نیست"
+        session.commit()
+        raise HTTPException(402, "اعتبار کافی نیست")
+
+    async def event_stream():
+        try:
+            from app.core.llm import build_chat_router
+            yield "event: status\ndata: {\"status\":\"analysing\"}\n\n"
+            result, metrics = await generate_exploration(
+                build_chat_router(), chart.chart_json, card,
+                exploration_id=exp.id, user_id=user.id)
+            if result is None:
+                refund_credit(session, user.id, exp.id, exp.credits_cost)
+                with Session(engine) as s2:
+                    e = s2.get(Exploration, exp.id)
+                    e.status = "failed"
+                    e.refunded = True
+                    e.metrics = metrics
+                    e.error = "تولید ناموفق بود؛ اعتبار برگشت داده شد"
+                    s2.commit()
+                yield "event: error\ndata: {\"detail\":\"تولید ناموفق بود؛ اعتبار برگشت داده شد\"}\n\n"
+                return
+            with Session(engine) as s2:
+                e = s2.get(Exploration, exp.id)
+                e.status = "done"
+                e.result = result
+                e.metrics = metrics
+                s2.commit()
+            yield f"event: done\ndata: {json.dumps({'exploration_id': exp.id, 'result': result, 'metrics': {k: v for k, v in metrics.items() if k != 'provider'}}, ensure_ascii=False)}\n\n"
+        except Exception as e:  # noqa: BLE001 — stream must not hang the client
+            try:
+                refund_credit(session, user.id, exp.id, exp.credits_cost)
+                with Session(engine) as s2:
+                    e2 = s2.get(Exploration, exp.id)
+                    e2.status = "failed"
+                    e2.refunded = True
+                    e2.error = str(e)[:300]
+                    s2.commit()
+            except Exception:  # noqa: BLE001
+                pass
+            yield f"event: error\ndata: {json.dumps({'detail': 'خطای غیرمنتظره — اعتبار برگشت داده شد'}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/api/explore/history")
+def api_explore_history(request: Request, session: Session = Depends(get_session)):
+    """D3 — user's exploration history (latest first)."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "ابتدا وارد شوید")
+    rows = session.exec(
+        select(Exploration).where(Exploration.user_id == user.id)
+        .order_by(Exploration.created_at.desc()).limit(50)
+    ).all()
+    return {"items": [
+        {"id": r.id, "card_key": r.card_key, "title_fa": r.title_fa,
+         "status": r.status, "created_at": r.created_at.isoformat(),
+         "error": r.error}
+        for r in rows
+    ]}
+
+
+@app.delete("/api/explore/{exploration_id}")
+def api_explore_delete(exploration_id: str, request: Request,
+                       session: Session = Depends(get_session)):
+    """D3 — remove an exploration from history (own rows only)."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "ابتدا وارد شوید")
+    row = session.get(Exploration, exploration_id)
+    if not row or row.user_id != user.id:
+        raise HTTPException(404, "not found")
+    session.delete(row)
+    session.commit()
+    return {"ok": True}
 
