@@ -82,6 +82,14 @@ def main() -> int:
                         f"CREATE DATABASE {SCRATCH_DB} OWNER chart_app"], check=True, capture_output=True)
         subprocess.run(["sudo", "-u", "postgres", "psql", "-d", SCRATCH_DB, "-c",
                         "ALTER SCHEMA public OWNER TO chart_app"], check=True, capture_output=True)
+        # F-35: pgvector extension needs superuser — create BEFORE pg_restore,
+        # then hand ownership to chart_app so pg_restore's COMMENT ON EXTENSION works
+        # (CREATE EXTENSION has no AUTHORIZATION clause; pg_extension is the source of truth)
+        subprocess.run(["sudo", "-u", "postgres", "psql", "-d", SCRATCH_DB, "-c",
+                        "CREATE EXTENSION IF NOT EXISTS vector"], check=True, capture_output=True)
+        subprocess.run(["sudo", "-u", "postgres", "psql", "-d", SCRATCH_DB, "-c",
+                        "UPDATE pg_extension SET extowner='chart_app'::regrole WHERE extname='vector'"],
+                       check=True, capture_output=True)
         subprocess.run(["pg_restore", "-d", SCRATCH_URL, "--no-owner", "--no-privileges",
                         str(dump_out)], check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
