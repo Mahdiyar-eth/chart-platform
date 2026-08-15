@@ -32,7 +32,7 @@
       <div class="mt-3 space-y-2.5">
         <template x-for="(f, i) in status.facts" :key="i">
           <div class="flex items-start gap-3 rounded-xl bg-slate-900/60 p-3">
-            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sm font-black text-sky-300" x-text="f.planet_fa[0]"></span>
+            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sm font-black text-sky-300" x-text="f.planet_fa.charAt(0)"></span>
             <p class="text-sm leading-6 text-slate-300">
               <span class="font-bold text-slate-100" x-text="f.planet_fa"></span>
               امروز در <span class="font-bold text-sky-300" x-text="f.sign_fa"></span> با
