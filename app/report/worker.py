@@ -19,6 +19,7 @@ from app.core.llm import build_router
 from app.db import engine as db_engine
 from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
+from app.private_tmp import private_tmp
 from app.report.generator import build_report_json
 from app.report.prompt_builder import (build_personal_question_prompt,
                                        build_prompts_for_plan, order_domains_by_focus)
@@ -182,7 +183,7 @@ async def generate_report_audio(ctx: dict, report_id: str) -> None:
                 text += f"بخش {t}. {' '.join(str(c).split())[:800]} "
                 if len(text) > 9000:
                     break
-        out = Path("/tmp") / f"report-audio-{report_id[:8]}.mp3"
+        out = private_tmp() / f"report-audio-{report_id[:8]}.mp3"
         import edge_tts
 
         async def _gen():

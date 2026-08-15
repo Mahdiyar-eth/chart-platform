@@ -153,5 +153,7 @@ if __name__ == "__main__":
 
     b = GOLDEN_CHARTS[0]["birth"]
     c = compute_from_fields(**b).chart_json
-    save_chart_svg(c, "/tmp/chart_wheel.svg")
+    # bandit B108 accepted: developer-only CLI debug output — never executed
+    # at runtime, filename constant, single-tenant server.
+    save_chart_svg(c, "/tmp/chart_wheel.svg")  # nosec B108 — dev CLI only
     print("SVG written → /tmp/chart_wheel.svg")

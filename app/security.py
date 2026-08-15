@@ -15,6 +15,8 @@ from hmac import compare_digest as _compare_digest
 from fastapi import Request
 from sqlmodel import Session
 
+from app.private_tmp import private_tmp
+
 import app.config  # noqa: F401
 from app.env import IS_PROD
 
@@ -187,7 +189,7 @@ async def security_guard(request: Request, call_next):
     return await call_next(request)
 
 
-_AUDIT_FALLBACK = os.environ.get("AUDIT_FALLBACK_LOG", "/tmp/zayche-audit-fallback.log")
+_AUDIT_FALLBACK = os.environ.get("AUDIT_FALLBACK_LOG", str(private_tmp() / "zayche-audit-fallback.log"))
 
 
 def audit(engine, admin: str, action: str, entity: str = "", details: str = "") -> None:

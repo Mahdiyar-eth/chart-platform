@@ -17,7 +17,7 @@
 | Redis | ✅ | redis-server active |
 | workers | ✅ | chart-worker.service active (ARQ) |
 | queue | ✅ | ARQ |
-| LLM credentials | ✅ | OmniRoute 127.0.0.1:20128 + keyها |
+| LLM credentials | ✅ | `GO_API_KEY` → `https://opencode.ai/zen/go/v1` (OpenCode Go subscription، OpenAI-compatible). **OmniRoute (127.0.0.1:20128) فقط برای Hermes است و در chart-platform استفاده نمی‌شود** — شواهد: llm_runs همه provider=go (1,222 ران، آخرین 2026-08-15 21:20) |
 | Umami | ✅ | analytics.negar.io 200 + script در base.html + track events |
 | robots/sitemap | ✅ | robots.txt 200 + sitemap.xml 200 |
 | legal pages | ✅ | privacy/terms/refund/disclaimer/contact/guide/faq/about — همه 200 |

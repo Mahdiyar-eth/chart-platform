@@ -137,7 +137,7 @@ def verify_otp(phone: str, code: str) -> User | None:
     if not rec:
         return None
     attempts = int(rec.get("attempts", "0")) + 1
-    if attempts > OTP_MAX_ATTEMPTS:
+    if attempts >= OTP_MAX_ATTEMPTS:
         _OTP_REDIS.delete(key)
         return None
     _OTP_REDIS.hset(key, "attempts", str(attempts))

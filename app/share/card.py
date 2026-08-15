@@ -10,9 +10,11 @@ from pathlib import Path
 
 from app.astrology.big_three import big_three
 from app.astrology.svg_wheel import render_chart_svg
+from app.private_tmp import private_tmp
 
-CACHE_DIR = Path(os.getenv("SHARE_CACHE_DIR", "/tmp/chart-share"))
+CACHE_DIR = Path(os.getenv("SHARE_CACHE_DIR", str(private_tmp() / "chart-share")))
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_DIR.chmod(0o700)
 
 
 def _card_html(chart_json: dict) -> str:
