@@ -20,6 +20,9 @@ import re
 import sys
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/..")
+from app.report.claim_validation import validate_section  # noqa: E402
+
 CONC = 4
 RESUME_FILE = "/tmp/ai_bench_v4_results.jsonl"
 INFRA_FILE = "/tmp/ai_bench_v4_infra.jsonl"
@@ -72,6 +75,18 @@ def make_chart(i: int) -> dict:
         "signs": [{"key": sign, "sign_fa": SIGNS_FA[i % 12]}],
         "birth": {"city_fa": "تهران", "local_time": f"۱۳۶۰/۰۱/{(i % 28) + 1} ۰۶:۱۰"},
     }
+
+
+def std_chart(chart: dict) -> dict:
+    """Chart with lowercase planet keys + sign strings (schema of
+    app/report/claim_validation) derived from the synthetic longitudes."""
+    out: dict = {"planets": {}, "angles": {"asc": {}}}
+    for name in PLANET_NAMES:
+        lon = chart["planets"][name]["longitude"]
+        out["planets"][name.lower()] = {"sign": SIGNS[int(lon // 30) % 12].lower()}
+    a_lon = chart["angles"]["ASC"]["longitude"]
+    out["angles"]["asc"] = {"sign": SIGNS[int(a_lon // 30) % 12].lower()}
+    return out
 
 
 def _norm(s: str) -> str:
@@ -271,18 +286,30 @@ async def benchmark(n: int, start: int) -> int:
                     rubric_vals[k].append(float(ev[k]))
     rub_avg = {k: (sum(v) / len(v) if v else 0.0) for k, v in rubric_vals.items()}
 
-    # 3) critical-fact repeatability — same chart, same prompt, same model
+    # A2 — deterministic claim validation (hard gate) on every ok answer
+    claim_mismatch, ungrounded = 0, 0
+    for r in ok_results:
+        v = validate_section("q", r["text"], std_chart(r["chart"]))
+        if v.critical_hallucination:
+            claim_mismatch += 1
+        if not v.grounded:
+            ungrounded += 1
+
+    # 3) critical-fact repeatability — same chart, same prompt, same model;
+    #    PASS means the answer is factually consistent BOTH times (claim-based)
     rep_ok, rep_total = 0, 5
     for i in range(rep_total):
         chart = make_chart(i)
-        s1 = SIGNS[int(chart["planets"]["Sun"]["longitude"] // 30)]
+        std = std_chart(chart)
         r1 = await answer_with_retries(router, chart, QUESTIONS[0])
         r2 = await answer_with_retries(router, chart, QUESTIONS[0])
         if r1.get("ok") and r2.get("ok"):
-            same = (s1.lower() in r1["text"].lower()) and (s1.lower() in r2["text"].lower())
-            if same:
+            v1, v2 = validate_section("q", r1["text"], std), validate_section("q", r2["text"], std)
+            if v1.ok and v2.ok:
                 rep_ok += 1
     rep_pct = rep_ok / rep_total * 100
+
+    safety_bad = sum(1 for r in ok_results if r.get("safety") is False)
 
     print("\n═══ BENCHMARK B — AI QUALITY ═══")
     print(f"answers evaluated: {len(ok_results)}")
@@ -299,22 +326,44 @@ async def benchmark(n: int, start: int) -> int:
 
     det_score = sum(det_pct.values()) / 4
     rub_score = sum(rub_avg.values()) / 5 * 10
-    ai_score = det_score * 0.4 + rub_score * 0.4 + rep_pct * 0.2
+    ai_quality_on_valid = det_score * 0.4 + rub_score * 0.4 + rep_pct * 0.2
+    gen_success = (len(ok_results) / total * 100) if total else 0.0
 
-    print(f"┬─ AI QUALITY SCORE: {ai_score:.1f}/100")
+    contra_vals = [ev.get("contradiction", 10) for ev in evals if ev]
+    contra_low = sum(1 for c in contra_vals if c < 5)
 
-    critical_pass = (det_pct["factual"] == 100 and det_pct["evidence"] == 100
-                     and det_pct["safety"] == 100 and det_pct["hallucination"] == 100
-                     and rub_avg["contradiction"] >= 6.0 and rep_pct >= 60)
+    # ── HARD GATES (override any score — Amendment 1) ─────────────────────
+    gates = {
+        "critical hallucination (claim mismatch)": claim_mismatch == 0,
+        "critical grounding (≥1 true chart fact)": ungrounded == 0,
+        "critical contradiction (<5 rubric)": contra_low == 0,
+        "unsafe output (deny-list)": safety_bad == 0,
+        "critical-fact repeatability (100%)": rep_pct == 100.0,
+    }
+    hard_pass = all(gates.values())
+
+    # ── DEGRADED CLASS (Amendment 5) ───────────────────────────────────────
+    expected_safe = (n_ok == 0) and (n_429 + n_to + n_empty) > 0
+    unexpected = (n_empty + n_to > 0) and n_ok > 0
+
     print("\n═══ FINAL AI RELEASE VERDICT ═══")
-    print(f"INFRASTRUCTURE SCORE: {inf_score:.1f}/100  (provider health)")
-    print(f"AI QUALITY SCORE    : {ai_score:.1f}/100  (answer quality)")
-    print(f"CRITICAL GATES      : {'PASS' if critical_pass else 'FAIL'}")
-    if critical_pass:
-        print("FINAL: RELEASE-READY on AI criteria. Provider failures still tracked separately.")
-        return 0
-    print("FINAL: NOT RELEASE-READY — see failing gates above.")
-    return 1
+    print(f"INFRASTRUCTURE SCORE  : {inf_score:.1f}/100   (provider health — informational)")
+    print(f"AI QUALITY SCORE      : {ai_quality_on_valid:.1f}/100   (on valid outputs — informational)")
+    print(f"GENERATION SUCCESS    : {gen_success:.1f}%   (n ok / n attempts — separate from quality)")
+    print()
+    print("HARD GATES (score never overrides these):")
+    for name, ok in gates.items():
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+    print(f"  degraded class: {'unexpected (FAIL)' if unexpected else ('expected-safe (PASS behavior)' if expected_safe else 'none')}")
+    fail_gates = [n for n, ok in gates.items() if not ok]
+    if not hard_pass:
+        print(f"FINAL: NOT RELEASE-READY — hard gates failed: {', '.join(fail_gates)}")
+        return 1
+    if unexpected:
+        print("FINAL: NOT RELEASE-READY — unexpected degraded output despite healthy providers")
+        return 1
+    print("FINAL: RELEASE-READY (all hard gates PASS, no unexpected degradation).")
+    return 0
 
 
 def main() -> int:

@@ -95,6 +95,7 @@ _DEADLINE = float(os.getenv("LLM_DEADLINE", "150"))          # whole-call backst
 # M1 (multi-provider plan): per-key health inside the GO pool.
 _GO_SLOT_COOLDOWN = float(os.getenv("GO_SLOT_COOLDOWN", "60"))      # per-key breaker
 _GO_QUOTA_COOLDOWN = float(os.getenv("GO_QUOTA_COOLDOWN", "300"))   # GoUsageLimitError → back off 5 min
+_GO_MAX_IN_FLIGHT = int(os.getenv("GO_MAX_IN_FLIGHT_PER_KEY", "2"))  # A4: cap concurrent calls per key
 _GO_EMPTY_COOLDOWN = float(os.getenv("GO_EMPTY_COOLDOWN", "300"))   # M4: empty-200 == quota too — 5 min per key
 _ZEN_FREE_COOLDOWN = float(os.getenv("ZEN_FREE_COOLDOWN", "300"))   # free-tier rate limit
 # M9 (multi-provider plan): hard daily cost ceiling — if the LLM spend for
@@ -400,6 +401,11 @@ class GoPoolProvider(LLMProvider):
                          [s for s in self.slots if s not in tried]
             if not candidates:
                 break
+            # A4 (amendments): per-key in-flight cap — GO rate-limits bursts of
+            # concurrent calls, so spread load and never hammer a single key.
+            low = [s for s in self.slots if s not in tried and not s.tripped()
+               and s.in_flight < _GO_MAX_IN_FLIGHT]
+            candidates = low or candidates
             slot = min(candidates, key=lambda s: (s.in_flight, s.error_streak, s.last_latency_ms))
             tried.append(slot)
             slot.in_flight += 1

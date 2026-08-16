@@ -3,6 +3,16 @@
 **نسخه:** 2026-08-16 · **گیت:** ffa2096 (← b792094 ← fb2af64) · **تگ:** HEAD
 **محدوده:** PLAN-MULTI-LLM-v2 — زیرساخت multi-provider تا LAUNCH ACCEPTANCE
 
+## Amendments 1–5 (approved by MaHDi 2026-08-16 — ALL APPLIED)
+
+| # | متن | پیادهسازی |
+|---|---|---|
+| 1 | Zero-score override | ai_benchmark_v4: HARD GATES جدا (mismatch/grounding/contradiction/unsafe/repeatability) — هر FAIL → NOT RELEASE-READY حتی با score بالا؛ score فقط informational |
+| 2 | Prompt → Claim Validation | ماژول جدید `app/report/claim_validation.py` — استخراج deterministic جفت (سیاره، برج) از خروجی و مقایسه با chart واقعی؛ هر mismatch = critical hallucination (hard gate) |
+| 3 | Quality + GenSuccess جدا | خروجی: `AI QUALITY SCORE (on valid outputs)` و `GENERATION SUCCESS %` دو عدد مستقل |
+| 4 | Parallel gates همزمان | در-flight cap per key (GO_MAX_IN_FLIGHT_PER_KEY=2) + attempts/429/empty/timeout/cost در Benchmark A |
+| 5 | degraded طبقهبندی | `expected-safe` (همهٔ providers fail → PASS رفتار) vs `unexpected` (provider سالم ولی degraded → FAIL) |
+
 ## خلاصه
 
 GO تککلید = فاجعهٔ benchmark (empty-200 شبانه ۵۲/۵۲). راهحل اجراشده: **KeyPool چندکلیدی با breaker منفرد + failover درون-درخواست + موازیسازی ۱۳ بخش + مسیریابی per-section + telemetry + سقف هزینه + benchmark دوگانه A/B** — همه با تست hermetic (بدون هزینهٔ واقعی).
