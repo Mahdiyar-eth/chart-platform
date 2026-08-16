@@ -90,6 +90,13 @@ class LLMRun(SQLModel, table=True):
     ok: bool = Field(default=True)
     error: str | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # M5 (multi-provider plan): per-key / per-section observability.
+    key_slot: str | None = Field(default=None, index=True)   # go-1 / go-2 / zen-free / deepseek
+    section: str | None = Field(default=None)                # report domain (career/love/…)
+    attempt: int = Field(default=0)                          # 0-based retry attempt
+    error_code: str | None = Field(default=None)             # 429 / empty / timeout / 5xx / …
+    fallback_used: bool = Field(default=False)               # provider chain fell back
+    prompt_version: str | None = Field(default=None)         # prompt template version
     # H1.3 indexes (match migrations bad790d98ddf): kind + (created_at, kind)
     __table_args__ = (
         Index("ix_llm_runs_kind", "kind"),

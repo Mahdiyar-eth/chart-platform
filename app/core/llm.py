@@ -51,10 +51,27 @@ class LLMResult:
     usage: LLMUsage = field(default_factory=LLMUsage)
     cost: float = 0.0
     error: str | None = None
+    key_slot: str | None = None  # M5: which pool key served (go-1/go-2/zen-free)
 
     @property
     def ok(self) -> bool:
         return self.error is None
+
+    @property
+    def error_code(self) -> str | None:
+        """M5: coarse classification for telemetry — 429 / empty / timeout / 5xx / other."""
+        if self.ok and self.text.strip():
+            return None
+        if self.ok:
+            return "empty"
+        e = self.error or ""
+        if "429" in e or "UsageLimit" in e or "Rate limit" in e:
+            return "429"
+        if "timeout" in e.lower() or "deadline" in e.lower():
+            return "timeout"
+        if "5" in e[:8] and e.startswith("HTTP 5"):
+            return "5xx"
+        return "other"
 
 
 @dataclass
@@ -392,10 +409,12 @@ class GoPoolProvider(LLMProvider):
             if res.ok and res.text.strip():
                 res.provider = self.name   # M1: pool identity, not inner caller
                 res.model = self.MODEL
+                res.key_slot = slot.name   # M5: telemetry — which key served
                 return res
         assert last is not None
         last.provider = self.name
         last.model = self.MODEL
+        last.key_slot = self.slots[-1].name
         return last
 
     async def stream(self, prompt: str, system: str | None = None,

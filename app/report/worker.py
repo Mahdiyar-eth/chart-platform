@@ -30,9 +30,12 @@ log = logging.getLogger("report.worker")
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 REPORTS_DIR = Path(__file__).resolve().parent.parent.parent / "reports"
 MAX_RETRIES = 6  # F-31: 3 attempts were not enough for stubborn sections;
-                  # each retry now carries the QA reasons + replacement words
-                  # F-§11: 4 was not enough for the go account — narrow
-                  # whitelists (emotions=Moon only) trip the model repeatedly
+                 # each retry now carries the QA reasons + replacement words
+                 # F-§11: 4 was not enough for the go account — narrow
+                 # whitelists (emotions=Moon only) trip the model repeatedly
+# M3: concurrent section generation — bounded by this semaphore. The GO pool
+# load-balances across keys internally; raise per key headroom only.
+SECTION_CONC = int(os.getenv("SECTION_CONC", "4"))
 
 
 async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
@@ -60,53 +63,67 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
     metrics = {"calls": 0, "retries": 0, "total_tokens": 0, "cost_usd": 0.0,
                "qa_failures": 0, "provider": set()}
 
-    for domain, (prompt, ctx_info) in prompts.items():
-        ok = False
-        for attempt in range(MAX_RETRIES + 1):
-            res = await router.complete(prompt, max_tokens=max_tokens, temperature=0.6, json_mode=True)
-            metrics["calls"] += 1
-            metrics["total_tokens"] += res.usage.total
-            metrics["cost_usd"] += res.cost
-            metrics["provider"].add(res.provider)
-            try:
-                with Session(db_engine) as _s:
-                    _s.add(LLMRun(report_id=report_id, user_id=user_id, kind="report",
-                                  provider=res.provider,
-                                  model=res.model, gateway=res.provider,
-                                  prompt_tokens=res.usage.prompt_tokens,
-                                  completion_tokens=res.usage.completion_tokens,
-                                  latency_ms=getattr(res, "latency_ms", 0) or 0,
-                                  cost_usd=res.cost, ok=res.ok,
-                                  error=(res.error or "")[:300]))
-                    _s.commit()
-            except Exception:  # noqa: BLE001 — metering must never break generation
-                pass
-            if not res.ok:
-                metrics["retries"] += 1
-                continue
-            section = parse_section(res.text)
-            errors = qa_section(section, chart, domain) if section else ["invalid JSON"]
-            if not errors:
-                sections[domain] = section
-                ok = True
-                break
-            metrics["qa_failures"] += 1
-            # F-26 (runtime audit): QA rejections used to be silent here, making
-            # degraded reports undebuggable — surface the reasons in worker logs
-            log.warning("QA fail %s (attempt %d/%d): %s", domain, attempt + 1,
-                        MAX_RETRIES + 1, errors[:3])
-            if attempt < MAX_RETRIES:
-                metrics["retries"] += 1
+    # M3 (multi-provider plan): sections run CONCURRENTLY (bounded by
+    # SECTION_CONC). The GO pool also load-balances keys internally; the
+    # per-key breaker protects the whole pipeline from one exhausted account.
+    t0 = time.monotonic()
+    _sem = asyncio.Semaphore(SECTION_CONC)
+
+    async def _gen_one(domain: str, prompt: str, ctx_info: dict) -> None:
+        """Full retry chain for ONE section — runs concurrently with others."""
+        async with _sem:
+            ok = False
+            for attempt in range(MAX_RETRIES + 1):
+                res = await router.complete(prompt, max_tokens=max_tokens,
+                                            temperature=0.6, json_mode=True)
+                metrics["calls"] += 1
+                metrics["total_tokens"] += res.usage.total
+                metrics["cost_usd"] += res.cost
+                metrics["provider"].add(res.provider)
+                try:
+                    with Session(db_engine) as _s:
+                        _s.add(LLMRun(report_id=report_id, user_id=user_id, kind="report",
+                                      provider=res.provider,
+                                      model=res.model, gateway=res.provider,
+                                      prompt_tokens=res.usage.prompt_tokens,
+                                      completion_tokens=res.usage.completion_tokens,
+                                      latency_ms=getattr(res, "latency_ms", 0) or 0,
+                                      cost_usd=res.cost, ok=res.ok,
+                                      error=(res.error or "")[:300],
+                                      key_slot=getattr(res, "key_slot", None),
+                                      section=domain, attempt=attempt,
+                                      error_code=res.error_code,
+                                      fallback_used=attempt > 0,
+                                      prompt_version="gen-v1"))
+                        _s.commit()
+                except Exception:  # noqa: BLE001 — metering must never break generation
+                    pass
+                if not res.ok:
+                    metrics["retries"] += 1
+                    continue
+                section = parse_section(res.text)
+                errors = qa_section(section, chart, domain) if section else ["invalid JSON"]
+                if not errors:
+                    sections[domain] = section
+                    ok = True
+                    break
+                metrics["qa_failures"] += 1
+                # F-26 (runtime audit): QA rejections used to be silent here, making
+                # degraded reports undebuggable — surface the reasons in worker logs
+                log.warning("QA fail %s (attempt %d/%d): %s", domain, attempt + 1,
+                            MAX_RETRIES + 1, errors[:3])
+                if attempt < MAX_RETRIES:
+                    metrics["retries"] += 1
                 # F-27c (runtime audit): feed the QA reasons back into the next
                 # attempt — static prompt rules alone can't stop the model from
-                # writing «درمان»/«مرگ»/«شش‌ضلعی»; telling it exactly why the
+                # writing «درمان»/«مرگ»/«ششضلعی»; telling it exactly why the
                 # previous draft was rejected converges in one retry.
                 # F-31: banned words get concrete replacements — the model kept
                 # swapping one banned word for another (مرگ → درمان) because the
                 # reason string didn't say what to write instead.
                 for _bad, _good in (("درمان", "پیشنهاد/راهکار"), ("دارو", "عادت سالم"),
                                     ("مرگ", "پایان/تحول"), ("بیماری", "چالش تندرستی"),
-                                    ("پیش‌گویی", "نگاه به آینده"), ("پیشگویی", "نگاه به آینده")):
+                                    ("پیشگویی", "نگاه به آینده"), ("پیشگویی", "نگاه به آینده")):
                     errors = [e.replace(_bad, f"{_bad}«← بنویس: {_good}»") for e in errors]
                 # F-32c: «خارج از عوامل فعال» without telling the model which
                 # factors ARE allowed made it swap one wrong planet for another
@@ -129,32 +146,38 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                     else:
                         _hard.append(e)
                 fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
-                            "این موارد را دقیقاً رفع کن (به‌ویژه واژه‌های ممنوع را با "
+                            "این موارد را دقیقاً رفع کن (بهویژه واژههای ممنوع را با "
                             "جایگزین پیشنهادی عوض کن و فقط از عوامل مجاز استفاده کن) "
                             "و دوباره بنویس:\n- "
                             + "\n- ".join(_hard))
                 prompt = prompt + fix_hint
 
-        if not ok:
-            fallback_domains.append(domain)
-            sections[domain] = {
-                "section": domain,
-                "title_fa": ctx_info["domain_title"],
-                "intro": "بر اساس عوامل محاسبهشده، این حوزه از زندگی اهمیت ویژهای دارد.",
-                "insights": [{
-                    "insight": "نقشهی نجومی این حوزه را میتوان با دقت بیشتری در گزارش تکمیلی بررسی کرد. "
-                               "عوامل فعال: " + (ctx_info["factors"].replace("\n", " — ")[:200]),
-                    "evidence": [],
-                    "strengths": [], "challenges": [],
-                    "practical_advice": "برای تفسیر دقیقتر، به گزارش کامل مراجعه کنید.",
-                }],
-            }
+            if not ok:
+                fallback_domains.append(domain)
+                sections[domain] = {
+                    "section": domain,
+                    "title_fa": ctx_info["domain_title"],
+                    "intro": "بر اساس عوامل محاسبهشده، این حوزه از زندگی اهمیت ویژهای دارد.",
+                    "insights": [{
+                        "insight": "نقشهی نجومی این حوزه را میتوان با دقت بیشتری در گزارش تکمیلی بررسی کرد. "
+                                   "عوامل فعال: " + (ctx_info["factors"].replace("\n", " — ")[:200]),
+                        "evidence": [],
+                        "strengths": [], "challenges": [],
+                        "practical_advice": "برای تفسیر دقیقتر، به گزارش کامل مراجعه کنید.",
+                    }],
+                }
+
+    await asyncio.gather(*(_gen_one(d, p, c) for d, (p, c) in prompts.items()))
+    # M3: preserve declared order (focus reorder / plan order) — completion
+    # order under gather is not deterministic.
+    sections = {d: sections[d] for d in prompts if d in sections}
 
     rep = qa_repetition(sections)
     if rep:
         log.info("repetition warnings: %s", rep[:3])
     metrics["provider"] = sorted(metrics["provider"])
     metrics["fallback_domains"] = fallback_domains
+    metrics["elapsed_ms"] = int((time.monotonic() - t0) * 1000)
     return sections, metrics
 
 
