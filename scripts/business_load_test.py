@@ -68,10 +68,10 @@ def cookie_for(uid: int) -> str:
 
 
 async def create_chart(client: httpx.AsyncClient, cookie: str, i: int) -> str | None:
-    r = await client.post(f"{BASE}/api/birth", data={
-        "name": f"کاربر{i}", "raw_year": 1360 + (i % 30), "raw_month": (i % 12) + 1,
-        "raw_day": (i % 28) + 1, "hour": (i % 12) + 1, "minute": (i * 7) % 60,
-        "city_fa": "تهران", "time_known": "true",
+    r = await client.post(f"{BASE}/api/charts", data={
+        "name": f"کاربر{i}", "calendar": "jalali", "year": 1360 + (i % 30),
+        "month": (i % 12) + 1, "day": (i % 28) + 1, "hour": (i % 12) + 1,
+        "minute": (i * 7) % 60, "city_fa": "تهران", "time_known": "true",
     }, headers={"Cookie": f"chart_user={cookie}"})
     return r.json().get("chart_id") if r.status_code == 200 else None
 
@@ -84,9 +84,9 @@ def seed_paid_orders(user_ids: list[int], chart_ids: list[str]) -> list[str]:
     from app.main import _enqueue_report
     rep_ids = []
     with Session(engine) as s:
-        for uid, cid in zip(user_ids[:len(chart_ids)], chart_ids):
+        for uid, cid in zip(user_ids[:N_REPORTS], chart_ids[:N_REPORTS]):
             o = Order(user_id=uid, chart_id=cid, amount_rial=149_000 * 10,
-                      plan_key="basic", status="paid", authority=f"bizload-{time.time_ns()}")
+                      plan_key="gold", status="paid", authority=f"bizload-{time.time_ns()}")
             s.add(o)
             s.commit()
             s.refresh(o)
@@ -165,7 +165,7 @@ async def main() -> int:
     print(f"charts created via API: {len(chart_ids)}/{N_USERS}")
 
     # 2) paid orders + queue (real worker picks these up)
-    rep_ids = seed_paid_orders([u["id"] for u in users], chart_ids)
+    rep_ids = await asyncio.to_thread(seed_paid_orders, [u["id"] for u in users], chart_ids)
     print(f"reports queued: {len(rep_ids)} (worker will generate {N_REPORTS} with real LLM)")
 
     # 3) 5 concurrent chat calls while reports generate
@@ -185,7 +185,7 @@ async def main() -> int:
     from sqlmodel import Session, select
     from app.db import engine
     from app.models import Report
-    deadline = time.time() + 900
+    deadline = time.time() + 1500  # measured: ~20min/report under current LLM latency
     while time.time() < deadline:
         with Session(engine) as s:
             statuses = [s.exec(select(Report).where(Report.id == rid)).first() for rid in rep_ids]

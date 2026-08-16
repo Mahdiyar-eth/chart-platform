@@ -74,6 +74,35 @@ _CIRCUIT_COOLDOWN = float(os.getenv("LLM_CIRCUIT_COOLDOWN", "60"))
 _PER_CALL_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "120"))   # httpx per-request
 _DEADLINE = float(os.getenv("LLM_DEADLINE", "150"))          # whole-call backstop
 
+# M1 (multi-provider plan): per-key health inside the GO pool.
+_GO_SLOT_COOLDOWN = float(os.getenv("GO_SLOT_COOLDOWN", "60"))      # per-key breaker
+_GO_QUOTA_COOLDOWN = float(os.getenv("GO_QUOTA_COOLDOWN", "300"))   # GoUsageLimitError → back off 5 min
+_ZEN_FREE_COOLDOWN = float(os.getenv("ZEN_FREE_COOLDOWN", "300"))   # free-tier rate limit
+
+
+@dataclass
+class KeySlot:
+    """One API key inside a provider pool — independent circuit breaker.
+
+    M0 (2026-08-16, real API): keys from two separate accounts have
+    INDEPENDENT quotas — key A answered while key B was 429 (weekly limit).
+    So a per-key breaker is correct: one exhausted key must not stall the pool.
+    """
+    key: str
+    name: str
+    error_streak: int = 0
+    tripped_until: float = 0.0
+    in_flight: int = 0
+    last_latency_ms: int = 0
+    last_error: str | None = None
+
+    def tripped(self) -> bool:
+        return self.tripped_until > time.monotonic()
+
+    def trip(self, seconds: float) -> None:
+        self.tripped_until = time.monotonic() + seconds
+        self.error_streak = 0
+
 
 # ─────────────────────────── abstract provider ───────────────────────────
 
@@ -271,6 +300,161 @@ class GoProvider(DeepSeekProvider):
         return 0.0  # flat subscription — not per-token
 
 
+# ─────────────────────────── Go KeyPool (M1 — multi-account) ───────────────────────────
+
+class GoPoolProvider(LLMProvider):
+    """OpenCode Go subscription pool — N API keys from N separate accounts.
+
+    M0 evidence (2026-08-16): quotas are PER-ACCOUNT and independent, so N keys
+    give N independent rolling quotas. The pool picks the healthiest least-busy
+    key per call; a key that 429s / returns an EMPTY 200 is cooled down on its
+    own (per-key circuit) while the other keys keep serving. One bad key can
+    never stall the pool.
+    """
+
+    name = "go"
+
+    def __init__(self, api_keys: list[str], api_base: str | None = None,
+                 model: str | None = None) -> None:
+        super().__init__()
+        self.api_base = api_base or get_secret("go_api_base", "GO_API_BASE",
+                                               "https://opencode.ai/zen/go/v1")
+        self.MODEL = model or get_secret("go_model", "GO_MODEL", "deepseek-v4-pro")
+        self.slots = [KeySlot(key=k, name=f"go-{i + 1}") for i, k in enumerate(api_keys)]
+        self.user_agent = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                           "Chrome/126.0 Safari/537.36")
+        self.extra_payload = {"thinking": {"type": "disabled"}}
+
+    def _mk(self, slot: KeySlot) -> DeepSeekProvider:
+        """Build the actual caller for one key (overridable in tests)."""
+        p = DeepSeekProvider(api_key=slot.key, api_base=self.api_base, model=self.MODEL)
+        p.user_agent = self.user_agent
+        p.extra_payload = self.extra_payload
+        return p
+
+    def _pick(self) -> KeySlot:
+        healthy = [s for s in self.slots if not s.tripped()] or self.slots
+        return min(healthy, key=lambda s: (s.in_flight, s.error_streak, s.last_latency_ms))
+
+    def tripped(self) -> bool:
+        """The pool is only DOWN when EVERY key is tripped (stale breaker safe)."""
+        return bool(self.slots) and all(s.tripped() for s in self.slots)
+
+    def _track(self, slot: KeySlot, res: LLMResult) -> None:
+        if res.ok and res.text.strip():
+            slot.error_streak = 0
+            slot.last_latency_ms = res.latency_ms
+            slot.last_error = None
+            self.report_success(res.latency_ms, res.usage)
+            return
+        err = res.error or "empty response (GO quota/rate)"
+        slot.error_streak += 1
+        slot.last_error = err
+        if res.ok and not res.text.strip():
+            # empty HTTP 200 — GO returning blank while rate-limited: back off
+            slot.trip(_GO_SLOT_COOLDOWN)
+            self.report_error(err)
+            return
+        if "GoUsageLimitError" in err or "429" in err:
+            slot.trip(_GO_QUOTA_COOLDOWN)  # quota hit — don't hammer for 5 min
+        elif slot.error_streak >= _CIRCUIT_THRESHOLD:
+            slot.trip(_GO_SLOT_COOLDOWN)
+        self.report_error(err)
+
+    async def complete(self, prompt: str, system: str | None = None,
+                       max_tokens: int = 2048, temperature: float = 0.7,
+                       json_mode: bool = False) -> LLMResult:
+        if not self.slots:
+            return LLMResult(text="", provider=self.name, model=self.MODEL,
+                             error="GO_API_KEYS not set")
+        # in-pool failover: try the healthiest key; on failure (quota/empty/5xx)
+        # move to the next healthy key for THIS request — one bad key must not
+        # cost the user a degraded report.
+        tried: list[KeySlot] = []
+        last: LLMResult | None = None
+        while len(tried) < len(self.slots):
+            candidates = [s for s in self.slots if s not in tried and not s.tripped()] or \
+                         [s for s in self.slots if s not in tried]
+            if not candidates:
+                break
+            slot = min(candidates, key=lambda s: (s.in_flight, s.error_streak, s.last_latency_ms))
+            tried.append(slot)
+            slot.in_flight += 1
+            try:
+                res = await self._mk(slot).complete(prompt, system=system,
+                                                    max_tokens=max_tokens,
+                                                    temperature=temperature,
+                                                    json_mode=json_mode)
+            finally:
+                slot.in_flight -= 1
+            self._track(slot, res)
+            last = res
+            if res.ok and res.text.strip():
+                res.provider = self.name   # M1: pool identity, not inner caller
+                res.model = self.MODEL
+                return res
+        assert last is not None
+        last.provider = self.name
+        last.model = self.MODEL
+        return last
+
+    async def stream(self, prompt: str, system: str | None = None,
+                     max_tokens: int = 2048,
+                     temperature: float = 0.7) -> AsyncIterator[LLMResult]:
+        if not self.slots:
+            yield LLMResult(text="", provider=self.name, model=self.MODEL,
+                            error="GO_API_KEYS not set")
+            return
+        slot = self._pick()
+        slot.in_flight += 1
+        last: LLMResult | None = None
+        try:
+            async for chunk in self._mk(slot).stream(prompt, system=system,
+                                                     max_tokens=max_tokens,
+                                                     temperature=temperature):
+                last = chunk
+                yield chunk
+        finally:
+            slot.in_flight -= 1
+        if last is not None:
+            self._track(slot, last)
+
+
+# ─────────────────────────── Zen free-tier (M1 — last-resort fallback) ───────────────────────────
+
+class ZenFreeProvider(DeepSeekProvider):
+    """OpenCode Zen FREE model (e.g. deepseek-v4-flash-free) — zero cost,
+    zero reliability (M0: 429 FreeUsageLimitError most of the time).
+
+    Positioned as the LAST fallback layer: try-once per request, and on ANY
+    free-tier rate limit back off the whole slot for ZEN_FREE_COOLDOWN so we
+    never hammer a free quota in a loop. When it works it costs nothing.
+    """
+
+    name = "zen-free"
+    MODEL = "deepseek-v4-flash-free"
+
+    def __init__(self, api_key: str | None = None,
+                 api_base: str = "https://opencode.ai/zen/v1") -> None:
+        super().__init__(api_key=api_key, api_base=api_base, model=self.MODEL)
+        self.user_agent = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                           "Chrome/126.0 Safari/537.36")
+
+    @staticmethod
+    def estimate_cost(usage: LLMUsage) -> float:
+        return 0.0  # free tier
+
+    async def complete(self, prompt: str, system: str | None = None,
+                       max_tokens: int = 2048, temperature: float = 0.7,
+                       json_mode: bool = False) -> LLMResult:
+        res = await super().complete(prompt, system=system, max_tokens=max_tokens,
+                                     temperature=temperature, json_mode=json_mode)
+        if res.error and ("FreeUsageLimitError" in res.error or "429" in res.error):
+            self.health.tripped_until = time.monotonic() + _ZEN_FREE_COOLDOWN
+            self.health.error_streak = 0  # free quota — not a persistent fault
+        return res
+
+
 # ─────────────────────────── Router ───────────────────────────
 
 class LLMRouter:
@@ -365,23 +549,43 @@ _PART_DEFAULT_MODEL = {
 
 
 def build_router(part: str = "report") -> LLMRouter:
-    """Build the router for a specific part. Production runs on OpenCode Go
-    (DeepSeek V4) only; an optional direct DeepSeek API key acts as fallback.
+    """Build the router for a specific part.
+
+    M1 chain (2026-08-16): GO KeyPool (N account keys, per-key breaker)
+    → optional Zen free-tier model (zero cost, last resort)
+    → optional direct DeepSeek API key (paid fallback).
     Model + provider per part are overridable via secrets `{part}_llm_model`
-    and `{part}_llm_provider` (go / deepseek / auto) from the admin panel."""
+    and `{part}_llm_provider` (go / zen-free / deepseek / auto) from the admin panel.
+    """
     default_model = _PART_DEFAULT_MODEL.get(part, "deepseek-v4-pro")
     model = get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default_model)
     provider_pref = get_secret(f"{part}_llm_provider", f"{part.upper()}_LLM_PROVIDER", "auto").strip().lower()
     providers: list[LLMProvider] = []
     if provider_pref in ("", "auto", "go"):
-        go = GoProvider(model=model)
-        if go.api_key:
-            providers.append(go)
+        pool = build_go_pool(model=model)
+        if pool is not None:
+            providers.append(pool)
+    if provider_pref in ("", "auto", "zen-free"):
+        zen = ZenFreeProvider(api_key=get_secret("go_api_key_2", "GO_API_KEY_2", "")
+                              or get_secret("go_api_key", "GO_API_KEY", ""))
+        if zen.api_key:
+            providers.append(zen)
     if provider_pref in ("", "auto", "deepseek"):
         ds = DeepSeekProvider(model=model)
         if ds.api_key:
             providers.append(ds)
     return LLMRouter(providers)
+
+
+def build_go_pool(model: str | None = None) -> GoPoolProvider | None:
+    """GO KeyPool from GO_API_KEYS (comma-separated) with GO_API_KEY fallback."""
+    keys_csv = get_secret("go_api_keys", "GO_API_KEYS", "")
+    if not keys_csv:
+        keys_csv = get_secret("go_api_key", "GO_API_KEY", "")
+    keys = [k.strip() for k in keys_csv.split(",") if k.strip()]
+    if not keys:
+        return None
+    return GoPoolProvider(api_keys=keys, model=model)
 
 
 def build_chat_router() -> LLMRouter:
