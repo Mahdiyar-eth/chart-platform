@@ -95,6 +95,7 @@ _DEADLINE = float(os.getenv("LLM_DEADLINE", "150"))          # whole-call backst
 # M1 (multi-provider plan): per-key health inside the GO pool.
 _GO_SLOT_COOLDOWN = float(os.getenv("GO_SLOT_COOLDOWN", "60"))      # per-key breaker
 _GO_QUOTA_COOLDOWN = float(os.getenv("GO_QUOTA_COOLDOWN", "300"))   # GoUsageLimitError → back off 5 min
+_GO_EMPTY_COOLDOWN = float(os.getenv("GO_EMPTY_COOLDOWN", "300"))   # M4: empty-200 == quota too — 5 min per key
 _ZEN_FREE_COOLDOWN = float(os.getenv("ZEN_FREE_COOLDOWN", "300"))   # free-tier rate limit
 
 
@@ -370,7 +371,7 @@ class GoPoolProvider(LLMProvider):
         slot.last_error = err
         if res.ok and not res.text.strip():
             # empty HTTP 200 — GO returning blank while rate-limited: back off
-            slot.trip(_GO_SLOT_COOLDOWN)
+            slot.trip(_GO_EMPTY_COOLDOWN)
             self.report_error(err)
             return
         if "GoUsageLimitError" in err or "429" in err:
@@ -415,7 +416,7 @@ class GoPoolProvider(LLMProvider):
         assert last is not None
         last.provider = self.name
         last.model = self.MODEL
-        last.key_slot = self.slots[-1].name
+        last.key_slot = ",".join(s.name for s in tried)  # M4: honest telemetry on failure
         return last
 
     async def stream(self, prompt: str, system: str | None = None,
