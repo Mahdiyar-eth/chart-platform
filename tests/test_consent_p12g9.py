@@ -8,13 +8,13 @@ from app.models import ConsentLog, User
 from tests.conftest import fake_authority
 
 
-def test_consent_recorded_at_signup_and_readable():
+def test_consent_recorded_at_signup_and_readable(monkeypatch):
     from app.auth import _user_cookie_value, request_otp
     import app.auth as A
 
     phone = f"98g9{fake_authority(8)}"
-    # simulate full OTP signup without SMS (dev mode)
-    A._OTP_DEV_MODE = True
+    # simulate full OTP signup without SMS (dev mode — restore after)
+    monkeypatch.setattr(A, "_OTP_DEV_MODE", True)
     code = request_otp(phone)["dev_code"]
     u = A.verify_otp(phone, code)
     with Session(engine) as s:
