@@ -1,8 +1,8 @@
 {
   "product": "ZAYCHE",
   "repo": "/root/chart-platform",
-  "updated_at": "2026-08-16T00:00:00Z",
-  "milestone": "M3-post-P12",
+  "updated_at": "2026-08-16T03:20:00Z",
+  "milestone": "PRE-LAUNCH: code complete, environmental acceptance pending",
   "phase": "M4-M9 (master-spec gaps G1-G17) — COMPLETE",
   "completed": [
     "M0-audit",
@@ -13,16 +13,22 @@
     "M3a-commerce: G13 synastry plan card",
     "M9a-perf: G14 load-test OK, G16 pdf-bench OK (567ms), G17 ai-bench 52/52"
   ],
-  "pending": [
-    "G18 zarinpal real merchant (user activation)",
-    "G19 kavenegar OTP key (user activation)",
-    "G20 physical mobile test (user activation)",
-    "G21 real push device (user activation)",
-    "G22 search console access (user activation)"
-  ],
+  "pending": {
+    "environmental_activations": [
+      "G18 real Zarinpal merchant (sandbox=false + E2E evidence)",
+      "G19 Kavenegar SMS key (OTP_SMS_API_KEY, fail-closed ZAY-SMS-001)",
+      "G20 physical device tests (iPhone Safari + Android Chrome, 9-step golden path)",
+      "G21 real Web Push delivery on device",
+      "G22 Search Console property verification + sitemap + URL inspect"
+    ],
+    "nightly_automation": [
+      "A1 AI benchmark 10-criteria 52 charts (cron 04:00)",
+      "A2 business load test 10 users (cron 04:15)"
+    ]
+  },
   "tests": "476 passed, 1 skipped",
   "coverage_pct": 74,
   "bandit": "High=0 Medium=0",
   "pip_audit": 0,
-  "last_verdict": "GO"
+  "last_verdict": "CODE COMPLETE (LAUNCH ACCEPTED pending — 5 environmental activations)"
 }

@@ -174,19 +174,27 @@ def admin_regenerate(order_id: str, request: Request, session: Session = Depends
     if not rep:
         raise HTTPException(404, "report not found")
     if rep.status == "done":
-        raise HTTPException(400, "گزارش آماده است — برای اجرای مجدد اول حذفش کنید")
-    rep.status = "queued"
-    rep.error = None
-    session.add(rep)
-    session.commit()
-    ok = _enqueue_report(rep.id)
-    if not ok:
-        rep.status = "failed"
-        rep.error = "queue unavailable (worker not running)"
+        # A6 versioning: keep old report + R2 artifact intact; mint v+1
+        new_rep = Report(chart_id=rep.chart_id, plan_key=rep.plan_key, status="queued")
+        session.add(new_rep)
         session.commit()
+        session.refresh(new_rep)
+        rid = new_rep.id
+    else:
+        rep.status = "queued"
+        rep.error = None
+        session.add(rep)
+        session.commit()
+        rid = rep.id
+    ok = _enqueue_report(rid)
+    if not ok:
+        if rid == rep.id:
+            rep.status = "failed"
+            rep.error = "queue unavailable (worker not running)"
+            session.commit()
         raise HTTPException(503, "worker در دسترس نیست — بعداً دوباره تلاش کنید")
-    audit(session.bind, "admin", "report.regenerate", rep.id, f"order={order.id} chart={chart.id}")
-    return {"ok": True, "report_id": rep.id, "status": "queued"}
+    audit(session.bind, "admin", "report.regenerate", rid, f"order={order.id} chart={chart.id}")
+    return {"ok": True, "report_id": rid, "status": "queued"}
 
 
 @router.get("/api/admin/coupons", response_class=JSONResponse)
@@ -248,6 +256,17 @@ def admin_flag_update(name: str, request: Request, value: str = Form(...)):
 def _admin_identity(request: Request) -> str:
     u = getattr(request, "state", None)
     return getattr(u, "admin", None) or "admin"
+
+
+@router.get("/api/admin/kpi", response_class=JSONResponse)
+def admin_kpi(request: Request, session: Session = Depends(get_session)):
+    """A7 (§22 admin KPI) — full KPI matrix: DAU/WAU/MAU, revenue, AOV, ARPU,
+    LTV, churn, renewal, repeat, refund, report completion, engagement, cost."""
+    from fastapi import HTTPException
+    from app.kpi import kpi_matrix
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    return kpi_matrix(session)
 
 
 @router.get("/api/admin/llm-cost")

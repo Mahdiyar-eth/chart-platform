@@ -34,7 +34,10 @@
 
     <!-- sky facts -->
     <div class="glass" style="padding:16px;margin-bottom:12px;">
-      <div style="font-weight:800;margin-bottom:12px;font-size:1.02rem;">✨ امروز در آسمان</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-weight:800;font-size:1.02rem;">✨ امروز در آسمان</div>
+        <button type="button" x-show="status.facts.length" x-cloak @click="shareTransit()" style="background:none;border:1px solid var(--stroke);border-radius:10px;color:var(--muted);font-size:.78rem;padding:6px 10px;cursor:pointer;">اشتراک‌گذاری گذر</button>
+      </div>
       <div x-show="!status.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
       <template x-for="(f, i) in status.facts" :key="i">
         <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--stroke);">
@@ -68,6 +71,7 @@
         <button class="btn btn-lg" style="width:100%;margin-top:10px;" x-on:click="submit()" :disabled="busy">
           <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
         </button>
+        <p x-show="err" x-cloak style="margin-top:10px;color:#e76f51;font-size:.85rem;" x-text="err"></p>
       </div>
     </div>
 
@@ -87,6 +91,7 @@ function todayApp() {
     status: {{ status_json|safe }},
     answer: "",
     busy: false,
+    err: "",
     init() {
       if (!this.chartId) { this.chartId = this.charts.length ? this.charts[0].id : ""; }
       if (this.chartId) this.load();
@@ -102,6 +107,7 @@ function todayApp() {
       if (!this.answer.trim()) return;
       const self = this;
       this.busy = true;
+      this.err = "";
       const fd = new FormData();
       fd.append("chart_id", this.chartId);
       fd.append("answer", this.answer);
@@ -109,10 +115,27 @@ function todayApp() {
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
           if (ok) { self.status = { ...self.status, ...d, done: true }; self.answer = ""; }
-          else { alert(d.detail || "خطا"); }
+          else { self.err = d.detail || "خطایی رخ داد؛ دوباره تلاش کن"; }
         })
-        .catch(() => alert("خطا در ثبت تأمل"))
+        .catch(() => { self.err = "خطا در ثبت تأمل"; })
         .finally(() => { self.busy = false; });
+    },
+    shareTransit() {
+      if (!this.status.facts || !this.status.facts.length) return;
+      const headline = this.status.facts.map(f =>
+        f.planet_fa + " امروز در " + f.sign_fa + " با " + f.target_fa + " تو در " + f.aspect_fa + " است").join(" — ");
+      const fd = new FormData();
+      fd.append("kind", "transit");
+      fd.append("title", this.status.today_label || "گذرهای امروز");
+      fd.append("headline", headline);
+      fd.append("date_fa", this.status.today_label || "");
+      fetch("/api/insight/share", { method: "POST", body: fd })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (ok && d.url) window.open(d.url, "_blank");
+          else this.err = "خطا در ساخت لینک اشتراک‌گذاری";
+        })
+        .catch(() => { this.err = "خطا در ساخت لینک اشتراک‌گذاری"; });
     },
   };
 }

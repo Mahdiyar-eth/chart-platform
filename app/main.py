@@ -1026,6 +1026,42 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
     }
 
 
+@app.post("/api/insight/share")
+def api_insight_share(request: Request, kind: str = Form("insight"),
+                      title: str = Form(""), headline: str = Form(""),
+                      date_fa: str = Form("")):
+    """A8 — viral share for Daily Insight / Weekly / Transit cards (mirrors G7).
+    Guest page shows ONLY headline + title — no birth data."""
+    import hmac as _hmac, hashlib
+    from app.auth import _AUTH_SECRET
+    if kind not in ("insight", "weekly", "transit"):
+        raise HTTPException(400, "[ZAY-PAY-001] درخواست نامعتبر")
+    payload = f"{kind}|{title[:120]}|{headline[:400]}|{date_fa[:40]}"
+    tok = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
+    return {"url": f"/si/{tok}?p={payload.replace('|', '%7C')}"}
+
+
+@app.get("/si/{token}", response_class=HTMLResponse)
+def insight_share_page(request: Request, token: str, p: str = Query("")):
+    """Guest preview for shared insight/transit card (rate-limited, no leak)."""
+    if not _rate_limit(f"share:{_rl_client(request)}", 30, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    import hmac as _hmac, hashlib
+    from app.auth import _AUTH_SECRET
+    parts = p.split("|")
+    if len(parts) != 4:
+        raise HTTPException(404, "not found")
+    kind, title, headline, date_fa = parts
+    payload = f"{kind}|{title}|{headline}|{date_fa}"
+    expect = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
+    if not _hmac.compare_digest(expect, token):
+        raise HTTPException(404, "not found")
+    return templates.TemplateResponse(request, "insight_share.html", {
+        "title": "بینش نجومی — زایچه",
+        "kind": kind, "headline": headline, "date_fa": date_fa or title,
+    })
+
+
 @app.post("/api/synastry/share")
 def api_synastry_share(request: Request, name_a: str = Form(""), name_b: str = Form(""),
                        score: int = Form(...), verdict: str = Form(...)):

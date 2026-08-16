@@ -39,6 +39,9 @@
 | `GET /synastry` | Public | — |
 | `POST /api/synastry` | Public | rate limit |
 | `POST /api/synastry/share` | Public | HMAC-signed guest link, rate limit (G7) |
+| `POST /api/insight/share` | Public (auth optional) | HMAC-signed guest link; payload limit 120/400/40 (A8) |
+| `GET /si/{token}` | Guest | HMAC-verified; headline/title only — no birth data; rate limit 30/60s (A8) |
+| `GET /api/admin/kpi` | Admin | `_is_admin` (chart_admin cookie) — live KPI matrix (A7) |
 | `GET /s/{token}` | Public | HMAC verify, rate limit (G7) |
 | `POST /api/synastry/order` | Capability | `_owns_chart` |
 | `POST /api/synastry/full` | Capability | `_owns_chart` |

@@ -15,6 +15,14 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
+  <div class="glass" style="padding:14px;font-size:.83rem;">
+    <div id="kpi-matrix" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;">
+      <i style="color:var(--muted)">در حال بارگذاری…</i>
+    </div>
+    <p style="color:var(--muted);margin-top:10px;font-size:.75rem;">منبع: کوئری‌های زندهٔ DB (app/kpi.py) — پنجره‌ها: ۲۴ ساعت / ۷ روز / ۳۰ روز / مادام‌العمر</p>
+  </div>
+
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">هزینه AI — تفکیکی (H1.3)</h2>
   <div class="glass" style="padding:14px;font-size:.85rem;">
     <div id="llm-cost-panels" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
@@ -258,6 +266,28 @@
   <script>
     document.addEventListener('alpine:init', () => { Alpine.store('plans', {}); });
 
+    // A7: KPI matrix — fetch once, render tiles
+    (async () => {
+      try {
+        const r = await fetch('/api/admin/kpi', {headers: {'Accept': 'application/json'}});
+        const k = await r.json();
+        const L = {
+          dau_24h: 'DAU (24h)', wau_7d: 'WAU (7d)', mau_30d: 'MAU (30d)', total_users: 'کاربران کل',
+          revenue_30d_toman: 'درآمد ۳۰ روز (تومان)', revenue_total_toman: 'درآمد کل (تومان)', aov_30d_toman: 'AOV 30d (تومان)',
+          arpu_30d_toman: 'ARPU 30d (تومان)', ltv_toman: 'LTV (تومان)', subscriptions_active_30d: 'اشتراک فعال',
+          churn_30d: 'Churn 30d', renewal_30d: 'تمدید 30d', repeat_purchase_users: 'خرید تکراری (کاربر)',
+          refund_rate_pct: 'Refund rate %', report_completion_pct: 'تکمیل گزارش %', reports_done: 'گزارش آماده',
+          chat_messages_30d: 'پیام چت 30d', explorations_30d: 'کاوش 30d', weekly_reflections_30d: 'تأمل هفتگی 30d',
+          push_subscriptions_total: 'Push device', transit_llm_runs_30d: 'Transit 30d', llm_runs_total: 'LLM ران‌ها (کل)',
+          llm_fail_30d: 'LLM خطا 30d', llm_latency_avg_ms: 'LLM latency avg (ms)', qa_fail_latest_30d: 'QA fail 30d'
+        };
+        const box = document.getElementById('kpi-matrix');
+        box.innerHTML = Object.entries(k).map(([key, v]) =>
+          '<div class="kpi"><b>' + v + '</b><span>' + (L[key] || key) + '</span></div>').join('');
+      } catch (e) {
+        document.getElementById('kpi-matrix').innerHTML = '<i style="color:var(--muted)">KPI در دسترس نیست: ' + e + '</i>';
+      }
+    })();
     // H1.3: LLM cost breakdown (24h / 7d / 30d) — fetch once, render panels
     (async function loadLlmCost(){
       try {

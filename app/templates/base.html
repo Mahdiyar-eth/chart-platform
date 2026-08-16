@@ -28,11 +28,13 @@
   <script defer src="/static/vendor/alpine.min.js"></script>
   <script src="/static/vendor/htmx.min.js"></script>
   <script defer src="/static/sw-register.js"></script>
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/Vazirmatn-Regular.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/Vazirmatn-Bold.woff2">
   <style>
-    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
-    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Medium.ttf') format('truetype'); font-weight:500; font-display:swap; }
-    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
-    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-ExtraBold.ttf') format('truetype'); font-weight:800; font-display:swap; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Regular.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Regular.ttf') format('truetype'); font-weight:400; font-display:optional; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Medium.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Medium.ttf') format('truetype'); font-weight:500; font-display:optional; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Bold.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Bold.ttf') format('truetype'); font-weight:700; font-display:optional; }
+    @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-ExtraBold.woff2') format('woff2'), url('/static/fonts/Vazirmatn-ExtraBold.ttf') format('truetype'); font-weight:800; font-display:optional; }
     /* ── Liquid Glass v3 — app-like navigation + clean cosmic palette ── */
     * { margin:0; padding:0; box-sizing:border-box; }
     :root{
