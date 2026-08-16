@@ -1,0 +1,26 @@
+{
+  "product": "ZAYCHE",
+  "repo": "/root/chart-platform",
+  "updated_at": "2026-08-16T00:00:00Z",
+  "milestone": "M3-post-P12",
+  "phase": "A (P1 gaps) — in progress",
+  "completed": [
+    "M0-audit", "MASTER-GAP-MATRIX", "G1-data-export", "G2-runbook",
+    "G3-final-launch-check", "G4-state-json"
+  ],
+  "failed": [],
+  "open_gaps": [
+    "G5-error-codes-in-code (taxonomy documented; ZAY-xxx not yet emitted by routes)",
+    "G6..G13 (phase B: chat presets, synastry share, notif prefs, consent, search, flags, city pages, synastry plan)",
+    "G14..G17 (phase C: load test, dashboard UX, PDF/AI benchmark)"
+  ],
+  "user_activations": [
+    "zarinpal-real-merchant", "kavenegar-otp-key", "real-mobile-test",
+    "real-push-test", "search-console"
+  ],
+  "tests": {"passed": 454, "skipped": 1, "files": 64, "coverage": 74},
+  "security": {"bandit_high": 0, "bandit_medium": 0, "pip_audit": 0, "secrets": "none"},
+  "db": {"tables": 24, "migrations": 24, "alembic": "head, no drift"},
+  "last_commit": "ab32c28 (docs: ZAYCHE-FULL-BUNDLE)",
+  "verdict": "CONDITIONAL — P0=0, P1 (5) mostly done, P2 (12) pending"
+}

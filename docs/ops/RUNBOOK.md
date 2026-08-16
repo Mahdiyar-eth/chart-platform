@@ -1,6 +1,6 @@
-# RUNBOOK — پلتفرم چارت تولد (chart-platform)
+# RUNBOOK — پلتفرم چارت تولد (chart-platform / ZAYCHE)
 
-آخرین بهروزرسانی: ۲۲ مرداد ۱۴۰۵ (v0.6.0)
+آخرین بهروزرسانی: ۲۰۲۶-۰۸-۱۶ (P12-gates + master-spec M0) · نسخهٔ سند: v0.8.0
 
 ## Disaster Recovery — ماتریس RTO/RPO (تأیید شده ۲۰۲۶-۰۸-۱۵)
 
@@ -12,6 +12,8 @@
 | 4 | دیسک پر (≥85%) | هشدار watchdog دیسک | `docker builder prune -af` + بکاپ قدیمی حذف | دستی ~10 دقیقه | 0 (قبل از فاجعه) | ✅ تجربه ۱۰۰٪ ۲۰۲۶-۰۸-۱۱ |
 | 5 | LLM provider down (429/500/timeout) | لاگ `HTTP 429` در worker؛ degraded در UI | خودکار (circuit breaker + fallback + deterministic fallback) | خودکار | 0 | ✅ fake-server تست شد |
 | 6 | سرور کامل down | دسترسی از دست میرود | دیپلوی مجدد: بکاپ DB (R2) + `.env.age` + `scripts/migrate.sh` | ~1 ساعت | ≤24h | ✅ docs/MIGRATION.md |
+| 7 | R2 از دسترس خارج | دانلود PDF/صوتی در دسترس نیست | presigned کوتاه (۳۰ دقیقه) + بازیابی خودکار؛ داده در R2 بکت `zayche-storage` | خودکار | 0 | ✅ طراحی |
+| 8 | SMS (کاوهنگار) down | OTP پیامک نمیرسد | fail-closed (§31): درخواست OTP رد میشود نه ناقص | خودکار | 0 | ✅ تست ۸گانه OTP |
 
 قانون: هر بکاپ شامل DB + config است (رسانهها در R2، در بکاپ نیستند). بکاپها در R2 با پیشوند `backups/` نگهداری میشوند. بازیابی کامل: `scripts/restore_db.sh <backup.zip> <target_db>` (بعد از CREATE EXTENSION با superuser — F-35b).
 
@@ -45,26 +47,56 @@ venv/bin/arq app.report.worker.WorkerSettings
 
 ## تست
 ```bash
-venv/bin/python -m pytest tests/ -q        # 55 پاس — هرگز prod را نمی‌زند (DB تست جدا)
+venv/bin/python -m pytest tests/ -q        # 451 passed, 1 skipped — هرگز prod را نمیزند (DB تست جدا)
+bash scripts/final-launch-check.sh         # G3 — Verdict: GO / NO-GO (اجرای همه گیتها)
 ```
+
+## Taxonomy خطاها (G5 — master-spec §169/170)
+هر خطای کاربر-قابل-مشاهده یک کد `ZAY-<DOMAIN>-<NNN>` دارد تا پشتیبانی/لاگ با یک کد، ریشه را پیدا کند:
+
+| کد | معنا | Retryable |
+|---|---|---|
+| ZAY-AUTH-001 | OTP منقضی/نامعتبر | بله (درخواست مجدد) |
+| ZAY-AUTH-002 | تلاش بیش از حد OTP | بعد از cooldown |
+| ZAY-AUTH-003 | نشست منقضی | ورود مجدد |
+| ZAY-PAY-001 | ایجاد سفارش ناموفق | بله |
+| ZAY-PAY-002 | تأیید پرداخت با درگاه ناموفق | بله |
+| ZAY-PAY-003 | پرداخت نامعتبر/بازپخش | خیر — پشتیبانی |
+| ZAY-REPORT-001 | تولید گزارش با خطا مواجه شد | بله (retry خودکار/ادمین) |
+| ZAY-REPORT-002 | گزارش در صف است | بله (منتظر بمان) |
+| ZAY-AI-001 | سرویس هوش مصنوعی در دسترس نیست | بله |
+| ZAY-AI-002 | سهمیه چت تمام | خرید/فردا |
+| ZAY-PUSH-001 | اشتراک اعلان نامعتبر | لغو و دوباره |
+| ZAY-SMS-001 | ارسال پیامک ناموفق (fail-closed) | بعداً |
+| ZAY-R2-001 | دریافت فایل (PDF/صوتی) ناموفق | بله — لینک جدید بگیر |
+| ZAY-DB-001 | خطای زیرساختی دیتابیس | بله — دوباره تلاش |
+| ZAY-FRONT-001 | خطای پیشبینینشده مرورگر | بله |
+
+ردیابی کامل یک گزارش: `REPORT-<id>` → row در `reports` → `llm_runs` → `orders` → `audit_logs` (master-spec §109).
 
 ## Endpoint های کلیدی
 | مسیر | کارکرد |
 |---|---|
 | `/` | لندینگ + فرم ۵ مرحله |
 | `/api/charts` | POST ساخت چارت |
-| `/chart/{id}` | صفحه چارت + خرید + چت + گذرها |
-| `/plans?chart={id}` | تعرفهها (۱۴۹/۳۴۹/۶۹۹ هزار تومان) |
+| `/chart/{id}` | صفحه چارت + کاوش + گذرها |
+| `/explore` | کاوش تعاملی (کارتهای خودشناسی، اعتبارمحور) |
+| `/plans?chart={id}` | تعرفهها (basic/full/gold + پک اعتبار + اشتراک) |
 | `/api/orders` POST | ایجاد سفارش → درگاه |
 | `/api/payments/verify` | کالتبک زرینپال → پرداختشده → صف گزارش |
 | `/api/charts/{id}/report` POST | صف تولید گزارش |
 | `/api/reports/{id}/pdf` | دانلود PDF (گزارش تولیدشده) |
 | `/chat/{id}` | گفتوگو با چارت (پس از خرید) |
-| `/transit/{id}` | گذرهای کنونی |
-| `/admin` | دشبورد (سفارشات + درآمد) |
+| `/today` | بینش روز + تأمل روزانه |
+| `/synastry` | تطبیق دو چارت |
+| `/account` | داشبورد کاربر: چارتها/گزارشها/کیف پول/اشتراک/خروجی داده |
+| `/account/export` | G1 — خروجی کامل دادهها (JSON + لینکهای امضاشده) |
+| `/api/coupons/check` | اعتبارسنجی کد تخفیف (بدون مصرف) |
+| `/admin` | دشبورد ادمین (سفارشات + درآمد + رازها + گزارشها) |
 | `/api/v1/{telegram,bale}/webhook` | رباتها (توکن از env) |
 | `/api/share/{id}.png` | کارت اشتراک ۱۲۰۰×۶۳۰ |
 | `/sitemap.xml` `/robots.txt` | سئو |
+| `/liveness` `/readiness` | سلامت (بدون جزئیات داخلی) |
 
 ## محیط (env)
 `ZARINPAL_MERCHANT_ID`, `ZARINPAL_SANDBOX`, `PUBLIC_BASE_URL`,

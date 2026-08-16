@@ -14,12 +14,13 @@ def auth_otp_request(request: Request, phone: str = Form(...)):
     from app.main import _rate_limit, _rl_client
     if not _rate_limit(f"otp:{_rl_client(request)}", 5, 300):
         from fastapi import HTTPException
-        raise HTTPException(429, "تعداد درخواست کد زیاد است؛ کمی بعد دوباره تلاش کن")
+        raise HTTPException(429, "[ZAY-AUTH-002] تعداد درخواست کد زیاد است؛ کمی بعد دوباره تلاش کن")
     try:
         return request_otp(phone)
     except RuntimeError as e:
         from fastapi import HTTPException
-        raise HTTPException(429, str(e))
+        code = "ZAY-SMS-001" if "SMS" in str(e) else "ZAY-AUTH-004"
+        raise HTTPException(429, f"[{code}] {e}")
 
 
 @router.post("/api/auth/otp/verify")
@@ -28,7 +29,7 @@ def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(.
     from fastapi import HTTPException
     u = verify_otp(phone, code)
     if not u:
-        raise HTTPException(401, "کد نادرست یا منقضی شده")
+        raise HTTPException(401, "[ZAY-AUTH-001] کد نادرست یا منقضی شده")
     return set_user_cookie(request, u.id)
 
 

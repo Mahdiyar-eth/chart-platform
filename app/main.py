@@ -15,7 +15,7 @@ from pathlib import Path
 import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -480,13 +480,13 @@ def api_create_report(chart_id: str, request: Request,
         raise HTTPException(404, "chart not found")
     # ownership (P0-1): only the owner (user_id or capability token) may trigger
     if not _owns_chart(chart, session, request):
-        raise HTTPException(403, "برای تولید گزارش، ابتدا پلن را خریداری کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
     # plan v3.0 §8/§12: report generation happens AFTER payment — plan_key drives section set
     paid = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
     if not paid:
-        raise HTTPException(403, "برای تولید گزارش، ابتدا پلن را خریداری کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
@@ -622,7 +622,7 @@ def api_report_docx(report_id: str, request: Request,
         raise HTTPException(404, "report not ready")
     # gate: paid order + ownership (audit P0-3)
     if not _report_gate(rep, session, request):
-        raise HTTPException(403, "برای دانلود گزارش، ابتدا خرید کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای دانلود گزارش، ابتدا خرید کنید")
     from app.report.word import report_to_docx
     title = "گزارش اختصاصی چارت تولد"
     sections = {k: {"title": (v or {}).get("title", k), "content": (v or {}).get("content", "")}
@@ -641,7 +641,7 @@ def api_report_pdf(report_id: str, request: Request,
         raise HTTPException(404, "report not ready")
     # gate: paid order on this chart + ownership (audit P0-3)
     if not _report_gate(rep, session, request):
-        raise HTTPException(403, "برای دانلود گزارش، ابتدا خرید کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای دانلود گزارش، ابتدا خرید کنید")
     from app.storage import presigned_url
     r2_url = presigned_url(rep.r2_key) if rep.r2_key else None
     if r2_url:
@@ -702,7 +702,7 @@ def api_create_order(
     if chart and not _owns_chart(chart, session, request):  # audit r4 A5: order ownership
         raise HTTPException(403, "not authorized")
     if not chart and plan_key not in CREDIT_PACKS:
-        raise HTTPException(400, "برای این پلن ابتدا چارت بسازید")
+        raise HTTPException(400, "[ZAY-PAY-001] برای این پلن ابتدا چارت بسازید")
     if secondary_chart_id:
         sec = session.get(Chart, secondary_chart_id)
         if not sec or not _owns_chart(sec, session, request):
@@ -725,7 +725,7 @@ def api_create_order(
         elif est and not coupon and request.cookies.get("chart_ref"):
             est = max(1, int(est * 0.9))  # referral estimate; real check in create_order
         if not user or not _plan or (user.balance_rial or 0) < est:
-            raise HTTPException(400, "موجودی کیف پول کافی نیست")
+            raise HTTPException(400, "[ZAY-PAY-001] موجودی کیف پول کافی نیست")
     try:
         order, pay_url = create_order(
             session, plan_key, chart_id or "",
@@ -743,7 +743,7 @@ def api_create_order(
                 if order.coupon_id:
                     _release_coupon(session, order)
                 session.commit()
-                raise HTTPException(400, "موجودی کیف پول کافی نیست")
+                raise HTTPException(400, "[ZAY-PAY-001] موجودی کیف پول کافی نیست")
             pay_url = None
             # F-03 (audit v5 P1): wallet-paid report must be ENQUEUED, exactly
             # like the Zarinpal callback path — otherwise the Report row stays
@@ -1110,7 +1110,7 @@ def api_synastry_full(request: Request, session: Session = Depends(get_session),
         )
     ).first()
     if not paid:
-        raise HTTPException(403, "برای مشاهدهی تحلیل کامل، ابتدا سیناستری را خریداری کنید")
+        raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا سیناستری را خریداری کنید")
     return synastry(ca.chart_json, cb.chart_json)
 
 
@@ -1170,7 +1170,7 @@ def api_report_audio(report_id: str, request: Request,
         raise HTTPException(404, "report not ready")
     # gate: paid order + ownership (audit P0-3)
     if not _report_gate(rep, session, request):
-        raise HTTPException(403, "برای دریافت فایل صوتی، ابتدا خرید کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای دریافت فایل صوتی، ابتدا خرید کنید")
     from app.storage import audio_key, presigned_url
     if rep.audio_status == "ready" and rep.audio_r2_key:
         cached = presigned_url(audio_key(report_id))
@@ -1190,7 +1190,7 @@ def api_report_audio_request(report_id: str, request: Request,
     if not rep or rep.status not in ("done", "degraded"):
         raise HTTPException(404, "report not ready")
     if not _report_gate(rep, session, request):
-        raise HTTPException(403, "برای دریافت فایل صوتی، ابتدا خرید کنید")
+        raise HTTPException(403, "[ZAY-REPORT-003] برای دریافت فایل صوتی، ابتدا خرید کنید")
     from app.storage import audio_key, presigned_url
     if rep.audio_status == "ready" and rep.audio_r2_key:
         cached = presigned_url(audio_key(report_id))
@@ -1707,6 +1707,161 @@ def account_login_page(request: Request):
     return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})
 
 
+@app.get("/account/export")
+def account_export(request: Request, session: Session = Depends(get_session)):
+    """G1 (§138) — personal data export (JSON + signed URLs for artifacts).
+
+    Owner-only. Never includes secrets: password_hash, payment keys,
+    push auth secrets, OTP hashes.
+    """
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+
+    from app.models import (
+        BirthProfile, Chart, ChatMessage, CreditTransaction, Exploration,
+        Order, PushSubscription, Report, WeeklyReflection,
+    )
+    from app.payment.orders import get_or_create_referral_code
+    from app.storage import presigned_url
+
+    profiles = session.exec(
+        select(BirthProfile).where(BirthProfile.user_id == u.id)
+    ).all()
+    profile_ids = [p.id for p in profiles]
+    charts = session.exec(
+        select(Chart).where(Chart.profile_id.in_(profile_ids)).order_by(Chart.created_at)
+    ).all() if profile_ids else []
+    chart_ids = [c.id for c in charts]
+
+    def _presign(r2_key: str | None) -> str | None:
+        if not r2_key:
+            return None
+        return presigned_url(r2_key, expires=1800)
+
+    reports = []
+    if chart_ids:
+        rows = session.exec(
+            select(Report).where(Report.chart_id.in_(chart_ids)).order_by(Report.created_at)
+        ).all()
+        reports = [{
+            "id": r.id, "chart_id": r.chart_id, "plan_key": r.plan_key,
+            "status": r.status, "created_at": r.created_at.isoformat(),
+            "updated_at": r.updated_at.isoformat(), "retry_count": r.retry_count,
+            "pdf_download_url": _presign(r.r2_key),
+            "audio_download_url": _presign(r.audio_r2_key) if r.audio_status == "ready" else None,
+        } for r in rows]
+
+    orders = []
+    if profile_ids:
+        rows = session.exec(
+            select(Order).where(
+                (Order.profile_id.in_(profile_ids)) | (Order.user_id == u.id)
+            ).order_by(Order.created_at)
+        ).all()
+    else:
+        rows = session.exec(
+            select(Order).where(Order.user_id == u.id).order_by(Order.created_at)
+        ).all()
+    orders = [{
+        "id": o.id, "plan_key": o.plan_key, "amount_rial": o.amount_rial,
+        "status": o.status, "payment_ref": getattr(o, "ref_id", None),
+        "created_at": o.created_at.isoformat(), "note": o.note,
+    } for o in rows]
+
+    chat = []
+    if chart_ids:
+        msgs = session.exec(
+            select(ChatMessage).where(ChatMessage.chart_id.in_(chart_ids))
+            .order_by(ChatMessage.created_at).limit(500)
+        ).all()
+        chat = [{
+            "chart_id": m.chart_id, "role": m.role, "content": m.content,
+            "created_at": m.created_at.isoformat(),
+        } for m in msgs]
+
+    ledger = session.exec(
+        select(CreditTransaction).where(CreditTransaction.user_id == u.id)
+        .order_by(CreditTransaction.created_at)
+    ).all()
+
+    explorations = session.exec(
+        select(Exploration).where(Exploration.user_id == u.id)
+        .order_by(Exploration.created_at)
+    ).all() if u.id else []
+
+    weekly = []
+    if chart_ids:
+        rows = session.exec(
+            select(WeeklyReflection).where(WeeklyReflection.chart_id.in_(chart_ids))
+            .order_by(WeeklyReflection.created_at)
+        ).all()
+        weekly = [{
+            "chart_id": w.chart_id, "week_start": w.week_start, "text": w.text,
+            "created_at": w.created_at.isoformat(),
+        } for w in rows]
+
+    pushes = session.exec(
+        select(PushSubscription).where(PushSubscription.user_id == u.id)
+    ).all()
+    push = [{
+        "endpoint": p.endpoint, "created_at": p.created_at.isoformat(),
+    } for p in pushes]
+
+    ref_code = get_or_create_referral_code(session, u.id)
+
+    payload = {
+        "schema_version": 1,
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "product": "zayche",
+        "user": {
+            "id": u.id, "phone": u.phone, "role": u.role, "status": u.status,
+            "credits": u.credits, "balance_rial": u.balance_rial,
+            "created_at": u.created_at.isoformat(),
+        },
+        "referral_code": ref_code,
+        "profiles": [{
+            "id": p.id, "name": p.name, "calendar_system": p.calendar_system,
+            "raw_year": p.raw_year, "raw_month": p.raw_month, "raw_day": p.raw_day,
+            "time_known": p.time_known, "hour": p.hour, "minute": p.minute,
+            "city_fa": p.city_fa, "province_fa": p.province_fa,
+            "lat": p.lat, "lon": p.lon, "tz_name": p.tz_name,
+            "utc_datetime": p.utc_datetime.isoformat() if p.utc_datetime else None,
+            "zodiac": p.zodiac, "focus_areas": p.focus_areas,
+            "personal_question": p.personal_question,
+            "created_at": p.created_at.isoformat(),
+        } for p in profiles],
+        "charts": [{
+            "id": c.id, "profile_id": c.profile_id,
+            "chart_json": c.chart_json, "created_at": c.created_at.isoformat(),
+        } for c in charts],
+        "reports": reports,
+        "orders": orders,
+        "chat_messages": chat,
+        "credit_ledger": [{
+            "id": t.id, "amount": t.amount, "reason": t.reason,
+            "ref_id": t.ref_id, "created_at": t.created_at.isoformat(),
+        } for t in ledger],
+        "explorations": [{
+            "id": e.id, "chart_id": e.chart_id, "card_key": e.card_key,
+            "status": e.status, "result": e.result, "credits_cost": e.credits_cost,
+            "created_at": e.created_at.isoformat(),
+        } for e in explorations],
+        "weekly_reflections": weekly,
+        "push_subscriptions": push,
+    }
+
+    body = json.dumps(payload, ensure_ascii=False, default=str, indent=2)
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f'attachment; filename="zayche-export-{u.id[:8]}.json"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
 @app.post("/account/delete", response_class=HTMLResponse)
 def account_delete(request: Request, csrf_token: str = Form(""),
                    session: Session = Depends(get_session)):
@@ -2116,7 +2271,7 @@ async def api_explore_start(
             exp.status = "failed"
             exp.error = "اعتبار کافی نیست"
             session.commit()
-            raise HTTPException(402, "اعتبار کافی نیست")
+            raise HTTPException(402, "[ZAY-AI-002] اعتبار کافی نیست")
 
     async def event_stream():
         try:
@@ -2261,7 +2416,7 @@ def api_today_reflection(request: Request, chart_id: str = Form(...),
     if not chart or not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این چارت ندارید")
     if _today_plan_access(session, chart) != "full":
-        raise HTTPException(403, "تأمل روزانه مخصوص پلن طلایی و اشتراک است")
+        raise HTTPException(403, "[ZAY-AI-002] تأمل روزانه مخصوص پلن طلایی و اشتراک است")
     if not _rate_limit(f"today:{_rl_client(request)}", 10, 60):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     tz = _chart_tz(session, chart)
