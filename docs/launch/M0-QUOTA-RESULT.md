@@ -9,7 +9,14 @@
 |---|---|---|
 | ۵ درخواست همزمان (تنها) | **5/5 ok** · latency ~1.3s · 0 empty | **5/5 → HTTP 429** `GoUsageLimitError: Weekly usage limit reached. Resets in 13h 12min` |
 | ۵+۵ همزمان (با هم) | **5/5 ok** · ~1.1s | 5/5 → 429 (همان) |
-| Zen free flash (K2, zen/v1) | — | **401 CreditsError: Insufficient balance** |
+| Zen free flash (K2, zen/v1) | — | **401 CreditsError: Insufficient balance** — تا شناسهٔ اشتباه `deepseek-v4-flash` بود |
+
+## یافتهٔ تکمیلی — مدلهای free Zen (کلید ۲)
+
+- لیست کامل zen/v1/models: **۶۲ مدل** — از جمله ۶ مدل free: `deepseek-v4-flash-free` · `mimo-v2.5-free` · `hy3-free` · `nemotron-3-ultra-free` · `nemotron-3.5-lightning-free` · `laguna-s-2.1-free`
+- شناسهٔ درست برای مدل رایگان کاربر: **`deepseek-v4-flash-free`** (نه `deepseek-v4-flash` — آن pay-per-use است و بدون balance → 401)
+- تست POST (چهار تلاش، ۲۰s فاصله، endpoint های chat/completions و responses): **همه 429 `FreeUsageLimitError: Rate limit exceeded`**
+- **نتیجه:** مدل free «برخی مواقع کار میکند» تأیید شد — در حال حاضر rate-limited است. رایگان و صفر-هزینه، ولی **غیرقابل اتکا** → فقط بهعنوان آخرین لایهٔ fallback (try-once، breaker سریع، بدون penalty طولانی — چون رایگان است)؛ هرگز بهعنوان provider اصلی.
 
 ## نتیجهگیری (پاسخ قطعی به سؤال v1/v2)
 
