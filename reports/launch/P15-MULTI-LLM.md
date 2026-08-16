@@ -12,6 +12,7 @@
 | 3 | Quality + GenSuccess جدا | خروجی: `AI QUALITY SCORE (on valid outputs)` و `GENERATION SUCCESS %` دو عدد مستقل |
 | 4 | Parallel gates همزمان | در-flight cap per key (GO_MAX_IN_FLIGHT_PER_KEY=2) + attempts/429/empty/timeout/cost در Benchmark A |
 | 5 | degraded طبقهبندی | `expected-safe` (همهٔ providers fail → PASS رفتار) vs `unexpected` (provider سالم ولی degraded → FAIL) |
+| 6 | ۶ اصلاح نهایی (نقد دوم ChatGPT) | **A2b Claim Validation چندنوعی** (house/degree/aspect/MC/retrograde/transit/uncertainty — ۱۶ تست) · **latency p50/p95/max** · **M3 worker gate** (پنجرهٔ ۲۴h llm_runs: p95≤40s، retry≤30%، provider-fail≤25%، unexpected-degraded=0) · **GenSuccess جدا** · hard gates صریح در acceptance matrix |
 
 ## خلاصه
 
