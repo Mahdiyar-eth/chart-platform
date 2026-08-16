@@ -12,6 +12,13 @@
     سهمیه امروز: <b x-text="remaining"></b> سوال از <b x-text="limit"></b> باقی مانده
   </p>
 
+  <div x-show="!locked && msgs.length === 0" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    {% for p in presets %}
+    <button class="btn btn-ghost" type="button" style="min-height:38px;padding:0 14px;font-size:.8rem;border-radius:999px;"
+            x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
+    {% endfor %}
+  </div>
+
   <div id="msgs" style="display:flex;flex-direction:column;gap:10px;min-height:46vh;max-height:58vh;overflow-y:auto;padding:4px;" x-ref="box">
     <template x-for="m in msgs" :key="m.id">
       <div :style="m.me ? 'align-self:flex-end;background:linear-gradient(135deg,#6a5acd,#4a3f8f);color:#fff;border-radius:16px 16px 4px 16px;' : 'align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#e8ecff;border-radius:16px 16px 16px 4px;'"

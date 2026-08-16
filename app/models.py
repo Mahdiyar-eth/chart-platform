@@ -370,6 +370,33 @@ class PushSubscription(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class ConsentLog(SQLModel, table=True):
+    """G9 (§85) — explicit consent records (terms/privacy/notifications/analytics).
+    Append-only: one row per (user, purpose, version); first acceptance is
+    recorded at signup, later rows for purpose-specific consent."""
+    __tablename__ = "consent_logs"
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    user_id: str = Field(foreign_key="users.id", index=True)
+    purpose: str = Field(default="terms")   # terms|privacy|notifications|analytics
+    version: str = Field(default="v1")
+    accepted: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class NotificationPrefs(SQLModel, table=True):
+    """G8 (§57) — per-user notification preferences + quiet hours.
+    One row per user; defaults are permissive (daily/weekly on, quiet 23-7)."""
+    __tablename__ = "notification_prefs"
+    user_id: str = Field(primary_key=True, foreign_key="users.id")
+    daily_insight: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
+    weekly_reflection: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
+    report_ready: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
+    quiet_start: int = Field(default=23)   # local hour (0-23)
+    quiet_end: int = Field(default=7)      # local hour (0-23)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class ReportChunk(SQLModel, table=True):
     """pgvector RAG (D2): semantic chunks of a finished report for grounded
     chat retrieval. embedding is a pgvector column (384-dim for e5-small)."""

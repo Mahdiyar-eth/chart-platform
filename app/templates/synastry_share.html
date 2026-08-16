@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}نتیجه سازگاری — زایچه{% endblock %}
+{% block content %}
+<div style="max-width:520px;margin:0 auto;padding:40px 14px;text-align:center;">
+  <div class="glass glow" style="padding:26px 20px;border-radius:18px;">
+    <svg style="width:40px;height:40px;color:var(--gold);margin-bottom:8px;" aria-hidden="true"><use href="#icon-heart"/></svg>
+    <h1 style="font-size:1.4rem;font-weight:800;color:#e8ecff;margin-bottom:4px;">نتیجه سازگاری</h1>
+    <p class="muted" style="font-size:.95rem;">{{ name_a }} و {{ name_b }}</p>
+    <div style="font-size:3rem;font-weight:900;margin:16px 0 6px;color:{% if score >= 65 %}#4caf7d{% elif score >= 50 %}#f5c518{% else %}#ff6b6b{% endif %};">{{ score }}</div>
+    <p style="line-height:2;color:#dfe6ff;">{{ verdict }}</p>
+    <p class="muted" style="font-size:.8rem;margin-top:10px;">این فقط یک خلاصه است؛ تحلیل کامل ۴ حوزه + ۲۵+ ارتباط سیارهای در نسخهٔ کامل ارائه میشود.</p>
+    <a href="/synastry" class="btn btn-lg" style="margin-top:16px;display:inline-block;">چارت و سازگاری خودت را بساز</a>
+    <p class="muted" style="font-size:.75rem;margin-top:14px;">محاسبه با موتور نجومی؛ برای خودشناسی، نه پیشبینی قطعی.</p>
+  </div>
+</div>
+{% endblock %}

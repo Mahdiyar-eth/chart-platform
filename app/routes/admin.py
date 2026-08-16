@@ -218,6 +218,38 @@ def api_admin_plan_update(plan_key: str, request: Request, session: Session = De
     return {"ok": True}
 
 
+@router.get("/api/admin/flags")
+def admin_flags(request: Request):
+    """G11 (§108) — runtime feature flags + resolved state."""
+    from fastapi import HTTPException
+    from app.feature_flags import all_flags
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    return all_flags()
+
+
+@router.put("/api/admin/flags/{name}")
+def admin_flag_update(name: str, request: Request, value: str = Form(...)):
+    """G11 — toggle a feature at runtime (audited)."""
+    from fastapi import HTTPException
+    from app.feature_flags import set_flag
+    from app.security import audit
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    try:
+        set_flag(name, value, admin=_admin_identity(request))
+    except ValueError:
+        raise HTTPException(400, f"invalid value: {value!r}")
+    audit(request.state.db if hasattr(request.state, "db") else None,
+          _admin_identity(request), "feature_flag.update", name, value)
+    return {"ok": True, "name": name, "value": value}
+
+
+def _admin_identity(request: Request) -> str:
+    u = getattr(request, "state", None)
+    return getattr(u, "admin", None) or "admin"
+
+
 @router.get("/api/admin/llm-cost")
 def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)):
     """H1.3: rich LLM cost dashboard — 24h/7d/30d totals, per-model,

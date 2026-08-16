@@ -152,4 +152,11 @@ def verify_otp(phone: str, code: str) -> User | None:
             s.add(u)
             s.commit()
             s.refresh(u)
+            # G9 (§85): record explicit consent at signup (terms + privacy v1)
+            from app.models import ConsentLog
+            uid = u.id
+            s.add(ConsentLog(user_id=uid, purpose="terms", version="v1", accepted=True))
+            s.add(ConsentLog(user_id=uid, purpose="privacy", version="v1", accepted=True))
+            s.commit()
+            s.refresh(u)
         return u

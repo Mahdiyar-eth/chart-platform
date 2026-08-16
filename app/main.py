@@ -1026,6 +1026,47 @@ def api_synastry(request: Request, session: Session = Depends(get_session),
     }
 
 
+@app.post("/api/synastry/share")
+def api_synastry_share(request: Request, name_a: str = Form(""), name_b: str = Form(""),
+                       score: int = Form(...), verdict: str = Form(...)):
+    """G7 (§18) — viral share: mint a signed, short-lived guest link showing
+    ONLY score + verdict (no birth data, no locations, no names beyond what
+    the sharer typed). Guest page carries a signup CTA."""
+    if not 0 <= score <= 100 or len(verdict) > 400:
+        raise HTTPException(400, "[ZAY-PAY-001] درخواست نامعتبر")
+    payload = f"{name_a[:40]}|{name_b[:40]}|{score}|{verdict[:400]}"
+    import hmac as _hmac, hashlib
+    from app.auth import _AUTH_SECRET
+    tok = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
+    return {"url": f"/s/{tok}?p={payload.replace('|', '%7C')}"}
+
+
+@app.get("/s/{token}", response_class=HTMLResponse)
+def synastry_share_page(request: Request, token: str, p: str = Query("")):
+    """Guest preview for a shared synastry result (rate-limited, no data leak)."""
+    if not _rate_limit(f"share:{_rl_client(request)}", 30, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    import hmac as _hmac, hashlib
+    from app.auth import _AUTH_SECRET
+    parts = p.split("|")
+    if len(parts) != 4:
+        raise HTTPException(404, "not found")
+    name_a, name_b, score_s, verdict = parts
+    payload = f"{name_a}|{name_b}|{score_s}|{verdict}"
+    expect = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
+    if not _hmac.compare_digest(expect, token):
+        raise HTTPException(404, "not found")
+    try:
+        score = int(score_s)
+    except ValueError:
+        raise HTTPException(404, "not found")
+    return templates.TemplateResponse(request, "synastry_share.html", {
+        "title": "نتیجه سازگاری — زایچه",
+        "name_a": name_a or "شخص اول", "name_b": name_b or "شخص دوم",
+        "score": score, "verdict": verdict,
+    })
+
+
 @app.post("/api/synastry/order")
 def api_synastry_order(request: Request, session: Session = Depends(get_session),
                        name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
@@ -1261,8 +1302,26 @@ def chat_page(request: Request, chart_id: str, session: Session = Depends(get_se
     if not _owns_chart(chart, session, request):
         # audit P0 (round 3): chat exposes a private conversation — same gate as /chart
         return RedirectResponse("/birth-form?e=private", status_code=303)
+    # G6 (§16): dynamically relevant quick chips from the canonical chart
+    presets = [
+        "الگوی روابط من چیست؟",
+        "نقاط قوت شخصیتی من چیست؟",
+        "در مسیر شغلی چه چیزهایی برجسته است؟",
+        "چطور بهتر خودم را بشناسم؟",
+        "این ترانزیت برای من چه معنای تأملی دارد؟",
+    ]
+    dynamic = []
+    try:
+        bt = big_three(chart.chart_json)
+        for label, key in (("خورشید", "Sun"), ("ماه", "Moon"), ("طالع", "ASC")):
+            val = (bt.get(key) or {}).get("sign_en") if isinstance(bt.get(key), dict) else None
+            if val:
+                dynamic.append(f"{label} من در {val} است؛ این برای من چه معنایی دارد؟")
+    except Exception:
+        dynamic = []
     return templates.TemplateResponse(request, "chat.html", {
         "title": "گفت‌وگو با چارت", "chart_id": chart_id,
+        "presets": presets + dynamic[:2],
     })
 
 
@@ -1408,6 +1467,10 @@ def api_chat(
     question: str = Form(..., max_length=500),
     session: Session = Depends(get_session),
 ):
+    # G11 (§108): ops can halt the AI chat instantly via the feature flag
+    from app.feature_flags import flag
+    if not flag("chat", "on"):
+        raise HTTPException(503, "گفت‌وگو با چارت موقتاً غیرفعال است؛ بعداً تلاش کن [ZAY-AI-002]")
     chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
 
     try:
@@ -1688,18 +1751,93 @@ def account_page(request: Request, session: Session = Depends(get_session)):
             weekly.setdefault(w.chart_id, w)
     from app.payment.orders import get_or_create_referral_code
     ref_code = get_or_create_referral_code(session, u.id)
+    # G10 (§90): dashboard search index (labels only — no sensitive fields)
+    search_items = []
+    for p in profiles:
+        cid = next((c.id for c in charts if c.profile_id == p.id), None)
+        search_items.append({
+            "k": "پروفایل", "id": p.id,
+            "label": f"{p.name or 'بدون نام'} — {p.raw_year}/{p.raw_month}/{p.raw_day} {p.city_fa or ''}",
+            "url": f"/chart/{cid}" if cid else "/birth-form",
+        })
+    for r in reports:
+        search_items.append({
+            "k": "گزارش", "id": r.id,
+            "label": f"گزارش #{r.id[:8]} ({r.plan_key}) — {r.status}",
+            "url": f"/api/reports/{r.id}/pdf" if r.status == "done" else f"/chart/{r.chart_id}",
+        })
+    for o in orders:
+        search_items.append({
+            "k": "سفارش", "id": o.id,
+            "label": f"{o.plan_key} — {o.status}", "url": "/plans",
+        })
     from app.security import CSRF_COOKIE, new_csrf_token
     csrf = request.cookies.get(CSRF_COOKIE) or new_csrf_token()
     resp = templates.TemplateResponse(request, "account.html", {
         "title": "حساب کاربری", "user": u, "profiles": profiles,
         "charts": charts, "reports": reports, "orders": orders,
-        "ledger": ledger,
+        "ledger": ledger, "search_items": search_items,
         "ref_url": f"{os.getenv('PUBLIC_BASE_URL', 'https://chart.negar.io')}/?ref={ref_code}",
         "csrf_token": csrf, "weekly": weekly,
     })
     resp.set_cookie(CSRF_COOKIE, csrf, httponly=True, samesite="lax", secure=True,
                     max_age=24 * 3600)
     return resp
+
+
+@app.get("/api/consent")
+def get_consent(request: Request, session: Session = Depends(get_session)):
+    """G9 (§85) — list this user's consent records (privacy transparency)."""
+    u = get_current_user(request)
+    if not u:
+        raise HTTPException(401, "not authorized")
+    from app.models import ConsentLog
+    rows = session.exec(select(ConsentLog).where(ConsentLog.user_id == u.id)
+                        .order_by(ConsentLog.created_at)).all()
+    return {"consents": [{"purpose": r.purpose, "version": r.version,
+                          "accepted": r.accepted,
+                          "at": r.created_at.isoformat()} for r in rows]}
+
+
+@app.get("/api/notifications/prefs")
+def get_notif_prefs(request: Request, session: Session = Depends(get_session)):
+    """G8 (§57) — current notification preferences (defaults if unset)."""
+    u = get_current_user(request)
+    if not u:
+        raise HTTPException(401, "not authorized")
+    from app.models import NotificationPrefs
+    p = session.get(NotificationPrefs, u.id)
+    if not p:
+        return {"daily_insight": True, "weekly_reflection": True, "report_ready": True,
+                "quiet_start": 23, "quiet_end": 7}
+    return {"daily_insight": p.daily_insight, "weekly_reflection": p.weekly_reflection,
+            "report_ready": p.report_ready, "quiet_start": p.quiet_start,
+            "quiet_end": p.quiet_end}
+
+
+@app.post("/api/notifications/prefs")
+def set_notif_prefs(request: Request, session: Session = Depends(get_session),
+                    daily_insight: str = Form("true"), weekly_reflection: str = Form("true"),
+                    report_ready: str = Form("true"),
+                    quiet_start: int = Form(23), quiet_end: int = Form(7)):
+    """G8 — update prefs (CSRF-guarded; validated ranges)."""
+    u = get_current_user(request)
+    if not u:
+        raise HTTPException(401, "not authorized")
+    if not (0 <= quiet_start <= 23 and 0 <= quiet_end <= 23):
+        raise HTTPException(400, "[ZAY-AUTH-003] مقدار ساعت نامعتبر")
+    from app.models import NotificationPrefs
+    p = session.get(NotificationPrefs, u.id)
+    if not p:
+        p = NotificationPrefs(user_id=u.id)
+        session.add(p)
+    p.daily_insight = daily_insight == "true"
+    p.weekly_reflection = weekly_reflection == "true"
+    p.report_ready = report_ready == "true"
+    p.quiet_start, p.quiet_end = quiet_start, quiet_end
+    p.updated_at = datetime.now(timezone.utc)
+    session.commit()
+    return {"ok": True}
 
 
 @app.get("/account/login", response_class=HTMLResponse)

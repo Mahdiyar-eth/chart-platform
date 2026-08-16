@@ -8,6 +8,23 @@
   <h1>حساب کاربری</h1>
   <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
 
+  <div x-data="dashSearch()" x-init="init()" class="glass" style="margin-top:16px; padding:14px;">
+    <input x-model="q" class="input" style="width:100%;" placeholder="جستجو در چارت‌ها، گزارش‌ها و سفارش‌ها…"
+           :disabled="!items.length">
+    <div x-show="q.length > 0" style="margin-top:10px;">
+      <template x-if="results().length === 0">
+        <p class="muted" style="font-size:.85rem; padding:6px 0;">نتیجه‌ای پیدا نشد.</p>
+      </template>
+      <template x-for="it in results()" :key="it.k + it.id">
+        <a :href="it.url" style="display:flex; justify-content:space-between; align-items:center; gap:8px;
+                              padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
+          <span><span class="chip" style="font-size:.68rem; margin-inline-end:8px;" x-text="it.k"></span><span x-text="it.label"></span></span>
+          <svg style="width:14px;height:14px;color:var(--muted);flex:none;" aria-hidden="true"><use href="#icon-arrow"/></svg>
+        </a>
+      </template>
+    </div>
+  </div>
+
   {% if not profiles %}
   <div class="glass" style="margin-top:18px; padding:20px; text-align:center;">
     <p>هنوز چارتی نساخته‌ای.</p>
@@ -64,6 +81,32 @@
     </h2>
     <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
     <button id="pushBtn" class="btn" style="padding:10px 22px;">فعال‌سازی اعلان</button>
+  </section>
+
+  <section class="glass" style="margin-top:14px; padding:20px;">
+    <h2 style="font-size:1.05rem;">
+      <svg style="width:17px;height:17px;vertical-align:-3px;margin-left:6px;color:var(--gold);" aria-hidden="true"><use href="#icon-bell"/></svg>
+      تنظیمات اعلان
+    </h2>
+    <div x-data="notifPrefs()" x-init="init()" style="margin-top:8px; font-size:.9rem;">
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+        <input type="checkbox" x-model="f.daily_insight" style="width:18px;height:18px;"> بینش روزانه
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+        <input type="checkbox" x-model="f.weekly_reflection" style="width:18px;height:18px;"> تأمل هفتگی
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+        <input type="checkbox" x-model="f.report_ready" style="width:18px;height:18px;"> آماده‌شدن گزارش
+      </label>
+      <div style="display:flex; gap:10px; padding:7px 0; align-items:center;">
+        <span class="muted" style="font-size:.82rem;">ساعت‌های سکوت (اعلان ارسال نشود):</span>
+        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input" style="width:70px;" title="شروع">
+        <span class="muted">تا</span>
+        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input" style="width:70px;" title="پایان">
+      </div>
+      <button class="btn btn-ghost" style="margin-top:8px; padding:9px 20px;" x-on:click="save()">ذخیره تنظیمات</button>
+      <span x-text="saved" style="font-size:.8rem; color:#4caf7d; margin-right:10px;"></span>
+    </div>
   </section>
 
   <section class="glass" style="margin-top:14px; padding:20px;">
@@ -175,6 +218,43 @@
   <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
 </div>
 <script>
+/* G10 (§90) — dashboard search over profiles/reports/orders */
+function dashSearch() {
+  return {
+    q: '',
+    items: {{ search_items|tojson }},
+    init() {},
+    norm(s) { return (s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک'); },
+    results() {
+      const q = this.norm(this.q.trim());
+      if (!q) return [];
+      return this.items.filter(it =>
+        this.norm(it.label).includes(q) || this.norm(it.k).includes(q)).slice(0, 12);
+    }
+  };
+}
+/* G8 — notification prefs (Alpine) */
+function notifPrefs() {
+  return {
+    f: { daily_insight: true, weekly_reflection: true, report_ready: true, quiet_start: 23, quiet_end: 7 },
+    saved: '',
+    async init() {
+      try {
+        const r = await fetch('/api/notifications/prefs');
+        if (r.ok) this.f = await r.json();
+      } catch (e) {}
+    },
+    async save() {
+      const body = new URLSearchParams({
+        daily_insight: this.f.daily_insight, weekly_reflection: this.f.weekly_reflection,
+        report_ready: this.f.report_ready, quiet_start: this.f.quiet_start, quiet_end: this.f.quiet_end
+      });
+      const r = await fetch('/api/notifications/prefs', { method: 'POST', body });
+      this.saved = r.ok ? '✓ ذخیره شد' : 'خطا در ذخیره';
+      setTimeout(() => this.saved = '', 3000);
+    }
+  };
+}
 /* D1: Web Push subscribe/unsubscribe from the account page */
 (function () {
   var btn = document.getElementById('pushBtn');

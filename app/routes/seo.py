@@ -1,12 +1,43 @@
 """H1.9 — public pages & SEO routes extracted from main.py
 (sitemap, robots, learn/sign/articles, guide/about/faq/sky, static pages).
 """
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from app.main import templates
 
 router = APIRouter()
+
+
+CITY_PAGES = {
+    "tehran": {"city_fa": "تهران", "province_fa": "تهران", "lat": 35.6892, "lon": 51.3890},
+    "mashhad": {"city_fa": "مشهد", "province_fa": "خراسان رضوی", "lat": 36.2605, "lon": 59.6168},
+    "esfahan": {"city_fa": "اصفهان", "province_fa": "اصفهان", "lat": 32.6546, "lon": 51.6680},
+    "shiraz": {"city_fa": "شیراز", "province_fa": "فارس", "lat": 29.5918, "lon": 52.5837},
+    "tabriz": {"city_fa": "تبریز", "province_fa": "آذربایجان شرقی", "lat": 38.0800, "lon": 46.2919},
+    "karaj": {"city_fa": "کرج", "province_fa": "البرز", "lat": 35.8400, "lon": 50.9391},
+    "qom": {"city_fa": "قم", "province_fa": "قم", "lat": 34.6401, "lon": 50.8764},
+    "ahvaz": {"city_fa": "اهواز", "province_fa": "خوزستان", "lat": 31.3183, "lon": 48.6706},
+    "kermanshah": {"city_fa": "کرمانشاه", "province_fa": "کرمانشاه", "lat": 34.3277, "lon": 47.0778},
+    "rasht": {"city_fa": "رشت", "province_fa": "گیلان", "lat": 37.2808, "lon": 49.5832},
+}
+
+
+@router.get("/birth-chart/{slug}", response_class=HTMLResponse)
+def birth_chart_city(request: Request, slug: str):
+    """G12 (§61) — SEO landing per birth city. Flag-gated (G11) so ops can
+    switch the whole city set off pre/post launch without a deploy."""
+    from app.feature_flags import flag
+    if not flag("seo_cities", "on"):
+        raise HTTPException(404, "not found")
+    c = CITY_PAGES.get(slug.lower())
+    if not c:
+        raise HTTPException(404, "not found")
+    return templates.TemplateResponse(request, "birth_chart_city.html", {
+        "title": f"چارت تولد {c['city_fa']} — دقیق‌ترین محاسبه نجومی آنلاین",
+        "city": c, "slug": slug,
+        "description": f"چارت تولد {c['city_fa']} را با موتور نجومی محاسبه کن: طالع، خورشید و ماه دقیق با ساعت و مختصات {c['city_fa']} — رایگان و آنلاین.",
+    })
 
 
 @router.get("/sitemap.xml")
@@ -24,6 +55,11 @@ def sitemap_xml():
         urls += [f"/learn/{k}" for k in PLANETS]
         urls += [f"/learn/{k}" for k in HOUSES]
         urls += [f"/signs/{s['slug']}" for s in SIGNS.values()]
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from app.routes.seo import CITY_PAGES
+        urls += [f"/birth-chart/{slug}" for slug in CITY_PAGES]
     except Exception:  # noqa: BLE001
         pass
     try:

@@ -38,9 +38,17 @@
 | `GET /robots.txt` | Public | — |
 | `GET /synastry` | Public | — |
 | `POST /api/synastry` | Public | rate limit |
+| `POST /api/synastry/share` | Public | HMAC-signed guest link, rate limit (G7) |
+| `GET /s/{token}` | Public | HMAC verify, rate limit (G7) |
 | `POST /api/synastry/order` | Capability | `_owns_chart` |
 | `POST /api/synastry/full` | Capability | `_owns_chart` |
 | `GET /api/synastry/access` | Paid/Capability | access check |
+| `GET /api/notifications/prefs` | User | session cookie (G8) |
+| `POST /api/notifications/prefs` | User | CSRF + validated ranges (G8) |
+| `GET /api/consent` | User | session cookie, owner-only (G9) |
+| `GET /api/admin/flags` | Admin | `_is_admin` (G11) |
+| `PUT /api/admin/flags/{name}` | Admin | `_is_admin` + audited (G11) |
+| `GET /birth-chart/{slug}` | Public | flag-gated, static SEO (G12) |
 | `GET /rectify` | Public | — |
 | `POST /api/rectify` | Capability | `_owns_chart` |
 | `GET /chat/{chart_id}` | Capability | `_owns_chart` |

@@ -112,13 +112,25 @@ document.getElementById('synForm').addEventListener('submit', async (e) => {
       '<div class="glass glow" style="padding:22px; text-align:center;">' +
       '<h2>نمره سازگاری: <span style="color:' + cls + ';">' + d.score + '</span></h2>' +
       '<p style="margin-top:8px; line-height:2;">' + esc(d.verdict) + '</p>' +
-      '<p class="muted" style="margin-top:12px; font-size:.85rem;">تحلیل کامل (۴ حوزه + ۲۵+ ارتباط سیاره‌ای + تفسیر اختصاصی) پس از خرید نمایش داده می‌شود.</p>' +
+      '<p class="muted" style="margin-top:12px; font-size:.85rem;">تحلیل کامل (۴ حوزه + ۲۵+ ارتباط سیارهای + تفسیر اختصاصی) پس از خرید نمایش داده میشود.</p>' +
       '<button class="btn btn-lg" style="margin-top:14px;" onclick="buySyn()">خرید تحلیل کامل — ۴۹۹ هزار تومان</button>' +
+      '<button class="btn btn-ghost" style="margin-top:8px; width:100%;" onclick="shareSyn(' + d.score + ', \'' + escAttr(d.verdict) + '\')">اشتراکگذاری نتیجه</button>' +
       '</div>';
   } finally { btn.disabled = false; btn.textContent = 'محاسبه سازگاری'; }
 });
 
 let synOrderState = null;
+function escAttr(s){ return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+async function shareSyn(score, verdict) {
+  const f = new FormData(document.getElementById('synForm'));
+  const r = await fetch('/api/synastry/share', { method: 'POST', body: f });
+  const d = await r.json();
+  if (!r.ok) { alert(d.detail || 'خطا'); return; }
+  const url = location.origin + d.url;
+  try { await navigator.clipboard.writeText(url); }
+  catch (e) { const t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  alert('لینک نتیجه کپی شد: می‌توانی برای طرف مقابل بفرستی.');
+}
 function getCookie(n){ const m = document.cookie.match(new RegExp('(^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[2]) : ''; }
 async function buySyn() {
   const f = new FormData(document.getElementById('synForm'));
