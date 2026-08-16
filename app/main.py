@@ -2207,6 +2207,11 @@ def _load_pages() -> dict:
             entry = {"title": pg.title, "meta": extra.get("meta", ""),
                      "sections": extra.get("sections") or ([{"h2": pg.title, "text": pg.content}] if pg.content else []),
                      "categories": extra.get("categories"), "items": extra.get("items")}
+            # defensive: only override JSON when the row actually carries the
+            # rich structure the templates need (v1 seed lost extra → keep JSON)
+            if entry["categories"] is None and entry["items"] is None and not extra.get("sections"):
+                if pg.key in base:
+                    continue
             base[pg.key] = entry
     except Exception:  # noqa: BLE001 — table may not exist before migration
         pass

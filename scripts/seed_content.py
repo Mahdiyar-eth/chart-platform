@@ -52,9 +52,17 @@ def seed_pages() -> int:
     n = 0
     with Session(engine) as s:
         for key, p in pages.items():
-            if s.exec(select(Page).where(Page.key == key)).first():
+            existing = s.exec(select(Page).where(Page.key == key)).first()
+            if existing:
+                # upgrade path: backfill extra (categories/items/sections/meta) lost in v1 seed
+                if not (existing.extra or {}):
+                    existing.extra = {k: v for k, v in p.items()
+                                      if k not in ("title", "content")}
+                    s.add(existing)
+                    n += 1
                 continue
-            s.add(Page(key=key, title=p.get("title", key), content=p.get("content", "")))
+            s.add(Page(key=key, title=p.get("title", key), content=p.get("content", ""),
+                       extra={k: v for k, v in p.items() if k not in ("title", "content")}))
             n += 1
         s.commit()
     return n
