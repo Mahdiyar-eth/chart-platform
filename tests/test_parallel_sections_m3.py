@@ -49,7 +49,6 @@ def test_sections_run_concurrently_with_bounded_semaphore(monkeypatch):
     fake = SlowOk(delay=0.03)
     monkeypatch.setattr(worker, "build_section_router", lambda d, m: fake)  # no real API
     # small plan: 10 sections
-    raises = []
     # capture which domains were requested through prompt content tag
     async def run():
         return await generate_sections_async(CHART, max_tokens=512,

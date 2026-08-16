@@ -4,7 +4,7 @@ Run:  cd /root/chart-platform && venv/bin/python scripts/m0_quota_test.py
 Reads keys from env GO_API_KEY (key1) and GO_API_KEY_2 (key2).
 Prints masked stats only — never the keys.
 """
-import asyncio, os, sys, time, json
+import asyncio, os, sys, time
 import httpx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

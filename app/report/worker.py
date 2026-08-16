@@ -15,7 +15,8 @@ from arq.connections import RedisSettings
 from sqlmodel import Session
 
 import app.config  # noqa: F401 — load .env FIRST
-from app.core.llm import build_section_router, build_router, section_model
+from app.core.llm import (LLM_DAILY_BUDGET_USD, build_section_router, build_router,
+                          section_model, today_llm_cost)
 from app.db import engine as db_engine
 from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
@@ -36,6 +37,29 @@ MAX_RETRIES = 6  # F-31: 3 attempts were not enough for stubborn sections;
 # M3: concurrent section generation — bounded by this semaphore. The GO pool
 # load-balances across keys internally; raise per key headroom only.
 SECTION_CONC = int(os.getenv("SECTION_CONC", "4"))
+
+
+def fallback_section(domain: str, ctx_info: dict) -> dict:
+    """Honest intro-only section when the LLM cannot produce a real one."""
+    return {
+        "section": domain,
+        "title_fa": ctx_info["domain_title"],
+        "intro": "بر اساس عوامل محاسبهشده، این حوزه از زندگی اهمیت ویژهای دارد.",
+        "insights": [{
+            "insight": "نقشهی نجومی این حوزه را میتوان با دقت بیشتری در گزارش تکمیلی بررسی کرد. "
+                       "عوامل فعال: " + (ctx_info["factors"].replace("\n", " — ")[:200]),
+            "evidence": [],
+            "strengths": [], "challenges": [],
+            "practical_advice": "برای تفسیر دقیقتر، به گزارش کامل مراجعه کنید.",
+        }],
+    }
+
+
+def budget_fallback_sections(chart_json: dict, plan_key: str) -> dict[str, dict]:
+    """M9: full fallback section set (no LLM call) when the daily budget is hit."""
+    from app.report.prompt_builder import build_prompts_for_plan
+    prompts = build_prompts_for_plan(chart_json, plan_key)
+    return {d: fallback_section(d, ctx) for d, (_, ctx) in prompts.items()}
 
 
 async def generate_sections_async(chart: dict, max_tokens: int = 8192,
@@ -101,7 +125,7 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
                                       section=domain, attempt=attempt,
                                       error_code=res.error_code,
                                       fallback_used=attempt > 0,
-                                      prompt_version="gen-v1"))
+                                      prompt_version=ctx_info.get("prompt_version") if ctx_info else None))
                         _s.commit()
                 except Exception:  # noqa: BLE001 — metering must never break generation
                     pass
@@ -161,18 +185,7 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
 
             if not ok:
                 fallback_domains.append(domain)
-                sections[domain] = {
-                    "section": domain,
-                    "title_fa": ctx_info["domain_title"],
-                    "intro": "بر اساس عوامل محاسبه‌شده، این حوزه از زندگی اهمیت ویژه‌ای دارد.",
-                    "insights": [{
-                        "insight": "نقشهی نجومی این حوزه را میتوان با دقت بیشتری در گزارش تکمیلی بررسی کرد. "
-                                   "عوامل فعال: " + (ctx_info["factors"].replace("\n", " — ")[:200]),
-                        "evidence": [],
-                        "strengths": [], "challenges": [],
-                        "practical_advice": "برای تفسیر دقیق‌تر، به گزارش کامل مراجعه کنید.",
-                    }],
-                }
+                sections[domain] = fallback_section(domain, ctx_info)
 
 
     await asyncio.gather(*(_gen_one(d, p, c) for d, (p, c) in prompts.items()))
@@ -254,6 +267,19 @@ async def generate_report(ctx: dict, report_id: str) -> None:
 
         rep.status = "running"
         session.commit()
+
+        # M9: hard daily cost ceiling — degrade honestly instead of spending
+        today = today_llm_cost(db_engine)
+        if today >= LLM_DAILY_BUDGET_USD:
+            rep.status = "degraded"
+            rep.error = (f"daily LLM budget reached (${today:.2f} ≥ ${LLM_DAILY_BUDGET_USD:.2f}) "
+                         "— fallback intro-only sections")
+            from app.report.worker import budget_fallback_sections
+            rep.sections = budget_fallback_sections(chart.chart_json, rep.plan_key or "full")
+            rep.metrics = {"fallback": "budget", "llm_cost_today_usd": round(today, 2)}
+            session.commit()
+            log.warning("report %s degraded: daily LLM budget reached", report_id[:8])
+            return
 
         try:
             # load profile focus_areas + personal_question so the report actually uses them

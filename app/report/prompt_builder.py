@@ -9,7 +9,14 @@ from __future__ import annotations
 from app.astrology.big_three import big_three
 from app.report.rules import DOMAINS, evaluate
 
+# M8 (multi-provider plan): prompt-versioning — every prompt carries a version
+# so telemetry can A/B which prompt revision produced which quality outcome.
+PROMPT_VERSION = "9.0"
+
 SECTION_TEMPLATE = """تو نویسندهی حرفهای گزارش چارت تولد به زبان فارسی هستی.
+
+# قرارداد خروجی (نسخه {prompt_version} — ZAYCHE)
+این قرارداد نسخهبندی شده است؛ فقط همین نسخهٔ خروجی را تولید کن.
 
 # قوانین طلایی
 - فقط از اطلاعات بخش «عوامل محاسبهشده» استفاده کن. هرگز درجه/خانه/برج/جنبه را حدس نزن یا جعل نکن.
@@ -98,6 +105,7 @@ def build_prompt(chart: dict, domain: str) -> tuple[str, dict]:
         "factors": factors_block(chart, domain, active),
         "moon_phase": chart.get("moon_phase", ""),
         "big_three": bt,
+        "prompt_version": PROMPT_VERSION,
         "time_unknown": not (chart.get("birth") or {}).get("time_known", True),
     }
     note = ""
@@ -123,6 +131,7 @@ def build_prompt(chart: dict, domain: str) -> tuple[str, dict]:
         big_three=context["big_three"],
         domain_title=context["domain_title"],
         domain_key=domain,
+        prompt_version=PROMPT_VERSION,
     ) + note
     return prompt, context
 
@@ -138,7 +147,10 @@ PLAN_SECTIONS = {
 
 ISLAMIC_TEMPLATE = """تو نویسندهی فصل «فرهنگ و باورها» در یک گزارش خودشناسی به زبان فارسی هستی.
 
-# قوانین طلایی این فصل (مهم‌ترین‌ها)
+# قرارداد خروجی (نسخه {prompt_version} — ZAYCHE)
+این قرارداد نسخهبندی شده است؛ فقط همین نسخهٔ خروجی را تولید کن.
+
+# قوانین طلایی این فصل (مهمترینها)
 - این فصل **فرهنگی-معنوی** است، نه نجومی و نه فقهی. هیچ ادعایی درباره‌ی غیب، تقدیر قطعی، یا نظر شرعی قطعی نکن.
 - «آینه‌ی خودشناسی»: از مفاهیم قرآن و سنت (شکر، توکل، صبر، توبه، عدل، مسئولیت) فقط به‌عنوان **چهارچوب رشد اخلاقی** استفاده کن — هرگز به‌عنوان حکم یا پیش‌گویی.
 - احترام کامل: برای هر کس با هر باوری قابل‌خواندن باشد. مؤمن و غیرمؤمن هر دو باید آن را مفید بدانند.
@@ -190,9 +202,9 @@ def build_islamic_prompt(chart: dict) -> tuple[str, dict]:
     )
     context = {"domain": "islamic", "domain_title": "فرهنگ و باورها — از منظر خودشناسی",
                "factors": "", "moon_phase": chart.get("moon_phase", ""), "big_three": bt,
-               "kb_count": len(kb)}
+               "kb_count": len(kb), "prompt_version": PROMPT_VERSION}
     prompt = ISLAMIC_TEMPLATE.format(big_three=bt, moon_phase=context["moon_phase"],
-                                     kb_block=kb_block)
+                                     kb_block=kb_block, prompt_version=PROMPT_VERSION)
     return prompt, context
 
 
@@ -236,7 +248,10 @@ def order_domains_by_focus(domains: list[str], focus_areas: list[str] | None) ->
     return focused + [d for d in domains if d not in focused]
 
 
-PERSONAL_QUESTION_TEMPLATE = """تو نویسنده‌ی بخش «پاسخ به سؤال شخصی» در یک گزارش چارت تولد فارسی هستی.
+PERSONAL_QUESTION_TEMPLATE = """تو نویسندهی بخش «پاسخ به سؤال شخصی» در یک گزارش چارت تولد فارسی هستی.
+
+# قرارداد خروجی (نسخه {prompt_version} — ZAYCHE)
+این قرارداد نسخهبندی شده است؛ فقط همین نسخهٔ خروجی را تولید کن.
 
 # قوانین طلایی
 - فقط از اطلاعات بخش «عوامل محاسبه‌شده» استفاده کن؛ هرگز درجه/خانه/برج/جنبه را حدس نزن یا جعل نکن.
@@ -289,12 +304,13 @@ def build_personal_question_prompt(chart: dict, question: str) -> tuple[str, dic
         "domain": "personal_question", "domain_title": "پاسخ به سؤال تو",
         "factors": factors_block(chart, "identity", active),
         "moon_phase": chart.get("moon_phase", ""), "big_three": bt,
-        "question": question,
+        "question": question, "prompt_version": PROMPT_VERSION,
     }
     prompt = PERSONAL_QUESTION_TEMPLATE.format(
         question=question,
         factors_block=context["factors"],
         moon_phase=context["moon_phase"],
         big_three=bt,
+        prompt_version=PROMPT_VERSION,
     )
     return prompt, context
