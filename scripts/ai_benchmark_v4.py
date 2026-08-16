@@ -207,6 +207,48 @@ async def rubric_eval(chart: dict, answer: str, router) -> dict | None:
         return None
 
 
+def worker_audit() -> dict | None:
+    """M3/A6 — multi-dimensional gate over REAL prod llm_runs (24h window)."""
+    try:
+        from sqlalchemy import text as sa_text
+
+        from app.db import engine
+        with engine.connect() as c:
+            row = c.execute(sa_text("""
+                SELECT COUNT(*)::int AS runs,
+                  COUNT(*) FILTER (WHERE error_code IN ('empty','timeout','429'))::int AS provider_fails,
+                  COUNT(*) FILTER (WHERE attempt > 0)::int AS retries,
+                  COALESCE(SUM(prompt_tokens + completion_tokens), 0)::bigint AS tokens,
+                  COALESCE(SUM(cost_usd), 0)::float AS cost_usd,
+                  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY latency_ms)::int AS p50,
+                  PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms)::int AS p95,
+                  COUNT(*) FILTER (WHERE ok = false)::int AS failed
+                FROM llm_runs WHERE created_at > now() - interval '24 hours'
+            """)).mappings().first()
+            return dict(row) if row else None
+    except Exception as e:  # benchmark must also run without a live DB
+        return {"error": str(e)}
+
+
+def _unexpected_degraded_reports() -> int:
+    """Reports degraded in 24h for reasons OTHER than honest provider-down
+    (expected-safe: all providers failed / budget ceiling)."""
+    try:
+        from sqlalchemy import text as sa_text
+
+        from app.db import engine
+        with engine.connect() as c:
+            row = c.execute(sa_text("""
+                SELECT COUNT(*)::int FROM reports
+                WHERE status = 'degraded'
+                  AND updated_at > now() - interval '24 hours'
+                  AND (error ILIKE '%%budget%%' IS NOT TRUE)
+            """)).scalar_one_or_none()
+            return int(row or 0)
+    except Exception:
+        return 0
+
+
 async def benchmark(n: int, start: int) -> int:
     from app.core.llm import build_router
     router = build_router("chat")
@@ -258,7 +300,7 @@ async def benchmark(n: int, start: int) -> int:
     print(f"empty-200     : {n_empty}")
     print(f"429/limit     : {n_429}")
     print(f"timeout       : {n_to}")
-    print(f"latency       : p50={p50}ms  p95={p95}ms")
+    print(f"latency       : p50={p50}ms  p95={p95}ms  max={max(lats, default=0)}ms")
     print(f"keys served   : {keys}")
     print(f"┬─ INFRASTRUCTURE SCORE: {inf_score:.1f}/100")
 
@@ -332,6 +374,15 @@ async def benchmark(n: int, start: int) -> int:
     contra_vals = [ev.get("contradiction", 10) for ev in evals if ev]
     contra_low = sum(1 for c in contra_vals if c < 5)
 
+    # ── M3 multi-dimensional worker gate (Amendment 6) — real prod DB ───────
+    wa = worker_audit()
+    m3_gates = {}
+    if wa and "error" not in wa and wa.get("runs"):
+        m3_gates["worker p95 latency ≤ 40s"] = int(wa["p95"] or 0) <= 40000
+        m3_gates["worker retry rate ≤ 30%"] = (int(wa["retries"]) / int(wa["runs"])) <= 0.30
+        m3_gates["worker provider-fail rate ≤ 25%"] = (int(wa["provider_fails"]) / int(wa["runs"])) <= 0.25
+        m3_gates["worker unexpected-degraded = 0"] = _unexpected_degraded_reports() == 0
+
     # ── HARD GATES (override any score — Amendment 1) ─────────────────────
     gates = {
         "critical hallucination (claim mismatch)": claim_mismatch == 0,
@@ -340,11 +391,20 @@ async def benchmark(n: int, start: int) -> int:
         "unsafe output (deny-list)": safety_bad == 0,
         "critical-fact repeatability (100%)": rep_pct == 100.0,
     }
+    gates.update(m3_gates)  # Amendment 6 — worker/throughput gates
     hard_pass = all(gates.values())
 
     # ── DEGRADED CLASS (Amendment 5) ───────────────────────────────────────
     expected_safe = (n_ok == 0) and (n_429 + n_to + n_empty) > 0
     unexpected = (n_empty + n_to > 0) and n_ok > 0
+
+    print("\n═══ M3 WORKER GATE (prod llm_runs, last 24h) ═══")
+    if wa and "error" not in wa and wa.get("runs"):
+        print(f"runs={wa['runs']}  p50={wa['p50']}ms  p95={wa['p95']}ms  "
+              f"provider_fails={wa['provider_fails']}  retries={wa['retries']}  "
+              f"tokens={wa['tokens']}  cost=${wa['cost_usd']:.4f}  failed={wa['failed']}")
+    else:
+        print("(no prod data yet — gate not evaluated)")
 
     print("\n═══ FINAL AI RELEASE VERDICT ═══")
     print(f"INFRASTRUCTURE SCORE  : {inf_score:.1f}/100   (provider health — informational)")
@@ -355,12 +415,13 @@ async def benchmark(n: int, start: int) -> int:
     for name, ok in gates.items():
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
     print(f"  degraded class: {'unexpected (FAIL)' if unexpected else ('expected-safe (PASS behavior)' if expected_safe else 'none')}")
-    fail_gates = [n for n, ok in gates.items() if not ok]
-    if not hard_pass:
-        print(f"FINAL: NOT RELEASE-READY — hard gates failed: {', '.join(fail_gates)}")
-        return 1
     if unexpected:
-        print("FINAL: NOT RELEASE-READY — unexpected degraded output despite healthy providers")
+        print("  [FAIL] unexpected-degraded = 0 (zero-tolerance)")
+    fail_gates = [n for n, ok in gates.items() if not ok]
+    if unexpected:
+        fail_gates.append("unexpected-degraded")
+    if not hard_pass or unexpected:
+        print(f"FINAL: NOT RELEASE-READY — hard gates failed: {', '.join(fail_gates)}")
         return 1
     print("FINAL: RELEASE-READY (all hard gates PASS, no unexpected degradation).")
     return 0
