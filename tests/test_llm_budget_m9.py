@@ -45,6 +45,9 @@ def test_budget_gate_degrades_without_llm(monkeypatch):
             raise AssertionError("LLM must NOT be called when budget is hit")
 
     monkeypatch.setattr(w, "LLM_DAILY_BUDGET_USD", 0.01)   # below today's spend
+    monkeypatch.setattr(w, "today_llm_cost", lambda e: 1.0)
+    monkeypatch.setattr(w, "month_llm_cost", lambda e: 1.0)
+    monkeypatch.setattr(w, "user_today_llm_cost", lambda e, u: 1.0)
     # render must not run either — degraded reports are intro-only
     monkeypatch.setattr(w, "render_report_pdf", lambda *a, **k: None)
     monkeypatch.setattr(w, "REPORTS_DIR", __import__("pathlib").Path("/tmp"))
@@ -82,6 +85,9 @@ def test_budget_high_does_not_gate(monkeypatch):
             return _FakeRes()
 
     monkeypatch.setattr(w, "LLM_DAILY_BUDGET_USD", 99.0)  # budget far above spend
+    monkeypatch.setattr(w, "today_llm_cost", lambda e: 0.01)
+    monkeypatch.setattr(w, "month_llm_cost", lambda e: 0.01)
+    monkeypatch.setattr(w, "user_today_llm_cost", lambda e, u: 0.01)
     monkeypatch.setattr(w, "render_report_pdf", lambda *a, **k: None)
     monkeypatch.setattr(w, "REPORTS_DIR", __import__("pathlib").Path("/tmp"))
     asyncio.run(w.generate_report({"router": _FakeRouter(), "chart_id": cid,

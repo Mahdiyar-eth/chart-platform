@@ -102,6 +102,9 @@ _ZEN_FREE_COOLDOWN = float(os.getenv("ZEN_FREE_COOLDOWN", "300"))   # free-tier 
 # today already exceeds this, reports degrade with an honest message instead
 # of silently spending more (MaHDi: cost-conscious; no surprise bills).
 LLM_DAILY_BUDGET_USD = float(os.getenv("LLM_DAILY_BUDGET_USD", "3.0"))
+LLM_MONTHLY_BUDGET_USD = float(os.getenv("LLM_MONTHLY_BUDGET_USD", "30.0"))
+LLM_USER_DAILY_MAX_USD = float(os.getenv("LLM_USER_DAILY_MAX_USD", "1.0"))
+LLM_REPORT_MAX_USD = float(os.getenv("LLM_REPORT_MAX_USD", "0.5"))
 
 
 @dataclass
@@ -579,18 +582,55 @@ _PART_DEFAULT_MODEL = {
 }
 
 
-def today_llm_cost(db_engine) -> float:
-    """M9: sum of today's LLM spend from llm_runs (UTC day boundary)."""
-    from datetime import datetime, timezone
-    from sqlmodel import Session, select, func
+def _llm_cost_window(db_engine, hours: int | None = None, user_id: str | None = None) -> float:
+    """Sum of LLMRun.cost_usd in a window. hours=None → current UTC month."""
+    from datetime import datetime, timedelta, timezone
+
+    from sqlmodel import Session, func, select
+
     from app.models import LLMRun
-    day_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    if hours is None:
+        start = start.replace(day=1)  # month boundary
+    else:
+        start = start - timedelta(hours=hours) if hours > 24 else start
     try:
         with Session(db_engine) as s:
-            total = s.exec(select(func.coalesce(func.sum(LLMRun.cost_usd), 0.0))
-                           .where(LLMRun.created_at >= day_start)).one()
-        return float(total or 0.0)
-    except Exception:  # noqa: BLE001 — metering must never break generation
+            q = select(func.coalesce(func.sum(LLMRun.cost_usd), 0.0)).where(LLMRun.created_at >= start)
+            if user_id:
+                q = q.where(LLMRun.user_id == user_id)
+            return float(s.exec(q).one() or 0.0)
+    except Exception:
+        return 0.0
+
+
+def today_llm_cost(db_engine) -> float:
+    """M9: sum of today's LLM spend from llm_runs (UTC day boundary)."""
+    return _llm_cost_window(db_engine, hours=24)
+
+
+def month_llm_cost(db_engine) -> float:
+    """P0-2: current UTC month spend."""
+    return _llm_cost_window(db_engine)
+
+
+def user_today_llm_cost(db_engine, user_id: str | None) -> float:
+    """P0-2: current user's spend in the last 24h."""
+    if not user_id:
+        return 0.0
+    return _llm_cost_window(db_engine, hours=24, user_id=user_id)
+
+
+def report_llm_cost(db_engine, report_id: str) -> float:
+    """P0-2: spend so far for a single report."""
+    from sqlmodel import Session, func, select
+
+    from app.models import LLMRun
+    try:
+        with Session(db_engine) as s:
+            return float(s.exec(select(func.coalesce(func.sum(LLMRun.cost_usd), 0.0))
+                                  .where(LLMRun.report_id == report_id)).one() or 0.0)
+    except Exception:
         return 0.0
 
 

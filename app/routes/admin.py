@@ -269,6 +269,81 @@ def admin_kpi(request: Request, session: Session = Depends(get_session)):
     return kpi_matrix(session)
 
 
+@router.get("/api/admin/health", response_class=JSONResponse)
+def api_admin_health(request: Request, session: Session = Depends(get_session)):
+    """P0-3: production health panel — services, keys, budget, backup, drill."""
+    from fastapi import HTTPException
+    from app.core.llm import LLM_DAILY_BUDGET_USD, LLM_MONTHLY_BUDGET_USD, month_llm_cost, today_llm_cost
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    from app.report.worker import _budget_reasons
+    from sqlalchemy import text as sa_text
+
+    h: dict[str, object] = {"ts": datetime.now(timezone.utc).isoformat()}
+
+    # core services (reuse /health semantics)
+    try:
+        from app.env import IS_PROD
+        h["web"] = "ok"
+        h["worker"] = "ok" if IS_PROD else "n/a-local"
+    except Exception:
+        h["worker"] = "unknown"
+
+    for name, q in (("db", "SELECT 1"), ("redis", "SELECT 1")):
+        try:
+            session.connection().execute(sa_text(q))
+            h[name] = "ok"
+        except Exception:
+            h[name] = "down"
+
+    # R2 — storage status from the last backup age (cheap, no object listing)
+    import os
+    from pathlib import Path
+    backups = sorted(Path("/root/backups/chart-platform").glob("*.age")) if os.path.isdir("/root/backups/chart-platform") else []
+    if backups:
+        age_h = (datetime.now(timezone.utc).timestamp() - backups[-1].stat().st_mtime) / 3600
+        h["backup_age_h"] = round(age_h, 1)
+        h["last_backup"] = backups[-1].name
+    else:
+        h["backup_age_h"] = None
+
+    # LLM keys — pool slots + their cooldown state (from live pool)
+    try:
+        from app.core.llm import build_router
+        router = build_router("report.basic")
+        slots = []
+        for s in getattr(router, "_slots", []) or []:
+            slots.append({"key": (s.name or "?"), "trip": s.tripped(), "in_flight": s.in_flight,
+                          "last_code": s.last_error_code})
+        h["llm_keys"] = slots
+    except Exception as e:  # noqa: BLE001
+        h["llm_keys"] = {"error": str(e)[:200]}
+
+    # budget ceilings (live)
+    h["budget"] = {
+        "daily": {"spent": round(today_llm_cost(session.get_bind()), 3), "cap": LLM_DAILY_BUDGET_USD},
+        "monthly": {"spent": round(month_llm_cost(session.get_bind()), 3), "cap": LLM_MONTHLY_BUDGET_USD},
+        "hit": _budget_reasons(session.get_bind()),
+    }
+
+    # queue backlog (reports waiting)
+    try:
+        from app.models import Report
+        n_q = session.exec(select(Report).where(Report.status == "queued")).all()
+        h["queue"] = len(n_q)
+    except Exception:
+        h["queue"] = None
+
+    # last restore drill (from deploy-backups/drill logs when present)
+    drill_log = Path("/root/chart-platform/logs/restore-drill.log")
+    if drill_log.exists():
+        lines = [l for l in drill_log.read_text().splitlines() if l.strip()]
+        h["last_drill"] = lines[-1][:200] if lines else None
+    else:
+        h["last_drill"] = None
+    return h
+
+
 @router.get("/api/admin/llm-cost")
 def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)):
     """H1.3: rich LLM cost dashboard — 24h/7d/30d totals, per-model,

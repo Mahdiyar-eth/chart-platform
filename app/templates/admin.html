@@ -15,6 +15,30 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">🩺 Production Health (P0-3)</h2>
+  <div id="health-body" class="muted" style="font-size:.8rem;direction:ltr;text-align:left;line-height:1.7;"></div>
+  <script>
+  (async () => {
+    try {
+      const r = await fetch('/api/admin/health', { headers: { 'X-Requested-With': 'fetch' } });
+      const h = await r.json();
+      const dot = (ok) => `<span style="color:${ok ? '#16a34a' : '#dc2626'}">●</span>`;
+      const rws = [];
+      rws.push(`web ${dot(h.web === 'ok')}`);
+      rws.push(`worker ${dot(h.worker === 'ok' || h.worker === 'n/a-local')}`);
+      rws.push(`db ${dot(h.db === 'ok')}`);
+      rws.push(`redis ${dot(h.redis === 'ok')}`);
+      if (h.backup_age_h !== null && h.backup_age_h !== undefined)
+        rws.push(`backup ${dot(h.backup_age_h < 24)} ${h.backup_age_h}h ago · ${h.last_backup ?? ''}`);
+      else rws.push('backup ❓');
+      for (const k of (h.llm_keys || [])) rws.push(`LLM ${k.key} ${dot(!k.trip)} ${k.trip ? 'cooldown' : 'ok'} · inflight ${k.in_flight}`);
+      if (h.budget) rws.push(`budget daily ${h.budget.daily.spent}/${h.budget.daily.cap} · monthly ${h.budget.monthly.spent}/${h.budget.monthly.cap}${h.budget.hit.length ? ' ⚠' : ''}`);
+      rws.push(`queue ${h.queue ?? '?'}`);
+      if (h.last_drill) rws.push(`drill: ${h.last_drill}`);
+      document.getElementById('health-body').innerHTML = rws.join('<br>');
+    } catch (e) { document.getElementById('health-body').textContent = 'err ' + e; }
+  })();
+  </script>
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
   <div class="glass" style="padding:14px;font-size:.83rem;">
     <div id="kpi-matrix" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;">

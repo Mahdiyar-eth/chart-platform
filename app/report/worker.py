@@ -15,8 +15,11 @@ from arq.connections import RedisSettings
 from sqlmodel import Session
 
 import app.config  # noqa: F401 — load .env FIRST
-from app.core.llm import (LLM_DAILY_BUDGET_USD, build_section_router, build_router,
-                          section_model, today_llm_cost)
+from app.core.llm import (
+    LLM_DAILY_BUDGET_USD, LLM_MONTHLY_BUDGET_USD, LLM_REPORT_MAX_USD, LLM_USER_DAILY_MAX_USD,
+    build_section_router, build_router, month_llm_cost, report_llm_cost,
+    section_model, today_llm_cost, user_today_llm_cost,
+)
 from app.db import engine as db_engine
 from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
@@ -189,6 +192,13 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
 
 
     await asyncio.gather(*(_gen_one(d, p, c) for d, (p, c) in prompts.items()))
+    # P0-2: per-report cost cap — if the report already burned its ceiling,
+    # degrade the remaining sections honestly instead of spending more.
+    rcost = report_llm_cost(db_engine, report_id or "")
+    if rcost >= LLM_REPORT_MAX_USD:
+        fallback_domains = [d for d in prompts if d not in sections]
+        for d in fallback_domains:
+            sections[d] = fallback_section(d, prompts[d][1])
     # M3: preserve declared order (focus reorder / plan order) — completion
     # order under gather is not deterministic.
     sections = {d: sections[d] for d in prompts if d in sections}
@@ -251,6 +261,26 @@ async def generate_report_audio(ctx: dict, report_id: str) -> None:
             session.commit()
 
 
+def _budget_reasons(engine, user_today: float | None = None) -> list[str]:
+    """P0-2: collect budget ceilings that are currently hit (empty = allowed)."""
+    reasons: list[str] = []
+    try:
+        today = today_llm_cost(engine)
+        if today >= LLM_DAILY_BUDGET_USD:
+            reasons.append(f"daily ${today:.2f} ≥ ${LLM_DAILY_BUDGET_USD:.2f}")
+    except Exception:
+        pass
+    try:
+        month = month_llm_cost(engine)
+        if month >= LLM_MONTHLY_BUDGET_USD:
+            reasons.append(f"monthly ${month:.2f} ≥ ${LLM_MONTHLY_BUDGET_USD:.2f}")
+    except Exception:
+        pass
+    if user_today is not None and user_today >= LLM_USER_DAILY_MAX_USD:
+        reasons.append(f"user-24h ${user_today:.2f} ≥ ${LLM_USER_DAILY_MAX_USD:.2f}")
+    return reasons
+
+
 async def generate_report(ctx: dict, report_id: str) -> None:
     """ARQ job: sections → DB → PDF."""
     with Session(db_engine) as session:
@@ -270,15 +300,27 @@ async def generate_report(ctx: dict, report_id: str) -> None:
 
         # M9: hard daily cost ceiling — degrade honestly instead of spending
         today = today_llm_cost(db_engine)
-        if today >= LLM_DAILY_BUDGET_USD:
+        uid = None
+        try:
+            c = session.get(Chart, rep.chart_id) if rep.chart_id else None
+        except Exception:
+            c = None
+        if c and c.profile_id:
+            try:
+                bp = session.get(BirthProfile, c.profile_id)
+                uid = bp.user_id if bp else None
+            except Exception:
+                uid = None
+        user_today = user_today_llm_cost(db_engine, uid)
+        reasons = _budget_reasons(db_engine, user_today)
+        if reasons:  # hard ceilings → honest degraded, ZERO LLM calls
             rep.status = "degraded"
-            rep.error = (f"daily LLM budget reached (${today:.2f} ≥ ${LLM_DAILY_BUDGET_USD:.2f}) "
-                         "— fallback intro-only sections")
+            rep.error = ("LLM budget reached: " + "; ".join(reasons))
             from app.report.worker import budget_fallback_sections
             rep.sections = budget_fallback_sections(chart.chart_json, rep.plan_key or "full")
             rep.metrics = {"fallback": "budget", "llm_cost_today_usd": round(today, 2)}
             session.commit()
-            log.warning("report %s degraded: daily LLM budget reached", report_id[:8])
+            log.warning("report %s degraded: %s", report_id[:8], rep.error)
             return
 
         try:
@@ -310,7 +352,12 @@ async def generate_report(ctx: dict, report_id: str) -> None:
                 rep.status = "degraded"
                 rep.error = "آپلود فایل گزارش در R2 ناموفق بود — گزارش موقتاً محلی است؛ با ادمین تماس بگیرید"
             fallback = metrics.get("fallback_domains", [])
-            if fallback:
+            n_ok = sum(1 for v in sections.values() if v.get("ok") or v.get("status") == "ok")
+            if n_ok == 0:
+                # all sections failed → honest degraded (intro-only), NEVER done
+                rep.status = "degraded"
+                rep.error = "هیچ بخشی با کیفیت کافی تولید نشد — گزارش خلاصه است؛ بعداً دوباره امتحان کنید"
+            elif fallback:
                 # audit P1-7: never silently deliver a low-quality report
                 rep.status = "degraded"
                 rep.error = f"بخش‌های ناقص (fallback): {', '.join(fallback)}"
