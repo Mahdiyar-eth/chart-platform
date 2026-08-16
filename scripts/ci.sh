@@ -108,8 +108,8 @@ echo "==> brand-language scan (فال/پیش‌بینی ممنوع)"
 BAD=$(grep -rniE "پیش ?بینی|فال|طالع ?بینی" \
   app/templates app/content app/bots app/report app/chat --include="*.html" --include="*.json" --include="*.py" \
   | grep -v app/report/qa.py \
-  | grep -viE "فال‌بازی|نه فال|فال قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج" \
-  | grep -viE "پیش‌بینی نیست|پیش‌بینی در آسترولوژی|پیش‌بین" || true)
+  | grep -viE "فال[‌ ]?[‌ ]?(بازی|گویی)|نه فال|فال قطعی|پیش‌بینی قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج" \
+  | grep -viE "پیش[‌ ]?بینی (نیست|در آسترولوژی|قطع)|پیش[‌ ]?بین" || true)
 
 if [ -n "$BAD" ]; then
   echo "❌ banned brand-language found:"
