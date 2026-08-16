@@ -1,4 +1,10 @@
-"""P0-4 — CMS: authz, CRUD, validation, revisions, audit, DB-first reads."""
+"""P0-4 — CMS: authz, CRUD, validation, revisions, audit, DB-first reads.
+
+Routes are async (they await request.body()) so every direct call is
+wrapped in asyncio.run. Body travels via scope["body"] (as Starlette does).
+"""
+import asyncio
+import json
 import sys
 from pathlib import Path
 
@@ -14,6 +20,12 @@ from app.models_cms import Article, ContentVersion, Page
 from app.routes import cms_admin
 
 init_db()
+
+
+def _c(coro):
+    if hasattr(coro, "__await__"):
+        return asyncio.run(coro)
+    return coro  # sync route (delete/restore)
 
 
 @pytest.fixture(autouse=True)
@@ -35,20 +47,33 @@ def _req(admin: bool = True) -> Request:
 
         def get(self, k, d=None):
             return d
-    r = Request({"type": "http", "method": "GET", "path": "/", "headers": []})
-    r.scope["state"] = _State()
+
+    scope: dict = {"type": "http", "method": "GET", "path": "/", "headers": []}
     if admin:
         secret = os.getenv("ADMIN_SECRET", "")
         pin = os.getenv("ADMIN_PIN", "test-pin")
         ck = _hm.new(secret.encode(), pin.encode(), _hs.sha256).hexdigest()
-        r._cookies = {"chart_admin": ck}
+        # modern starlette parses cookies from the header, not scope["cookies"]
+        scope["headers"] = [(b"cookie", f"chart_admin={ck}".encode())]
+
+    async def receive():
+        return {"type": "http.request", "body": b"{}", "more_body": False}
+
+    scope["receive"] = receive
+    r = Request(scope)
+    r.scope["state"] = _State()
     return r
 
 
 def _json_body(data: dict) -> Request:
-    import json
+    body = json.dumps(data).encode()
     r = _req()
-    r._body = json.dumps(data).encode()
+
+    async def receive():
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    r.scope["receive"] = receive
+    r._receive = receive  # Request caches receive in __init__ — set it directly
     return r
 
 
@@ -65,53 +90,53 @@ def _create(slug: str = "my-article") -> str:
 
 def test_articles_requires_admin():
     with pytest.raises(HTTPException):
-        cms_admin.cms_articles(_req(admin=False), Session(engine))
+        _c(cms_admin.cms_articles(_req(admin=False), Session(engine)))
 
 
 def test_create_requires_admin():
     with pytest.raises(HTTPException):
-        cms_admin.cms_article_create(_req(admin=False), Session(engine))
+        _c(cms_admin.cms_article_create(_req(admin=False), Session(engine)))
 
 
 # ── CRUD + validation ───────────────────────────────────────────────────
 
 def test_create_and_validation():
     with Session(engine) as s:
-        cms_admin.cms_article_create(_json_body({"title": "سلام دنیا", "slug": "salam"}), s)
+        _c(cms_admin.cms_article_create(_json_body({"title": "سلام دنیا", "slug": "salam"}), s))
         a = s.exec(select(Article).where(Article.slug == "salam")).first()
         assert a is not None and a.status == "draft" and a.version == 1
         # duplicate slug → 409
         with pytest.raises(HTTPException) as e:
-            cms_admin.cms_article_create(_json_body({"title": "دوباره", "slug": "salam"}), s)
+            _c(cms_admin.cms_article_create(_json_body({"title": "دوباره", "slug": "salam"}), s))
         assert e.value.status_code == 409
         # invalid slug → 422
         with pytest.raises(HTTPException) as e2:
-            cms_admin.cms_article_create(_json_body({"title": "x", "slug": "نامعتبر!!"}), s)
+            _c(cms_admin.cms_article_create(_json_body({"title": "x", "slug": "نامعتبر!!"}), s))
         assert e2.value.status_code == 422
         # empty title → 422
         with pytest.raises(HTTPException) as e3:
-            cms_admin.cms_article_create(_json_body({"title": "", "slug": "ok-slug"}), s)
+            _c(cms_admin.cms_article_create(_json_body({"title": "", "slug": "ok-slug"}), s))
         assert e3.value.status_code == 422
 
 
 def test_update_bumps_version_snapshot_status():
     aid = _create("ver")
     with Session(engine) as s:
-        out = cms_admin.cms_article_update(aid, _json_body({"title": "ویرایش"}), s)
+        out = _c(cms_admin.cms_article_update(aid, _json_body({"title": "ویرایش"}), s))
         assert out["version"] == 2
         v = s.exec(select(ContentVersion).where(ContentVersion.object_id == aid)).all()
         assert any(x.version == 1 for x in v)
-        cms_admin.cms_article_update(aid, _json_body({"status": "published"}), s)
+        _c(cms_admin.cms_article_update(aid, _json_body({"status": "published"}), s))
         a = s.get(Article, aid)
         assert a.status == "published" and a.publish_at is not None
-        cms_admin.cms_article_update(aid, _json_body({"status": "unpublished"}), s)
+        _c(cms_admin.cms_article_update(aid, _json_body({"status": "unpublished"}), s))
         assert s.get(Article, aid).status == "unpublished"
 
 
 def test_delete_removes():
     aid = _create("del")
     with Session(engine) as s:
-        cms_admin.cms_article_delete(aid, _req(), s)
+        _c(cms_admin.cms_article_delete(aid, _req(), s))
         assert s.get(Article, aid) is None
 
 
@@ -123,11 +148,11 @@ def test_page_crud_and_404():
         s.add(p)
         s.commit()
     with Session(engine) as s:
-        cms_admin.cms_page_update("about", _json_body({"content": "متن جدید", "extra": {"x": 1}}), s)
+        _c(cms_admin.cms_page_update("about", _json_body({"content": "متن جدید", "extra": {"x": 1}}), s))
         p = s.exec(select(Page).where(Page.key == "about")).first()
         assert p.content == "متن جدید" and p.extra == {"x": 1} and p.version == 2
         with pytest.raises(HTTPException):
-            cms_admin.cms_page_get("nope", _req(), s)
+            _c(cms_admin.cms_page_get("nope", _req(), s))
 
 
 # ── revisions ───────────────────────────────────────────────────────────
@@ -135,8 +160,8 @@ def test_page_crud_and_404():
 def test_revisions_and_restore():
     aid = _create("rev")
     with Session(engine) as s:
-        cms_admin.cms_article_update(aid, _json_body({"title": "نسخه دوم"}), s)
-        cms_admin.cms_article_restore(aid, 1, _req(), s)
+        _c(cms_admin.cms_article_update(aid, _json_body({"title": "نسخه دوم"}), s))
+        _c(cms_admin.cms_article_restore(aid, 1, _req(), s))
         a = s.get(Article, aid)
         assert a.title == "تست"  # back to v1 snapshot
 
@@ -146,7 +171,7 @@ def test_revisions_and_restore():
 def test_audit_written_on_update():
     aid = _create("audit")
     with Session(engine) as s:
-        cms_admin.cms_article_update(aid, _json_body({"title": "x"}), s)
+        _c(cms_admin.cms_article_update(aid, _json_body({"title": "x"}), s))
     with Session(engine) as s:
         rows = s.exec(select(AuditLog).where(AuditLog.action == "article.update")).all()
         assert any(aid == r.entity for r in rows)

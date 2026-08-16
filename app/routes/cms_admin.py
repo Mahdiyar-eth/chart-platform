@@ -66,10 +66,30 @@ def _save_version(session: Session, kind: str, oid: str, obj: Any) -> None:
     ))
 
 
-def _read_json(request: Request) -> dict:
-    raw = getattr(request, "_body", None) or b"{}"
-    if isinstance(raw, str):
-        raw = raw.encode()
+def _body_to_json(v: Any) -> str:
+    """Serialize list/dict article body → JSON string (DB column is Text).
+
+    The JSON source articles store body as a list of {h2,p} sections; a raw
+    list would raise 'can't adapt type dict' in psycopg2. Found by the
+    golden-path E2E, not by unit tests (R.1 review #4).
+    """
+    if v is None:
+        return ""
+    if isinstance(v, (list, dict)):
+        return json.dumps(v, ensure_ascii=False)
+    return str(v)
+
+
+async def _read_json(request: Request) -> dict:
+    """Read JSON body the way Starlette actually populates it (await body()).
+
+    NOTE: request._body is only set AFTER body() is awaited — the earlier
+    version returned {} on real uvicorn, making every create 422. Found by
+    the golden-path E2E test, not by unit tests (R.1 review #4).
+    """
+    raw = await request.body()
+    if not raw:
+        return {}
     try:
         data = json.loads(raw or b"{}")
         return data if isinstance(data, dict) else {}
@@ -100,10 +120,10 @@ def cms_article_get(aid: str, request: Request, session: Session = Depends(get_s
 
 
 @router.post("/api/admin/content/articles")
-def cms_article_create(request: Request, session: Session = Depends(get_session)):
+async def cms_article_create(request: Request, session: Session = Depends(get_session)):
     if not _is_admin(request):
         raise HTTPException(403)
-    data = _read_json(request)
+    data = await _read_json(request)
     title = (data.get("title") or "").strip()
     slug = (data.get("slug") or "").strip().lower()
     if not title:
@@ -116,7 +136,7 @@ def cms_article_create(request: Request, session: Session = Depends(get_session)
         title=title[:200], slug=slug,
         category=(data.get("category") or "عمومی")[:60],
         excerpt=(data.get("excerpt") or "")[:400],
-        body=data.get("body") or "",
+        body=_body_to_json(data.get("body")),
         keywords=(data.get("keywords") or "")[:400],
         meta_title=(data.get("meta_title") or "")[:120],
         meta_description=(data.get("meta_description") or "")[:300],
@@ -133,17 +153,19 @@ def cms_article_create(request: Request, session: Session = Depends(get_session)
 
 
 @router.put("/api/admin/content/articles/{aid}")
-def cms_article_update(aid: str, request: Request, session: Session = Depends(get_session)):
+async def cms_article_update(aid: str, request: Request, session: Session = Depends(get_session)):
     if not _is_admin(request):
         raise HTTPException(403)
     a = session.get(Article, aid)
     if not a:
         raise HTTPException(404)
-    data = _read_json(request)
+    data = await _read_json(request)
     old = _snapshot(a)
     for f in MUTABLE_ARTICLE_FIELDS:
         if f in data:
             v = data[f]
+            if f == "body":
+                v = _body_to_json(v)
             setattr(a, f, v.strip() if isinstance(v, str) else v)
     if "slug" in data and data["slug"] != a.slug:
         new_slug = (data["slug"] or "").strip().lower()
@@ -239,13 +261,13 @@ def cms_page_get(key: str, request: Request, session: Session = Depends(get_sess
 
 
 @router.put("/api/admin/content/pages/{key}")
-def cms_page_update(key: str, request: Request, session: Session = Depends(get_session)):
+async def cms_page_update(key: str, request: Request, session: Session = Depends(get_session)):
     if not _is_admin(request):
         raise HTTPException(403)
     p = session.exec(select(Page).where(Page.key == key)).first()
     if not p:
         raise HTTPException(404)
-    data = _read_json(request)
+    data = await _read_json(request)
     old = _snapshot(p)
     if "title" in data:
         p.title = (data["title"] or "").strip()[:200]
