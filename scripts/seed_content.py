@@ -27,10 +27,13 @@ def seed_articles() -> int:
             slug = a.get("slug") or a.get("id", "")
             if s.exec(select(Article).where(Article.slug == slug)).first():
                 continue
+            body_raw = a.get("body", "")
+            if isinstance(body_raw, (list, dict)):
+                body_raw = json.dumps(body_raw, ensure_ascii=False)
             s.add(Article(
                 title=a.get("title", slug), slug=slug,
                 category=a.get("category", "عمومی"),
-                excerpt=a.get("excerpt", ""), body=a.get("body", "") or
+                excerpt=a.get("excerpt", ""), body=body_raw or
                 "\n\n".join(f"## {h}\n\n{p}" for h, p in zip(a.get("sections", []), a.get("paragraphs", []))),
                 keywords=a.get("keywords", ""),
                 meta_title=a.get("meta_title", a.get("title", ""))[:120],

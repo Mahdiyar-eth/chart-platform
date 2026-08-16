@@ -2222,14 +2222,29 @@ def _load_articles() -> list[dict]:
                           .where(Article.status == "published")
                           .order_by(Article.updated_at.desc())).all()
         if rows:
-            return [{
-                "slug": a.slug, "title": a.title, "category": a.category,
-                "excerpt": a.excerpt, "keywords": a.keywords,
-                "meta_title": a.meta_title, "meta_description": a.meta_description,
-                "canonical": a.canonical, "image": a.featured_image,
-                "author": a.author,
-                "body": a.body, "updated_at": a.updated_at.isoformat() if a.updated_at else "",
-            } for a in rows]
+            out = []
+            for a in rows:
+                body = a.body or ""
+                try:
+                    parsed = json.loads(body)
+                    if isinstance(parsed, list) and parsed:
+                        body = parsed
+                    elif isinstance(parsed, dict):
+                        body = [parsed]
+                    else:
+                        body = [{"p": body}]
+                except Exception:  # noqa: BLE001
+                    body = [{"p": body}] if body.strip() else []
+                out.append({
+                    "slug": a.slug, "title": a.title, "category": a.category,
+                    "excerpt": a.excerpt, "keywords": a.keywords,
+                    "meta_title": a.meta_title, "meta_description": a.meta_description,
+                    "canonical": a.canonical, "image": a.featured_image,
+                    "author": a.author,
+                    "body": body,
+                    "updated_at": a.updated_at.isoformat() if a.updated_at else "",
+                })
+            return out
     except Exception:  # noqa: BLE001 — table may not exist before migration
         pass
     import json as _json
