@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}داشبورد | زایچه{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+<div style="max-width:640px; margin:0 auto; padding:28px 14px 48px;">
+  <div style="text-align:center; padding:8px 0 4px;">
+    <h1 style="font-size:1.5rem; font-weight:900;">
+      امروز در چارت تو چه خبر است؟
+    </h1>
+    <p class="muted" style="margin-top:8px; font-size:.92rem;">
+      خوش آمدی، {{ user.phone }} — بینش روزانه، گذرها و همهٔ ابزارها در یک نگاه.
+    </p>
+  </div>
+
+  {% if not charts %}
+  <div class="glass glow" style="margin-top:18px; padding:24px; text-align:center;">
+    <p style="line-height:2;">هنوز چارتی نساخته‌ای. با ساخت چارت تولد (رایگان)، داشبورد برایت زنده می‌شود.</p>
+    <a href="/birth-form" class="btn btn-lg" style="display:inline-block; margin-top:12px;">ساخت چارت رایگان</a>
+  </div>
+  {% else %}
+  {% if daily and daily.headline %}
+  <a href="/today" class="glass glow" style="display:block; margin-top:18px; padding:18px 20px; border-color:rgba(245,197,24,.4);">
+    <div style="display:flex; gap:12px; align-items:flex-start;">
+      <svg style="width:26px;height:26px;color:var(--gold);flex:none;margin-top:2px;" aria-hidden="true"><use href="#icon-sun"/></svg>
+      <div>
+        <div style="font-size:.78rem; color:var(--gold); font-weight:700;">امروز در چارت تو — {{ daily.date or '' }}</div>
+        <div style="font-size:1.02rem; color:#fff; margin-top:6px; line-height:1.8;">{{ daily.headline }}</div>
+        <div class="muted" style="font-size:.78rem; margin-top:8px;">باز کردن «امروز» ←</div>
+      </div>
+    </div>
+  </a>
+  {% endif %}
+
+  <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:16px;">
+    {% for c in cards %}
+    <a href="{{ c.url }}" class="glass" style="padding:16px 14px; border-radius:16px; display:flex; flex-direction:column; gap:8px;">
+      <svg style="width:22px;height:22px;color:var(--gold);" aria-hidden="true"><use href="#icon-{{ c.icon }}"/></svg>
+      <b style="font-size:.95rem; color:#fff;">{{ c.title }}</b>
+      <span class="muted" style="font-size:.78rem; line-height:1.7;">{{ c.desc }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <p class="muted" style="text-align:center; font-size:.78rem; margin-top:18px;">
+    داده‌های تو خصوصی است؛ این داشبورد فقط برای توست. — <a href="/account" style="color:#8fb6ff;">حساب و تنظیمات</a>
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

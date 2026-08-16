@@ -16,7 +16,7 @@ def test_consent_recorded_at_signup_and_readable(monkeypatch):
     # simulate full OTP signup without SMS (dev mode — restore after)
     monkeypatch.setattr(A, "_OTP_DEV_MODE", True)
     code = request_otp(phone)["dev_code"]
-    u = A.verify_otp(phone, code)
+    assert A.verify_otp(phone, code) is not None
     with Session(engine) as s:
         uid = s.exec(select(User.id).where(User.phone == phone)).first()
         consents = s.exec(select(ConsentLog).where(ConsentLog.user_id == uid)).all()

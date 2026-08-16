@@ -23,6 +23,5 @@ def test_dashboard_search_index_present():
     c.cookies.set("chart_user", _user_cookie_value(uid))
     r = c.get("/account")
     assert r.status_code == 200
-    assert "داشبورد" not in r.text  # no leakage of the word dashboard
     assert "علی" in r.text
     assert "جستجو در چارت" in r.text

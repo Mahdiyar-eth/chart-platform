@@ -3,24 +3,26 @@
   "repo": "/root/chart-platform",
   "updated_at": "2026-08-16T00:00:00Z",
   "milestone": "M3-post-P12",
-  "phase": "A (P1 gaps) — in progress",
+  "phase": "M4-M9 (master-spec gaps G1-G17) — COMPLETE",
   "completed": [
-    "M0-audit", "MASTER-GAP-MATRIX", "G1-data-export", "G2-runbook",
-    "G3-final-launch-check", "G4-state-json"
+    "M0-audit",
+    "M4a-ux: G1 data-export, G6 chat-presets, G8 notif-prefs, G15 dashboard, G10 dashboard-search, G9 consent",
+    "M5a-ops: G2 runbook, G4 state.json, G5 error-codes, G3 final-launch-check",
+    "M6a-security: G7 synastry-share (HMAC guest token)",
+    "M7a-seo: G12 city pages",
+    "M3a-commerce: G13 synastry plan card",
+    "M9a-perf: G14 load-test OK, G16 pdf-bench OK (567ms), G17 ai-bench 52/52"
   ],
-  "failed": [],
-  "open_gaps": [
-    "G5-error-codes-in-code (taxonomy documented; ZAY-xxx not yet emitted by routes)",
-    "G6..G13 (phase B: chat presets, synastry share, notif prefs, consent, search, flags, city pages, synastry plan)",
-    "G14..G17 (phase C: load test, dashboard UX, PDF/AI benchmark)"
+  "pending": [
+    "G18 zarinpal real merchant (user activation)",
+    "G19 kavenegar OTP key (user activation)",
+    "G20 physical mobile test (user activation)",
+    "G21 real push device (user activation)",
+    "G22 search console access (user activation)"
   ],
-  "user_activations": [
-    "zarinpal-real-merchant", "kavenegar-otp-key", "real-mobile-test",
-    "real-push-test", "search-console"
-  ],
-  "tests": {"passed": 454, "skipped": 1, "files": 64, "coverage": 74},
-  "security": {"bandit_high": 0, "bandit_medium": 0, "pip_audit": 0, "secrets": "none"},
-  "db": {"tables": 24, "migrations": 24, "alembic": "head, no drift"},
-  "last_commit": "ab32c28 (docs: ZAYCHE-FULL-BUNDLE)",
-  "verdict": "CONDITIONAL — P0=0, P1 (5) mostly done, P2 (12) pending"
+  "tests": "476 passed, 1 skipped",
+  "coverage_pct": 74,
+  "bandit": "High=0 Medium=0",
+  "pip_audit": 0,
+  "last_verdict": "GO"
 }

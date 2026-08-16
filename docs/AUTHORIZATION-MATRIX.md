@@ -73,6 +73,7 @@
 | `GET /account` | User | کوکی ورود |
 | `GET /account/login` | Public | rate limit |
 | `GET /account/export` | User | owner-only JSON export (G1 — no secrets) |
+| `GET /dashboard` | User | session cookie; hero + 8 cards (G15) |
 | `POST /account/delete` | User | CSRF + cascade (C6) |
 | `GET /privacy` | Public | — |
 | `GET /terms` | Public | — |

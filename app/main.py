@@ -1712,6 +1712,55 @@ async def bale_webhook(secret: str, request: Request):
 # ── Web Push (D1) — H1.9 → app/routes/push.py ────────────────────────────────
 
 
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard_page(request: Request, session: Session = Depends(get_session)):
+    """G15 (§22) — dashboard as the primary product: hero «امروز در چارت تو
+    چه خبر است؟» + 8 retention cards. Login-gated; chart-less users get a CTA."""
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login?next=/dashboard", status_code=303)
+    profiles = session.exec(select(BirthProfile).where(BirthProfile.user_id == u.id)).all()
+    profile_ids = [p.id for p in profiles]
+    charts = (session.exec(select(Chart).where(Chart.profile_id.in_(profile_ids))
+                           .order_by(Chart.created_at.desc())).all() if profile_ids else [])
+    chart_ids = [c.id for c in charts]
+    reports = (session.exec(select(Report).where(Report.chart_id.in_(chart_ids))
+                            .order_by(Report.created_at.desc())).all() if chart_ids else [])
+    done = [r for r in reports if r.status == "done"]
+    # daily insight for the newest chart (deterministic per Tehran day)
+    daily = None
+    if charts:
+        from app.today.service import today_status
+        try:
+            st = today_status(session, charts[0])
+            daily = {"date": st.get("date_fa") if st else None,
+                     "headline": (st.get("daily") or {}).get("headline") if st else None}
+        except Exception:  # noqa: BLE001 — dashboard must never 500 on a service hiccup
+            daily = None
+    cards = [
+        {"key": "today", "title": "امروز در چارت تو", "desc": "بینش روزانه بر اساس چارت تولدت",
+         "url": "/today", "icon": "sun"},
+        {"key": "weekly", "title": "نگاهی به آسمان هفته", "desc": "تأمل هفتگی و گذرهای پیش رو",
+         "url": "/today?view=week", "icon": "moon"},
+        {"key": "chat", "title": "گفت‌وگو با چارت", "desc": "سؤال بپرس؛ پاسخ از گزارش و چارت تو",
+         "url": f"/chat/{charts[0].id}" if charts else "/birth-form", "icon": "chat"},
+        {"key": "explore", "title": "خودت را کشف کن", "desc": "کاوش تعاملی شخصیت و مسیر زندگی",
+         "url": "/explore", "icon": "compass"},
+        {"key": "reports", "title": "گزارش‌ها", "desc": f"{len(done)} گزارش آماده — دانلود PDF",
+         "url": "/account", "icon": "book"},
+        {"key": "synastry", "title": "سازگاری دو چارت", "desc": "سیناستری با شریک زندگی‌ات",
+         "url": "/synastry", "icon": "heart"},
+        {"key": "wallet", "title": "کیف پول", "desc": f"{u.credits} اعتبار — دعوت دوستان",
+         "url": "/account", "icon": "wallet"},
+        {"key": "plans", "title": "پلن‌ها", "desc": "گزارش کامل، طلایی و اشتراک",
+         "url": "/plans", "icon": "sparkles"},
+    ]
+    return templates.TemplateResponse(request, "dashboard.html", {
+        "title": "داشبورد — زایچه", "user": u, "charts": charts,
+        "daily": daily, "cards": cards, "reports_done": len(done),
+    })
+
+
 @app.get("/account", response_class=HTMLResponse)
 def account_page(request: Request, session: Session = Depends(get_session)):
     u = get_current_user(request)
