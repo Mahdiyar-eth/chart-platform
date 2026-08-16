@@ -39,6 +39,149 @@
     } catch (e) { document.getElementById('health-body').textContent = 'err ' + e; }
   })();
   </script>
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">📝 محتوا (CMS — P0-4)</h2>
+  <div class="glass" style="padding:14px;font-size:.83rem;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <button onclick="cmsList()" style="padding:6px 12px;border-radius:8px;background:rgba(139,92,246,.2);border:1px solid #8b5cf6;color:#fff;cursor:pointer;">مقالات</button>
+      <button onclick="cmsPages()" style="padding:6px 12px;border-radius:8px;background:rgba(59,130,246,.2);border:1px solid #3b82f6;color:#fff;cursor:pointer;">صفحات</button>
+      <button onclick="cmsMediaPanel()" style="padding:6px 12px;border-radius:8px;background:rgba(16,185,129,.2);border:1px solid #10b981;color:#fff;cursor:pointer;">مدیا</button>
+    </div>
+    <div id="cms-body" class="muted" style="line-height:1.8;">برای دیدن لیست کلیک کنید.</div>
+  </div>
+  <script>
+  async function cmsFetch(url, opts={}) {
+    opts.headers = Object.assign({'X-Requested-With':'fetch','Content-Type':'application/json'}, opts.headers||{});
+    const r = await fetch(url, opts);
+    const t = await r.text();
+    let j = null; try { j = JSON.parse(t); } catch(e) {}
+    if (!r.ok) throw new Error((j && (j.detail || j.error)) || r.status);
+    return j;
+  }
+  async function cmsList() {
+    const el = document.getElementById('cms-body');
+    try {
+      const arts = await cmsFetch('/api/admin/content/articles');
+      let h = '<div style="margin-bottom:8px;"><button onclick="cmsNewArticle()" style="padding:5px 10px;border-radius:7px;background:#16a34a;border:1px solid #22c55e;color:#fff;cursor:pointer;">+ مقاله جدید</button></div>';
+      h += '<table style="width:100%;border-collapse:collapse;font-size:.75rem;"><tr style="color:#c4b5fd;text-align:right;"><th>عنوان</th><th>اسلاگ</th><th>دسته</th><th>وضعیت</th><th>v</th><th>عملیات</th></tr>';
+      for (const a of arts) {
+        h += `<tr style="border-top:1px solid #2a2f45;"><td>${a.title}</td><td dir="ltr">${a.slug}</td><td>${a.category}</td><td>${a.status}</td><td>${a.version}</td>
+        <td><button onclick="cmsEdit('${a.id}')" style="padding:2px 7px;border-radius:6px;background:rgba(59,130,246,.2);border:1px solid #3b82f6;color:#fff;cursor:pointer;">ویرایش</button>
+        <button onclick="cmsStatus('${a.id}','${a.status === 'published' ? 'unpublished' : 'published'}')" style="padding:2px 7px;border-radius:6px;background:rgba(16,185,129,.2);border:1px solid #10b981;color:#fff;cursor:pointer;">${a.status === 'published' ? 'متوقف' : 'منتشر کن'}</button>
+        <button onclick="cmsDel('${a.id}')" style="padding:2px 7px;border-radius:6px;background:rgba(220,38,38,.2);border:1px solid #ef4444;color:#fff;cursor:pointer;">حذف</button></td></tr>`;
+      }
+      h += '</table>';
+      el.innerHTML = h;
+    } catch(e) { el.textContent = 'err: ' + e.message; }
+  }
+  function cmsForm(a) {
+    a = a || {};
+    const esc = (v) => (v||'').replace(/"/g,'&quot;');
+    return `<div style="display:grid;gap:6px;max-width:640px;"><input id="cms-title" placeholder="عنوان" value="${esc(a.title)}" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+    <input id="cms-slug" placeholder="اسلاگ (a-z0-9-)" dir="ltr" value="${esc(a.slug)}" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+    <div style="display:flex;gap:6px;"><input id="cms-cat" placeholder="دسته" value="${esc(a.category)}" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+    <input id="cms-author" placeholder="نویسنده" value="${esc(a.author)}" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/></div>
+    <textarea id="cms-excerpt" rows="2" placeholder="خلاصه (excerpt)">${esc(a.excerpt)}</textarea>
+    <textarea id="cms-body" rows="10" placeholder="متن مقاله (Markdown/HTML)" style="font-family:monospace;direction:ltr;text-align:left;">${esc(a.body)}</textarea>
+    <div style="display:flex;gap:6px;"><input id="cms-meta-title" placeholder="meta title" value="${esc(a.meta_title)}" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+    <input id="cms-canonical" placeholder="canonical URL" dir="ltr" value="${esc(a.canonical)}" style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/></div>
+    <input id="cms-image" placeholder="تصویر شاخص (URL یا media id)" dir="ltr" value="${esc(a.featured_image)}" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+    <div style="display:flex;gap:8px;margin-top:4px;"><button onclick="cmsSave('${a.id||''}')" style="padding:6px 14px;border-radius:8px;background:#16a34a;border:1px solid #22c55e;color:#fff;cursor:pointer;">ذخیره</button>
+    <button onclick="cmsList()" style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid var(--stroke);color:#fff;cursor:pointer;">بازگشت</button></div></div>`;
+  }
+  function cmsNewArticle() {
+    document.getElementById('cms-body').innerHTML = cmsForm({});
+  }
+  async function cmsEdit(id) {
+    try {
+      const a = await cmsFetch('/api/admin/content/articles/' + id);
+      document.getElementById('cms-body').innerHTML = cmsForm(a);
+    } catch(e) { document.getElementById('cms-body').textContent = 'err: ' + e.message; }
+  }
+  async function cmsSave(id) {
+    const data = {
+      title: document.getElementById('cms-title').value,
+      slug: document.getElementById('cms-slug').value,
+      category: document.getElementById('cms-cat').value,
+      author: document.getElementById('cms-author').value,
+      excerpt: document.getElementById('cms-excerpt').value,
+      body: document.getElementById('cms-body').value,
+      meta_title: document.getElementById('cms-meta-title').value,
+      canonical: document.getElementById('cms-canonical').value,
+      featured_image: document.getElementById('cms-image').value
+    };
+    try {
+      const url = id ? ('/api/admin/content/articles/' + id) : '/api/admin/content/articles';
+      const r = await cmsFetch(url, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) });
+      alert('ذخیره شد ✓ (v' + (r.version || 'new') + ')');
+      cmsList();
+    } catch(e) { alert('خطا: ' + e.message); }
+  }
+  async function cmsStatus(id, status) {
+    try { await cmsFetch('/api/admin/content/articles/' + id, { method: 'PUT', body: JSON.stringify({status}) }); cmsList(); }
+    catch(e) { alert('خطا: ' + e.message); }
+  }
+  async function cmsDel(id) {
+    if (!confirm('حذف مقاله؟ (قابل بازگشت از revision نیست)')) return;
+    try { await cmsFetch('/api/admin/content/articles/' + id, { method: 'DELETE' }); cmsList(); }
+    catch(e) { alert('خطا: ' + e.message); }
+  }
+  async function cmsPages() {
+    const el = document.getElementById('cms-body');
+    try {
+      const pages = await cmsFetch('/api/admin/content/pages');
+      let h = '<table style="width:100%;border-collapse:collapse;font-size:.75rem;"><tr style="color:#c4b5fd;text-align:right;"><th>کلید</th><th>عنوان</th><th>v</th><th></th></tr>';
+      for (const pg of pages) {
+        h += `<tr style="border-top:1px solid #2a2f45;"><td dir="ltr">${pg.key}</td><td>${pg.title}</td><td>${pg.version}</td>
+        <td><button onclick="cmsPageEdit('${pg.key}')" style="padding:2px 7px;border-radius:6px;background:rgba(59,130,246,.2);border:1px solid #3b82f6;color:#fff;cursor:pointer;">ویرایش</button></td></tr>`;
+      }
+      h += '</table>';
+      el.innerHTML = h;
+    } catch(e) { el.textContent = 'err: ' + e.message; }
+  }
+  async function cmsPageEdit(key) {
+    try {
+      const p = await cmsFetch('/api/admin/content/pages/' + key);
+      const esc = (v) => (v||'').replace(/"/g,'&quot;');
+      document.getElementById('cms-body').innerHTML = `<div style="max-width:680px;display:grid;gap:6px;">
+      <b>${p.key}</b>
+      <input id="pg-title" value="${esc(p.title)}" placeholder="عنوان" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+      <textarea id="pg-content" rows="8" placeholder="متن صفحه (Markdown/HTML)" style="font-family:monospace;direction:ltr;text-align:left;">${esc(p.content)}</textarea>
+      <textarea id="pg-extra" rows="4" placeholder='extra JSON (sections, meta, categories…)' style="font-family:monospace;direction:ltr;text-align:left;">${esc(JSON.stringify(p.extra||{}))}</textarea>
+      <div style="display:flex;gap:8px;"><button onclick="cmsPageSave('${p.key}')" style="padding:6px 14px;border-radius:8px;background:#16a34a;border:1px solid #22c55e;color:#fff;cursor:pointer;">ذخیره</button>
+      <button onclick="cmsPages()" style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid var(--stroke);color:#fff;cursor:pointer;">بازگشت</button></div></div>`;
+    } catch(e) { document.getElementById('cms-body').textContent = 'err: ' + e.message; }
+  }
+  async function cmsPageSave(key) {
+    let extra = {};
+    try { extra = JSON.parse(document.getElementById('pg-extra').value || '{}'); }
+    catch(e) { return alert('extra JSON نامعتبر است'); }
+    try {
+      await cmsFetch('/api/admin/content/pages/' + key, { method: 'PUT', body: JSON.stringify({
+        title: document.getElementById('pg-title').value,
+        content: document.getElementById('pg-content').value,
+        extra
+      })});
+      alert('ذخیره شد ✓'); cmsPages();
+    } catch(e) { alert('خطا: ' + e.message); }
+  }
+  function cmsMediaPanel() {
+    document.getElementById('cms-body').innerHTML = `<div style="max-width:520px;">
+    <input type="file" id="cms-file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="margin-bottom:8px;"/>
+    <div><button onclick="cmsUpload()" style="padding:6px 14px;border-radius:8px;background:#10b981;border:1px solid #34d399;color:#fff;cursor:pointer;">آپلود (R2)</button> <span id="cms-upload-res" class="muted"></span></div>
+    <p class="muted" style="font-size:.72rem;margin-top:8px;">حداکثر ۴MB — png/jpeg/webp/svg. برای استفاده در مقاله، آدرس برگشتی را در فیلد «تصویر شاخص» بگذارید.</p></div>`;
+  }
+  async function cmsUpload() {
+    const f = document.getElementById('cms-file').files[0];
+    if (!f) return alert('فایلی انتخاب نشده');
+    const fd = new FormData(); fd.append('file', f);
+    try {
+      const r = await fetch('/api/admin/content/media', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: fd });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.detail || r.status);
+      document.getElementById('cms-upload-res').textContent = '✓ ' + j.url;
+    } catch(e) { document.getElementById('cms-upload-res').textContent = 'خطا: ' + e.message; }
+  }
+  </script>
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
   <div class="glass" style="padding:14px;font-size:.83rem;">
     <div id="kpi-matrix" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;">

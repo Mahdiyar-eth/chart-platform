@@ -96,6 +96,19 @@ def presigned_url(key: str, expires: int = 1800) -> str | None:
         return None
 
 
+def upload_bytes(key: str, data: bytes, content_type: str = "application/octet-stream") -> bool:
+    """P0-4: upload raw bytes (CMS media) to R2. Returns success."""
+    if not configured():
+        return False
+    try:
+        client = _client()
+        client.put_object(Bucket=R2_BUCKET, Key=key, Body=data,
+                          ContentType=content_type)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def delete_object(key: str) -> bool:
     """Delete an object from R2 (best-effort). True on success, False otherwise."""
     if not configured() or not key:

@@ -122,6 +122,19 @@
 | `POST /api/today/reflection` | User (gold/monthly) | `get_current_user` + `_owns_chart` + `_today_plan_access == full` |
 | `GET /api/subscriptions` | User | `get_current_user` + profile/chart chain (owner) |
 | `POST /api/subscriptions/{id}/cancel` | User (owner) | `get_current_user` + chart→profile→user match |
+| `GET /api/admin/health` | Admin | `_is_admin` (chart_admin cookie) |
+| `GET /api/admin/content/articles` | Admin | `_is_admin` |
+| `GET /api/admin/content/articles/{aid}` | Admin | `_is_admin` |
+| `POST /api/admin/content/articles` | Admin | `_is_admin` |
+| `PUT /api/admin/content/articles/{aid}` | Admin | `_is_admin` |
+| `DELETE /api/admin/content/articles/{aid}` | Admin | `_is_admin` |
+| `GET /api/admin/content/articles/{aid}/revisions` | Admin | `_is_admin` |
+| `POST /api/admin/content/articles/{aid}/restore/{version}` | Admin | `_is_admin` |
+| `GET /api/admin/content/pages` | Admin | `_is_admin` |
+| `GET /api/admin/content/pages/{key}` | Admin | `_is_admin` |
+| `PUT /api/admin/content/pages/{key}` | Admin | `_is_admin` |
+| `POST /api/admin/content/media` | Admin | `_is_admin` |
+| `DELETE /api/admin/content/media/{mid}` | Admin | `_is_admin` |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.

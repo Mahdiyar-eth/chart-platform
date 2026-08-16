@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import app.config  # noqa: F401 — load .env FIRST
 from sqlmodel import SQLModel
 import app.models  # noqa: F401 — register all models on SQLModel.metadata
+import app.models_cms  # noqa: F401 — P0-4 CMS content models
 
 target_metadata = SQLModel.metadata
 

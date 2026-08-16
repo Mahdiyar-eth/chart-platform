@@ -2190,12 +2190,48 @@ def account_delete(request: Request, csrf_token: str = Form(""),
 # ─── admin auth (login / logout / dashboard) — pages stay here (H1.9) ───
 
 def _load_pages() -> dict:
+    """P0-4: pages source of truth is PostgreSQL; JSON is the historical fallback."""
     import json as _json
     from pathlib import Path as _P
-    return _json.loads(_P("/root/chart-platform/app/content/pages.json").read_text("utf-8"))
+
+    base: dict = {}
+    p = _P("/root/chart-platform/app/content/pages.json")
+    if p.exists():
+        base = _json.loads(p.read_text("utf-8"))
+    try:
+        from app.models_cms import Page
+        with Session(engine) as s:
+            rows = s.exec(select(Page)).all()
+        for pg in rows:
+            extra = dict(pg.extra or {})
+            entry = {"title": pg.title, "meta": extra.get("meta", ""),
+                     "sections": extra.get("sections") or ([{"h2": pg.title, "text": pg.content}] if pg.content else []),
+                     "categories": extra.get("categories"), "items": extra.get("items")}
+            base[pg.key] = entry
+    except Exception:  # noqa: BLE001 — table may not exist before migration
+        pass
+    return base
 
 
 def _load_articles() -> list[dict]:
+    """P0-4: CMS source of truth is PostgreSQL; JSON is the historical fallback."""
+    try:
+        from app.models_cms import Article
+        with Session(engine) as s:
+            rows = s.exec(select(Article)
+                          .where(Article.status == "published")
+                          .order_by(Article.updated_at.desc())).all()
+        if rows:
+            return [{
+                "slug": a.slug, "title": a.title, "category": a.category,
+                "excerpt": a.excerpt, "keywords": a.keywords,
+                "meta_title": a.meta_title, "meta_description": a.meta_description,
+                "canonical": a.canonical, "image": a.featured_image,
+                "author": a.author,
+                "body": a.body, "updated_at": a.updated_at.isoformat() if a.updated_at else "",
+            } for a in rows]
+    except Exception:  # noqa: BLE001 — table may not exist before migration
+        pass
     import json as _json
     from pathlib import Path as _P
     p = _P("/root/chart-platform/app/content/articles.json")
@@ -2227,7 +2263,12 @@ def _admin_cookie_value() -> str:
 
 
 def _is_admin(request: Request) -> bool:
+    """Shared admin gate (imported by routes to avoid main↔route cycles)."""
     return _hmac.compare_digest(request.cookies.get(_ADMIN_COOKIE, ""), _admin_cookie_value())
+
+
+def is_admin_request(request: Request) -> bool:
+    return _is_admin(request)
 
 
 @app.get("/admin/login", response_class=HTMLResponse)
@@ -2319,6 +2360,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
 # ── H1.9: extracted routers (auth / wallet / push / admin / seo) ──────────────
 from app.routes import admin as _admin_routes
 from app.routes import auth as _auth_routes
+from app.routes import cms_admin as _cms_routes
 from app.routes import push as _push_routes
 from app.routes import seo as _seo_routes
 from app.routes import wallet as _wallet_routes
@@ -2327,7 +2369,7 @@ from app.routes import wallet as _wallet_routes
 # (_IncludedRouter), which would hide these from app.routes (authz-matrix test,
 # middleware, route enumeration). Appending APIRoutes keeps full visibility.
 for _rt in (_auth_routes.router, _wallet_routes.router, _push_routes.router,
-            _seo_routes.router, _admin_routes.router):
+            _seo_routes.router, _admin_routes.router, _cms_routes.router):
     for _r in _rt.routes:
         app.router.routes.append(_r)
 

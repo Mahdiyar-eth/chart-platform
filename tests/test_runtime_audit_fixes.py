@@ -50,7 +50,7 @@ def test_worker_finishes_after_done_without_detached_error(monkeypatch):
     import app.report.worker as w
 
     async def fake_generate(chart_json, **kw):
-        return {"identity": {"section": "identity", "title_fa": "هویت",
+        return {"identity": {"ok": True, "section": "identity", "title_fa": "هویت",
                              "intro": "x", "insights": [{"insight": "i", "evidence": [],
                                                          "strengths": [], "challenges": [],
                                                          "recommendations": []}]}}, {"fallback_domains": []}
