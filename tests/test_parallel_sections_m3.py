@@ -47,12 +47,13 @@ def test_sections_run_concurrently_with_bounded_semaphore(monkeypatch):
     # monkeypatch SECTION_CONC via worker module attr
     monkeypatch.setattr(worker, "SECTION_CONC", 4)
     fake = SlowOk(delay=0.03)
+    monkeypatch.setattr(worker, "build_section_router", lambda d, m: fake)  # no real API
     # small plan: 10 sections
     raises = []
     # capture which domains were requested through prompt content tag
     async def run():
-        return await generate_sections_async(fake, CHART, max_tokens=512,
-                                             report_id="m3test", plan_key="full")
+        return await generate_sections_async(CHART, max_tokens=512,
+                                             report_id="m3test", plan_key="full", router=fake)
 
     sections, metrics = asyncio.run(run())
     n_sections = len(sections)
@@ -74,7 +75,8 @@ def test_fallback_domain_shape_on_failure(monkeypatch):
         async def complete(self, prompt, max_tokens=8192, temperature=0.6, json_mode=True):
             return LLMResult(text="", provider="go", model="m", error="HTTP 429: x")
 
-    sections, metrics = asyncio.run(generate_sections_async(FailAll(), CHART, max_tokens=512, plan_key="basic"))
+    monkeypatch.setattr(worker, "build_section_router", lambda d, m: FailAll())  # no real API
+    sections, metrics = asyncio.run(generate_sections_async(CHART, max_tokens=512, plan_key="basic", router=FailAll()))
     assert all(v.get("insights") for v in sections.values())   # fallback shape has insights
     assert metrics["fallback_domains"] == list(sections.keys())
     assert metrics["calls"] >= 5

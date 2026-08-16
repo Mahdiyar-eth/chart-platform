@@ -15,7 +15,7 @@ from arq.connections import RedisSettings
 from sqlmodel import Session
 
 import app.config  # noqa: F401 — load .env FIRST
-from app.core.llm import build_router
+from app.core.llm import build_section_router, build_router, section_model
 from app.db import engine as db_engine
 from app.env import IS_PROD
 from app.models import BirthProfile, Chart, LLMRun, Report
@@ -38,10 +38,11 @@ MAX_RETRIES = 6  # F-31: 3 attempts were not enough for stubborn sections;
 SECTION_CONC = int(os.getenv("SECTION_CONC", "4"))
 
 
-async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
+async def generate_sections_async(chart: dict, max_tokens: int = 8192,
                                    report_id: str | None = None, plan_key: str = "full",
                                    focus_areas: list[str] | None = None,
                                    personal_question: str | None = None,
+                                   router=None,
                                    user_id: str | None = None) -> tuple[dict, dict]:
     """Plan-aware section generation (plan v3.0 §10.3): basic=5, full=13, gold=13+islamic.
     focus_areas reorders domains (focused first); personal_question adds an extra section."""
@@ -72,10 +73,16 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
     async def _gen_one(domain: str, prompt: str, ctx_info: dict) -> None:
         """Full retry chain for ONE section — runs concurrently with others."""
         async with _sem:
+            # M2: per-section routing — each domain gets its own model
+            # (pro by default, flash for light sections, admin-overridable).
             ok = False
             for attempt in range(MAX_RETRIES + 1):
-                res = await router.complete(prompt, max_tokens=max_tokens,
-                                            temperature=0.6, json_mode=True)
+                # M2: per-section routing — each domain gets its own model
+                # (pro by default, flash for light sections, admin-overridable).
+                # A caller-supplied router (tests / external callers) wins.
+                r = router if router is not None else build_section_router(domain, section_model(domain))
+                res = await r.complete(prompt, max_tokens=max_tokens,
+                temperature=0.6, json_mode=True)
                 metrics["calls"] += 1
                 metrics["total_tokens"] += res.usage.total
                 metrics["cost_usd"] += res.cost
@@ -146,7 +153,7 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                     else:
                         _hard.append(e)
                 fix_hint = ("\n\n⚠️ تلاش قبلیِ تو برای این بخش به این دلایل رد شد — "
-                            "این موارد را دقیقاً رفع کن (بهویژه واژههای ممنوع را با "
+                            "این موارد را دقیقاً رفع کن (به‌ویژه واژه‌های ممنوع را با "
                             "جایگزین پیشنهادی عوض کن و فقط از عوامل مجاز استفاده کن) "
                             "و دوباره بنویس:\n- "
                             + "\n- ".join(_hard))
@@ -157,15 +164,16 @@ async def generate_sections_async(router, chart: dict, max_tokens: int = 8192,
                 sections[domain] = {
                     "section": domain,
                     "title_fa": ctx_info["domain_title"],
-                    "intro": "بر اساس عوامل محاسبهشده، این حوزه از زندگی اهمیت ویژهای دارد.",
+                    "intro": "بر اساس عوامل محاسبه‌شده، این حوزه از زندگی اهمیت ویژه‌ای دارد.",
                     "insights": [{
                         "insight": "نقشهی نجومی این حوزه را میتوان با دقت بیشتری در گزارش تکمیلی بررسی کرد. "
                                    "عوامل فعال: " + (ctx_info["factors"].replace("\n", " — ")[:200]),
                         "evidence": [],
                         "strengths": [], "challenges": [],
-                        "practical_advice": "برای تفسیر دقیقتر، به گزارش کامل مراجعه کنید.",
+                        "practical_advice": "برای تفسیر دقیق‌تر، به گزارش کامل مراجعه کنید.",
                     }],
                 }
+
 
     await asyncio.gather(*(_gen_one(d, p, c) for d, (p, c) in prompts.items()))
     # M3: preserve declared order (focus reorder / plan order) — completion
@@ -251,10 +259,11 @@ async def generate_report(ctx: dict, report_id: str) -> None:
             # load profile focus_areas + personal_question so the report actually uses them
             profile = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
             sections, metrics = await generate_sections_async(
-                ctx["router"], chart.chart_json, report_id=report_id,
+                chart.chart_json, report_id=report_id,
                 plan_key=rep.plan_key or "full",
                 focus_areas=(profile.focus_areas if profile else None),
                 personal_question=(profile.personal_question if profile else None),
+                router=ctx.get("router"),
                 user_id=(profile.user_id if profile else None))
             rep.sections = sections
             rep.metrics = {**metrics, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -331,7 +340,7 @@ if __name__ == "__main__":  # pragma: no cover — direct async test
         from arq import create_pool
         redis = await create_pool(RedisSettings.from_dsn(REDIS_URL))
         chart = compute_from_fields(35.6889, 51.3897, 1994, 8, 23, 6, 10).chart_json
-        res = await generate_sections_async(build_router(), chart)
+        res = await generate_sections_async(chart)
         print("sections:", len(res[0]), "| cost:", res[1]["cost_usd"], "| calls:", res[1]["calls"])
         await redis.aclose()
 

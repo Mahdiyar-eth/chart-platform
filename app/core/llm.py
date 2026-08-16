@@ -21,6 +21,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 import httpx
 
@@ -605,6 +606,37 @@ def build_go_pool(model: str | None = None) -> GoPoolProvider | None:
     if not keys:
         return None
     return GoPoolProvider(api_keys=keys, model=model)
+
+
+# ─────────────── M2: per-section model routing (multi-provider plan) ────────
+# Quality-critical sections default to the pro model; lighter sections default
+# to flash. Every section can be overridden via SECTION_MODEL_<DOMAIN> (env or
+# admin panel secret) — the A/B benchmark (M2/M4) feeds the final mapping.
+_SECTION_DEFAULT_MODEL: dict[str, str] = {
+    "wellbeing": "deepseek-v4-flash",   # energy: shorter, lighter analysis
+}
+_SECTION_PRO_MODEL = "deepseek-v4-pro"
+
+
+def section_model(domain: str) -> str:
+    default = _SECTION_DEFAULT_MODEL.get(domain, _SECTION_PRO_MODEL)
+    return get_secret(f"section_model_{domain}",
+                      f"SECTION_MODEL_{domain.upper()}", default)
+
+
+@lru_cache(maxsize=None)
+def build_section_router(domain: str, model: str) -> LLMRouter:
+    """Cached per-section router: GO KeyPool (section model) + Zen free last resort.
+    The cache key includes the model so an admin override rebuilds the pool."""
+    providers: list[LLMProvider] = []
+    pool = build_go_pool(model=model)
+    if pool is not None:
+        providers.append(pool)
+    zen = ZenFreeProvider(api_key=get_secret("go_api_key_2", "GO_API_KEY_2", "")
+                          or get_secret("go_api_key", "GO_API_KEY", ""))
+    if zen.api_key:
+        providers.append(zen)
+    return LLMRouter(providers)
 
 
 def build_chat_router() -> LLMRouter:

@@ -44,9 +44,10 @@ def test_retry_includes_qa_feedback(monkeypatch):
                          '{"insight": "' + "جمله طولانی " * 20 + '", "evidence": []}]}'
                 return r
 
-        sections, metrics = await w.generate_sections_async(
-            R(None, None, None, None), {}, max_tokens=4096,
-            report_id="rep", plan_key="full", user_id="user")
+        # M2: sections now build their own (real) router; for hermetic tests we
+        # must inject the fake router — otherwise real API calls would be made.
+        monkeypatch.setattr(w, "build_section_router", lambda d, m: R(None, None, None, None))
+        sections, metrics = await w.generate_sections_async({}, max_tokens=4096, report_id="rep", plan_key="full", router=R(None, None, None, None), user_id="user")
         return sections, metrics
 
     sections, metrics = asyncio.run(_run())
@@ -75,8 +76,8 @@ def test_debug_calls(monkeypatch):
             return _FakeRes()
 
     import asyncio
-    sec, m = asyncio.run(w.generate_sections_async(
-        R(), {}, max_tokens=4096, report_id="r", plan_key="full", user_id="u"))
+    monkeypatch.setattr(w, "build_section_router", lambda d, m: R())
+    sec, m = asyncio.run(w.generate_sections_async({}, max_tokens=4096, report_id="r", plan_key="full", router=R(), user_id="u"))
     assert len(calls) == m["calls"] == m["qa_failures"] >= 13 * 3
     assert any("رد شد" in p for p in calls[:5])
 
@@ -114,8 +115,8 @@ def test_fix_hint_lists_allowed_factors(monkeypatch):
         _c["planets"] = {k: dict(v) | {"longitude": i * 30.0, "house": i % 12 + 1}
                          for i, (k, v) in enumerate(_CHART["planets"].items())}
         _c["angles"] = {k: dict(v) | {"longitude": 15.0} for k, v in _CHART["angles"].items()}
-        sections, metrics = await w.generate_sections_async(
-            R(), _c, max_tokens=4096, report_id="rep", plan_key="karma", user_id="user")
+        monkeypatch.setattr(w, "build_section_router", lambda d, m: R())
+        sections, metrics = await w.generate_sections_async(_c, max_tokens=4096, report_id="rep", plan_key="karma", router=R(), user_id="user")
         return sections, metrics
 
     sections, metrics = asyncio.run(_run())
