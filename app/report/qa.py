@@ -235,7 +235,13 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 pass  # moon phase evidence — grounded in chart["moon_phase"]
             elif f not in VALID_PLANETS:
                 # aspect-style string evidence: "Pluto Conjunction Node" or bare "Sextile"
-                parts = f.split()
+                # R.2 (2026-08-17): canonicalize EACH part — _canon was applied
+                # to the whole string, so parts[2] kept "Asc"/"Mc" (title-cased)
+                # and never matched "ASC"/"MC" → valid Persian aspects written by
+                # the model ("Neptune همنشینی Asc") were rejected and burned the
+                # whole retry budget → degraded reports. Middle token (aspect
+                # name, any language) is deliberately ignored.
+                parts = [_canon(p) for p in f.split()]
                 if len(parts) >= 3 and parts[0] in VALID_PLANETS and parts[2] in VALID_PLANETS:
                     pass  # valid aspect string
                 elif len(parts) == 1 and parts[0] in ASPECT_NAMES:

@@ -182,3 +182,14 @@ def test_aspect_endpoint_outside_domain_accepted():
     errs = qa_section(sec, _c, "career")  # career active: MC, Mars
     assert not any("خارج از عوامل فعال" in e for e in errs)
     assert not any("برج نادرست" in e for e in errs)
+
+
+def test_persian_aspect_factor_accepted():
+    """R.2: model writes aspects with Persian name in the factor slot
+    ("Neptune همنشینی Asc") — every part is canonicalized individually, so
+    the trailing Asc/Mc matches ASC/MC and the evidence is grounded.
+    Regression: production identity sections failed 7× on this and degraded."""
+    _c = dict(_CHART)
+    sec = _section({"factor": "Neptune همنشینی Asc"})
+    errs = qa_section(sec, _c, "identity")
+    assert not any("عامل جعلی" in e for e in errs), errs
