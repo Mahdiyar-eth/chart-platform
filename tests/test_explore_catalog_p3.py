@@ -307,7 +307,8 @@ def test_generate_retries_on_banned_words_then_recovers():
     from app.explore.cards import CARD_MAP
     from app.explore.service import generate_exploration
     chart = TEST_CHART
-    banned = GOOD_JSON.replace("این الگو در طول زندگی پایدار است", "این الگو در طول زندگی درمان قطعی است")
+    banned = GOOD_JSON.replace("این الگو در طول زندگی پایدار است",
+                               "این الگو نشان می‌دهد قطعاً موفق خواهد شد")
     router = FakeRouter([banned, banned, GOOD_JSON])
     result, metrics = asyncio.run(generate_exploration(router, chart, CARD_MAP["personality"]))
     assert result is not None

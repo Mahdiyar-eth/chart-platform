@@ -10,12 +10,29 @@ import json
 import re
 
 FORBIDDEN_PATTERNS = [
-    # medical claims (تشخیص/بستری are common Persian verbs — too blunt to ban)
-    r"درمان", r"دارو", r"بیماری", r"مرگ", r"فوت",
-    # absolute fortune claims (حتما/همیشه/هرگز are common Persian adverbs)
-    r"قطعاً", r"قطعی", r"یقیناً", r"مطمئناً", r"پیشگویی",
+    # ── R.2 (2026-08-17): context-aware. The old blunt single-word bans
+    # (مرگ/درمان/قطعی/پیشگویی) made every literary Persian section fail
+    # 7×7 attempts → 13+ degraded reports. These words are natural in
+    # self-help/astrology prose («مرگ نفس», «درمان دل», «مسیر قطعی»).
+    # New policy: flag only CLAIMS ABOUT THE USER'S LIFE/FUTURE (the review's
+    # real intent: no death/illness predictions, no medical advice, no
+    # absolute fortune claims). Benign literary use passes.
+    # death predictions about the user or their future
+    r"(مرگ|فوت|مردن)(ت| شما| تو| او| شان| من)?\s*(در پیش| نزدیک| در راه| فرا می‌رسد| رقم خورده| نوشته شده)",
+    r"(میمیری|میمیرد|میمیرند|خواهد مرد|خواهی مرد|خواهند مرد|می‌میری|می‌میرد)",
+    r"مرگ (تو|شما|او|عزیزانت|عزیزان)",
+    # medical advice / disease claims about the user
+    r"درمان (بیماری|درد|سرطان|قلب|اعصاب|فشار|دیابت)",
+    r"دارو (بخور|مصرف|تجویز|نسخه)",
+    r"بیماری(ت| شما| تو| او| قلبی| مزمن| سخت)",
+    r"(تشخیص|نسخه|تجویز) (بیماری|دارو)",
+    # absolute fortune/certainty claims about the future
+    r"(قطعاً|قطعی|مطمئناً|یقیناً|حتماً).{0,25}(خواهد|خواهی|خواهم|می‌شود|می‌کنی|می‌کند|اتفاق)",
+    r"قطعی است که",
     # divination claims (غیب alone = "the unseen", poetic — ban only گویی/گو)
     r"غیبگویی", r"غیبگو", r"طلسم", r"جادو",
+    r"پیشگویی (می‌کنم|می‌کنم|می‌شود|می‌کند|کردم|کرد)",
+    r"پیشگویی (درباره|در مورد|از) آینده",
     # predictive TONE without explicit divination words (audit round 2):
     # «در آینده نزدیک», «به‌زودی», «مقدر شده/است», «سرنوشت تو», «نصیب تو»,
     # «در انتظار توست», «روزی خواهی/روزی به», «خواهی رسید/شد/داشت/یافت»,
@@ -214,7 +231,7 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
             f = _canon(f.title()) if isinstance(f, str) and f else f
             if not f:
                 errors.append(f"{domain}: evidence بدون عامل")
-            elif f == "Moon Phase" or f == "Phase":
+            elif f == "Moon Phase" or f == "Phase" or f == "Moonphase" or f == "Moonphase":
                 pass  # moon phase evidence — grounded in chart["moon_phase"]
             elif f not in VALID_PLANETS:
                 # aspect-style string evidence: "Pluto Conjunction Node" or bare "Sextile"

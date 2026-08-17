@@ -47,24 +47,34 @@ def test_clean_section_passes():
 
 
 def test_forbidden_in_intro_rejected():
+    """Predictive death phrase in intro → rejected (R.2 context-aware policy)."""
     s = _ok_section()
-    s["intro"] = "راه‌های درمان این موضوع را بررسی می‌کنیم."
+    s["intro"] = "در آینده نزدیک اتفاق مهمی رخ خواهد داد."
     assert qa_section(s, CHART, "identity")
 
 
 def test_forbidden_in_practical_advice_rejected():
+    """Medical-advice phrase → rejected (R.2 context-aware policy)."""
     s = _ok_section()
-    s["insights"][0]["practical_advice"] = "برای درمان این مشکل، استراحت کنید."
+    s["insights"][0]["practical_advice"] = "برای درمان بیماری قلبی، دارو مصرف کنید."
     assert qa_section(s, CHART, "identity")
 
 
 def test_forbidden_in_strengths_rejected():
+    """Death-prediction phrase in strengths → rejected (R.2)."""
     s = _ok_section()
-    s["insights"][0]["strengths"] = ["عدم نیاز به درمان"]
+    s["insights"][0]["strengths"] = ["روزی خواهی رسید به آرامش کامل"]
     assert qa_section(s, CHART, "identity")
 
 
 def test_forbidden_in_challenges_rejected():
+    """Predictive tone (مقدر) in challenges → rejected (R.2)."""
     s = _ok_section()
-    s["insights"][1]["challenges"] = ["ترس از مرگ"]
+    s["insights"][1]["challenges"] = ["مقدر شده که مسیر سختی پیش رو داشته باشی"]
     assert qa_section(s, CHART, "identity")
+
+def test_benign_literary_words_now_pass():
+    """R.2: benign literary use of مرگ/درمان/قطعی must NOT reject the section."""
+    s = _ok_section()
+    s["intro"] = "مرگ نفس و تولدی دوباره، درمان دل با مهر."
+    assert qa_section(s, CHART, "identity") == []
