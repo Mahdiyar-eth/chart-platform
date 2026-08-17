@@ -117,6 +117,7 @@ class KeySlot:
     """
     key: str
     name: str
+    model: str | None = None   # R.3: per-slot model override ("key@model" in the pool CSV)
     error_streak: int = 0
     tripped_until: float = 0.0
     in_flight: int = 0
@@ -347,14 +348,26 @@ class GoPoolProvider(LLMProvider):
         self.api_base = api_base or get_secret("go_api_base", "GO_API_BASE",
                                                "https://opencode.ai/zen/go/v1")
         self.MODEL = model or get_secret("go_model", "GO_MODEL", "deepseek-v4-pro")
-        self.slots = [KeySlot(key=k, name=f"go-{i + 1}") for i, k in enumerate(api_keys)]
+        # Per-slot model override: an entry may be "key@model" (R.3 paid-key
+        # fix 2026-08-17) — paid GO keys run the reasoning variant of
+        # deepseek-v4-flash which burns max_tokens on thinking and returns
+        # EMPTY content; deepseek-v4-pro (with thinking:disabled below) always
+        # returns content. So a paid key is pinned to pro while free keys keep
+        # the part's default (flash) — verified with real API calls.
+        self.slots = []
+        for i, k in enumerate(api_keys):
+            raw = k.strip()
+            key_part, _, model_part = raw.partition("@")
+            slot_model = model_part.strip() if model_part else None
+            self.slots.append(KeySlot(key=key_part, name=f"go-{i + 1}", model=slot_model))
         self.user_agent = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                            "Chrome/126.0 Safari/537.36")
         self.extra_payload = {"thinking": {"type": "disabled"}}
 
     def _mk(self, slot: KeySlot) -> DeepSeekProvider:
         """Build the actual caller for one key (overridable in tests)."""
-        p = DeepSeekProvider(api_key=slot.key, api_base=self.api_base, model=self.MODEL)
+        p = DeepSeekProvider(api_key=slot.key, api_base=self.api_base,
+                             model=slot.model or self.MODEL)
         p.user_agent = self.user_agent
         p.extra_payload = self.extra_payload
         return p

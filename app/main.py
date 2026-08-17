@@ -2452,14 +2452,14 @@ async def admin_llm_test(request: Request):
     results: dict[str, dict] = {}
     go = GoProvider()
     if go.api_key:
-        r = await go.complete("فقط یک کلمه بگو: سلام", max_tokens=16, temperature=0)
+        r = await go.complete("فقط یک کلمه بگو: سلام", max_tokens=64, temperature=0)
         results["go"] = {"ok": r.ok, "model": r.model, "latency_ms": r.latency_ms,
                          "error": r.error or ""}
     else:
         results["go"] = {"ok": False, "error": "کلید OpenCode (GO_API_KEY) تنظیم نشده است"}
     ds = DeepSeekProvider()
     if ds.api_key:
-        r = await ds.complete("فقط یک کلمه بگو: سلام", max_tokens=16, temperature=0)
+        r = await ds.complete("فقط یک کلمه بگو: سلام", max_tokens=64, temperature=0)
         results["deepseek"] = {"ok": r.ok, "model": r.model, "latency_ms": r.latency_ms,
                                "error": r.error or ""}
     else:
