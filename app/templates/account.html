@@ -68,7 +68,10 @@
     <h2 style="font-size:1.05rem;">نگاهی به آسمان هفته</h2>
     {% for chart_id, w in weekly.items() %}
     <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
-      <p style="margin:0; line-height:1.8; font-size:.92rem;">{{ w.text|safe }}</p>
+      <!-- F-08 (opus-audit verified): LLM text was rendered with |safe — a
+         prompt-injected model output could inject HTML/script. Escaped now;
+         line breaks kept via white-space:pre-line. -->
+      <p style="margin:0; line-height:1.8; font-size:.92rem; white-space:pre-line;">{{ w.text|e }}</p>
     </div>
     {% endfor %}
   </section>
@@ -149,10 +152,8 @@
           </div>
           <div style="display:flex;gap:8px;">
             <a class="btn" style="font-size:.78rem;padding:6px 12px;" href="/plans">تمدید</a>
-            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;color:#ff9d9d;"
-                    x-show="s.active && $el.dataset.confirm !== '1'" @click="cancel(s.id)">لغو</button>
-            <button class="btn" style="font-size:.78rem;padding:6px 12px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);"
-                    x-show="s.active && $el.dataset.confirm === '1'" @click="doCancel(s.id)">مطمئنی؟</button>
+            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;color:#ff9d9d;" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
+            <button class="btn" style="font-size:.78rem;padding:6px 12px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
           </div>
         </div>
       </div>
@@ -321,13 +322,12 @@ function subs() {
         if (r.ok) this.items = await r.json();
       } catch (e) { /* anonymous */ }
     },
-    async cancel(id) {
-      const row = document.querySelector('[data-sub="' + id + '"]');
-      if (row) row.dataset.confirm = '1';
-    },
     async doCancel(id) {
       const r = await fetch('/api/subscriptions/' + id + '/cancel', { method: 'POST' });
-      if (r.ok) location.reload();
+      if (r.ok) {
+        const s = this.items.find(x => x.id === id);
+        if (s) { s.active = false; s.confirm = false; }
+      }
     }
   };
 }

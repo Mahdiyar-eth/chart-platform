@@ -73,20 +73,24 @@ def seed_plans() -> None:
                 s.add(Plan(**item))
         s.commit()
     # §13 — launch coupon LANCH20: 20% off the FIRST deep report, 1 use/phone
+    # F-11 (opus-audit verified): the old code used `s` AFTER its `with Session`
+    # block closed — SQLAlchemy raised on the closed session and the exception
+    # was swallowed, so the coupon silently NEVER seeded. Use a fresh session.
     from app.models import Coupon
-    c = s.exec(select(Coupon).where(Coupon.code == "LANCH20")).first()
-    if not c:
-        # atomic insert — two startup workers may race here
-        from sqlalchemy import text as _text
-        try:
-            s.exec(_text(
-                "INSERT INTO coupons (id, code, percent, max_uses, used_count, "
-                "active, report_only, created_at) VALUES "
-                "(gen_random_uuid()::text, 'LANCH20', 20, 10000, 0, true, true, now()) "
-                "ON CONFLICT (code) DO NOTHING"))
-            s.commit()
-        except Exception:  # noqa: BLE001 — another worker won the race
-            s.rollback()
+    with Session(engine) as s2:
+        c = s2.exec(select(Coupon).where(Coupon.code == "LANCH20")).first()
+        if not c:
+            # atomic insert — two startup workers may race here
+            from sqlalchemy import text as _text
+            try:
+                s2.exec(_text(
+                    "INSERT INTO coupons (id, code, percent, max_uses, used_count, "
+                    "active, report_only, created_at) VALUES "
+                    "(gen_random_uuid()::text, 'LANCH20', 20, 10000, 0, true, true, now()) "
+                    "ON CONFLICT (code) DO NOTHING"))
+                s2.commit()
+            except Exception:  # noqa: BLE001 — another worker won the race
+                s2.rollback()
 
 
 def get_session():

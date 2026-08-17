@@ -13,14 +13,14 @@ worker در startup یک router مشترک میساخت (`build_router()` → de
 | | deepseek-v4-pro (قبل) | gemini-3.6-flash-high (بعد) |
 |---|---|---|
 | per-section p50/p95 | 43-59s | **4-17s** |
-| کل ۱۵ سکشن (همزمان) | ~195s | **~60s** |
+| کل ۱۴ سکشن طلا (همزمان) | ~195s | **~60s** |
 | هزینه/گزارش | ~$0.01 (GO flat) | **$0.27** |
 | QA fails | 0 | 0 |
 | رفتن به fallback | — | 0 |
 
 ## E2E کامل زنده (HTTP→ARQ→RAG→R2) — گزارش 6e93c295 ✅
 - POST /api/charts/{id}/report → queues → worker → sections روی omni/gemini
-- 15/15 سکشن OK، ۲ ریترای QA (با بازخورد دلیل، موفق)، صفر fallback
+- 14/14 سکشن طلا OK (کانون: basic=5، full=13، gold=14)، ۲ ریترای QA (با بازخورد دلیل، موفق)، صفر fallback
 - PDF ساخته شد + آپلود R2 (`chart-reports/...pdf`) + **40 چانک RAG ایندکس شد**
 - هزینهٔ کل گزارش: **$0.27** | وضعیت نهایی: done
 

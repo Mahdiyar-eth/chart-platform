@@ -468,10 +468,25 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
     order.status = "paid"
     order.paid_at = datetime.now(timezone.utc)
     order.note = f"پرداخت با موجودی کیف پول (referral D3) — موجودی قبلی: {(user.balance_rial or 0) + order.amount_rial:,} ریال"
-    if order.plan_key == "monthly":
+    # F-29 (opus-audit verified, 2026-08-17): mirror the Zarinpal success path —
+    # subscriptions (monthly AND yearly), credit packs, and report plans must
+    # ALL take effect when paying from the wallet. Previously only "monthly"
+    # worked: yearly paid silently and credit packs never granted credits.
+    if order.plan_key in SUBSCRIPTION_PLANS:
         activate_subscription(session, order)
+        sub = session.exec(
+            select(Subscription).where(
+                Subscription.chart_id == order.chart_id,
+                Subscription.chat_id == (order.chat_id if order.chat_id else None),
+            )
+        ).first()
+        if sub:
+            grant_subscription_credits(session, sub)  # first month granted on purchase
+    if order.plan_key in CREDIT_PACKS:
+        grant_credits(session, order)
     if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
-        rep = Report(chart_id=order.chart_id, status="queued", plan_key=order.plan_key)
+        rep = Report(chart_id=order.chart_id, status="queued",
+                     plan_key=order.plan_key)
         session.add(rep)
         session.flush()
         order.report_id = rep.id

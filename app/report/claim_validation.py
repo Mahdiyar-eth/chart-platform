@@ -196,12 +196,42 @@ def _lon_of(planet_key: str, chart: dict) -> float | None:
 
 
 def house_of(planet_key: str, chart: dict) -> int | None:
-    """Whole-sign: index of the 30°-segment above the ASC longitude."""
-    asc = _lon_of("ascendant", chart)
+    """House from the engine-computed cusps (Placidus by default).
+
+    F-26 (opus-audit verified, 2026-08-17): the old implementation derived
+    houses with the WHOLE-SIGN method (30°-segments above the ASC) while the
+    engine stores Placidus houses — so correct section text was being flagged
+    against the wrong house system (false hallucination marks + wasted QA
+    retries). Now we trust the engine's canonical per-planet house; only when
+    it is missing (time-unknown charts / legacy rows) do we fall back to cusps.
+    """
+    pl = (chart.get("planets") or {}).get(planet_key, {})
+    if isinstance(pl, dict) and pl.get("house") is not None:
+        return int(pl["house"])
+    # fallback: derive from stored cusps (not whole-sign)
+    cusps = chart.get("houses") or {}
     lon = _lon_of(planet_key, chart)
-    if asc is None or lon is None:
+    if not cusps or lon is None:
+        # No stored cusps at all (legacy chart / unknown birth time) — fall
+        # back to the classical whole-sign derivation (30°-segments above ASC).
+        asc = _lon_of("ascendant", chart)
+        if asc is None or lon is None:
+            return None
+        return int(((lon - asc) % 360.0) // 30) + 1
+    try:
+        for i in range(12):
+            c0, c1 = cusps.get(f"h{i+1}"), cusps.get(f"h{(i + 1) % 12 + 1}")
+            if c0 is None or c1 is None:
+                continue
+            cusp, nxt = float(c0), float(c1)
+            if i == 11:  # last cusp wraps through 360°
+                if lon >= cusp or lon < nxt:
+                    return 12
+            elif cusp <= lon < nxt:
+                return i + 1
+    except (TypeError, ValueError):
         return None
-    return int(((lon - asc) % 360.0) // 30) + 1
+    return None
 
 
 def degree_of(planet_key: str, chart: dict) -> float | None:
