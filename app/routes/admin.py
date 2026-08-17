@@ -312,9 +312,10 @@ def api_admin_health(request: Request, session: Session = Depends(get_session)):
         from app.core.llm import build_router
         router = build_router("report.basic")
         slots = []
-        for s in getattr(router, "_slots", []) or []:
-            slots.append({"key": (s.name or "?"), "trip": s.tripped(), "in_flight": s.in_flight,
-                          "last_code": s.last_error_code})
+        for p in router.providers.values():          # providers: dict name → provider
+            for s in getattr(p, "slots", None) or []:  # GoPoolProvider exposes .slots (not _slots)
+                slots.append({"key": (s.name or "?"), "trip": s.tripped(), "in_flight": s.in_flight,
+                              "last_code": s.last_error_code})
         h["llm_keys"] = slots
     except Exception as e:  # noqa: BLE001
         h["llm_keys"] = {"error": str(e)[:200]}
