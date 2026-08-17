@@ -102,3 +102,15 @@ def test_transit_keepaway_note():
     rep = validate_advanced("identity", out, CHART)
     assert any("transit" in n for n in rep.notes)
     assert not rep.critical_hallucination
+
+
+def test_comma_clause_and_parenthetical_repeat_claims_found():
+    """R.3 regression: explanatory comma clauses and parenthetical planet
+    repeats must still bind planet→sign (old count-matching dropped them)."""
+    out = ("برج خورشید شما بر اساس طول ۱۱۶ درجه، اسد است. "
+           "ماه هم در سنبله (ماه در ۱۶۲ درجه) جای دارد.")
+    rep = validate_advanced("identity", out, CHART)
+    assert rep.ok, rep
+    assert rep.claims_found == 3   # sun→leo, moon→virgo, moon 12° (abs 162)
+    assert rep.mismatches == []
+    assert rep.degree_mismatches == []

@@ -72,11 +72,17 @@ PLANET_NAMES = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter",
 
 
 def make_chart(i: int) -> dict:
+    # Realistic positions — NOT the old exact-15° grid: every planet sat exactly
+    # mid-sign with uniform 27° spacing, which made the LLM's longitude→sign
+    # arithmetic fail on the boundary grid (R.3 2026-08-17: 4/12 charts
+    # reported the previous sign). Deterministic per index (repeatability).
     sign = SIGNS[i % 12]
-    lon = (i % 12) * 30.0 + 15.0
+    offset = 5 + (i * 7) % 25          # 5..29 — varied, never 0/15-exact grid
+    lon = (i % 12) * 30.0 + offset
     planets = {}
     for pi, name in enumerate(PLANET_NAMES):
-        planets[name] = {"longitude": (lon + pi * 27.0) % 360.0}
+        step = 17 + (i * 3 + pi * 11) % 23   # non-uniform realistic spacing
+        planets[name] = {"longitude": (lon + pi * step + (pi % 3) * 4.0) % 360.0}
     houses = {h: {"longitude": (lon + 30 + (h - 1) * 30) % 360.0} for h in range(1, 13)}
     return {
         "planets": planets,

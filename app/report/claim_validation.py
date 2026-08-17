@@ -120,24 +120,28 @@ def _normalize_planet(raw: str) -> str:
 
 
 def extract_claims(text: str) -> list[tuple[str, str]]:
-    """Find (planet, sign) claims. Chunks are split on sentence/compound
-    separators only (never on Persian 'و', which appears inside words).
-    Within a chunk, planets and signs are paired by order of appearance when
-    counts match; unequal counts → chunk skipped (no false hallucinations)."""
+    """Find (planet, sign) claims.
+
+    Token-scan pairing (fix R.3 2026-08-17): chunks are sentence-level only
+    (never split on comma/paren), and each planet binds to the NEXT sign that
+    appears before another planet. This tolerates explanatory clauses
+    («خورشید شما بر اساس طول ۱۱۶ درجه، سرطان است») and parenthetical repeats
+    («سنبله (خورشید در ۱۶۵ درجه)») that the old count-matching skipped,
+    which caused FALSE grounded=False on correct answers.
+    """
     claims: list[tuple[str, str]] = []
-    for chunk in re.split(r"[،,;؛.\n]", text):
-        chunk = chunk.strip()
-        if not chunk:
-            continue
-        planets: list[str] = [m.group(0) for m in _PLANET_FA_RE.finditer(chunk)]
-        planets += [m.group(0) for m in _PLANET_EN_RE.finditer(chunk)]
-        signs: list[str] = [m.group(0) for m in _SIGN_FA_RE.finditer(chunk)]
-        signs += [m.group(0) for m in _SIGN_EN_RE.finditer(chunk)]
-        if len(planets) == 1 and len(signs) == 1:
-            claims.append((_normalize_planet(planets[0]), _normalize_sign(signs[0])))
-        elif len(planets) == len(signs) and len(planets) > 1 and len(planets) <= 4:
-            for p, s in zip(planets, signs):
-                claims.append((_normalize_planet(p), _normalize_sign(s)))
+    for chunk in re.split(r"[.!؟?;؛\n]+", text):
+        pend: list[str] = []
+        toks = sorted(
+            [(m.start(), "p", m.group(0)) for m in _PLANET_FA_RE.finditer(chunk)]
+            + [(m.start(), "p", m.group(0)) for m in _PLANET_EN_RE.finditer(chunk)]
+            + [(m.start(), "s", m.group(0)) for m in _SIGN_FA_RE.finditer(chunk)]
+            + [(m.start(), "s", m.group(0)) for m in _SIGN_EN_RE.finditer(chunk)])
+        for _pos, kind, tok in toks:
+            if kind == "p":
+                pend.append(_normalize_planet(tok))
+            elif pend:
+                claims.append((pend.pop(0), _normalize_sign(tok)))
     return claims
 
 
@@ -283,7 +287,11 @@ def validate_advanced(domain: str, output_text: str, chart: dict) -> ValidationR
         if actual is None:
             continue
         rep.claims_found += 1
-        if abs(d - actual) <= 2.0:
+        # Accept BOTH conventions: within-sign degrees (12° Virgo, the real
+        # writer's style) and absolute longitudes (162°, echo of engine data).
+        lon = _lon_of(p, chart)
+        ok_deg = abs(d - actual) <= 2.0 or (lon is not None and abs(d - lon) <= 2.0)
+        if ok_deg:
             rep.matches.append((p, f"{actual:.0f}°"))
         else:
             rep.degree_mismatches.append((p, d, actual))
