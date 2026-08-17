@@ -1,7 +1,7 @@
 # ZAYCHE — گزارش نهایی پیش از انتشار (CLOSURE FINAL)
 
 - **تاریخ:** یکشنبه ۲۶ مرداد ۱۴۰۵ (2026-08-17)
-- **HEAD:** 5b51734 (این جلسه) — ZAYCHE / chart.negar.io
+- **HEAD:** baf205d (این جلسه) — ZAYCHE / chart.negar.io
 - **تستها:** 537 passed + 1 skipped — رگرسیون کامل سبز
 
 ---
@@ -86,7 +86,7 @@ backup → deploy --migrate → health → smoke (9 صفحه) → auth (OTP: ب�
 
 - **537 passed + 1 skipped + 1 warning** (رگرسیون کامل، ~25s)
 - ruff (F,E9): پاک
-- 6 کامیت این جلسه، همه push شده؛ آخرین HEAD: 5b51734
+- 6 کامیت این جلسه، همه push شده؛ آخرین HEAD: baf205d
 - deploy زنده: homepage/faq/articles/guide/about همه 200
 
 ## موارد باقیمانده (فقط سمت کاربر)
