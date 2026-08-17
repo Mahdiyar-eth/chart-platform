@@ -315,7 +315,7 @@ def api_admin_health(request: Request, session: Session = Depends(get_session)):
         for p in router.providers.values():          # providers: dict name → provider
             for s in getattr(p, "slots", None) or []:  # GoPoolProvider exposes .slots (not _slots)
                 slots.append({"key": (s.name or "?"), "trip": s.tripped(), "in_flight": s.in_flight,
-                              "last_code": s.last_error_code})
+                              "last_code": (s.last_error or "")[:40]})
         h["llm_keys"] = slots
     except Exception as e:  # noqa: BLE001
         h["llm_keys"] = {"error": str(e)[:200]}
