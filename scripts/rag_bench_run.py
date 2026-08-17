@@ -31,9 +31,9 @@ def ndcg(rel, k):
 def eval_model(name, model, queries):
     """Embed all chunk texts into a temp table once, then run 1000 queries."""
     psql("DROP TABLE IF EXISTS _rag_bench_vec")
-    psql("CREATE TEMP TABLE _rag_bench_vec (report_id text, section_key text, embedding vector(384))"
+    psql("CREATE TABLE _rag_bench_vec (report_id text, section_key text, embedding vector(384))"
          if name.endswith("small") else
-         "CREATE TEMP TABLE _rag_bench_vec (report_id text, section_key text, embedding vector(1024))")
+         "CREATE TABLE _rag_bench_vec (report_id text, section_key text, embedding vector(1024))")
     rows = psql("SELECT report_id, section_key, text FROM report_chunks WHERE embedding IS NOT NULL ORDER BY report_id, id")
     texts, meta = [], []
     for line in rows.splitlines():
@@ -43,7 +43,7 @@ def eval_model(name, model, queries):
     print(f"  {name}: encoding {len(texts)} chunks", flush=True)
     vecs = model.encode(texts, normalize_embeddings=True, batch_size=64)
     # batch-insert via one big INSERT (chunked to stay under psql arg limits)
-    CH = 400
+    CH = 25 if name.endswith("small") else 12  # 1024-dim * 25 rows > 128KB arg cap
     for i in range(0, len(meta), CH):
         vals = []
         for j in range(i, min(i + CH, len(meta))):
