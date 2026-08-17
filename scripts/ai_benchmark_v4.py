@@ -79,14 +79,26 @@ def make_chart(i: int) -> dict:
     sign = SIGNS[i % 12]
     offset = 5 + (i * 7) % 25          # 5..29 — varied, never 0/15-exact grid
     lon = (i % 12) * 30.0 + offset
+    asc_lon = (lon + 30) % 360
     planets = {}
     for pi, name in enumerate(PLANET_NAMES):
         step = 17 + (i * 3 + pi * 11) % 23   # non-uniform realistic spacing
-        planets[name] = {"longitude": (lon + pi * step + (pi % 3) * 4.0) % 360.0}
-    houses = {h: {"longitude": (lon + 30 + (h - 1) * 30) % 360.0} for h in range(1, 13)}
+        plon = (lon + pi * step + (pi % 3) * 4.0) % 360.0
+        pi_sign = int(plon // 30) % 12
+        planets[name] = {
+            "longitude": plon,
+            "sign_en": SIGNS[pi_sign],
+            "sign_fa": SIGNS_FA[pi_sign],
+            # houses computed from the ASC — mirrors app/astrology/engine.py
+            "house": int((plon - asc_lon) % 360 // 30) + 1,
+        }
+    houses = {h: {"longitude": (asc_lon + (h - 1) * 30) % 360.0} for h in range(1, 13)}
+    asc_sign = int(asc_lon // 30) % 12
     return {
         "planets": planets,
-        "angles": {"ASC": {"longitude": (lon + 30) % 360}},
+        "angles": {"ASC": {"longitude": asc_lon, "sign_en": SIGNS[asc_sign],
+                           "sign_fa": SIGNS_FA[asc_sign],
+                           "house": int((asc_lon - asc_lon) % 360 // 30) + 1}},
         "houses": houses,
         "signs": [{"key": sign, "sign_fa": SIGNS_FA[i % 12]}],
         "birth": {"city_fa": "تهران", "local_time": f"۱۳۶۰/۰۱/{(i % 28) + 1} ۰۶:۱۰"},
@@ -146,13 +158,23 @@ def check_hallucination(text: str, chart: dict) -> bool:
 
 
 async def one_answer(router, chart, q):
-    """Single attempt with infra telemetry (M4 Benchmark A)."""
+    """Single attempt with infra telemetry (M4 Benchmark A).
+
+    R.3 (2026-08-17): prompt now mirrors PRODUCTION chat — the model receives
+    the same chart summary (sign + house names) the real users get, not raw
+    longitudes. The raw-JSON prompt measured longitude→sign arithmetic that
+    real users never trigger.
+    """
+    from app.chat.service import _retrieve
+    from app.chat.retrieval import CHAT_SYSTEM_PROMPT
+    _route, _ctx, prompt = _retrieve(q, chart, None, None, None)
+    system = CHAT_SYSTEM_PROMPT + (
+        "\n- در پاسخ خود حداقل یک واقعیت عینی از چارت "
+        "(مثلاً «خورشید در برج حمل») را صریح ذکر کن.")
     t0 = time.monotonic()
     res = await router.complete(
-        f"{q}\nچارت: {chart}\nپاسخ: ",
-        system=("بر اساس چارت داده‌شده پاسخ بده و در پاسخ خود حداقل یک واقعیت عینی "
-                "از چارت (مثلاً «خورشید در برج حمل» یا «ماه در خانه ۲») را صریح ذکر کن. "
-                "بدون حدس و بدون پیشگویی قطعی، مختصر جواب بده."),
+        prompt,
+        system=system,
         max_tokens=384,
         temperature=0.2)
     lat = int((time.monotonic() - t0) * 1000)
