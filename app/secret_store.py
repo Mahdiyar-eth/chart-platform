@@ -47,6 +47,10 @@ SECRET_CATALOG: list[dict] = [
     # هوش مصنوعی
     dict(key="go_api_key", env="GO_API_KEY",
          label="کلید OpenCode (Go)", group="هوش مصنوعی", sensitive=True),
+    dict(key="go_api_keys", env="GO_API_KEYS",
+         label="کلیدهای OpenCode Go (پول کلیدها، با کاما جدا شوند)", group="هوش مصنوعی", sensitive=True),
+    dict(key="go_api_key_2", env="GO_API_KEY_2",
+         label="کلید دوم OpenCode (ذخیره‌ی zen-free)", group="هوش مصنوعی", sensitive=True),
     dict(key="go_api_base", env="GO_API_BASE",
          label="آدرس پایه OpenCode", group="هوش مصنوعی", sensitive=False),
     dict(key="deepseek_api_key", env="DEEPSEEK_API_KEY",
