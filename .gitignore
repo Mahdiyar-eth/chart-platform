@@ -51,3 +51,4 @@ deploy/umami-admin.txt
 keys/
 .coverage
 keys/
+.cache/

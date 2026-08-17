@@ -44,11 +44,18 @@ def test_llm_down_report_becomes_degraded_not_done():
     """Provider down → degraded (не done-fake), fallback reasons surfaced."""
     rid, cid, uid, pid = _seed_report()
     from app.report.worker import generate_report
-    asyncio.run(generate_report({
-        "router": _NoLLM(),
-        "chart_id": cid,
-        "user_id": uid,
-    }, rid))
+    from app.report import worker as w
+    # audit P4: no worker-level router — mock the per-section layer instead
+    o1, o2 = w.section_model, w.build_section_router
+    w.section_model = lambda d: "deepseek-v4-pro"
+    w.build_section_router = lambda d, mm: _NoLLM()
+    try:
+        asyncio.run(generate_report({
+            "chart_id": cid,
+            "user_id": uid,
+        }, rid))
+    finally:
+        w.section_model, w.build_section_router = o1, o2
     with Session(engine) as s:
         rep = s.get(Report, rid)
         assert rep.status == "degraded", rep.status
@@ -65,16 +72,23 @@ def test_llm_down_requeue_still_degrades_after_retry():
     """Re-queue while provider is down must NOT flip to done."""
     rid, cid, uid, pid = _seed_report()
     from app.report.worker import generate_report
-    for _ in range(2):  # two independent runs, both degraded
-        with Session(engine) as s:
-            rep = s.get(Report, rid)
-            rep.status = "queued"
-            s.add(rep); s.commit()
-        asyncio.run(generate_report({
-            "router": _NoLLM(), "chart_id": cid, "user_id": uid,
-        }, rid))
-        with Session(engine) as s:
-            assert s.get(Report, rid).status == "degraded"
+    from app.report import worker as w
+    o1, o2 = w.section_model, w.build_section_router
+    w.section_model = lambda d: "deepseek-v4-pro"
+    w.build_section_router = lambda d, mm: _NoLLM()
+    try:
+        for _ in range(2):  # two independent runs, both degraded
+            with Session(engine) as s:
+                rep = s.get(Report, rid)
+                rep.status = "queued"
+                s.add(rep); s.commit()
+            asyncio.run(generate_report({
+                "chart_id": cid, "user_id": uid,
+            }, rid))
+            with Session(engine) as s:
+                assert s.get(Report, rid).status == "degraded"
+    finally:
+        w.section_model, w.build_section_router = o1, o2
 
 
 def test_degraded_requeue_endpoint_allowed():

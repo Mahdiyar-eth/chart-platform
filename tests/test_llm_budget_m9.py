@@ -90,8 +90,12 @@ def test_budget_high_does_not_gate(monkeypatch):
     monkeypatch.setattr(w, "user_today_llm_cost", lambda e, u: 0.01)
     monkeypatch.setattr(w, "render_report_pdf", lambda *a, **k: None)
     monkeypatch.setattr(w, "REPORTS_DIR", __import__("pathlib").Path("/tmp"))
-    asyncio.run(w.generate_report({"router": _FakeRouter(), "chart_id": cid,
-                                   "user_id": uid}, rid))
+    # audit P4 (2026-08-17): generate_report no longer injects a worker-level
+    # router — sections use the per-section router (section_model(domain)).
+    # The test now mocks THAT layer (worker namespace) so LLM attempts are recorded.
+    monkeypatch.setattr(w, "section_model", lambda d: "deepseek-v4-pro")
+    monkeypatch.setattr(w, "build_section_router", lambda d, m: _FakeRouter())
+    asyncio.run(w.generate_report({"chart_id": cid, "user_id": uid}, rid))
     assert calls  # LLM was attempted (budget NOT the reason to degrade)
     with Session(engine) as s:
         assert s.get(Report, rid).status == "degraded"  # provider down, not budget

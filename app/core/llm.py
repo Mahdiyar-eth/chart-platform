@@ -677,9 +677,9 @@ class LLMRouter:
 
 # Per-part default model — overridable from the admin panel (secret store).
 _PART_DEFAULT_MODEL = {
-    "report": "deepseek-v4-pro",     # full report generation (worker)
-    "chat": "deepseek-v4-flash",     # AI chat (gold/monthly)
-    "preview": "deepseek-v4-flash",  # free 3-5 insights enrichment
+    "report": "deepseek-v4-pro",     # full report generation (worker; report sections use SECTION_MODEL_DEFAULT)
+    "chat": "antigravity/gemini-3.6-flash-high",   # AI chat (phase-1 test winner: 4s, 10/10 grounded)
+    "preview": "antigravity/gemini-3.6-flash-high",  # free 3-5 insights enrichment
 }
 
 
@@ -748,6 +748,17 @@ def build_router(part: str = "report") -> LLMRouter:
     model = get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default_model)
     provider_pref = get_secret(f"{part}_llm_provider", f"{part.upper()}_LLM_PROVIDER", "auto").strip().lower()
     providers: list[LLMProvider] = []
+    if model.startswith(("antigravity/", "opencode-go/", "opencode-zen/", "agy/")):
+        # Phase 3/4 (2026-08-17): gateway-routed model (OmniRoute) with GO + Zen fallback.
+        providers.append(OmniProvider(model=model))
+        pool = build_go_pool(model="deepseek-v4-pro")
+        if pool is not None:
+            providers.append(pool)
+        zen = ZenFreeProvider(api_key=get_secret("go_api_key_2", "GO_API_KEY_2", "")
+                              or get_secret("go_api_key", "GO_API_KEY", ""))
+        if zen.api_key:
+            providers.append(zen)
+        return LLMRouter(providers)
     if provider_pref in ("", "auto", "go"):
         pool = build_go_pool(model=model)
         if pool is not None:

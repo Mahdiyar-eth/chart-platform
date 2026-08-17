@@ -338,7 +338,12 @@ async def generate_report(ctx: dict, report_id: str) -> None:
                 plan_key=rep.plan_key or "full",
                 focus_areas=(profile.focus_areas if profile else None),
                 personal_question=(profile.personal_question if profile else None),
-                router=ctx.get("router"),
+                # audit P4 (2026-08-17): do NOT pass a worker-level router —
+                # the caller-supplied router overrides M2's per-section routing
+                # (section_model(domain)) so every section silently used the
+                # startup router (deepseek-v4-pro). Sections must use their own
+                # domain model (gemini via OmniRoute by default).
+                router=None,
                 user_id=(profile.user_id if profile else None))
             rep.sections = sections
             rep.metrics = {**metrics, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -386,7 +391,10 @@ async def generate_report(ctx: dict, report_id: str) -> None:
         # never fail the report (model load is ~1 min on CPU, worker-side)
         try:
             from app.rag import index_report
-            n = await asyncio.to_thread(index_report, report_id)
+            # audit P3 (2026-08-17): HF model download can STALL indefinitely on
+            # the first run — bound it so a slow/blocked hub can never hang the
+            # report completion. RAG indexing is best-effort by design.
+            n = await asyncio.wait_for(asyncio.to_thread(index_report, report_id), timeout=120)
             log.info("RAG indexed %d chunks for report %s", n, report_id[:8])
         except Exception as e:  # noqa: BLE001
             log.warning("RAG index skipped for %s: %s", report_id[:8], e)
