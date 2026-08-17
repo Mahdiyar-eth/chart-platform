@@ -676,9 +676,12 @@ def build_router(part: str = "report") -> LLMRouter:
     return LLMRouter(providers)
 
 
-def build_go_pool(model: str | None = None) -> GoPoolProvider | None:
-    """GO KeyPool from GO_API_KEYS (comma-separated) with GO_API_KEY fallback."""
-    keys_csv = get_secret("go_api_keys", "GO_API_KEYS", "")
+def build_go_pool(model: str | None = None, api_keys: str | None = None) -> GoPoolProvider | None:
+    """GO KeyPool from GO_API_KEYS (comma-separated) with GO_API_KEY fallback.
+
+    api_keys: optional explicit CSV override (benchmark BENCH_GO_KEYS hook).
+    """
+    keys_csv = api_keys if api_keys is not None else get_secret("go_api_keys", "GO_API_KEYS", "")
     if not keys_csv:
         keys_csv = get_secret("go_api_key", "GO_API_KEY", "")
     keys = [k.strip() for k in keys_csv.split(",") if k.strip()]

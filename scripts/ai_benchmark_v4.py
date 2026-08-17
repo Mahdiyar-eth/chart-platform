@@ -27,6 +27,16 @@ CONC = 4
 RESUME_FILE = "/tmp/ai_bench_v4_results.jsonl"
 INFRA_FILE = "/tmp/ai_bench_v4_infra.jsonl"
 
+# BENCH_FRESH=1 → wipe previous result/infra files so every run is a
+# self-contained measurement (fix 2026-08-17: append/resume mixed stale rows
+# from earlier runs into the report — caused identical numbers across runs).
+if os.environ.get("BENCH_FRESH") == "1":
+    for _p in (RESUME_FILE, INFRA_FILE):
+        try:
+            os.remove(_p)
+        except FileNotFoundError:
+            pass
+
 SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
          "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"]
 SIGNS_FA = ["حمل", "ثور", "جوزا", "سرطان", "اسد", "سنبله",
@@ -254,7 +264,14 @@ def _unexpected_degraded_reports() -> int:
 
 async def benchmark(n: int, start: int) -> int:
     from app.core.llm import build_router
-    router = build_router("chat")
+    bench_keys = os.environ.get("BENCH_GO_KEYS", "").strip()
+    if bench_keys:
+        # Pin the benchmark to specific GO keys (e.g. paid-only run) instead of
+        # the live pool — bypasses DB/env secrets. Entries may use key@model.
+        from app.core.llm import build_go_pool
+        router = build_go_pool(api_keys=bench_keys)
+    else:
+        router = build_router("chat")
     done_ids, results = load_done()
 
     jobs = [(make_chart(i), QUESTIONS[i % len(QUESTIONS)], i)
