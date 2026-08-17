@@ -229,6 +229,11 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 f = ev.get("factor", "") if isinstance(ev, dict) else ""
                 is_aspect = False
             f = _canon(f.title()) if isinstance(f, str) and f else f
+            if isinstance(f, str):
+                # R.2 (2026-08-17): model writes moon-phase factor with
+                # underscore ("Moon_Phase") — normalize separators so the
+                # canonical-name checks below still match.
+                f = f.replace("_", " ")
             if not f:
                 errors.append(f"{domain}: evidence بدون عامل")
             elif f == "Moon Phase" or f == "Phase" or f == "Moonphase" or f == "Moonphase":

@@ -193,3 +193,12 @@ def test_persian_aspect_factor_accepted():
     sec = _section({"factor": "Neptune همنشینی Asc"})
     errs = qa_section(sec, _c, "identity")
     assert not any("عامل جعلی" in e for e in errs), errs
+
+
+def test_moonphase_underscore_accepted():
+    """R.2: model wrote Moon_Phase with underscore in mind section — must not
+    be flagged as fabricated factor (burned retry budget → degraded)."""
+    _c = dict(_CHART)
+    sec = _section({"factor": "Moon_Phase"})
+    errs = qa_section(sec, _c, "mind")
+    assert not any("عامل جعلی" in e for e in errs), errs
