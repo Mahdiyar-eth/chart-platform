@@ -69,6 +69,8 @@ SECRET_CATALOG: list[dict] = [
          label="پروایدر پیش‌نمایش رایگان (go/deepseek/auto)", group="هوش مصنوعی", sensitive=False),
     dict(key="llm_order", env="LLM_ORDER",
          label="ترتیب پروایدرها (مثلاً go,deepseek)", group="هوش مصنوعی", sensitive=False),
+    dict(key="section_model_default", env="SECTION_MODEL_DEFAULT",
+         label="مدل پیش‌فرض سکشن‌های گزارش (pro/flash/gemini)", group="هوش مصنوعی", sensitive=False),
     dict(key="chat_daily_limit_gold", env="CHAT_DAILY_LIMIT_GOLD",
          label="سهمیه روزانه گفتگو — طلایی", group="هوش مصنوعی", sensitive=False),
     dict(key="chat_daily_limit_monthly", env="CHAT_DAILY_LIMIT_MONTHLY",

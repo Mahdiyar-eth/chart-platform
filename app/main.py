@@ -2354,7 +2354,8 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     ai_status: dict[str, str] = {}
     ai_provider: dict[str, str] = {}
     for part, default in (("report", "deepseek-v4-pro"), ("chat", "deepseek-v4-flash"),
-                          ("preview", "deepseek-v4-flash")):
+                          ("preview", "deepseek-v4-flash"),
+                          ("section_model_default", "deepseek-v4-pro")):
         ai_status[part] = secret_store.get_secret(f"{part}_llm_model", f"{part.upper()}_LLM_MODEL", default)
         p = secret_store.get_secret(f"{part}_llm_provider", f"{part.upper()}_LLM_PROVIDER", "auto")
         ai_provider[part] = (p.strip().lower() or "auto")

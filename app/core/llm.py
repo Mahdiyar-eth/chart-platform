@@ -677,9 +677,9 @@ class LLMRouter:
 
 # Per-part default model — overridable from the admin panel (secret store).
 _PART_DEFAULT_MODEL = {
-    "report": "deepseek-v4-pro",     # full report generation (worker; report sections use SECTION_MODEL_DEFAULT)
+    "report": "antigravity/gemini-3.6-flash-high",     # report intro/overview (sections use SECTION_MODEL_DEFAULT)
     "chat": "antigravity/gemini-3.6-flash-high",   # AI chat (phase-1 test winner: 4s, 10/10 grounded)
-    "preview": "antigravity/gemini-3.6-flash-high",  # free 3-5 insights enrichment
+    "preview": "deepseek-v4-flash",  # free 3-5 insights enrichment — cheapest capable (routing matrix 2026-08-17)
 }
 
 
