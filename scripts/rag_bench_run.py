@@ -83,9 +83,10 @@ def main():
         model, t_load = load_model(name)
         t0 = time.monotonic()
         agg = eval_model(model, rep, queries)
-        out[name] = {"load_s": round(t_load, 1), "eval_s": round(time.monotonic() - t0, 1), "categories": agg}
+        elapsed = round(time.monotonic() - t0, 1)
+        out[name] = {"load_s": round(t_load, 1), "eval_s": elapsed, "categories": agg}
         json.dump(out, open(cache, "w"))
-        print(f"{name} done in {agg['eval_s']}s", flush=True)
+        print(f"{name} done in {elapsed}s", flush=True)
     print(json.dumps(out, ensure_ascii=False, indent=1))
 
 if __name__ == "__main__":

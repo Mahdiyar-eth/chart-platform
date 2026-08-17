@@ -502,6 +502,80 @@ class ZenFreeProvider(DeepSeekProvider):
         return res
 
 
+# ─────────────────────────── OmniRoute provider (Phase 3, 2026-08-17) ─────
+OMNI_BASE = get_secret("omni_base", "OMNI_BASE", "http://127.0.0.1:20128/v1")
+OMNI_KEY = get_secret("omni_api_key", "OMNI_API_KEY", "")
+
+
+class OmniProvider(LLMProvider):
+    """OpenAI-compatible provider for the local OmniRoute gateway (Antigravity
+    / GO / Zen models). Used when a section model is named with a gateway
+    prefix (antigravity/..., opencode-go/..., agy/...). Phase 3 speed test."""
+
+    name = "omni"
+
+    def __init__(self, model: str, api_base: str | None = None,
+                 api_key: str | None = None) -> None:
+        super().__init__()
+        self.api_base = api_base or OMNI_BASE
+        self.api_key = api_key or OMNI_KEY
+        self.MODEL = model
+
+    async def complete(self, prompt: str, system: str | None = None,
+                       max_tokens: int = 2048, temperature: float = 0.7,
+                       json_mode: bool = False) -> LLMResult:
+        res = await super().complete(prompt, system=system, max_tokens=max_tokens,
+                                     temperature=temperature)
+        if not self.api_key:
+            return LLMResult(text="", provider="omni", model=self.MODEL,
+                             error="OMNI_API_KEY not set")
+        messages = [{"role": "user", "content": prompt}]
+        if system:
+            messages.insert(0, {"role": "system", "content": system})
+        payload: dict = {"model": self.MODEL, "messages": messages,
+                         "max_tokens": max_tokens, "temperature": temperature,
+                         "stream": False}
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+        t0 = time.monotonic()
+        try:
+            async with httpx.AsyncClient(timeout=180) as client:
+                r = await client.post(f"{self.api_base}/chat/completions",
+                                      json=payload,
+                                      headers={"Authorization": f"Bearer {self.api_key}"})
+        except Exception as exc:  # noqa: BLE001
+            return LLMResult(text="", provider="omni", model=self.MODEL,
+                             error=f"omni transport error: {exc}")
+        dt = int((time.monotonic() - t0) * 1000)
+        if r.status_code != 200:
+            # some gateways reject response_format — retry once without it
+            if json_mode and r.status_code == 400:
+                payload.pop("response_format", None)
+                try:
+                    async with httpx.AsyncClient(timeout=180) as client:
+                        r = await client.post(f"{self.api_base}/chat/completions",
+                                              json=payload,
+                                              headers={"Authorization": f"Bearer {self.api_key}"})
+                except Exception as exc:  # noqa: BLE001
+                    return LLMResult(text="", provider="omni", model=self.MODEL,
+                                     error=f"omni transport error: {exc}")
+                dt = int((time.monotonic() - t0) * 1000)
+            if r.status_code != 200:
+                return LLMResult(text="", provider="omni", model=self.MODEL,
+                                 error=f"omni {r.status_code}: {r.text[:200]}")
+        try:
+            data = r.json()
+            msg = data["choices"][0]["message"]
+            usage = data.get("usage") or {}
+            return LLMResult(text=msg.get("content") or "",
+                             provider="omni", model=self.MODEL, latency_ms=dt,
+                             usage=LLMUsage(prompt_tokens=usage.get("prompt_tokens", 0),
+                                            completion_tokens=usage.get("completion_tokens", 0)))
+        except Exception as exc:  # noqa: BLE001
+            return LLMResult(text="", provider="omni", model=self.MODEL,
+                             error=f"omni parse error: {exc}")
+
+
 # ─────────────────────────── Router ───────────────────────────
 
 class LLMRouter:
@@ -709,11 +783,16 @@ def section_model(domain: str) -> str:
 @lru_cache(maxsize=None)
 def build_section_router(domain: str, model: str) -> LLMRouter:
     """Cached per-section router: GO KeyPool (section model) + Zen free last resort.
-    The cache key includes the model so an admin override rebuilds the pool."""
+    The cache key includes the model so an admin override rebuilds the pool.
+    Phase 3 (2026-08-17): gateway-prefixed models (antigravity/..., opencode-go/...,
+    agy/...) route through the local OmniRoute gateway instead of GO direct."""
     providers: list[LLMProvider] = []
-    pool = build_go_pool(model=model)
-    if pool is not None:
-        providers.append(pool)
+    if model.startswith(("antigravity/", "opencode-go/", "opencode-zen/", "agy/")):
+        providers.append(OmniProvider(model=model))
+    else:
+        pool = build_go_pool(model=model)
+        if pool is not None:
+            providers.append(pool)
     zen = ZenFreeProvider(api_key=get_secret("go_api_key_2", "GO_API_KEY_2", "")
                           or get_secret("go_api_key", "GO_API_KEY", ""))
     if zen.api_key:
