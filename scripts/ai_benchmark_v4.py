@@ -134,8 +134,11 @@ async def one_answer(router, chart, q):
     t0 = time.monotonic()
     res = await router.complete(
         f"{q}\nچارت: {chart}\nپاسخ: ",
-        system="بر اساس چارت داده‌شده، بدون حدس و بدون پیشگویی قطعی، مختصر جواب بده.",
-        max_tokens=160)
+        system=("بر اساس چارت داده‌شده پاسخ بده و در پاسخ خود حداقل یک واقعیت عینی "
+                "از چارت (مثلاً «خورشید در برج حمل» یا «ماه در خانه ۲») را صریح ذکر کن. "
+                "بدون حدس و بدون پیشگویی قطعی، مختصر جواب بده."),
+        max_tokens=220,
+        temperature=0.2)
     lat = int((time.monotonic() - t0) * 1000)
     row = {
         "latency_ms": lat, "ok": res.ok and bool(res.text.strip()),

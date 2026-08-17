@@ -147,11 +147,18 @@ def test_unknown_sign_skipped():
 
 
 def test_out_of_domain_factor_rejected():
-    """Node cited in a section whose only active factor is Neptune (F-32b)."""
-    _c = dict(_CHART)  # Mars+Node+Moon+Sun active (rule[0] uses Mars etc.)
-    sec = _section({"factor": "Node", "sign": "عقرب", "house": 8})
+    """Node cited with WRONG sign in a non-active section → still caught.
+
+    R.2 (2026-08-17): a chart-present factor is no longer rejected for being
+    outside the section's active list — it is verified against the chart, and a
+    false sign/house remains a critical mismatch (safety net preserved).
+    """
+    _c = dict(_CHART)
+    # Node IS in the chart (check planets/angles below) — claim it with a WRONG
+    # sign so the verification branch (previously the reject branch) catches it.
+    sec = _section({"factor": "Node", "sign": "حمل", "house": 99})
     errs = qa_section(sec, _c, "spirituality")
-    assert any("خارج از عوامل فعال" in e for e in errs)
+    assert errs, "wrong sign on chart-present factor must still be caught"
 
 
 def test_domain_factor_accepted():

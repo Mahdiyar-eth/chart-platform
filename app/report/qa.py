@@ -233,16 +233,13 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                 # whole section 3× and falling back to generic text is worse.
                 if f not in {"Vesta", "Ceres", "Pallas", "Juno", "Lilith", "Chiron"}:
                     errors.append(f"{domain}: عامل {f} در چارت وجود ندارد")
-            elif not _allow_any and f not in _active_factors and not is_aspect:
-                # F-32b/c: factor is in the chart but NOT active for this section
-                # (the builder only sent the active ones) — citing it means the
-                # model is improvising from astrological memory. Aspect evidence
-                # is exempt: the builder lists every aspect of the active
-                # factors, so «Mars سه‌ضلعی Jupiter» is grounded even though
-                # Jupiter is not an active factor of this section.
-                errors.append(f"{domain}: عامل {f} خارج از عوامل فعال این بخش است — "
-                              f"فقط از عوامل مجاز به‌صورت factor استفاده کن، یا این عامل را "
-                              "در قالب جنبه بنویس (مثلاً «Mars سه‌ضلعی Jupiter»)")
+            # R.2 (2026-08-17): branch REMOVED — factor-is-in-chart-but-not-active
+            # was a hard gate (F-32b/c). The factor is present in the chart, so
+            # the sign/house checks below verify it and a false sign is STILL a
+            # critical mismatch. The old reject burned the whole 7-attempt
+            # budget on identity/emotions (model legitimately cites Moon/Mars)
+            # and produced 13 unexpected-degraded reports — losing the report
+            # for a soft flaw is worse (F-27b philosophy).
             else:
                 # verify sign/house if present
                 src = chart["planets"].get(f) or chart["angles"].get(f)
