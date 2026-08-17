@@ -147,18 +147,23 @@ def test_unknown_sign_skipped():
 
 
 def test_out_of_domain_factor_rejected():
-    """Node cited with WRONG sign in a non-active section → still caught.
+    """Active-factor wrong sign → still hard reject; non-active → soft pass.
 
-    R.2 (2026-08-17): a chart-present factor is no longer rejected for being
-    outside the section's active list — it is verified against the chart, and a
-    false sign/house remains a critical mismatch (safety net preserved).
+    R.2 (2026-08-17): a chart-present NON-ACTIVE factor is verified softly —
+    the model was never sent its data (prompt 9.1 forbids citing its sign), so
+    a wrong sign there is a soft flaw that must not burn the retry budget and
+    degrade the whole report. Active factors (the model HAS their data) stay
+    strict: a wrong sign is a critical mismatch.
     """
     _c = dict(_CHART)
-    # Node IS in the chart (check planets/angles below) — claim it with a WRONG
-    # sign so the verification branch (previously the reject branch) catches it.
-    sec = _section({"factor": "Node", "sign": "حمل", "house": 99})
-    errs = qa_section(sec, _c, "spirituality")
-    assert errs, "wrong sign on chart-present factor must still be caught"
+    # Case 1 — ACTIVE factor with wrong sign → hard error.
+    sec_active = _section({"factor": "Mars", "sign": "حمل", "house": 11})  # Mars واقعاً در سرطان
+    errs_active = qa_section(sec_active, _c, "career")
+    assert any("برج نادرست" in e for e in errs_active)
+    # Case 2 — NON-ACTIVE factor (Node) with wrong sign → soft pass.
+    sec_non = _section({"factor": "Node", "sign": "حمل", "house": 99})
+    errs_non = qa_section(sec_non, _c, "spirituality")
+    assert not any("برج نادرست" in e for e in errs_non), errs_non
 
 
 def test_domain_factor_accepted():
