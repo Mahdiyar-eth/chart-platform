@@ -505,6 +505,18 @@ class ZenFreeProvider(DeepSeekProvider):
 # ─────────────────────────── OmniRoute provider (Phase 3, 2026-08-17) ─────
 OMNI_BASE = get_secret("omni_base", "OMNI_BASE", "http://127.0.0.1:20128/v1")
 OMNI_KEY = get_secret("omni_api_key", "OMNI_API_KEY", "")
+# verified per-model pricing ($/1M tokens, in/out) — phase-1 research 2026-08-17
+_OMNI_PRICES = {
+    "antigravity/gemini-3.6-flash-high": (1.50, 7.50),
+    "antigravity/gemini-3.6-flash-medium": (1.50, 7.50),
+    "antigravity/gemini-3.6-flash-low": (1.50, 7.50),
+    "antigravity/gemini-3.1-pro-low": (2.00, 12.00),
+    "antigravity/claude-sonnet-4-6": (3.00, 15.00),
+    "antigravity/claude-opus-4-6-thinking": (5.00, 25.00),
+    "opencode-go/deepseek-v4-pro": (0.435, 0.87),
+    "opencode-go/deepseek-v4-flash": (0.14, 0.28),
+}
+_OMNI_PRICE_DEFAULT = (1.50, 7.50)
 
 
 class OmniProvider(LLMProvider):
@@ -570,7 +582,9 @@ class OmniProvider(LLMProvider):
             return LLMResult(text=msg.get("content") or "",
                              provider="omni", model=self.MODEL, latency_ms=dt,
                              usage=LLMUsage(prompt_tokens=usage.get("prompt_tokens", 0),
-                                            completion_tokens=usage.get("completion_tokens", 0)))
+                                            completion_tokens=usage.get("completion_tokens", 0)),
+                             cost=((usage.get("prompt_tokens", 0) * _OMNI_PRICES.get(self.MODEL, _OMNI_PRICE_DEFAULT)[0]
+                                    + usage.get("completion_tokens", 0) * _OMNI_PRICES.get(self.MODEL, _OMNI_PRICE_DEFAULT)[1]) / 1e6))
         except Exception as exc:  # noqa: BLE001
             return LLMResult(text="", provider="omni", model=self.MODEL,
                              error=f"omni parse error: {exc}")
@@ -775,7 +789,9 @@ _SECTION_PRO_MODEL = "deepseek-v4-pro"
 
 
 def section_model(domain: str) -> str:
-    default = _SECTION_DEFAULT_MODEL.get(domain, _SECTION_PRO_MODEL)
+    default = _SECTION_DEFAULT_MODEL.get(domain, get_secret("section_model_default", "SECTION_MODEL_DEFAULT", ""))
+    if not default:
+        default = _SECTION_PRO_MODEL
     return get_secret(f"section_model_{domain}",
                       f"SECTION_MODEL_{domain.upper()}", default)
 
@@ -789,6 +805,10 @@ def build_section_router(domain: str, model: str) -> LLMRouter:
     providers: list[LLMProvider] = []
     if model.startswith(("antigravity/", "opencode-go/", "opencode-zen/", "agy/")):
         providers.append(OmniProvider(model=model))
+        # Phase 3: gateway model first, then GO pro as automatic fallback
+        pool = build_go_pool(model="deepseek-v4-pro")
+        if pool is not None:
+            providers.append(pool)
     else:
         pool = build_go_pool(model=model)
         if pool is not None:
