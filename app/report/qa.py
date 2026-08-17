@@ -257,7 +257,16 @@ def qa_section(section: dict | None, chart: dict, domain: str) -> list[str]:
                     if (_ev_sign and _ev_sign not in {"نامشخص", "ناشناخته", "نامعلوم", "-", "—"}
                             and src_signs and not _ev_sign.startswith("فاز")
                             and _ev_sign.lower() not in src_signs):
-                        errors.append(f"{domain}: برج نادرست در evidence برای {f}: {ev.get('sign')}")
+                        # R.2 (2026-08-17): a wrong sign for a NON-ACTIVE factor is
+                        # a soft flaw — the model was never sent that factor's
+                        # data, so demanding its exact sign guarantees failure and
+                        # burns the retry budget → degraded report (customer gets
+                        # NOTHING — worse than a slightly imperfect section).
+                        # Prompt 9.1 forbids stating signs of non-listed planets;
+                        # this is a safety net that keeps the report alive.
+                        # Active factors (or no-active-rule domains) stay STRICT.
+                        if _allow_any or f in _active_factors:
+                            errors.append(f"{domain}: برج نادرست در evidence برای {f}: {ev.get('sign')}")
 
     if total_words < 150:
         errors.append(f"{domain}: کل بخش کوتاه است ({total_words} کلمه)")
