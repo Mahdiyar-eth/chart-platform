@@ -139,6 +139,13 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
                 errors = qa_section(section, chart, domain) if section else ["invalid JSON"]
                 if not errors:
                     sections[domain] = section
+                    # R.2 (2026-08-17): the ok marker was NEVER stored — the
+                    # raw parsed section has keys intro/section/insights/
+                    # title_fa only, so generate_report's n_ok check (v.get
+                    # ("ok") or v.get("status")=="ok") always counted 0 and
+                    # every fully-generated report was marked degraded
+                    # «هیچ بخشی با کیفیت کافی تولید نشد» for hours.
+                    sections[domain].setdefault("ok", True)
                     ok = True
                     break
                 metrics["qa_failures"] += 1

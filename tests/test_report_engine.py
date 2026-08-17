@@ -135,3 +135,22 @@ def test_generate_sections_uses_fake_router():
     assert len([d for d in sections if sections[d].get("insights")]) == 13
     assert metrics["calls"] == 13
     assert metrics["qa_failures"] == 0
+
+
+# ─────────────────────────── R.2 ok-marker regression ──────────────────────
+import asyncio as _aio
+
+def test_sections_carry_ok_marker():
+    """R.2 regression: generate_report's n_ok check counts v.get('ok') —
+    sections must carry the ok marker or every good report is marked degraded
+    («هیچ بخشی با کیفیت کافی تولید نشد»). Reported for hours on prod."""
+    from app.report.worker import generate_sections_async
+    chart_json = CHART
+    router = FakeRouter()
+    sections, metrics = _aio.run(generate_sections_async(
+        chart_json, plan_key="full", router=router))
+    assert sections, "expected sections to be generated"
+    assert all(isinstance(v, dict) and (v.get("ok") or v.get("status") == "ok")
+               for v in sections.values()), \
+        "every generated section must carry ok=True (else n_ok=0 → false degraded)"
+    assert metrics["fallback_domains"] == [], metrics
