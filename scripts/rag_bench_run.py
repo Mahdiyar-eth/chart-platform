@@ -30,7 +30,7 @@ def eval_model(model, reports, queries):
     """queries: list of (report_id, category, text) — 100 x 5 reports = 500 evals/model"""
     results = {c: {"recall5": [], "recall10": [], "mrr": [], "ndcg": []} for c in CATEGORY_QUERIES}
     # load all chunk rows once
-    rows = psql("SELECT report_id, section_key, id FROM report_chunks WHERE embedding IS NOT NULL ORDER BY report_id, id")
+    rows = psql("SELECT report_id, section_key, id FROM reportchunk WHERE embedding IS NOT NULL ORDER BY report_id, id")
     chunks = {}
     for line in rows.splitlines():
         rid, sk, cid = line.split("|")
