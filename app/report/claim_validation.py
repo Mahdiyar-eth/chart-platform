@@ -224,14 +224,18 @@ def house_of(planet_key: str, chart: dict) -> int | None:
             if c0 is None or c1 is None:
                 continue
             cusp, nxt = float(c0), float(c1)
-            if i == 11:  # last cusp wraps through 360°
+            if nxt < cusp:  # section crosses 0° Aries (incl. intercepted houses)
                 if lon >= cusp or lon < nxt:
-                    return 12
+                    return i + 1
             elif cusp <= lon < nxt:
                 return i + 1
     except (TypeError, ValueError):
         return None
-    return None
+    # No cusp matched (e.g. none stored) — whole-sign as last resort.
+    asc = _lon_of("ascendant", chart)
+    if asc is None:
+        return None
+    return int(((lon - asc) % 360.0) // 30) + 1
 
 
 def degree_of(planet_key: str, chart: dict) -> float | None:

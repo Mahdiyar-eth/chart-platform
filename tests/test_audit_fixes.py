@@ -163,6 +163,49 @@ def test_house_of_uses_engine_houses():
     assert house_of("sun", chart) == 5
     assert house_of("moon", chart) == 11
     # legacy chart without per-planet house → cusp fallback, not whole-sign
+
+
+def test_house_of_cusp_wrap_house12():
+    """Cusp wrap across 0° Aries: h12 ends at 355°, h1 starts at 10° → lon 358° is h12."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 358.0}},  # no engine house → cusp path
+        "angles": {"asc": {"longitude": 10.0}},
+        "houses": {"h1": 10.0, "h2": 40.0, "h12": 355.0},
+    }
+    assert house_of("sun", chart) == 12
+
+
+def test_house_of_mid_sequence_wrap():
+    """Intercepted-house edge (opus v2 review): mid-sequence cusp crossing 0° Aries.
+    h3=350° → h4=10° crosses 0°: house 3 spans [350,10); house 4 spans [10,40)."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 5.0}},
+        "angles": {"asc": {"longitude": 40.0}},
+        "houses": {"h1": 40.0, "h2": 100.0, "h3": 350.0, "h4": 10.0, "h5": 40.0},
+    }
+    assert house_of("sun", chart) == 3  # lon 5° is inside [350,10) → house 3
+    chart["planets"]["sun"]["longitude"] = 20.0
+    assert house_of("sun", chart) == 4  # lon 20° is inside [10,40) → house 4
+
+
+def test_house_of_no_cusps_whole_sign_fallback():
+    """No houses stored (legacy) → whole-sign fallback, never None when ASC exists."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 140.0}},
+        "angles": {"asc": {"longitude": 340.0}},
+        "houses": {},
+    }
+    assert house_of("sun", chart) == 6  # (140-340)%360=160 → 160//30+1
+
+
+def test_house_of_unknown_returns_none_when_asc_missing():
+    """No houses AND no ascendant → None (validation skips, no crash)."""
+    from app.report.claim_validation import house_of
+    chart = {"planets": {"sun": {"longitude": 140.0}}, "angles": {}, "houses": {}}
+    assert house_of("sun", chart) is None
     chart2 = {"planets": {"sun": {"longitude": 15.0, "house": None}},
               "angles": {"asc": {"longitude": 0.0}},
               "houses": {"h1": 0.0, "h2": 30.0}}
