@@ -96,29 +96,29 @@
     .bottomnav{ display:none; }
     @media (max-width:768px){
       .appnav{ display:none; }
-      body{ padding-bottom:150px; }
-      .bottomnav{ position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:80;
-        display:flex; align-items:flex-end; gap:2px; padding:8px 10px; border-radius:24px;
+      body{ padding-bottom:calc(150px + env(safe-area-inset-bottom, 0px)); }
+      .bottomnav{ position:fixed; bottom:calc(10px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%); z-index:80;
+        display:flex; align-items:flex-end; gap:2px; padding:8px 10px 12px; border-radius:24px;
         width:calc(100% - 24px); max-width:420px;
         background:rgba(20,26,58,.78); border:1px solid rgba(255,255,255,.16);
         backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%);
         box-shadow:0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.16);
         animation:bnIn .5s var(--ease) both; }
       @keyframes bnIn{ from{ opacity:0; transform:translate(-50%,18px); } to{ opacity:1; transform:translate(-50%,0); } }
-      .bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-height:52px;
-        padding:4px 2px; border-radius:16px; color:rgba(255,255,255,.64); text-decoration:none; font-size:.66rem; font-weight:600;
-        transition:color .2s var(--ease), background-color .2s; }
+      .bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-height:50px;
+        padding:4px 2px 6px; border-radius:16px; color:rgba(255,255,255,.64); text-decoration:none; font-size:.64rem; font-weight:600;
+        white-space:nowrap; transition:color .2s var(--ease), background-color .2s; }
       .bn-item svg{ width:22px; height:22px; flex:none; }
       .bn-item:active{ transform:scale(.94); }
       .bn-item.active{ color:var(--gold); }
-      .bn-fab{ flex:1.15; display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; margin-top:-24px; }
-      .bn-fab .fab-circle{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      .bn-fab{ flex:1.15; display:flex; flex-direction:column; align-items:center; text-decoration:none; }
+      .bn-fab .fab-circle{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-top:-28px;
         background:linear-gradient(135deg,#f5c518,#e08e0b); color:#1a1400;
-        box-shadow:0 8px 26px rgba(245,197,24,.5), 0 0 0 5px rgba(20,26,58,.8);
+        box-shadow:0 8px 26px rgba(245,197,24,.5);
         transition:transform .16s ease-out; }
       .bn-fab:active .fab-circle{ transform:scale(.93); }
       .bn-fab .fab-circle svg{ width:26px; height:26px; }
-      .bn-fab span{ font-size:.64rem; font-weight:800; color:var(--gold); margin-top:2px; }
+      .bn-fab span{ font-size:.64rem; font-weight:800; color:var(--gold); margin-top:5px; white-space:nowrap; }
     }
     /* ── Mobile hamburger + slide-in drawer ── */
     .hamburger{ display:none; }
