@@ -112,18 +112,18 @@
     try {
       const url = id ? ('/api/admin/content/articles/' + id) : '/api/admin/content/articles';
       const r = await cmsFetch(url, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) });
-      alert('ذخیره شد ✓ (v' + (r.version || 'new') + ')');
+      showToast('ذخیره شد ✓ (v' + (r.version || 'new') + ')', true);
       cmsList();
-    } catch(e) { alert('خطا: ' + e.message); }
+    } catch(e) { showToast('خطا: ' + e.message, false); }
   }
   async function cmsStatus(id, status) {
     try { await cmsFetch('/api/admin/content/articles/' + id, { method: 'PUT', body: JSON.stringify({status}) }); cmsList(); }
-    catch(e) { alert('خطا: ' + e.message); }
+    catch(e) { showToast('خطا: ' + e.message, false); }
   }
   async function cmsDel(id) {
-    if (!confirm('حذف مقاله؟ (قابل بازگشت از revision نیست)')) return;
+    if (!(await confirmDialog('حذف مقاله؟ (قابل بازگشت از revision نیست)', 'حذف', true, 'حذف مقاله'))) return;
     try { await cmsFetch('/api/admin/content/articles/' + id, { method: 'DELETE' }); cmsList(); }
-    catch(e) { alert('خطا: ' + e.message); }
+    catch(e) { showToast('خطا: ' + e.message, false); }
   }
   async function cmsPages() {
     const el = document.getElementById('cms-body');
@@ -154,15 +154,15 @@
   async function cmsPageSave(key) {
     let extra = {};
     try { extra = JSON.parse(document.getElementById('pg-extra').value || '{}'); }
-    catch(e) { return alert('extra JSON نامعتبر است'); }
+    catch(e) { return showToast('extra JSON نامعتبر است', false); }
     try {
       await cmsFetch('/api/admin/content/pages/' + key, { method: 'PUT', body: JSON.stringify({
         title: document.getElementById('pg-title').value,
         content: document.getElementById('pg-content').value,
         extra
       })});
-      alert('ذخیره شد ✓'); cmsPages();
-    } catch(e) { alert('خطا: ' + e.message); }
+      showToast('ذخیره شد ✓', true); cmsPages();
+    } catch(e) { showToast('خطا: ' + e.message, false); }
   }
   function cmsMediaPanel() {
     document.getElementById('cms-body').innerHTML = `<div style="max-width:520px;">
@@ -172,7 +172,7 @@
   }
   async function cmsUpload() {
     const f = document.getElementById('cms-file').files[0];
-    if (!f) return alert('فایلی انتخاب نشده');
+    if (!f) return showToast('فایلی انتخاب نشده', false);
     const fd = new FormData(); fd.append('file', f);
     try {
       const r = await fetch('/api/admin/content/media', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: fd });
@@ -494,8 +494,8 @@
         let fd = new FormData(); fd.append('value', model);
         const r = await fetch('/api/admin/secrets/section_model_default', {method:'POST', body:fd});
         const j = await r.json();
-        if (j.ok) alert('ذخیره شد — بعد از ریاستارت سرویس برای سکشن‌های جدید اعمال می‌شود');
-        else alert('خطا: ' + (j.detail || 'نامشخص'));
+        if (j.ok) showToast('ذخیره شد — بعد از ریاستارت سرویس برای سکشن‌های جدید اعمال می‌شود', true);
+        else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
         return;
       }
       let fd = new FormData(); fd.append('value', provider);
@@ -503,8 +503,8 @@
       fd = new FormData(); fd.append('value', model);
       const r = await fetch('/api/admin/secrets/' + part + '_llm_model', {method:'POST', body:fd});
       const j = await r.json();
-      if (j.ok) alert('ذخیره شد — بعد از ریاستارت سرویس اعمال می‌شود');
-      else alert('خطا: ' + (j.detail || 'نامشخص'));
+      if (j.ok) showToast('ذخیره شد — بعد از ریاستارت سرویس اعمال می‌شود', true);
+      else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
     }
     async function testLLM(){
       const box = document.getElementById('llm-test-result');
@@ -522,17 +522,17 @@
       btn.textContent = btn.dataset.orig || btn.textContent;
       const r = await fetch('/api/admin/orders/' + id + '/regenerate', {method:'POST'});
       const j = await r.json();
-      if (j.ok) { alert('در صف تولید قرار گرفت (گزارش ' + j.report_id.slice(0,8) + ')'); location.reload(); }
-      else alert('خطا: ' + (j.detail || 'نامشخص'));
+      if (j.ok) { showToast('در صف تولید قرار گرفت (گزارش ' + j.report_id.slice(0,8) + ')', true); location.reload(); }
+      else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
     }
     async function savePrompt(key){
       const content = document.getElementById('prompt-' + key).value.trim();
-      if (!content) return alert('متن خالی است');
+      if (!content) return showToast('متن خالی است', false);
       const fd = new FormData(); fd.append('content', content);
       const r = await fetch('/api/admin/prompts/' + key, {method:'POST', body:fd});
       const j = await r.json();
-      if (j.ok) { alert('نسخه ' + j.version + ' ذخیره شد'); location.reload(); }
-      else alert('خطا: ' + (j.detail || 'نامشخص'));
+      if (j.ok) { showToast('نسخه ' + j.version + ' ذخیره شد', true); location.reload(); }
+      else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
     }
     async function savePlan(key){
       const p = Alpine.store('plans')[key];
@@ -541,7 +541,7 @@
       fd.set('price_toman', p.price); fd.set('active', p.active ? '1' : '0');
       const r = await fetch('/api/admin/plans/' + key, {method:'PUT', body: fd});
       const d = await r.json();
-      if (!r.ok) alert(d.detail || 'خطا');
+      if (!r.ok) showToast(d.detail || 'خطا', false);
     }
     async function revealSecret(key){
       const inp = document.getElementById('secret-in-' + key);
@@ -557,9 +557,9 @@
       const r = await fetch('/api/admin/secrets/' + key, {method:'POST', body: fd});
       const j = await r.json();
       if (j.ok) {
-        alert(v.trim() ? 'ذخیره شد ✅ — سرویس را ریاستارت کنید تا اعمال شود' : 'پاک شد — به مقدار محیطی برمی‌گردد');
+        showToast(v.trim() ? 'ذخیره شد ✅ — سرویس را ریاستارت کنید تا اعمال شود' : 'پاک شد — به مقدار محیطی برمی‌گردد', v.trim());
         location.reload();
-      } else alert('خطا: ' + (j.detail || 'نامشخص'));
+      } else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
     }
     async function clearSecret(key, btn){
       // F-29 (runtime audit): native confirm() → inline two-step (mobile-safe)
@@ -568,8 +568,8 @@
       const fd = new FormData(); fd.append('value', '');
       const r = await fetch('/api/admin/secrets/' + key, {method:'POST', body: fd});
       const j = await r.json();
-      if (j.ok) { alert('پاک شد ✅'); location.reload(); }
-      else alert('خطا: ' + (j.detail || 'نامشخص'));
+      if (j.ok) { showToast('پاک شد ✅', true); location.reload(); }
+      else showToast('خطا: ' + (j.detail || 'نامشخص'), false);
     }
   </script>
 </div>

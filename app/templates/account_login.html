@@ -19,7 +19,7 @@
           <input class="input" type="tel" x-model="code" inputmode="numeric" placeholder="00000" dir="ltr" style="text-align:left; letter-spacing:.5em;">
           <p class="muted" style="font-size:.8rem; margin-top:6px;" x-show="devCode">کد تست (dev): <b x-text="devCode" style="color:#f5c518;"></b></p>
           <button class="btn" type="submit" style="width:100%; margin-top:12px;" :disabled="busy" x-text="busy ? 'در حال ورود…' : 'ورود'"></button>
-          <button type="button" class="muted" style="background:none; border:none; margin-top:10px; width:100%; font-size:.8rem;" @click="sent=false">تغییر شماره</button>
+          <button type="button" class="muted" style="background:none; border:none; margin-top:10px; width:100%; font-size:.8rem; min-height:44px; display:flex; align-items:center; justify-content:center;" @click="sent=false">تغییر شماره</button>
         </form>
       </template>
       <p x-show="error" x-text="error" style="color:#ff6b6b; margin-top:10px; font-size:.85rem;"></p>

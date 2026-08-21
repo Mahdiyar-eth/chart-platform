@@ -97,7 +97,7 @@ citySearch(document.querySelector('input[name=city_b]'), document.querySelector(
 
 document.getElementById('synForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!cityA || !cityB) { alert('شهرها را از لیست انتخاب کن'); return; }
+  if (!cityA || !cityB) { showToast('شهرها را از لیست انتخاب کن', false); return; }
   const f = new FormData(e.target);
   f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
   const btn = e.target.querySelector('button');
@@ -105,7 +105,7 @@ document.getElementById('synForm').addEventListener('submit', async (e) => {
   try {
     const r = await fetch('/api/synastry', { method: 'POST', body: f });
     const d = await r.json();
-    if (!r.ok) { alert(d.detail || 'خطا'); return; }
+    if (!r.ok) { showToast(d.detail || 'خطا', false); return; }
     const cls = d.score >= 65 ? '#4caf7d' : d.score >= 50 ? '#f5c518' : '#ff6b6b';
     document.getElementById('synResult').style.display = 'block';
     document.getElementById('synResult').innerHTML =
@@ -125,11 +125,11 @@ async function shareSyn(score, verdict) {
   const f = new FormData(document.getElementById('synForm'));
   const r = await fetch('/api/synastry/share', { method: 'POST', body: f });
   const d = await r.json();
-  if (!r.ok) { alert(d.detail || 'خطا'); return; }
+  if (!r.ok) { showToast(d.detail || 'خطا', false); return; }
   const url = location.origin + d.url;
   try { await navigator.clipboard.writeText(url); }
   catch (e) { const t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-  alert('لینک نتیجه کپی شد: می‌توانی برای طرف مقابل بفرستی.');
+  showToast('لینک نتیجه کپی شد: می‌توانی برای طرف مقابل بفرستی.', true);
 }
 function getCookie(n){ const m = document.cookie.match(new RegExp('(^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[2]) : ''; }
 async function buySyn() {
@@ -137,7 +137,7 @@ async function buySyn() {
   f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
   const r = await fetch('/api/synastry/order', { method: 'POST', body: f });
   const d = await r.json();
-  if (!r.ok) { alert(d.detail || 'خطا در ایجاد سفارش'); return; }
+  if (!r.ok) { showToast(d.detail || 'خطا در ایجاد سفارش', false); return; }
   synOrderState = { chart_a: d.chart_a, chart_b: d.chart_b, order_id: d.order_id };
   // H1.6: guest chart B — keep its capability token in chart_access cookie so
   // the paid full report can be unlocked without person B having an account

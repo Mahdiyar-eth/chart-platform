@@ -203,14 +203,14 @@ function purchase() {
           headers: useBalance ? { 'x-pay-with-balance': '1' } : {},
         });
         const j = await r.json();
-        if (!r.ok) { alert(j.detail || 'خطا در ایجاد سفارش'); this.busy = false; return; }
+        if (!r.ok) { showToast(j.detail || 'خطا در ایجاد سفارش', false); this.busy = false; return; }
         if (j.paid_by_balance) {
-          alert('خرید با موجودی کیف پول انجام شد ✅ گزارش در حال تولید است.');
+          showToast('خرید با موجودی کیف پول انجام شد ✅ گزارش در حال تولید است.', true);
           location.href = '/account';
           return;
         }
         window.location.href = j.payment_url;
-      } catch (e) { alert('ارتباط با سرور برقرار نشد'); this.busy = false; }
+      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
     }
   };
 }

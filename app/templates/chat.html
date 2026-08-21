@@ -3,7 +3,7 @@
 <div style="max-width:720px;margin:0 auto;padding:20px 14px 40px;" x-data="chat()" x-init="init()">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
     <h1 style="font-size:22px;font-weight:800;color:#e8ecff;">گفت‌وگو با چارت تولد</h1>
-    <a class="btn btn-ghost" href="/chart/{{ chart_id }}" style="min-height:40px;padding:0 16px;font-size:.85rem;">← چارت</a>
+    <a class="btn btn-ghost" href="/chart/{{ chart_id }}" style="min-height:44px;padding:0 16px;font-size:.85rem;">← چارت</a>
   </div>
   <p class="muted" style="font-size:.9rem;margin-bottom:6px;">
     از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده... پاسخ بر اساس محاسبه‌ی دقیق چارت و گزارش اختصاصی توست.
@@ -14,7 +14,7 @@
 
   <div x-show="!locked && msgs.length === 0" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
     {% for p in presets %}
-    <button class="btn btn-ghost" type="button" style="min-height:38px;padding:0 14px;font-size:.8rem;border-radius:999px;"
+    <button class="btn btn-ghost" type="button" style="min-height:44px;padding:0 14px;font-size:.8rem;border-radius:999px;"
             x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
     {% endfor %}
   </div>

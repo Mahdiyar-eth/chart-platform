@@ -15,12 +15,10 @@
   <meta property="og:image" content="{% block og_image %}{{ request.url.scheme }}://{{ request.url.netloc }}/static/og-banner.png{% endblock %}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:type" content="website">
   <meta name="theme-color" content="#0d1430">
   <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
   <link rel="canonical" href="{% block canonical %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ request.url.path }}{% endblock %}">
   <script async src="https://analytics.negar.io/script.js" data-website-id="e8f58dc5-fee9-455d-8ee6-18e26ea23791" data-domains="chart.negar.io"></script>
-  <meta name="theme-color" content="#0d1430">
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -355,6 +353,64 @@
     check();
     setInterval(check, 60000);
   })();
+  </script>
+  <style>
+  #toastStack{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:10000;width:min(92vw,380px);pointer-events:none;}
+  .toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(22,29,44,.97);color:#eef1ff;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 32px rgba(0,0,0,.4);font-size:.9rem;line-height:1.5;border-right:3px solid var(--gold);}
+  .toast.err{border-right-color:#ff5b5b;}
+  .toast .t-ic{flex:none;font-weight:800;font-size:1rem;color:var(--gold);}
+  .toast.err .t-ic{color:#ff5b5b;}
+  #dialogBackdrop{position:fixed;inset:0;background:rgba(6,9,16,.68);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:10001;display:none;align-items:center;justify-content:center;padding:20px;}
+  #dialogBackdrop.show{display:flex;}
+  .dialog-box{pointer-events:auto;width:min(92vw,380px);background:rgba(22,28,42,.98);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:22px 18px;color:#eef1ff;box-shadow:0 24px 64px rgba(0,0,0,.55);}
+  .dialog-box .d-title{font-size:1.1rem;font-weight:800;color:var(--gold);margin-bottom:8px;}
+  .dialog-box .d-msg{font-size:.92rem;line-height:1.75;color:#cdd6ec;margin-bottom:16px;white-space:pre-line;}
+  .dialog-box input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font-size:1rem;margin-bottom:16px;}
+  .dialog-box input:focus{outline:none;border-color:var(--gold);}
+  .dialog-btns{display:flex;gap:10px;}
+  .dialog-btns button{flex:1;padding:13px;border-radius:12px;border:none;font-size:.95rem;font-weight:800;cursor:pointer;}
+  .dialog-btns .d-ok{background:var(--gold);color:#1a1405;}
+  .dialog-btns .d-ok.danger{background:#e0555f;color:#fff;}
+  .dialog-btns .d-cancel{background:rgba(255,255,255,.08);color:#cdd6ec;border:1px solid rgba(255,255,255,.12);}
+  </style>
+  <div id="toastStack" aria-live="polite"></div>
+  <div id="dialogBackdrop">
+    <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+      <div class="d-title" id="dlgTitle"></div>
+      <div class="d-msg" id="dlgMsg"></div>
+      <input id="dlgInput" style="display:none"/>
+      <div class="dialog-btns">
+        <button id="dlgCancel" class="d-cancel" type="button">انصراف</button>
+        <button id="dlgOk" class="d-ok" type="button">تأیید</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  function showToast(msg, ok, timeout){
+    var s=document.getElementById('toastStack');
+    var el=document.createElement('div');
+    el.className='toast'+(ok?'':' err');
+    var ic=document.createElement('span'); ic.className='t-ic'; ic.textContent=ok?'✓':'⚠';
+    el.appendChild(ic); el.appendChild(document.createTextNode(' '+msg));
+    s.appendChild(el);
+    setTimeout(function(){ el.style.opacity='0'; el.style.transform='translateY(-8px)'; el.style.transition='opacity .3s, transform .3s'; setTimeout(function(){el.remove();},320);}, timeout||2800);
+  }
+  function _dlg(title,msg,okLabel,danger,withInput,placeholder,value){
+    document.getElementById('dlgTitle').textContent=title;
+    document.getElementById('dlgMsg').textContent=msg;
+    var inp=document.getElementById('dlgInput');
+    if(withInput){inp.style.display='block';inp.placeholder=placeholder||'';inp.value=value||'';setTimeout(function(){inp.focus();},60);}else{inp.style.display='none';}
+    var ok=document.getElementById('dlgOk');ok.textContent=okLabel||'تأیید';ok.classList.toggle('danger',!!danger);
+    var bd=document.getElementById('dialogBackdrop');bd.classList.add('show');
+    return new Promise(function(res){
+      function done(v){bd.classList.remove('show');ok.onclick=null;document.getElementById('dlgCancel').onclick=null;inp.onkeydown=null;res(v);}
+      ok.onclick=function(){done(withInput?inp.value.trim():true);};
+      document.getElementById('dlgCancel').onclick=function(){done(withInput?null:false);};
+      inp.onkeydown=function(e){ if(e.key==='Enter'){e.preventDefault();ok.click();} if(e.key==='Escape'){document.getElementById('dlgCancel').click();} };
+    });
+  }
+  function confirmDialog(msg, okLabel, danger, title){return _dlg(title||'تأیید عملیات',msg,okLabel,danger,false,null,null);}
+  function promptDialog(title,msg,placeholder,value){return _dlg(title,msg,'تأیید',false,true,placeholder,value);}
   </script>
 </body>
 </html>

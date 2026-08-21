@@ -96,13 +96,13 @@ cityInput.addEventListener('input', async () => {
 
 document.getElementById('recForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!city) { alert('شهر را از لیست انتخاب کن'); return; }
+  if (!city) { showToast('شهر را از لیست انتخاب کن', false); return; }
   const events = [];
   document.querySelectorAll('#eventsBox .ev').forEach(row => {
     const [sel, iy, im, id] = row.children;
     if (iy.value && im.value && id.value) events.push([sel.value, +iy.value, +im.value, +id.value]);
   });
-  if (events.length < 2) { alert('حداقل ۲ رویداد با تاریخ کامل لازم است'); return; }
+  if (events.length < 2) { showToast('حداقل ۲ رویداد با تاریخ کامل لازم است', false); return; }
   const f = new FormData();
   f.set('city_fa', city.city_fa);
   f.set('year', e.target.querySelector('input[name=year]').value);
@@ -114,7 +114,7 @@ document.getElementById('recForm').addEventListener('submit', async (e) => {
   try {
     const r = await fetch('/api/rectify', { method: 'POST', body: f });
     const d = await r.json();
-    if (!r.ok) { alert(d.detail || 'خطا'); return; }
+    if (!r.ok) { showToast(d.detail || 'خطا', false); return; }
     const box = document.getElementById('recResult');
     box.style.display = 'block';
     box.innerHTML =

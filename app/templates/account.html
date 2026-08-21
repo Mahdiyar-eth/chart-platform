@@ -302,13 +302,13 @@ function wallet() {
     },
     fmt(n) { return Number(n || 0).toLocaleString('fa-IR') + ' ریال'; },
     async askWithdraw() {
-      const v = prompt('مبلغ تسویه به ریال (حداکثر ' + this.balance.toLocaleString('fa-IR') + '):');
+      const v = await promptDialog('مبلغ تسویه', 'مبلغ تسویه به ریال (حداکثر ' + this.balance.toLocaleString('fa-IR') + '):', 'مبلغ را به ریال وارد کن', '');
       if (!v) return;
       const fd = new FormData();
       fd.append('amount_rial', String(parseInt(v.replace(/[^\d]/g, ''), 10) || 0));
       const r = await fetch('/api/wallet/withdraw', { method: 'POST', body: fd });
       const j = await r.json();
-      alert(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'));
+      showToast(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'), r.ok);
       if (r.ok) location.reload();
     }
   };

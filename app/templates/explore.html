@@ -119,7 +119,7 @@ function exploreApp() {
       if (!this.chartId) this.chartId = this.charts.length ? this.charts[0].id : "";
     },
     run(card) {
-      if (!this.chartId) { alert("اول یک چارت بساز"); return; }
+      if (!this.chartId) { showToast("اول یک چارت بساز", false); return; }
       const self = this;
       this.busy = true; this.busyKey = card.key; this.busyCard = card;
       this.result = null; this.needCredit = false;
@@ -158,7 +158,7 @@ function exploreApp() {
             }
           }
         })
-        .catch((e) => { if (!self.needCredit) alert(e.message); })
+        .catch((e) => { if (!self.needCredit) showToast(e.message, false); })
         .finally(() => { self.busy = false; self.busyKey = ""; self.busyCard = null; });
     },
   };
