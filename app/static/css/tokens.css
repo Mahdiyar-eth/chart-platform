@@ -1,0 +1,26 @@
+:root{
+  /* ===== color scale (single source of truth) ===== */
+  --bg:#0d1430; --bg2:#111a3d; --surface:#241f33; --surface-2:#2a2f45; --surface-3:#1a1626;
+  --glass:rgba(255,255,255,.085); --stroke:rgba(255,255,255,.18); --border:rgba(255,255,255,.12);
+  --txt:#eef1ff; --muted:#a8b4e8; --muted-2:#8a97c9; --muted-3:#cdd6ec; --white:#f5f6ff;
+  --gold:#f5c518; --gold-deep:#e08e0b; --gold-soft:rgba(245,197,24,.18); --gold-ink:#1a1400;
+  --accent:#7c6cf0; --accent-2:#4a3f8f; --accent-3:#6a5acd; --accent-soft:#8b7ce8; --indigo:#4f5bd5; --bg-glow:#232c66;
+  --danger:#e5484d; --danger-soft:#e0555f; --success:#10b981;
+  --warn-bg-a:#5b2a0e; --warn-bg-b:#7a3b12; --warn-txt:#ffd9a8;
+  /* ===== spacing 8pt scale (no arbitrary gaps) ===== */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+  /* ===== typography (Persian prefers taller line-height) ===== */
+  --fs-xs:.72rem; --fs-sm:.85rem; --fs-md:1rem; --fs-lg:1.2rem; --fs-xl:1.5rem; --fs-2xl:1.9rem; --fs-3xl:2.4rem;
+  --lh-tight:1.25; --lh-normal:1.6; --lh-loose:1.8;
+  /* ===== radii ===== */
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-full:999px;
+  /* ===== shadows / blur / motion ===== */
+  --sh-1:0 2px 12px rgba(0,0,0,.35); --sh-2:0 8px 32px rgba(0,0,0,.35); --sh-3:0 24px 64px rgba(0,0,0,.55);
+  --blur-glass:blur(24px); --ease:cubic-bezier(.23,1,.32,1);
+  /* ===== z-index scale (was hand-placed) ===== */
+  --z-nav:80; --z-drawer:90; --z-modal:100; --z-toast:110;
+  /* legacy alias (used by base.css/templates) */
+  --radius:22px;
+  --pure:#ffffff; --red-err:#ff5b5b; --lav:#e8e2f5;
+  --star-1:rgba(255,255,255,.53); --star-2:rgba(255,255,255,.98); --star-3:rgba(255,255,255,.40); --star-4:rgba(255,255,255,.33); --star-5:rgba(255,255,255,.27);
+}

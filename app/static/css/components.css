@@ -1,0 +1,33 @@
+/* ── Design-system component library (additive; base.css carries the existing visual)
+   Colors ONLY via tokens. Physical margin/padding/text-align LEFT|RIGHT are banned. ── */
+/* Card */
+.card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5); }
+/* Form field wrapper */
+.field{ display:flex; flex-direction:column; gap:6px; margin-bottom:var(--sp-4); }
+.field > label{ margin:0; }
+/* Badge / pill label */
+.badge{ display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:var(--r-full);
+  font-size:var(--fs-xs); font-weight:800; color:var(--gold); background:var(--gold-soft); border:1px solid rgba(245,197,24,.4); }
+/* Button variants (primary/ghost/danger) + sizes */
+.btn-primary{ background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:var(--gold-ink); }
+.btn-ghost{ background:rgba(255,255,255,.08); color:var(--txt); border:1px solid var(--stroke); }
+.btn-danger{ background:var(--danger-soft); color:var(--white); }
+.btn-sm{ min-height:38px; padding:0 var(--sp-4); font-size:var(--fs-sm); border-radius:var(--r-sm); }
+.btn-md{ min-height:48px; padding:0 var(--sp-5); font-size:var(--fs-md); border-radius:var(--r-md); }
+/* Skeleton loading */
+.skeleton{ position:relative; overflow:hidden; border-radius:var(--r-sm); background:rgba(255,255,255,.08); }
+.skeleton::after{ content:''; position:absolute; inset:0; transform:translateX(-100%);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent); animation:sk 1.4s infinite; }
+@keyframes sk{ 100%{ transform:translateX(100%); } }
+/* Empty state */
+.empty-state{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-3); padding:var(--sp-7) var(--sp-4);
+  text-align:center; color:var(--muted); }
+.empty-state svg{ width:48px; height:48px; color:var(--muted-2); }
+.empty-state b{ color:var(--txt); font-size:var(--fs-lg); }
+/* Locked / paywall panel */
+.locked-panel{ position:relative; overflow:hidden; border-radius:var(--r-lg); border:1px solid var(--stroke);
+  background:rgba(255,255,255,.05); padding:var(--sp-6); text-align:center; }
+.locked-panel::before{ content:''; position:absolute; inset:0; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  background:rgba(13,20,48,.55); }
+.locked-panel > *{ position:relative; }
+@media (prefers-reduced-motion:reduce){ .skeleton::after{ animation:none; } }

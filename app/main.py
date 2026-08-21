@@ -44,6 +44,21 @@ from app.payment.zarinpal import ZarinpalClient, ZarinpalError
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
+def _asset_version():
+    """Cache-busting version from the css dir hash (design tokens/base/components)."""
+    import hashlib
+    d = BASE_DIR / "static" / "css"
+    if not d.is_dir():
+        return "0"
+    h = hashlib.md5()
+    for f in sorted(d.iterdir()):
+        if f.suffix == ".css":
+            h.update(f.name.encode())
+            h.update(f.read_bytes())
+    return h.hexdigest()[:10]
+
+templates.env.globals["asset_version"] = _asset_version()
+
 PLANS_SEED = [
     Plan(key="basic", name_fa="پایه", subtitle_fa="آغاز شناخت",
          price_toman=149_000, sort=1, active=True,
