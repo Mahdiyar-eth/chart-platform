@@ -28,6 +28,7 @@ from app.report.generator import build_report_json
 from app.report.prompt_builder import (build_personal_question_prompt,
                                        build_prompts_for_plan, order_domains_by_focus)
 from app.report.qa import parse_section, qa_repetition, qa_section
+from app.report.claim_validation import validate_advanced
 from app.report.renderer import render_report_pdf
 
 log = logging.getLogger("report.worker")
@@ -137,6 +138,20 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
                     continue
                 section = parse_section(res.text)
                 errors = qa_section(section, chart, domain) if section else ["invalid JSON"]
+                # C-04 / AC-07 (opus audit RF-06): wire the deterministic astro
+                # validator into the QA loop. validate_advanced() cross-checks
+                # every planet/sign/house/degree/aspect claim against the chart;
+                # a critical hallucination must be retried, not shipped to a
+                # paying customer. Guarded so it can never break generation.
+                try:
+                    _va = validate_advanced(domain, res.text, chart)
+                    if _va.critical_hallucination:
+                        errors.append(
+                            f"{domain}: ناسازگاری نجومی (hallucination) — "
+                            f"نشانه/خانه/درجه/جنبه با چارت نمی‌خواند"
+                        )
+                except Exception:  # noqa: BLE001 — validator must never break generation
+                    pass
                 if not errors:
                     sections[domain] = section
                     # R.2 (2026-08-17): the ok marker was NEVER stored — the
