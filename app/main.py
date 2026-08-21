@@ -99,12 +99,14 @@ app.middleware("http")(security_guard)   # security.py: CSRF origin check + rate
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
-def _safe_json(obj) -> str:
+def _safe_json(obj, ensure_ascii: bool = False, **kw) -> str:
     """JSON for embedding in <script> via |safe — escapes </script> and -->
     breakout (F-08 family, 2026-08-17): user/model data JSON must never be
-    able to close a script tag from inside a template."""
+    able to close a script tag from inside a template.
+    (2026-08-21) accept ensure_ascii= kwarg — several callers pass it and it
+    was crashing `/explore` with TypeError."""
     import json as _json
-    return _json.dumps(obj, ensure_ascii=False).replace("</", "<\\/").replace("<!--", "<\\!--")
+    return _json.dumps(obj, ensure_ascii=ensure_ascii, **kw).replace("</", "<\\/").replace("<!--", "<\\!--")
 
 
 @app.get("/sw.js")
@@ -1062,7 +1064,7 @@ def insight_share_page(request: Request, token: str, p: str = Query("")):
     kind, title, headline, date_fa = parts
     payload = f"{kind}|{title}|{headline}|{date_fa}"
     expect = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
-    if not _hmac.compare_digest(expect, token):
+    if not _hmac.compare_digest(expect.encode(), token.encode()):
         raise HTTPException(404, "not found")
     return templates.TemplateResponse(request, "insight_share.html", {
         "title": "بینش نجومی — زایچه",
@@ -1098,7 +1100,7 @@ def synastry_share_page(request: Request, token: str, p: str = Query("")):
     name_a, name_b, score_s, verdict = parts
     payload = f"{name_a}|{name_b}|{score_s}|{verdict}"
     expect = _hmac.new(_AUTH_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:24]
-    if not _hmac.compare_digest(expect, token):
+    if not _hmac.compare_digest(expect.encode(), token.encode()):
         raise HTTPException(404, "not found")
     try:
         score = int(score_s)
