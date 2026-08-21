@@ -44,7 +44,7 @@
         </li>
         {% endfor %}
       </ul>
-      <button class="btn btn-lg" @click="buy('{{ p.key }}')"
+      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected"
               style="width:100%;{% if p.key == 'full' %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
         خرید {{ p.name_fa }}
       </button>
@@ -92,7 +92,7 @@
         </li>
         {% endfor %}
       </ul>
-      <button class="btn btn-lg" @click="buy('{{ p.key }}')" style="width:100%;background:rgba(124,108,240,.22);border:1px solid rgba(124,108,240,.5);">
+      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected" style="width:100%;background:rgba(124,108,240,.22);border:1px solid rgba(124,108,240,.5);">
         خرید پک {{ p.credits_grant }}تایی
       </button>
     </div>

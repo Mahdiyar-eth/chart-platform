@@ -189,6 +189,40 @@
     </div>
     <p style="color:var(--muted);margin-top:10px;font-size:.75rem;">منبع: کوئری‌های زندهٔ DB (app/kpi.py) — پنجره‌ها: ۲۴ ساعت / ۷ روز / ۳۰ روز / مادام‌العمر</p>
   </div>
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">📊 Funnel (G1) — نرخ تبدیل قیف</h2>
+  <div class="glass" style="padding:14px;font-size:.83rem;">
+    <div id="funnel-table" style="display:flex;flex-direction:column;gap:6px;">
+      <i style="color:var(--muted)">در حال بارگذاری…</i>
+    </div>
+    <p style="color:var(--muted);margin-top:10px;font-size:.75rem;">منبع: رویدادهای /api/track (funnel_events) — گام: تعداد · نرخ تبدیل نسبت به گام قبل · ریزش</p>
+  </div>
+
+  <script>
+  (function(){
+    var names = {"page_view_landing":"مشاهدهٔ لندینگ","birth_form_start":"شروع فرم تولد","birth_form_submit":"ثبت فرم تولد","chart_created":"ایجاد چارت","signup_started":"شروع ثبت‌نام","checkout_started":"شروع پرداخت","payment_success":"پرداخت موفق"};
+    fetch('/api/admin/funnel').then(function(r){return r.json();}).then(function(d){
+      var el = document.getElementById('funnel-table');
+      if(!el) return;
+      if(!d.steps || !d.steps.length){ el.innerHTML = '<i style="color:var(--muted)">هنوز رویدادی ثبت نشده (استفادهٔ واقعی منتظر است).</i>'; return; }
+      var h = '<div style="display:grid;grid-template-columns:1.4fr .7fr .9fr .9fr;gap:8px;font-weight:800;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--border);"><span>گام</span><span>تعداد</span><span>تبدیل</span><span>ریزش</span></div>';
+      d.steps.forEach(function(s){
+        var pct = (s.conversion_vs_prev===null)?'—':(Math.round(s.conversion_vs_prev*100)+'%');
+        var dr = (s.dropoff===null)?'—':(Math.round(s.dropoff*100)+'%');
+        var drColor = (s.dropoff!==null && s.dropoff>0.5)?'var(--danger)':'var(--muted)';
+        h += '<div style="display:grid;grid-template-columns:1.4fr .7fr .9fr .9fr;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);">'
+          + '<span>'+(names[s.step]||s.step)+'</span>'
+          + '<span style="font-weight:800;">'+s.count+'</span>'
+          + '<span style="color:var(--gold);">'+pct+'</span>'
+          + '<span style="color:'+drColor+';">'+dr+'</span>'
+          + '</div>';
+      });
+      h += '<p style="color:var(--muted);margin-top:8px;font-size:.75rem;">کل رویدادهای ثبت‌شده: '+d.total_events+'</p>';
+      el.innerHTML = h;
+    }).catch(function(){ var el=document.getElementById('funnel-table'); if(el){ el.innerHTML='<i style="color:var(--danger)">خطا در بارگذاری قیف</i>'; } });
+  })();
+  </script>
+
+
 
   <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">هزینه AI — تفکیکی (H1.3)</h2>
   <div class="glass" style="padding:14px;font-size:.85rem;">

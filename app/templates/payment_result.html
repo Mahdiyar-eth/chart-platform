@@ -20,11 +20,11 @@
       <span>وضعیت:</span><b style="color:var(--gold);">پرداخت‌شده</b>
     </div>
   </div>
-  <a class="btn btn-lg" href="/chart/{{ order.chart_id }}">مشاهده‌ی چارت تولد</a>
+  <a class="btn btn-lg" href="/chart/{{ order.chart_id }}" data-track="payment_success">مشاهده‌ی چارت تولد</a>
   {% else %}
   <h1 style="font-size:24px;font-weight:800;color:#ff7a6b;margin:0 0 8px;">پرداخت ناموفق بود</h1>
   <p style="color:#b8c2f0;margin:0 0 24px;">در صورت کسر مبلغ، طی ۷۲ ساعت به حساب شما بازگردانده می‌شود.</p>
-  <a class="btn btn-lg" href="/plans?chart={{ order.chart_id }}">تلاش دوباره</a>
+  <a class="btn btn-lg" href="/plans?chart={{ order.chart_id }}" data-track="payment_failed">تلاش دوباره</a>
   {% endif %}
 </div>
 {% endblock %}

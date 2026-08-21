@@ -15,6 +15,7 @@ from pathlib import Path
 import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -32,7 +33,7 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
@@ -1896,6 +1897,52 @@ def account_page(request: Request, session: Session = Depends(get_session)):
     resp.set_cookie(CSRF_COOKIE, csrf, httponly=True, samesite="lax", secure=True,
                     max_age=24 * 3600)
     return resp
+
+
+# ───────────── G1 — funnel tracking + admin funnel dashboard ─────────────
+FUNNEL_EVENTS = {"page_view_landing","birth_form_start","birth_form_submit","chart_created","chart_view_scroll_50","preview_insight_viewed","explore_card_click","explore_free_used","signup_started","signup_completed","chart_claimed","credit_cta_shown","credit_cta_click","pack_selected","checkout_started","payment_success","payment_failed","credit_spent","report_started","report_completed","report_pdf_download","transit_forecast_view","transit_analyze_purchase","chat_first_message","share_clicked","referral_link_copied"}
+FUNNEL_STEPS = ["page_view_landing","birth_form_start","birth_form_submit","chart_created","signup_started","checkout_started","payment_success"]
+
+
+class TrackPayload(BaseModel):
+    event: str
+    session_id: str = ""
+
+
+@app.post("/api/track")
+async def api_track(payload: TrackPayload, session: Session = Depends(get_session)):
+    """G1 — anonymous funnel event beacon (fire-and-forget from track.js)."""
+    ev = payload.event
+    if ev not in FUNNEL_EVENTS:
+        raise HTTPException(400, "unknown event")
+    if len(ev) > 64 or len(payload.session_id) > 64:
+        raise HTTPException(400, "field too long")
+    session.add(FunnelEvent(event=ev, session_id=payload.session_id[:64]))
+    session.commit()
+    return {"ok": True}
+
+
+@app.get("/api/admin/funnel")
+def api_admin_funnel(request: Request, session: Session = Depends(get_session)):
+    """G1 — conversion funnel: per-step counts + conversion rate + drop-off."""
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    counts: dict[str, int] = {}
+    for ev in session.exec(select(FunnelEvent.event)).all():
+        counts[ev] = counts.get(ev, 0) + 1
+    steps = []
+    prev = None
+    for name in FUNNEL_STEPS:
+        c = counts.get(name, 0)
+        rate = (c / prev) if prev else None
+        drop = (1 - rate) if rate is not None else None
+        steps.append({
+            "step": name, "count": c,
+            "conversion_vs_prev": (round(rate, 4) if rate is not None else None),
+            "dropoff": (round(drop, 4) if drop is not None else None),
+        })
+        prev = c
+    return {"steps": steps, "total_events": sum(counts.values()), "distinct": counts}
 
 
 @app.get("/api/consent")

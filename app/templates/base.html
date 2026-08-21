@@ -28,6 +28,7 @@
   {"@context":"https://schema.org","@type":"WebSite","name":"زایچه","alternateName":"چارت تولد آنلاین","inLanguage":"fa-IR","description":"گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی"}
   </script>
   <script defer src="/static/vendor/alpine.min.js"></script>
+<script defer src="/static/js/track.js?v={{ asset_version }}"></script>
   <script src="/static/vendor/htmx.min.js"></script>
   <script defer src="/static/sw-register.js"></script>
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/Vazirmatn-Regular.woff2">
@@ -37,7 +38,7 @@
   <link rel="stylesheet" href="/static/css/components.css?v={{ asset_version }}">
   
 </head>
-<body>
+<body {% block body_attrs %}{% endblock %}>
   {% include "partials/icon_sprite.html" %}
   <div class="aurora"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
   <div class="starfield"></div>

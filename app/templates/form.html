@@ -84,7 +84,7 @@
     <div style="display:flex; gap:10px; margin-top:26px;">
       <button type="button" class="btn btn-ghost" x-show="step > 1" @click="step--" style="flex:1;">قبلی</button>
       <button type="button" class="btn" x-show="step < 5" @click="next()" style="flex:2;">ادامه</button>
-      <button type="submit" class="btn" x-show="step === 5" style="flex:2;" :disabled="loading" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
+      <button type="submit" class="btn" x-show="step === 5" style="flex:2;" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
     </div>
     <p x-show="error" x-text="error" style="color:#ff6b6b; margin-top:12px; font-size:.9rem;"></p>
   </form>

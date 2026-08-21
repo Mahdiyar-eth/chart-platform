@@ -473,3 +473,14 @@ class ReportChunk(SQLModel, table=True):
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class FunnelEvent(SQLModel, table=True):
+    """G1 — funnel/analytics event (anonymous, append-only). Source of truth for
+    the admin conversion funnel dashboard. Lightweight; no PII by design."""
+    __tablename__ = "funnel_events"
+    id: int = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    event: str = Field(index=True, max_length=64)
+    session_id: str = Field(default="", index=True, max_length=64)
+    path: str = Field(default="", max_length=255)
+    ref: str = Field(default="", max_length=64)
+    props: str = Field(default="{}", max_length=1024)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

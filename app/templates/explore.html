@@ -31,7 +31,7 @@
              x-show="i < showLimit || showAll">
           <div style="font-weight:800;font-size:1.02rem;" x-text="card.title_fa"></div>
           <p class="muted" style="font-size:.87rem;line-height:1.7;flex:1;" x-text="card.benefit_fa"></p>
-          <button class="btn" x-on:click="run(card)" :disabled="busy" style="justify-content:center;">
+          <button class="btn" x-on:click="run(card)" :disabled="busy" data-track="explore_card_click" style="justify-content:center;">
             <span x-text="busyKey === card.key ? 'در حال تحلیل…' : (freeAvailable ? 'اولین کاوش — رایگان' : 'شروع (۱ اعتبار)')"></span>
           </button>
         </div>

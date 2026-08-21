@@ -49,6 +49,7 @@
 | `GET /api/notifications/prefs` | User | session cookie (G8) |
 | `POST /api/notifications/prefs` | User | CSRF + validated ranges (G8) |
 | `GET /api/consent` | User | session cookie, owner-only (G9) |
+| `POST /api/track` | Public | anonymous funnel beacon (G1) — ثبت رویداد قیف بدون احراز |
 | `GET /api/admin/flags` | Admin | `_is_admin` (G11) |
 | `PUT /api/admin/flags/{name}` | Admin | `_is_admin` + audited (G11) |
 | `GET /birth-chart/{slug}` | Public | flag-gated, static SEO (G12) |
@@ -108,6 +109,7 @@
 | `POST /api/admin/orders/{order_id}/regenerate` | Admin | `_is_admin` |
 | `GET /api/admin/llm-cost` | Admin | `_is_admin` |
 | `GET /api/admin/stats` | Admin | `_is_admin` |
+| `GET /api/admin/funnel` | Admin | `_is_admin` (G1) — داشبورد قیف |
 | `GET /api/admin/secrets` | Admin | `_is_admin` |
 | `POST /api/admin/secrets/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/secrets/{key}/reveal` | Admin | `_is_admin` |
