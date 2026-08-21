@@ -145,12 +145,58 @@ class CreditTransaction(SQLModel, table=True):
     """Ledger for credit economy (P3/P6) — accounting invariant:
     sum(amount) per user == current credits, every row links a reason."""
     __tablename__ = "credit_transactions"
+    # A1 — idempotency: a spend/grant keyed by the same idempotency_key never
+    # double-charges. Enforced by uq_credit_tx_idem_key (unique index).
+    __table_args__ = (Index("uq_credit_tx_idem_key", "idempotency_key", unique=True),)
     id: str = Field(default_factory=_uuid, primary_key=True)
     user_id: str = Field(default=None, foreign_key="users.id", index=True)
     amount: int = Field(default=0)               # +gift/topup, -exploration, +refund
     reason: str = Field(default="")              # free_gift|exploration|refund|topup|subscription
     ref_id: str | None = Field(default=None)     # exploration/order id
+    idempotency_key: str | None = Field(default=None)   # A1
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class CreditPrice(SQLModel, table=True):
+    """A1 — per-action credit cost (unit-of-money = credit). Seeded from
+    HERMES-PLAN-v1 section 3.2; admin-editable, never hard-coded in gates.
+    Keyed by action_key (e.g. 'report_full', 'transit_12m')."""
+    __tablename__ = "credit_prices"
+    action_key: str = Field(primary_key=True)
+    title_fa: str = Field(default="")
+    credits: int = Field(default=1)
+    active: bool = Field(default=True)
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column_kwargs={
+            "server_default": text("now()"),
+            "onupdate": lambda: datetime.now(timezone.utc),
+        },
+    )
+
+
+class Entitlement(SQLModel, table=True):
+    """A1 — entitlement grants belonging to a USER (not a chart), consumed by
+    gated features. source: credit|order|subscription|migration."""
+    __tablename__ = "entitlements"
+    __table_args__ = (
+        Index("ix_entitlements_user_kind", "user_id", "kind"),
+        Index("ix_entitlements_chart_kind", "chart_id", "kind"),
+    )
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    # A1 — entitlement belongs to a USER; (user_id, kind) composite index covers
+    # user-scoped lookups (no separate single-column index — matches plan A1).
+    user_id: str = Field(default=None, foreign_key="users.id")
+    kind: str = Field(default="")             # report|chat|transit|synastry|rectify|audio
+    chart_id: str | None = Field(default=None)
+    ref_id: str | None = Field(default=None)  # report_id / forecast_id
+    quantity: int = Field(default=1)
+    used: int = Field(default=0)
+    expires_at: datetime | None = Field(default=None)
+    source: str = Field(default="credit")
+    source_ref: str | None = Field(default=None)   # credit_transactions.id / order.id
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 
 class Report(SQLModel, table=True):

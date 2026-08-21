@@ -25,6 +25,7 @@ def init_db() -> None:
     if os.getenv("CREATE_ALL_ON_BOOT", "0") == "1":
         SQLModel.metadata.create_all(engine)
     seed_plans()
+    seed_credit_prices()
 
 
 def seed_plans() -> None:
@@ -92,6 +93,38 @@ def seed_plans() -> None:
             except Exception:  # noqa: BLE001 — another worker won the race
                 s2.rollback()
 
+
+
+
+def seed_credit_prices() -> None:
+    """A1 — idempotent credit-price catalog (HERMES-PLAN-v1 section 3.2).
+    Unit-of-money = credit; admin-editable (never hard-coded in gates)."""
+    from sqlmodel import select
+    from app.models import CreditPrice
+
+    catalog: list[dict] = [
+        dict(action_key="explore_card",  title_fa="کاوش تک‌کارت",                               credits=1),
+        dict(action_key="report_basic",  title_fa="گزارش پایه (۵ بخش)",                          credits=3),
+        dict(action_key="report_full",   title_fa="گزارش کامل (۱۳ بخش)",                         credits=7),
+        dict(action_key="report_gold",   title_fa="گزارش طلایی (۱۳ بخش + چت ۳۰ روزه + گذر ۱۲ماهه)", credits=14),
+        dict(action_key="synastry_full", title_fa="سیناستری کامل",                               credits=10),
+        dict(action_key="transit_3m",    title_fa="تحلیل گذرهای ۳ ماه آینده",                    credits=2),
+        dict(action_key="transit_12m",   title_fa="تحلیل گذرهای ۱۲ ماه آینده",                   credits=5),
+        dict(action_key="rectify",       title_fa="بازبینی ساعت تولد",                           credits=2),
+        dict(action_key="chat_pack_20",  title_fa="بستهٔ ۲۰ پیام چت (اعتبار ۳۰ روزه)",            credits=2),
+        dict(action_key="report_audio",  title_fa="نسخهٔ صوتی گزارش",                            credits=1),
+    ]
+    with Session(engine) as s:
+        for item in catalog:
+            existing = s.exec(select(CreditPrice).where(
+                CreditPrice.action_key == item["action_key"])).first()
+            if existing:
+                existing.title_fa = item["title_fa"]
+                existing.credits = item["credits"]
+                s.add(existing)
+            else:
+                s.add(CreditPrice(**item))
+        s.commit()
 
 def get_session():
     with Session(engine) as s:
