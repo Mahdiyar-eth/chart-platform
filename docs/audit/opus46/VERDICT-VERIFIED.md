@@ -19,7 +19,7 @@
 | ID | Issue | Where | Fix |
 |----|-------|-------|-----|
 | C-04 | `claim_validation.validate_advanced()` never called in QA loop | `app/report/worker.py`/`qa.py` (0 imports) | ✅ FIXED — wired into worker QA loop (worker.py:147); `critical_hallucination` → retry. Tests: `tests/test_c04_validate_wiring.py` (4 pass) + full suite 555 green |
-| C-05 | abandoned Zarinpal orders keep coupon `used_count` reserved forever | `app/payment/orders.py` (no expiry job) | Scheduled job: expire `status='pending'` >2h, release coupon |
+| C-05 | abandoned Zarinpal orders keep coupon `used_count` reserved forever | Sweep existed (`scripts/release_stale_coupons.py`) but was NEVER scheduled | ✅ FIXED — `app/payment/orders.sweep_stale_orders()` expires stale `pending` orders (>30m) + releases slot (idempotent); scheduled hourly via ARQ `cron_jobs` (worker.py:437). Tests: `tests/test_c05_stale_coupon_sweep.py` (3 pass) + suite 558 green |
 | H-08 | wallet `pay_order_with_balance` uses Python-level `status!='pending'` check (racy) | `app/payment/orders.py:447` | Atomic CAS `UPDATE ... WHERE id=:id AND status='pending' RETURNING id` |
 | H-10 | `CREDIT_PACKS={'credit3','credit6','credit12'}` but no plans seeded | `orders.py:198` vs `db.py::seed_plans()` | Seed `credit*` plans with `credits_grant > 0` |
 | H-11 | `Plan.credits_grant` never populated | `models.py:194` | Set `credits_grant` in `seed_plans()` |

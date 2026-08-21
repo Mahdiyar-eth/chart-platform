@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 from arq.connections import RedisSettings
+from arq.cron import cron
 from sqlmodel import Session
 
 import app.config  # noqa: F401 — load .env FIRST
@@ -424,10 +425,22 @@ async def shutdown(ctx: dict) -> None:
     log.info("worker shutdown")
 
 
+async def expire_stale_orders(ctx: dict) -> None:
+    """C-05 / AC-04 (audit r4 A10): hourly sweep that expires stale pending
+    orders and releases their coupon slots, so max_uses coupons never lock up.
+    Runs inside the ARQ worker via cron_jobs (see WorkerSettings)."""
+    from app.payment.orders import sweep_stale_orders
+
+    with Session(db_engine) as s:
+        n = sweep_stale_orders(s)
+    log.info("coupon-sweep: %d stale order slot(s) released", n)
+
+
 class WorkerSettings:
     functions = [generate_report, generate_report_audio]
     on_startup = startup
     on_shutdown = shutdown
+    cron_jobs = [cron(expire_stale_orders, minute=30, run_at_startup=True)]  # C-05 hourly coupon sweep
     redis_settings = RedisSettings.from_dsn(REDIS_URL)
     max_jobs = 4
     job_timeout = 1800

@@ -266,6 +266,51 @@ def grant_due_subscription_credits(session: Session) -> int:
     return granted
 
 
+def sweep_stale_orders(session: Session, stale_minutes: int | None = None) -> int:
+    """C-05 (audit r4 A10): expire stale pending orders and release their coupon
+    slots. An abandoned payment (order stuck 'pending' past the payment window)
+    permanently consumed a coupon slot; this sweep returns the slot so max_uses
+    coupons never lock up. Sets status='failed' so the buyer can make a fresh
+    attempt. Idempotent (used_count>0 guard). Returns slots released."""
+    from datetime import timedelta
+
+    from sqlalchemy import text
+
+    from app.models import Coupon, Order
+    from app.timeutil import utcnow
+
+    sm = stale_minutes if stale_minutes is not None else 30
+    released = 0
+    # pending orders older than the payment window
+    stale = session.exec(select(Order).where(
+        Order.status == "pending",
+        Order.created_at < utcnow() - timedelta(minutes=sm),
+    )).all()
+    for o in stale:
+        if o.coupon_id:
+            c = session.get(Coupon, o.coupon_id)
+            if c and c.used_count > 0:
+                c.used_count -= 1
+                released += 1
+        o.status = "failed"  # give the buyer a fresh attempt
+        session.add(o)
+    # defensive: failed orders still holding a slot (belt & suspenders)
+    bad = session.exec(text(
+        "SELECT o.id FROM orders o JOIN coupons c ON c.id = o.coupon_id "
+        "WHERE o.status = 'failed' AND o.coupon_id IS NOT NULL "
+        "AND c.used_count > 0"
+    )).all()
+    if bad:
+        rows = session.exec(text(
+            "UPDATE coupons SET used_count = used_count - 1 "
+            "FROM orders o WHERE o.coupon_id = coupons.id "
+            "AND o.status = 'failed' AND coupons.used_count > 0 RETURNING coupons.id"
+        )).all()
+        released += len(rows)
+    session.commit()
+    return released
+
+
 def cancel_subscription(session: Session, sub: Subscription) -> None:
     """H — cancellation: entitlement ends now (no refund on the platform side;
     gateway refunds stay an admin action)."""
