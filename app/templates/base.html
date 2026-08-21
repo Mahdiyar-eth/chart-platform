@@ -194,7 +194,7 @@
     .footer{ margin-top:60px; padding:34px 4px 40px; border-top:1px solid rgba(255,255,255,.1); }
     .footer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:26px; }
     .footer-col h4{ font-size:.85rem; font-weight:800; color:var(--gold); margin-bottom:14px; letter-spacing:.2px; }
-    .footer-col a{ display:block; color:var(--muted); text-decoration:none; font-size:.84rem; padding:5px 0; transition:color .2s; }
+    .footer-col a{ display:flex; align-items:center; min-height:44px; color:var(--muted); text-decoration:none; font-size:.84rem; transition:color .2s; }
     .footer-col a:hover{ color:#fff; }
     .footer-bar{ margin-top:30px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08);
       display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; font-size:.76rem; color:var(--muted); }
@@ -206,8 +206,8 @@
     @media (prefers-reduced-motion:reduce){
       .appbar-inner::after, .aurora i, .nav-item, .appbar, .bottomnav{ animation:none !important; }
     }
-    .help-tip { position: relative; display: inline-flex; vertical-align: middle; margin-inline-start: 5px; }
-    .help-tip-btn { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); background: transparent; font-size: .7rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; }
+    .help-tip { position: relative; display: inline-flex; vertical-align: middle; margin-inline-start: 5px; min-height:44px; align-items:center; }
+    .help-tip-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); background: transparent; font-size: .7rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; }
     .help-tip-btn:hover { background: var(--accent); color: #1a1626; }
     .help-tip-box { position: absolute; z-index: 50; top: 24px; inset-inline-start: 0; width: 240px; max-width: 72vw; background: #241f33; border: 1px solid rgba(212,175,55,.35); border-radius: 10px; padding: 10px 12px; font-size: .8rem; line-height: 1.7; color: #e8e2f5; box-shadow: 0 8px 24px rgba(0,0,0,.45); text-align: start; font-weight: 400; }
     .help-tip-box::before { content: ''; position: absolute; top: -5px; inset-inline-start: 10px; width: 8px; height: 8px; background: #241f33; border-inline-start: 1px solid rgba(212,175,55,.35); border-top: 1px solid rgba(212,175,55,.35); transform: rotate(45deg); }

@@ -1,13 +1,13 @@
 # ZAYCHE — Full Code Bundle (modular)
 
-> Generated 2026-08-17 (final audit round) — up to commit `c3df4d3 2026-08-17 fix(admin): panel default display matches _PART_DEFAULT_MODEL (report/chat gemini, preview flash)`
+> Generated 2026-08-17 (final audit round) — up to commit `fef0d6e 2026-08-18 review-v2: opus-4.6 re-review of closure (CONDITIONAL AGREE, $0.17) + verified: F-29 idempotency guard already present (status-first); fixed F-26 mid-sequence cusp wrap + whole-sign failsafe + 4 unit tests (551 green)`
 > For deep code-level review by an external AI. Secrets are excluded; sensitive
 > values appear only as env placeholders (get_secret / env pattern).
 > Narrative companion: docs/audit/PLAIN-REPORT.md and reports/launch/FINAL-GO.md
 
 ## Current state
-- Tests: 547 passed, 1 skipped, 1 warning in 26.29s
-- Commits: 241 · head: c3df4d3 2026-08-17 fix(admin): panel default display matches _PART_DEFAULT_MODEL (report/chat gemini, preview flash)
+- Tests: 551 passed, 1 skipped, 1 warning in 33.35s
+- Commits: 243 · head: fef0d6e 2026-08-18 review-v2: opus-4.6 re-review of closure (CONDITIONAL AGREE, $0.17) + verified: F-29 idempotency guard already present (status-first); fixed F-26 mid-sequence cusp wrap + whole-sign failsafe + 4 unit tests (551 green)
 - CI gates: pytest+coverage · ruff F/E9 · bandit -lll · pip-audit · secret-scan · brand-scan · alembic chain check
 - Migrations: 28 Alembic
 - Live stack: FastAPI + HTMX/Alpine (RTL PWA) · R2 presigned storage · Postgres 16 + pgvector (RAG) · OmniRoute LLM gateway (gemini flash-high default) with GO/zen fallback
@@ -5929,7 +5929,7 @@ def upcoming_transits(chart_json: dict, days: int = 90, step: int = 1) -> list[d
 
 ## ۵) موتور گزارش + QA
 
-### `app/report/claim_validation.py` (383 lines)
+### `app/report/claim_validation.py` (387 lines)
 
 ```python
 """A2 — deterministic Claim/Evidence validation (M8 amendment).
@@ -6158,14 +6158,18 @@ def house_of(planet_key: str, chart: dict) -> int | None:
             if c0 is None or c1 is None:
                 continue
             cusp, nxt = float(c0), float(c1)
-            if i == 11:  # last cusp wraps through 360°
+            if nxt < cusp:  # section crosses 0° Aries (incl. intercepted houses)
                 if lon >= cusp or lon < nxt:
-                    return 12
+                    return i + 1
             elif cusp <= lon < nxt:
                 return i + 1
     except (TypeError, ValueError):
         return None
-    return None
+    # No cusp matched (e.g. none stored) — whole-sign as last resort.
+    asc = _lon_of("ascendant", chart)
+    if asc is None:
+        return None
+    return int(((lon - asc) % 360.0) // 30) + 1
 
 
 def degree_of(planet_key: str, chart: dict) -> float | None:
@@ -15420,7 +15424,7 @@ def test_house_placement_consistent():
 
 ```
 
-### `tests/test_audit_fixes.py` (169 lines)
+### `tests/test_audit_fixes.py` (212 lines)
 
 ```python
 """Tests for opus-audit fixes (2026-08-17): F-29 wallet settle dispatch,
@@ -15588,6 +15592,49 @@ def test_house_of_uses_engine_houses():
     assert house_of("sun", chart) == 5
     assert house_of("moon", chart) == 11
     # legacy chart without per-planet house → cusp fallback, not whole-sign
+
+
+def test_house_of_cusp_wrap_house12():
+    """Cusp wrap across 0° Aries: h12 ends at 355°, h1 starts at 10° → lon 358° is h12."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 358.0}},  # no engine house → cusp path
+        "angles": {"asc": {"longitude": 10.0}},
+        "houses": {"h1": 10.0, "h2": 40.0, "h12": 355.0},
+    }
+    assert house_of("sun", chart) == 12
+
+
+def test_house_of_mid_sequence_wrap():
+    """Intercepted-house edge (opus v2 review): mid-sequence cusp crossing 0° Aries.
+    h3=350° → h4=10° crosses 0°: house 3 spans [350,10); house 4 spans [10,40)."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 5.0}},
+        "angles": {"asc": {"longitude": 40.0}},
+        "houses": {"h1": 40.0, "h2": 100.0, "h3": 350.0, "h4": 10.0, "h5": 40.0},
+    }
+    assert house_of("sun", chart) == 3  # lon 5° is inside [350,10) → house 3
+    chart["planets"]["sun"]["longitude"] = 20.0
+    assert house_of("sun", chart) == 4  # lon 20° is inside [10,40) → house 4
+
+
+def test_house_of_no_cusps_whole_sign_fallback():
+    """No houses stored (legacy) → whole-sign fallback, never None when ASC exists."""
+    from app.report.claim_validation import house_of
+    chart = {
+        "planets": {"sun": {"longitude": 140.0}},
+        "angles": {"asc": {"longitude": 340.0}},
+        "houses": {},
+    }
+    assert house_of("sun", chart) == 6  # (140-340)%360=160 → 160//30+1
+
+
+def test_house_of_unknown_returns_none_when_asc_missing():
+    """No houses AND no ascendant → None (validation skips, no crash)."""
+    from app.report.claim_validation import house_of
+    chart = {"planets": {"sun": {"longitude": 140.0}}, "angles": {}, "houses": {}}
+    assert house_of("sun", chart) is None
     chart2 = {"planets": {"sun": {"longitude": 15.0, "house": None}},
               "angles": {"asc": {"longitude": 0.0}},
               "houses": {"h1": 0.0, "h2": 30.0}}
@@ -30653,6 +30700,142 @@ tot_in = sum(json.loads(p.read_text() or '{}').get('i', 0) for p in []) + syn["i
 print("DONE")
 ```
 
+### `scripts/opus_v2_review.py` (131 lines)
+
+```bash
+"""Zayche closure review v2 — opus-4.6-thinking reviews FINAL-GO v2 claims + the
+P1-P5 fixes applied since its last audit. Same guarded pattern as opus_resume.py
+(45s spacing, OmniRoute, moderate max_tokens — no gateway saturation)."""
+import asyncio, json, sys, time
+sys.path.insert(0, "/root/chart-platform")
+import httpx
+
+OMNI = "http://127.0.0.1:20128/v1/chat/completions"
+KEY = open("/root/backups/omniroute-api-key.txt").read().strip()
+MODEL = "antigravity/claude-opus-4-6-thinking"
+
+SYSTEM = ("You are the chief technical reviewer for Zayche (chart.negar.io), a "
+          "Persian astrology web app. You previously audited this codebase "
+          "(6-dim, 41 findings, 9 blockers). The team fixed the 3 real bugs and "
+          "hardened others. Your job NOW: review the CLOSURE report (FINAL-GO v2) "
+          "and the new code changes. Be precise, skeptical but FAIR: verify claims "
+          "against the evidence shown; do NOT invent issues not supported by the "
+          "text (previous false positives wasted the team's time). Verdicts: "
+          "AGREE / DISAGREE / UNVERIFIABLE per claim, with 1-line reasons. "
+          "Answer in English; numbered output.")
+
+
+def _read_final_go() -> str:
+    return open("/root/chart-platform/reports/launch/FINAL-GO.md").read()
+
+
+def _read_routing() -> str:
+    return open("/root/chart-platform/docs/ROUTING.md").read()
+
+
+def _read_verdict() -> str:
+    return open("/root/chart-platform/docs/audit/opus/VERDICT-VERIFIED.md").read()
+
+
+def _read_patch() -> str:
+    return open("/tmp/opus_v2_patch.txt").read()
+
+
+async def call(payload: dict, retries: int = 3) -> dict:
+    for attempt in range(retries):
+        t0 = time.monotonic()
+        try:
+            async with httpx.AsyncClient(timeout=600) as c:
+                r = await c.post(OMNI, json=payload,
+                                 headers={"Authorization": f"Bearer {KEY}",
+                                          "Content-Type": "application/json"})
+        except Exception as e:  # noqa: BLE001
+            last = f"http {e}"; await asyncio.sleep(30); continue
+        dt = time.monotonic() - t0
+        if r.status_code == 200:
+            try:
+                j = r.json()
+            except Exception as e:  # noqa: BLE001
+                last = f"bad json: {e}"; await asyncio.sleep(30); continue
+            text = ((j.get("choices") or [{}])[0].get("message") or {}).get("content", "")
+            if text.strip():
+                u = j.get("usage") or {}
+                cost = (u.get("prompt_tokens", 0) * 5 + u.get("completion_tokens", 0) * 25) / 1e6
+                return {"ok": True, "text": text, "cost": cost, "sec": int(dt),
+                        "status": 200, "error": ""}
+        last = f"status={r.status_code} body={r.text[:150]}"
+        await asyncio.sleep(30)
+    return {"ok": False, "text": "", "cost": 0.0, "sec": 0, "status": 0, "error": last}
+
+
+def _msg(user: str) -> dict:
+    return {"model": MODEL, "messages": [{"role": "system", "content": SYSTEM},
+                                         {"role": "user", "content": user}],
+            "max_tokens": 8000, "temperature": 0.4, "stream": False}
+
+
+CHUNK1 = ("REVIEW THE CLOSURE REPORT. Below are FINAL-GO v2 (the closure report), "
+          "ROUTING.md (the routing matrix), and VERDICT-VERIFIED.md (my claim-by-claim "
+          "verification of your last audit). Assess line by line: "
+          "(1) Is the routing matrix sane given the cost/speed/quality table? "
+          "(2) Is the M3 gate handling honest (24h rolling window, clean-window "
+          "p95≈17s, cron tomorrow)? (3) Is the P5 personalization methodology valid "
+          "(real charts, GO-pro judge, 8.4-8.9 across models)? Any methodological "
+          "hole? (4) Are the cost tables plausible? (5) Is 'CODE COMPLETE + AI "
+          "QUALITY OK, launch = 7 user-side actions' a justified verdict?\n"
+          "Give AGREE/DISAGREE/UNVERIFIABLE per claim with one-line reasons. "
+          "Keep it under 600 words.\n\n=== FINAL-GO v2 ===\n"
+          + _read_final_go() + "\n\n=== ROUTING.md ===\n" + _read_routing() +
+          "\n\n=== VERDICT-VERIFIED.md ===\n" + _read_verdict())
+
+
+CHUNK2 = ("VERIFY THE FIXES. This is the git diff of the code changes applied since "
+          "your last audit (P1-P5): wallet-payment settlement now activates "
+          "yearly/monthly subscriptions and credit packs (F-29); LANCH20 coupon "
+          "seed in a fresh session (F-11); Placidus-house validation with whole-sign "
+          "fallback (F-26); two-step cancel modal Alpine state (F-37); weekly LLM "
+          "text escaped + _safe_json for all template JSON embeds (F-08); chat "
+          "prompt v3 personalization; admin panel routing matrix + defaults; "
+          "ROUTING.md. For each fix: does it actually close your P0/P1 finding? "
+          "Any NEW bug you can spot? Answer in numbered AGREE/DISAGREE/UNVERIFIABLE "
+          "lines. Under 700 words.\n\n=== DIFF ===\n" + _read_patch())
+
+
+async def main():
+    print("STEP 1/3 — closure-report review...", flush=True)
+    r1 = await call(_msg(CHUNK1))
+    print(f"done ok={r1['ok']} sec={r1.get('sec')} cost=${r1.get('cost', 0):.3f}"
+          + (f" err={r1['error']}" if not r1["ok"] else ""), flush=True)
+    json.dump(r1, open("/tmp/opus_v2_step1.json", "w"), ensure_ascii=False, indent=1)
+    await asyncio.sleep(45)
+
+    print("STEP 2/3 — fix verification...", flush=True)
+    r2 = await call(_msg(CHUNK2))
+    print(f"done ok={r2['ok']} sec={r2.get('sec')} cost=${r2.get('cost', 0):.3f}"
+          + (f" err={r2['error']}" if not r2["ok"] else ""), flush=True)
+    json.dump(r2, open("/tmp/opus_v2_step2.json", "w"), ensure_ascii=False, indent=1)
+    await asyncio.sleep(45)
+
+    print("STEP 3/3 — synthesis...", flush=True)
+    synth = ("You reviewed (1) the closure report and (2) the fix diffs. Synthesize: "
+             "FINAL verdict on FINAL-GO v2 — AGREE / CONDITIONAL / DISAGREE with the "
+             "2-3 most important remaining risks (if any). Then rank the 7 user-side "
+             "launch actions (Zarinpal merchant, Kavehnegar key, zayche.io domain, "
+             "real-phone test, push, Search Console, brand) by dependency and risk. "
+             "Under 300 words.\n\nSTEP1 summary:\n" + r1["text"][:3000] +
+             "\n\nSTEP2 summary:\n" + r2["text"][:3000])
+    r3 = await call(_msg(synth))
+    print(f"done ok={r3['ok']} sec={r3.get('sec')} cost=${r3.get('cost', 0):.3f}"
+          + (f" err={r3['error']}" if not r3["ok"] else ""), flush=True)
+    json.dump(r3, open("/tmp/opus_v2_step3.json", "w"), ensure_ascii=False, indent=1)
+    total = r1.get("cost", 0) + r2.get("cost", 0) + r3.get("cost", 0)
+    print(f"\n=== ALL DONE — total cost ${total:.3f} ===")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ### `scripts/p5_personalization_eval.py` (123 lines)
 
 ```bash
@@ -34938,24 +35121,26 @@ AGE_PUBKEY=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 ........................................................................ [ 13%]
 ........................................................................ [ 26%]
-...................................................s.................... [ 39%]
+.......................................................s................ [ 39%]
 ........................................................................ [ 52%]
 ........................................................................ [ 65%]
 ........................................................................ [ 78%]
 ........................................................................ [ 91%]
-............................................                             [100%]
+................................................                         [100%]
 =============================== warnings summary ===============================
 tests/test_push_delivery_p12.py::test_webpush_real_delivery_decryptable
   /root/chart-platform/venv/lib/python3.11/site-packages/urllib3/connectionpool.py:1110: InsecureRequestWarning: Unverified HTTPS request is being made to host '127.0.0.1'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
     warnings.warn(
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-547 passed, 1 skipped, 1 warning in 26.29s
+551 passed, 1 skipped, 1 warning in 33.35s
 ```
 
 ## ۱۸) تاریخچه گیت (آخرین 40 کامیت)
 
 ```
+fef0d6e 2026-08-18 review-v2: opus-4.6 re-review of closure (CONDITIONAL AGREE, $0.17) + verified: F-29 idempotency guard already present (status-first); fixed F-26 mid-sequence cusp wrap + whole-sign failsafe + 4 unit tests (551 green)
+5d74f56 2026-08-18 feat(P5): prompt v3 personalization (real-chart eval 8.4-8.9 ALL pass); FINAL-GO v2 final tables; p5 eval scripts; bundle regen
 c3df4d3 2026-08-17 fix(admin): panel default display matches _PART_DEFAULT_MODEL (report/chat gemini, preview flash)
 9538c92 2026-08-17 feat(P1 routing+admin): panel selects gemini/omni + section_model_default row; _PART_DEFAULT_MODEL report+chat=gemini-high, preview=flash; docs/ROUTING.md single source; F-08 _safe_json hardening; skill/docs updates
 7f50008 2026-08-17 feat(admin P1): routing matrix single source — panel now selects gemini/omni + section_model_default for ALL parts; chat/report/sections default gemini-high; preview default deepseek-v4-flash (free GO); ROUTING doc follows
@@ -34994,6 +35179,4 @@ b7854a0 2026-08-17 fix(R.2 run5): aspect evidence parts now canonicalized indivi
 a57bb15 2026-08-17 test(R.2): document new QA contract — active wrong-sign strict, non-active soft
 d0aef86 2026-08-17 fix(R.2 run2): prompt 9.1 — never state sign/house of non-listed planets; QA: wrong sign of non-active factor = soft (keeps report alive; active stays strict) — degraded reports were burning 7 attempts on Venus/Moon sign fabrication
 16c8371 2026-08-17 fix(R.2/R.3): QA no longer hard-rejects chart-present non-active factors (was burning 7-attempt budget → 13 unexpected-degraded reports; now verified against chart, false signs still critical); benchmark harness requires explicit chart-fact citation + temp 0.2 for deterministic repeatability
-14b443f 2026-08-16 docs: CLOSURE-R1-R6 status report
-b915608 2026-08-16 feat(R.6): final deployment drill passes 9/9 — real OTP/payment marked BLOCKED_BY_EXTERNAL (P1 user-side); /faq 500 fixed via seed backfill
 ```

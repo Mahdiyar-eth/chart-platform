@@ -2,15 +2,15 @@
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
 <div style="padding-top:20px;" x-data="reportState()" x-init="init()">
-  <a href="/birth-form" class="muted" style="text-decoration:none; font-size:.9rem;">→ فرم جدید</a>
+  <a href="/birth-form" class="muted" style="text-decoration:none; font-size:.9rem; min-height:44px; display:inline-flex; align-items:center;">→ فرم جدید</a>
   <h1 style="margin-top:8px;">چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
   <!-- funnel progress (F3): chart → explore → deep -->
   <div style="display:flex;gap:8px;margin-top:12px;font-size:.8rem;flex-wrap:wrap;">
-    <span style="background:rgba(245,197,24,.14);color:var(--gold);padding:6px 12px;border-radius:999px;font-weight:700;">۱ · چارت تو ✓</span>
-    <a href="/explore?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;border-radius:999px;text-decoration:none;">۲ · خودت را کشف کن</a>
-    <a href="/plans?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;border-radius:999px;text-decoration:none;">۳ · گزارش عمیق</a>
+    <span style="background:rgba(245,197,24,.14);color:var(--gold);padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;font-weight:700;">۱ · چارت تو ✓</span>
+    <a href="/explore?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;text-decoration:none;">۲ · خودت را کشف کن</a>
+    <a href="/plans?chart={{ chart.id }}" style="background:rgba(255,255,255,.08);color:var(--txt);padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;text-decoration:none;">۳ · گزارش عمیق</a>
   </div>
 
   <!-- chart wheel -->
@@ -99,7 +99,7 @@
     <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:14px; font-size:.85rem;">
       <a href="/chat/{{ chart.id }}" style="color:var(--muted);">💬 گفت‌وگو با چارت</a>
       <a href="/transit/{{ chart.id }}" style="color:var(--muted);">گذرهای کنونی</a>
-      <button @click="share()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;">📤 اشتراک‌گذاری</button>
+      <button @click="share()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;min-height:44px;padding:0 12px;">📤 اشتراک‌گذاری</button>
     </div>
     <div style="margin-top:14px;" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">

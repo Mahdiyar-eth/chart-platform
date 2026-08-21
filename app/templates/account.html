@@ -17,7 +17,7 @@
       </template>
       <template x-for="it in results()" :key="it.k + it.id">
         <a :href="it.url" style="display:flex; justify-content:space-between; align-items:center; gap:8px;
-                              padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
+                              padding:9px 0; min-height:44px; display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
           <span><span class="chip" style="font-size:.68rem; margin-inline-end:8px;" x-text="it.k"></span><span x-text="it.label"></span></span>
           <svg style="width:14px;height:14px;color:var(--muted);flex:none;" aria-hidden="true"><use href="#icon-arrow"/></svg>
         </a>
@@ -54,7 +54,7 @@
           <span class="muted" style="display:block; font-size:.82rem;">{{ r.status }}</span>
         </div>
         {% if r.status == 'done' %}
-        <a class="btn" style="font-size:.8rem; padding:6px 14px;" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
+        <a class="btn" style="font-size:.8rem; padding:6px 14px; min-height:44px; display:inline-flex; align-items:center;" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
         {% endif %}
       </div>
     </div>
@@ -92,20 +92,20 @@
       تنظیمات اعلان
     </h2>
     <div x-data="notifPrefs()" x-init="init()" style="margin-top:8px; font-size:.9rem;">
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
         <input type="checkbox" x-model="f.daily_insight" style="width:18px;height:18px;"> بینش روزانه
       </label>
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
         <input type="checkbox" x-model="f.weekly_reflection" style="width:18px;height:18px;"> تأمل هفتگی
       </label>
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; cursor:pointer;">
+      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
         <input type="checkbox" x-model="f.report_ready" style="width:18px;height:18px;"> آماده‌شدن گزارش
       </label>
       <div style="display:flex; gap:10px; padding:7px 0; align-items:center;">
         <span class="muted" style="font-size:.82rem;">ساعت‌های سکوت (اعلان ارسال نشود):</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input" style="width:70px;" title="شروع">
+        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input" style="width:80px; min-height:44px;" title="شروع">
         <span class="muted">تا</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input" style="width:70px;" title="پایان">
+        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input" style="width:80px; min-height:44px;" title="پایان">
       </div>
       <button class="btn btn-ghost" style="margin-top:8px; padding:9px 20px;" x-on:click="save()">ذخیره تنظیمات</button>
       <span x-text="saved" style="font-size:.8rem; color:#4caf7d; margin-right:10px;"></span>
@@ -152,8 +152,8 @@
           </div>
           <div style="display:flex;gap:8px;">
             <a class="btn" style="font-size:.78rem;padding:6px 12px;" href="/plans">تمدید</a>
-            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;color:#ff9d9d;" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
-            <button class="btn" style="font-size:.78rem;padding:6px 12px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
+            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;min-height:44px;color:#ff9d9d;" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
+            <button class="btn" style="font-size:.78rem;padding:6px 12px;min-height:44px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
           </div>
         </div>
       </div>
