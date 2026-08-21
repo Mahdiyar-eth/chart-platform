@@ -17,8 +17,8 @@ def _mk_coupon(max_uses: int = 1) -> str:
     cid = str(uuid.uuid4())
     with engine.begin() as conn:
         conn.execute(text(
-            "INSERT INTO coupons (id, code, percent, max_uses, used_count, active, created_at) "
-            "VALUES (:id, :code, 20, :mu, 0, true, now())"
+            "INSERT INTO coupons (id, code, percent, max_uses, used_count, active, report_only, created_at) "
+            "VALUES (:id, :code, 20, :mu, 0, true, false, now())"
         ), {"id": cid, "code": "CP" + cid[:8], "mu": max_uses})
     return cid
 

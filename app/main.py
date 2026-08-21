@@ -82,7 +82,10 @@ PLANS_SEED = [
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    with Session(engine) as s:
+    # expire_on_commit=False: committing must NOT expire the module-level
+    # PLANS_SEED instances — tests access them directly after boot and would
+    # otherwise hit DetachedInstanceError on an expired attribute.
+    with Session(engine, expire_on_commit=False) as s:
         for p in PLANS_SEED:
             if s.get(Plan, p.key) is None:
                 s.add(p)

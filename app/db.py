@@ -51,6 +51,15 @@ def seed_plans() -> None:
                        "۲۵+ ارتباط سیاره‌ای میان دو چارت",
                        "تفسیر اختصاصی و عمیق رابطه", "پیش‌نمایش رایگان نمره‌ی کلی"],
              sort=4),
+        dict(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی", price_toman=180_000,
+             credits_grant=3, features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا"],
+             sort=5),
+        dict(key="credit6", name_fa="۶ اعتبار", subtitle_fa="شش کاوش خودشناسی", price_toman=330_000,
+             credits_grant=6, features=["ارزش ۲۰٪ بیشتر از پک ۳تایی", "بدون تاریخ انقضا"],
+             sort=6),
+        dict(key="credit12", name_fa="۱۲ اعتبار", subtitle_fa="دوازده کاوش خودشناسی", price_toman=600_000,
+             credits_grant=12, features=["بهترین ارزش", "بدون تاریخ انقضا"],
+             sort=7),
         dict(key="monthly", name_fa="اشتراک ماهانه", subtitle_fa="همراه ماهانه‌ی زایچه — برای دنبال‌کنندگان آسمان", price_toman=99_000,
              features=["نگاهی به آسمان امروز (Today) — هر روز", "تأمل هفتگی کوتاه در ربات و سایت",
                        "اعلان گذرهای مهم سیاره‌ای", "۵ اعتبار کاوش در ماه"],
@@ -58,7 +67,7 @@ def seed_plans() -> None:
         dict(key="yearly", name_fa="اشتراک سالانه", subtitle_fa="همراه سالانه — دو ماه رایگان نسبت به ماهانه", price_toman=890_000,
              features=["همه‌ی امکانات اشتراک ماهانه", "معادل ۱۰ ماه برای ۱۲ ماه (دو ماه رایگان)",
                        "۵ اعتبار کاوش در ماه", "اولویت در صف تولید گزارش"],
-             sort=6),
+             sort=8),
     ]
     with Session(engine) as s:
         for item in catalog:

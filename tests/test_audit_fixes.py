@@ -1,6 +1,7 @@
 """Tests for opus-audit fixes (2026-08-17): F-29 wallet settle dispatch,
 F-11 coupon seed, F-26 house validation uses engine Placidus houses."""
 import pytest
+import uuid
 from sqlmodel import Session, select
 
 from app.db import engine
@@ -11,13 +12,8 @@ from app.payment import orders as orders_mod
 @pytest.fixture()
 def wallet_user():
     with Session(engine) as s:
-        old = s.exec(select(User).where(User.phone == "09120000007")).first()
-        if old:
-            s.delete(old)
-            s.commit()
-    u = User(phone="09120000007")
-    u.balance_rial = 10_000_000
-    with Session(engine) as s:
+        u = User(phone="0912" + uuid.uuid4().hex[:9])  # unique per test -> no cross-test FK collision
+        u.balance_rial = 10_000_000
         s.add(u)
         s.commit()
         s.refresh(u)

@@ -135,4 +135,4 @@ def test_updated_at_is_heartbeat_on_status_change():
         s.add(rep)
         s.commit()
         fresh = s.get(Report, rid)
-        assert fresh.updated_at > datetime.now(timezone.utc) - timedelta(minutes=5)
+        assert fresh.updated_at > datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=5)
