@@ -19,7 +19,7 @@
   </div>
 
   <div class="glass st-ad292c1c" x-show="true" >
-    <input class="st-1f9c58e5" x-model="coupon" @input="couponMsg=''"
+    <input class="input st-1f9c58e5" x-model="coupon" @input="couponMsg=''"
            placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr"
            >
     <button class="btn st-ffe01040" @click="applyCoupon()" >اعمال</button>
@@ -92,7 +92,7 @@
         </li>
         {% endfor %}
       </ul>
-      <button class="btn btn-lg st-833ce406" @click="buy('{{ p.key }}')" data-track="pack_selected" >
+      <button class="btn btn-lg btn-accent" @click="buy('{{ p.key }}')" data-track="pack_selected" >
         خرید پک {{ p.credits_grant }}تایی
       </button>
     </div>
@@ -128,11 +128,11 @@
     </div>
     <div class="glass st-df1a6875" >
       <b class="st-b9f81216" >اگر از نتیجه راضی نبودم؟</b>
-      <p class="st-74e1d4ce" >تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده می‌شود. کافیست از صفحهٔ <a class="st-6aa99fbc" href="/refund" >شرایط بازگشت وجه</a> درخواست ثبت کنی.</p>
+      <p class="st-74e1d4ce" >تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده می‌شود. کافیست از صفحهٔ <a class="st-6aa99fbc link-tap" href="/refund" >شرایط بازگشت وجه</a> درخواست ثبت کنی.</p>
     </div>
     <div class="glass st-df1a6875" >
       <b class="st-b9f81216" >داده‌های تولدم چه می‌شود؟</b>
-      <p class="st-74e1d4ce" >فقط برای محاسبهٔ چارت و تولید گزارش استفاده می‌شود؛ به هیچ‌کس فروخته یا اشتراک داده نمی‌شود. جزئیات در <a class="st-6aa99fbc" href="/privacy" >حریم خصوصی</a>.</p>
+      <p class="st-74e1d4ce" >فقط برای محاسبهٔ چارت و تولید گزارش استفاده می‌شود؛ به هیچ‌کس فروخته یا اشتراک داده نمی‌شود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy" >حریم خصوصی</a>.</p>
     </div>
   </div>
 </div>

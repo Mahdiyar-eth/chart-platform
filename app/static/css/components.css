@@ -74,3 +74,18 @@
 .u-fs-xs{ font-size:var(--fs-xs); } .u-fs-sm{ font-size:var(--fs-sm); } .u-fs-md{ font-size:var(--fs-md); } .u-fs-lg{ font-size:var(--fs-lg); }
 .u-fw7{ font-weight:700; } .u-fw8{ font-weight:800; } .u-lh-loose{ line-height:var(--lh-loose); }
 @media (prefers-reduced-motion:reduce){ .skeleton::after{ animation:none; } }
+
+/* Accent button — translucent indigo for secondary purchases (light text on dark) */
+.btn-accent{ background:rgba(124,108,240,.22); border:1px solid rgba(124,108,240,.5); color:var(--txt); }
+
+/* C3/C5: visible keyboard focus for every interactive element */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--gold); outline-offset:2px; border-radius:var(--r-sm);
+}
+@media (prefers-reduced-motion:reduce){ *{ scroll-behavior:auto !important; } }
+
+/* C3: small inline text links meet the ~44px touch target */
+.link-tap{ display:inline-flex; align-items:center; min-height:44px; }
+
+/* C3: compact chip button — still 40px touch target */
+.btn-chip{ min-height:40px; padding:0 var(--sp-4); }

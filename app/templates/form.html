@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="st-4f250d9e" >
-  <a href="/" class="muted st-e3ad472b" >→ بازگشت</a>
+  <a href="/" class="muted back-link" >→ بازگشت</a>
   <h1 class="st-d2c171b1" >فرم تولد</h1>
   <p class="muted st-7953b730" >
     این اطلاعات فقط برای محاسبهٔ دقیق چارت تولدت استفاده می‌شود: موقعیت سیارات در لحظه و مکان تولدت.
@@ -12,7 +12,7 @@
   </p>
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
-  <form id="birthForm" class="glass glow st-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)" x-cloak>
+  <form id="birthForm" class="glass glow st-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
     <div class="steps">
       <template x-for="(s, i) in 5" :key="i">
         <div class="step-dot" :class="{'on': i < step}"><i></i></div>
@@ -31,9 +31,9 @@
         <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
       </div>
       <div class="st-2d89ff3a" >
-        <div><label>سال</label><input class="input" type="number" x-model.number="year" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
-        <div><label>ماه</label><input class="input" type="number" x-model.number="month" min="1" max="12"></div>
-        <div><label>روز</label><input class="input" type="number" x-model.number="day" min="1" max="31"></div>
+        <div><label>سال</label><input class="input" type="number" x-model.number="year" aria-label="سال تولد" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
+        <div><label>ماه</label><input class="input" type="number" x-model.number="month" aria-label="ماه تولد" min="1" max="12"></div>
+        <div><label>روز</label><input class="input" type="number" x-model.number="day" aria-label="روز تولد" min="1" max="31"></div>
       </div>
     </div>
 
@@ -46,8 +46,8 @@
       </div>
       <template x-if="timeKnown">
         <div class="st-c119740e" >
-          <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" min="0" max="23"></div>
-          <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" min="0" max="59"></div>
+          <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" aria-label="ساعت تولد" min="0" max="23"></div>
+          <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" aria-label="دقیقهٔ تولد" min="0" max="59"></div>
         </div>
       </template>
       <p class="muted st-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>

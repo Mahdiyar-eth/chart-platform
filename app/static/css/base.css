@@ -1,4 +1,9 @@
 
+/* C3: default link color — dark theme needs light links everywhere (was browser blue) */
+a{ color:var(--muted-3); }
+a:hover{ color:var(--gold); }
+
+
     @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Regular.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Regular.ttf') format('truetype'); font-weight:400; font-display:optional; }
     @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Medium.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Medium.ttf') format('truetype'); font-weight:500; font-display:optional; }
     @font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Bold.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Bold.ttf') format('truetype'); font-weight:700; font-display:optional; }
@@ -154,7 +159,7 @@
     /* footer — 4-column glass (dark-mode readable) */
     .footer{ margin-top:60px; padding:34px 4px 40px; border-top:1px solid rgba(255,255,255,.1); }
     .footer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:26px; }
-    .footer-col h4{ font-size:.85rem; font-weight:800; color:var(--gold); margin-bottom:14px; letter-spacing:.2px; }
+    .footer-col h4, .footer-col .ft-h{ font-size:.85rem; font-weight:800; color:var(--gold); margin-bottom:14px; letter-spacing:.2px; }
     .footer-col a{ display:flex; align-items:center; min-height:44px; color:var(--muted); text-decoration:none; font-size:.84rem; transition:color .2s; }
     .footer-col a:hover{ color:var(--pure); }
     .footer-bar{ margin-top:30px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08);
@@ -168,7 +173,7 @@
       .appbar-inner::after, .aurora i, .nav-item, .appbar, .bottomnav{ animation:none !important; }
     }
     .help-tip { position: relative; display: inline-flex; vertical-align: middle; margin-inline-start: 5px; min-height:44px; align-items:center; }
-    .help-tip-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); background: transparent; font-size: .7rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; }
+    .help-tip-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); background: transparent; font-size: .7rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; }
     .help-tip-btn:hover { background: var(--accent); color: var(--surface-3); }
     .help-tip-box { position: absolute; z-index: 50; top: 24px; inset-inline-start: 0; width: 240px; max-width: 72vw; background: var(--surface); border: 1px solid rgba(212,175,55,.35); border-radius: 10px; padding: 10px 12px; font-size: .8rem; line-height: 1.7; color: var(--lav); box-shadow: 0 8px 24px rgba(0,0,0,.45); text-align: start; font-weight: 400; }
     .help-tip-box::before { content: ''; position: absolute; top: -5px; inset-inline-start: 10px; width: 8px; height: 8px; background: var(--surface); border-inline-start: 1px solid rgba(212,175,55,.35); border-top: 1px solid rgba(212,175,55,.35); transform: rotate(45deg); }
@@ -197,3 +202,5 @@
   .dialog-btns .d-ok.danger{background:var(--danger-soft);color:var(--pure);}
   .dialog-btns .d-cancel{background:rgba(255,255,255,.08);color:var(--muted-3);border:1px solid rgba(255,255,255,.12);}
   
+/* C3: back links must meet the 44px touch target */
+.back-link{ display:inline-block; min-height:44px; line-height:24px; padding:10px 0; }

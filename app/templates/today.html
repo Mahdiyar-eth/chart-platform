@@ -11,7 +11,7 @@
     <div class="glass st-5a5e59ed" >
       <div>
         <div class="muted st-f63147b2" >تاریخ</div>
-        <div class="st-e3ec02ac" x-text="status.today_label"></div>
+        <div class="st-e3ec02ac" x-text="status?.today_label"></div>
       </div>
       <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="load()" >
         <template x-for="ch in charts" :key="ch.id">
@@ -25,10 +25,10 @@
       <span class="st-d4169b69" >🔥</span>
       <div>
         <div class="muted st-a726b01e" >پیوستگی روزانه</div>
-        <div class="st-3c945c05" x-text="status.streak + ' روز متوالی'"></div>
+        <div class="st-3c945c05" x-text="status?.streak + ' روز متوالی'"></div>
       </div>
-      <div class="muted st-ee31f211" x-show="status.streak > 0" x-cloak>
-        <span x-text="status.best_streak"></span> بیشترین
+      <div class="muted st-ee31f211" x-show="status?.streak > 0" x-cloak>
+        <span x-text="status?.best_streak"></span> بیشترین
       </div>
     </div>
 
@@ -36,10 +36,10 @@
     <div class="glass st-ed375c82" >
       <div class="st-ea49063c" >
         <div class="st-710280f4" >✨ امروز در آسمان</div>
-        <button class="st-4ebb4d1b" type="button" x-show="status.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
+        <button class="st-4ebb4d1b btn-chip" type="button" x-show="status?.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
       </div>
-      <div x-show="!status.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
-      <template x-for="(f, i) in status.facts" :key="i">
+      <div x-show="!status?.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
+      <template x-for="(f, i) in status?.facts" :key="i">
         <div class="st-38697191" >
           <span class="st-3a38b258" aria-hidden="true"></span>
           <p class="st-362151c5" >
@@ -55,18 +55,18 @@
     <!-- question -->
     <div class="glass st-ed375c82" >
       <div class="st-24a83240" >🪞 سؤال امروز</div>
-      <p class="st-08fa3ec5" x-text="status.question"></p>
-      <div class="st-56f43562" x-show="status.access === 'preview'" x-cloak >
+      <p class="st-08fa3ec5" x-text="status?.question"></p>
+      <div class="st-56f43562" x-show="status?.access === 'preview'" x-cloak >
         <div class="glass st-21e3cb79" >
           <p class="muted st-9cec68b5" >ثبت تأمل روزانه و پیوستگی مخصوص پلن طلایی و اشتراک ماهانه است.</p>
           <a class="btn btn-lg st-80d654f9" href="/plans" >مشاهده پلن‌ها</a>
         </div>
       </div>
-      <div class="st-33c48088" x-show="status.access === 'full' && status.done" x-cloak >
+      <div class="st-33c48088" x-show="status?.access === 'full' && status?.done" x-cloak >
         <div class="st-52e1e5cb" >✓ تأمل امروز ثبت شد</div>
-        <p class="muted st-efc7d33a" x-text="'ساعت ' + status.done_at"></p>
+        <p class="muted st-efc7d33a" x-text="'ساعت ' + status?.done_at"></p>
       </div>
-      <div class="st-56f43562" x-show="status.access === 'full' && !status.done" x-cloak >
+      <div class="st-56f43562" x-show="status?.access === 'full' && !status?.done" x-cloak >
         <textarea class="input st-dd0a679c" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" ></textarea>
         <button class="btn btn-lg st-9202fe4c" x-on:click="submit()" :disabled="busy">
           <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
@@ -78,7 +78,7 @@
     <!-- action -->
     <div class="glass st-ed375c82" >
       <div class="st-ef8b9018" >🌱 اقدام کوچک امروز</div>
-      <p class="st-08fa3ec5" x-text="status.action"></p>
+      <p class="st-08fa3ec5" x-text="status?.action"></p>
     </div>
   </div>
 </div>
@@ -100,7 +100,7 @@ function todayApp() {
       const self = this;
       fetch("/api/today?chart_id=" + encodeURIComponent(this.chartId))
         .then(r => r.json())
-        .then(d => { self.status = d; })
+        .then(d => { if (d && typeof d === "object") { self.status = d; } })
         .catch(() => { self.status = { ...self.status, facts: [] }; });
     },
     submit() {
@@ -121,14 +121,14 @@ function todayApp() {
         .finally(() => { self.busy = false; });
     },
     shareTransit() {
-      if (!this.status.facts || !this.status.facts.length) return;
-      const headline = this.status.facts.map(f =>
+      if (!this.status?.facts || !this.status?.facts.length) return;
+      const headline = this.status?.facts.map(f =>
         f.planet_fa + " امروز در " + f.sign_fa + " با " + f.target_fa + " تو در " + f.aspect_fa + " است").join(" — ");
       const fd = new FormData();
       fd.append("kind", "transit");
-      fd.append("title", this.status.today_label || "گذرهای امروز");
+      fd.append("title", this.status?.today_label || "گذرهای امروز");
       fd.append("headline", headline);
-      fd.append("date_fa", this.status.today_label || "");
+      fd.append("date_fa", this.status?.today_label || "");
       fetch("/api/insight/share", { method: "POST", body: fd })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
