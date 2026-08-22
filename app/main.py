@@ -2108,6 +2108,105 @@ def account_login_page(request: Request):
     return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})
 
 
+# ── B3 — transit forecast: deterministic data (free) + paid analysis ─────────────
+@app.get("/api/charts/{chart_id}/forecast")
+def api_chart_forecast(chart_id: str, request: Request, session: Session = Depends(get_session),
+                       months: int = 3):
+    """B3 — deterministic transit forecast timeline (FREE). Ownership-checked."""
+    from app.models import Chart, TransitForecast
+    from app.astrology.transit_cache import cached_forecast
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    months = 3 if months not in (3, 12) else months
+    events = cached_forecast(session, chart_id, months, chart.chart_json)
+    analysis = []
+    try:
+        import json as _json
+        payload = _json.loads(
+            session.exec(select(TransitForecast).where(
+                TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first().payload_json)
+        analysis = payload.get("narratives") or []
+    except Exception:  # noqa: BLE001
+        analysis = []
+    return {"months": months, "events": events, "analysis": analysis}
+
+
+@app.post("/api/charts/{chart_id}/forecast/analyze")
+def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session = Depends(get_session),
+                               months: int = Form(3)):
+    """B3 — spend transit_3m / transit_12m credit → produce the analysis via the
+    B2 layer (QA gate + auto-retry; double-QA-fail events are refunded)."""
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True})
+    from app.models import Chart
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    months = 3 if months not in (3, 12) else months
+    action = f"transit_{months}m"
+    from app.credits import InsufficientCredits, refund as _refund, spend
+    try:
+        tx = spend(session, user.id, action, idempotency_key=f"transit:{chart_id}:{months}", chart_id=chart_id)
+    except InsufficientCredits as e:
+        return JSONResponse(status_code=402, content={
+            "code": "ZAY-AI-002", "message": "اعتبار کافی نیست",
+            "need": e.needed, "balance": e.have, "credit_packs": True})
+
+    from app.astrology.transit_cache import cached_forecast, store_transit_analysis
+    from app.astrology.transit_forecast import forecast
+    from app.core.llm import build_router
+    from app.report.transit_narrative import narrate_transit
+    events = cached_forecast(session, chart_id, months, chart.chart_json)
+    if isinstance(events, dict):
+        events = events.get("events") or []
+    refunded = {"n": 0}
+
+    def _on_fail(ev):
+        nonlocal_refunded = refunded
+        nonlocal_refunded["n"] += 1
+        try:
+            _refund(session, tx.id, reason=f"{action} QA refund")
+        except Exception:  # noqa: BLE001
+            pass
+
+    narratives, m = narrate_transit(events, chart.chart_json, router=build_router("transit"),
+                                    plan_key=action, on_event_failed=_on_fail)
+    store_transit_analysis(session, chart_id, months, {"narratives": narratives})
+    session.commit()  # persist the credit spend + stored analysis (get_session does not autoc...[truncated]
+    return {"months": months, "events": events, "narratives": narratives,
+            "metrics": {k: v for k, v in m.items() if k != "provider" and not isinstance(v, (set,))},
+            "refunded": refunded["n"]}
+
+
+@app.get("/transits/{chart_id}")
+def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """B3 — transit timeline page (free deterministic data + paid analysis if owned)."""
+    user = get_current_user(request)
+    from app.models import Chart, TransitForecast
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        return RedirectResponse("/account/login", status_code=303) if not user \
+            else RedirectResponse("/", status_code=303)
+    from app.astrology.transit_cache import cached_forecast
+    try:
+        import json as _json
+        ev12 = cached_forecast(session, chart_id, 12, chart.chart_json)
+        payload = session.exec(select(TransitForecast).where(
+            TransitForecast.chart_id == chart_id, TransitForecast.months == 12)).first()
+        analysis = _json.loads(payload.payload_json or "{}").get("narratives") or [] if payload else []
+    except Exception:  # noqa: BLE001
+        ev12, analysis = [], []
+    return templates.TemplateResponse(request, "transits_forecast.html", {
+        "title": "گذرهای پیشِ رو",
+        "chart_id": chart_id,
+        "events": ev12,
+        "analysis": analysis,
+        "chart": chart,
+    })
+
+
 @app.get("/account/export")
 def account_export(request: Request, session: Session = Depends(get_session)):
     """G1 (§138) — personal data export (JSON + signed URLs for artifacts).

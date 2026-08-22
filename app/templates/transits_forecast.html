@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-6">
+  <h1 class="text-xl font-bold mb-4">گذرهای پیشِ رو</h1>
+  <p class="text-sm opacity-70 mb-5">گذرِ سیاره‌های کند به نقاط مهمِ تولدِ تو، در بازه‌ی ۱۲ ماه — دادهٔ قطعی و رایگان. تحلیلِ تأملیِ هر بخش با اعتبار باز می‌شود.</p>
+
+  <div
+    x-data="transitsApp()"
+    x-init="init()"
+    class="space-y-4"
+  >
+    <!-- free deterministic timeline -->
+    <template x-if="events.length">
+      <div>
+        <h2 class="text-base font-semibold mb-2">تایم‌لاین نجومی (رایگان)</h2>
+        <div class="space-y-2">
+          <template x-for="e in events" :key="e.id">
+            <div class="border rounded-xl p-3">
+              <div class="flex items-center justify-between flex-wrap">
+                <div class="font-semibold">
+                  <span x-text="e.transit_planet_fa || e.transit_planet"></span>
+                  <span class="opacity-70 mx-1">·</span>
+                  <span x-text="e.aspect_fa || e.aspect"></span>
+                  <span class="opacity-70 mx-1">·</span>
+                  <span x-text="e.natal_target_fa || e.natal_target"></span>
+                </div>
+              </div>
+              <div class="text-xs opacity-60 mt-1">
+                در برج <span x-text="e.transit_sign_fa"></span> · خانهٔ
+                <span x-text="e.natal_house"></span> · بازه: <span x-text="e.window_start"></span> تا <span x-text="e.window_end"></span>
+                <template x-if="e.retro_passes > 1">
+                  <span class="ms-1">· رجعت (<span x-text="e.retro_passes"></span> برخورد)</span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+        <button
+          @click="analyze()"
+          class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl"
+          :class="busy ? 'opacity-50 pointer-events-none' : ''"
+        >
+          <span x-text="busy ? 'در حال تحلیل…' : 'تحلیل تأملی گذرها با اعتبار'"></span>
+        </button>
+      </div>
+    </template>
+    <p x-show="!events.length" class="text-sm opacity-60">رویداد گذری در این بازه محاسبه نشد.</p>
+
+    <!-- 402 → credit pack CTA -->
+    <template x-if="needCredits">
+      <a href="/plans" class="block text-center bg-amber-100 text-amber-800 font-medium py-3 rounded-xl mt-3">
+        اعتبار کافی نیست — خرید بستهٔ اعتبار
+      </a>
+    </template>
+
+    <!-- paid analysis -->
+    <template x-if="narratives.length">
+      <div class="mt-6 space-y-4">
+        <h2 class="text-base font-semibold">تحلیلِ تأملی</h2>
+        <template x-for="(n,i) in narratives" :key="i">
+          <div class="border rounded-xl p-4">
+            <div class="font-semibold mb-1" x-text="n.headline"></div>
+            <p class="text-sm leading-6 mb-2" x-text="n.what_it_means"></p>
+            <p class="text-sm italic opacity-80 mb-2" x-text="'سؤال تأمل: ' + n.reflection_question"></p>
+            <p class="text-xs opacity-60" x-text="n.window_text"></p>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
+
+<script>
+function transitsApp() {
+  return {
+    chartId: {{ chart_id|tojson }},
+    events: {{ events|tojson }},
+    narratives: {{ analysis|tojson }},
+    busy: false,
+    needCredits: false,
+    init() {},
+    async analyze() {
+      this.busy = true; this.needCredits = false;
+      try {
+        const fd = new FormData(); fd.append("months", "12");
+        const r = await fetch(`/api/charts/${this.chartId}/forecast/analyze`, { method: "POST", body: fd });
+        const j = await r.json();
+        if (r.status === 402) { this.needCredits = true; }
+        else if (j && Array.isArray(j.narratives)) { this.narratives = j.narratives; this.events = j.events || this.events; }
+      } catch (e) {
+        console.error(e);
+      } finally { this.busy = false; }
+    },
+  };
+}
+</script>
+{% endblock content %}

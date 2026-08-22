@@ -43,3 +43,26 @@ def cached_forecast(session, chart_id: str, months: int, chart_json: dict,
         session.add(row)
         session.commit()
     return result
+
+
+def store_transit_analysis(session, chart_id: str, months: int, payload: dict) -> None:
+    """B3 — persist a paid transit analysis into the (chart_id, months) cache row,
+    merging the deterministic forecast with the narratives so a page refresh never
+    re-charges the user for analysis they already paid for."""
+    from sqlmodel import select
+    from app.models import TransitForecast
+    row = session.exec(select(TransitForecast).where(
+        TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+    if row is None:
+        row = TransitForecast(chart_id=chart_id, months=months)
+    try:
+        merged = json.loads(row.payload_json or "{}")
+    except Exception:  # noqa: BLE001
+        merged = {}
+    if isinstance(merged, list):
+        merged = {"events": merged}
+    merged.update(payload)
+    row.payload_json = json.dumps(merged, ensure_ascii=False)
+    row.computed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    session.add(row)
+    session.commit()

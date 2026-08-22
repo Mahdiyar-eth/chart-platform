@@ -125,8 +125,10 @@ def _validate(parsed: dict | None, text: str, chart: dict, event: dict | None = 
         errors.append(f"claim-gate error: {e}")
     # anchor to the real event target (rejects narratives that drift off-target)
     target = (event or {}).get("natal_target_fa") or (event or {}).get("natal_target")
-    if target and target not in body:
-        errors.append("روایت به هدف نجومی رویداد لنگر نشده است")
+    if target:
+        target = _re.sub(r"\u200c", "", str(target))
+        if target and target not in body:
+            errors.append("روایت به هدف نجومی رویداد لنگر نشده است")
     return errors
 
 
