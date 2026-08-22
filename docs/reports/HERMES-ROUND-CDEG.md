@@ -56,3 +56,9 @@
 ```
 git checkout <pre-round-sha>   # قبل از 3c70b46
 ```
+
+
+## افزودنی ۲۰۲۶-۰۸-۲۲ (بعد از بازبینی)
+- **خوشهٔ SEO «ماه در برج X»**: صفحهٔ ایندکس `/moon` + ۱۲ صفحهٔ یکتا `/moon-in/{slug}` (احساسات/عشق/کار/سایه/راه آرامش)، لینک‌چرخش بین صفحات، sitemap و ۶ تست رگرسیون — کامیت `088b756`.
+- **فیکس لمسی:** لینک‌های breadcrumb حالا هدف لمسی ≥40px (قبلاً h=20px).
+- **استقرار prod:** merge --ff-only به main (`f6def7e..088b756`) + restart chart-web/chart-worker؛ تأیید زنده: `/`, `/moon`, `/moon-in/hout`, `/sitemap.xml` (12 URL ماه)، `/gift-guide` همه 200.
