@@ -165,3 +165,44 @@ def _kind_for_plan(plan_key: str) -> str | None:
         "monthly": "chat",
         "rectify": "rectify",
     }.get(plan_key)
+
+def backfill_entitlements(session: Session, dry_run: bool = True) -> dict:
+    """A6 — backfill entitlements from existing paid orders so legacy customers
+    keep access after the credit-economy gate rewrite.
+
+    - Idempotent: skips orders whose entitlement already exists (source_ref).
+    - Refunded/cancelled/not-paid are not selected (status == 'paid' filter).
+    - dry_run=True returns a report WITHOUT writing; dry_run=False applies via
+      grant_from_order (source='order', keyed by order.id).
+    Returns a summary dict for the dry-run / apply report.
+    """
+    orders = session.exec(
+        select(Order).where(Order.status == "paid")
+    ).all()
+    created = already = skipped = 0
+    skipped_kinds = []
+    for o in orders:
+        # anonymous orders (user_id IS NULL) cannot own an entitlement — skip
+        if not o.user_id:
+            skipped += 1
+            continue
+        if session.exec(
+            select(Entitlement).where(Entitlement.source_ref == o.id)
+        ).first():
+            already += 1
+            continue
+        if not _kind_for_plan(o.plan_key):
+            skipped += 1
+            skipped_kinds.append(o.plan_key)
+            continue
+        created += 1
+        if not dry_run:
+            grant_from_order(session, o)
+    return {
+        "paid_orders": len(orders),
+        "created": created,
+        "already": already,
+        "skipped": skipped,
+        "skipped_kinds": skipped_kinds,
+        "dry_run": dry_run,
+    }
