@@ -7,7 +7,7 @@
   {% if order.status == 'paid' %}
   <h1 style="font-size:24px;font-weight:800;color:var(--gold);margin:0 0 8px;">پرداخت با موفقیت انجام شد</h1>
   <p style="color:#b8c2f0;margin:0 0 24px;">
-    پلن <b>{{ plan.name_fa if plan else '' }}</b> فعال شد — به زودی گزارش شما آماده می‌شود.
+    پلن <b>{{ plan.name_fa if plan else '' }}</b> فعال شد — گزارش شما در صف تولید است و آماده که شد خبر می‌شوید.
   </p>
   <div class="glass" style="padding:18px;border-radius:16px;margin-bottom:24px;text-align:right;font-size:13.5px;color:#dfe6ff;">
     <div style="display:flex;justify-content:space-between;padding:4px 0;">
@@ -20,7 +20,7 @@
       <span>وضعیت:</span><b style="color:var(--gold);">پرداخت‌شده</b>
     </div>
   </div>
-  <a class="btn btn-lg" href="/chart/{{ order.chart_id }}" data-track="payment_success">مشاهده‌ی چارت تولد</a>
+  <a class="btn btn-lg" href="/chart/{{ order.chart_id }}" data-track="payment_success">مشاهده‌ی چارت و وضعیت گزارش</a>
   {% else %}
   <h1 style="font-size:24px;font-weight:800;color:#ff7a6b;margin:0 0 8px;">پرداخت ناموفق بود</h1>
   <p style="color:#b8c2f0;margin:0 0 24px;">در صورت کسر مبلغ، طی ۷۲ ساعت به حساب شما بازگردانده می‌شود.</p>

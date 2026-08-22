@@ -444,6 +444,7 @@ class NotificationPrefs(SQLModel, table=True):
     daily_insight: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     weekly_reflection: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     report_ready: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
+    transit_alerts: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))  # B4: weekly transit push opt-out
     quiet_start: int = Field(default=23)   # local hour (0-23)
     quiet_end: int = Field(default=7)      # local hour (0-23)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -495,3 +496,13 @@ class TransitForecast(SQLModel, table=True):
     payload_json: str = Field(default="{}")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     computed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TransitAlertLog(SQLModel, table=True):
+    """B4 — one row per (user_key, ISO-week, chart): weekly transit push anti-duplicate."""
+    __tablename__ = "transit_alert_log"
+    id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    user_key: str = Field(index=True, max_length=128)   # users.id or bot:{chat_id}:{platform}
+    week: str = Field(index=True, max_length=10)        # e.g. 2026-W34
+    chart_id: str = Field(index=True, max_length=64)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
