@@ -33,6 +33,7 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
+from app.entitlements import has as ent_has, grant_from_order as ent_grant_order
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
@@ -427,20 +428,29 @@ def _owns_chart(chart: Chart | None, session: Session, request: Request) -> bool
 
 
 def _report_gate(rep, session, request) -> bool:
-    """Paid-order gate + ownership (audit P0-1/P0-3).
+    """Gate: entitlement (per-report) OR legacy paid order + ownership.
 
-    F-17 (audit v7 P1): entitlement is per-REPORT, not per-chart — the paid
-    order must be the one that OWNS this report (orders.report_id = rep.id).
-    The old check ("any paid order on the same chart") let a refunded GOLD
-    report become downloadable again the moment the user bought BASIC on the
-    same chart. Audio/PDF/DOCX all go through this gate.
+    A3 (user decision, per-report): the credit entitlement is tied to ref_id =
+    rep.id, so buying one report can't unlock another. Legacy paid orders are
+    still accepted so no current customer loses access during the migration.
+    F-17 (audit v7 P1): the paid order must be the one that OWNS this report.
     """
+    u = get_current_user(request)
+    uid = u.id if u else None
+    chart = session.get(Chart, rep.chart_id)
+    if uid:
+        ent = ent_has(session, uid, "report", ref_id=rep.id)
+        if ent:
+            return _owns_chart(chart, session, request)
+    # legacy paid-order path (migration compat)
     paid = session.exec(
         select(Order).where(Order.report_id == rep.id, Order.status == "paid")
     ).first()
-    if not paid:
-        return False
-    return _owns_chart(session.get(Chart, rep.chart_id), session, request)
+    if paid:
+        if uid and paid.user_id == uid:
+            ent_grant_order(session, paid)  # backfill entitlement once
+        return _owns_chart(chart, session, request)
+    return False
 
 
 def _owns_order(order, session, request) -> bool:
@@ -1228,6 +1238,10 @@ def api_synastry_access(chart_a: str, chart_b: str, request: Request, session: S
         raise HTTPException(404, "chart not found")
     if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
         raise HTTPException(403, "not authorized")
+    u = get_current_user(request)
+    uid = u.id if u else None
+    if uid and ent_has(session, uid, "synastry", chart_id=chart_a):
+        return {"full": True}
     paid = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
@@ -1451,6 +1465,14 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     # audit P0 (round 3): ownership BEFORE paid/quota info — bare UUID must not leak
     if not _owns_chart(session.get(Chart, chart_id), session, request):
         raise HTTPException(403, "دسترسی به این گفتگو ندارید")
+    # A3: credit chat pack (quantity bucket) entitlement path
+    u = get_current_user(request)
+    uid = u.id if u else None
+    if uid:
+        ent = ent_has(session, uid, "chat", chart_id=chart_id)
+        if ent:
+            return {"allowed": True, "used": ent.used, "limit": ent.quantity,
+                    "remaining": ent.quantity - ent.used, "source": "chat_pack"}
     # audit P0-4: AI chat is a GOLD/monthly feature (plan §7) — basic/full don't include it
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")

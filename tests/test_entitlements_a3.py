@@ -84,6 +84,32 @@ def test_grant_from_credits_idempotent_same_key():
         assert s.get(User, uid).credits == 50 - get_price(s, "report_gold")
 
 
+def test_grant_from_credits_binds_ref_id_per_report():
+    uid = _mk_user(50)
+    with Session(engine) as s:
+        ent = grant_from_credits(s, uid, "report_gold", idempotency_key="r_" + uuid.uuid4().hex,
+                                 chart_id="CHX", ref_id="REP_A")
+        assert ent.ref_id == "REP_A" and ent.chart_id == "CHX" and ent.kind == "report"
+
+
+def test_has_per_report_never_crosses_ref():
+    uid = _mk_user()
+    _ent(uid, kind="report", ref_id="REP_A", chart_id="CHX")
+    with Session(engine) as s:
+        assert has(s, uid, "report", ref_id="REP_A") is not None
+        # buying report A must NOT unlock report B (per-report decision)
+        assert has(s, uid, "report", ref_id="REP_B") is None
+
+
+def test_grant_from_credits_chat_quantity():
+    uid = _mk_user(50)
+    with Session(engine) as s:
+        ent = grant_from_credits(s, uid, "chat_pack_20", idempotency_key="c_" + uuid.uuid4().hex,
+                                 chart_id="CHX", quantity=20)
+        assert ent.kind == "chat" and ent.quantity == 20
+        assert s.get(User, uid).credits == 50 - get_price(s, "chat_pack_20")
+
+
 def test_grant_from_order_legacy_compat():
     uid = _mk_user()
     with Session(engine) as s:

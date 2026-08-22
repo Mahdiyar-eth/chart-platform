@@ -67,10 +67,14 @@ def consume(session: Session, ent: Entitlement, n: int = 1) -> bool:
 
 def grant_from_credits(session: Session, user_id: str, action_key: str, *,
                        idempotency_key: str,
-                       chart_id: str | None = None) -> Entitlement:
+                       chart_id: str | None = None,
+                       ref_id: str | None = None,
+                       quantity: int = 1) -> Entitlement:
     """spend() then create the entitlement, atomically.
 
-    Returns the created Entitlement (or reuses the idempotent spend)."""
+    Per-report decision (user, 2026-08): for reports the entitlement is tied to
+    ref_id=report.id so buying one report can't unlock another."""
+
     tx = spend(session, user_id, action_key, idempotency_key=idempotency_key,
                chart_id=chart_id)
     # kind is derived from the action_key (e.g. report_full -> 'report')
@@ -85,7 +89,7 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
         return existing
     ent = Entitlement(
         user_id=user_id, kind=kind, chart_id=chart_id,
-        ref_id=None, quantity=1, used=0,
+        ref_id=ref_id, quantity=quantity, used=0,
         source="credit", source_ref=tx.id,
     )
     session.add(ent)
