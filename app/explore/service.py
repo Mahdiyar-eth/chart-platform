@@ -207,27 +207,31 @@ def _log_run(exploration_id, user_id, res, report_id) -> None:
 
 # ── financial integrity (D5) ────────────────────────────────────────────────
 def spend_credit(session, user_id: str, exploration_id: str, cost: int = 1) -> bool:
-    """Atomic credit deduction with ledger row. Returns False when broke."""
-    from sqlalchemy import text
-    from app.models import CreditTransaction, User
-    u = session.get(User, user_id)
-    if not u or u.credits < cost:
+    """Atomic credit deduction with ledger row. Returns False when broke.
+    A2: delegates to the central credit service (price from credit_prices DB)."""
+    from sqlmodel import select
+    from app import credits as _c
+    from app.models import CreditTransaction
+    # idempotency: same exploration never double-charged
+    key = f"explore:{exploration_id}"
+    existing = session.exec(
+        select(CreditTransaction).where(CreditTransaction.idempotency_key == key)
+    ).first()
+    if existing:
+        return True
+    try:
+        _c.spend(session, user_id, "explore_card",
+                 idempotency_key=key, chart_id=exploration_id)
+        return True
+    except _c.InsufficientCredits:
         return False
-    # atomic decrement — no double spend under concurrency
-    session.exec(text(
-        "UPDATE users SET credits = credits - :c WHERE id = :uid AND credits >= :c"
-    ), params={"c": cost, "uid": user_id})
-    session.add(CreditTransaction(user_id=user_id, amount=-cost,
-                                  reason="exploration", ref_id=exploration_id))
-    session.commit()
-    return True
 
 
 def mark_free_exploration(session, user, exploration_id: str) -> None:
     """F5 — first-ever exploration is free (loss-aversion funnel)."""
     from sqlalchemy import text
     from app.models import CreditTransaction
-    session.exec(text(
+    session.execute(text(
         "UPDATE users SET free_exploration_used = true WHERE id = :uid"
     ), params={"uid": user.id})
     session.add(CreditTransaction(user_id=user.id, amount=0,
@@ -236,26 +240,23 @@ def mark_free_exploration(session, user, exploration_id: str) -> None:
 
 
 def refund_credit(session, user_id: str, exploration_id: str, cost: int = 1) -> None:
-    """Refund on failed generation (D5: failed generation policy).
-    No-op for free explorations (cost=0) — nothing was charged."""
+    """Refund on failed generation (D5). No-op for free explorations (cost=0)."""
     if cost <= 0:
         return
-    from sqlalchemy import text
+    from sqlmodel import select
+    from app import credits as _c
     from app.models import CreditTransaction
-    session.exec(text(
-        "UPDATE users SET credits = credits + :c WHERE id = :uid"
-    ), params={"c": cost, "uid": user_id})
-    session.add(CreditTransaction(user_id=user_id, amount=+cost,
-                                  reason="refund", ref_id=exploration_id))
-    session.commit()
+    orig = session.exec(
+        select(CreditTransaction).where(
+            CreditTransaction.idempotency_key == f"explore:{exploration_id}"
+        )
+    ).first()
+    if orig:
+        _c.refund(session, orig.id, "failed_generation")
 
 
 def grant_free_credit(session, user_id: str, amount: int = 1) -> None:
     """First-exploration free gift (free funnel, P5). Idempotent per user."""
-    from app.models import CreditTransaction
-    session.exec(__import__("sqlalchemy", fromlist=["text"]).text(
-        "UPDATE users SET credits = credits + :c WHERE id = :uid"
-    ), params={"c": amount, "uid": user_id})
-    session.add(CreditTransaction(user_id=user_id, amount=amount,
-                                  reason="free_gift"))
-    session.commit()
+    from app import credits as _c
+    _c.grant(session, user_id, amount, "free_gift",
+             idempotency_key=f"free_gift:{user_id}")

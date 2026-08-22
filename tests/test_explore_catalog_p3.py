@@ -188,7 +188,7 @@ def test_explore_spends_one_credit_atomically(monkeypatch):
     assert "event: done" in body
     assert _credit_balance(uid) == 4
     tx = _ledger(uid)
-    assert len(tx) == 1 and tx[0].amount == -1 and tx[0].reason == "exploration"
+    assert len(tx) == 1 and tx[0].amount == -1 and tx[0].reason == "explore_card"
     with Session(engine) as s:
         e = s.exec(select(Exploration).where(Exploration.user_id == uid)).first()
         assert e.status == "done"
@@ -229,7 +229,7 @@ def test_explore_refund_on_failed_generation(monkeypatch):
         e = s.exec(select(Exploration).where(Exploration.user_id == uid)).first()
         assert e.status == "failed" and e.refunded is True
     tx = [t.reason for t in _ledger(uid)]
-    assert tx.count("exploration") == 1 and tx.count("refund") == 1
+    assert tx.count("explore_card") == 1 and tx.count("failed_generation") == 1
 
 
 def test_explore_no_double_spend_when_stream_dies(monkeypatch):
@@ -247,7 +247,7 @@ def test_explore_no_double_spend_when_stream_dies(monkeypatch):
     assert "event: error" in r.text
     assert _credit_balance(uid) == 5
     tx = [t.reason for t in _ledger(uid)]
-    assert tx.count("exploration") == 1 and tx.count("refund") == 1
+    assert tx.count("explore_card") == 1 and tx.count("failed_generation") == 1
 
 
 # ── history & delete (D3) ───────────────────────────────────────────────────

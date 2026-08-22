@@ -230,13 +230,10 @@ def grant_subscription_credits(session: Session, sub: Subscription,
         uid = prof.user_id if prof else None
     if not uid:
         return False
-    session.exec(text(
-        "UPDATE users SET credits = credits + :n WHERE id = :uid"
-    ), params={"n": SUBSCRIPTION_MONTHLY_CREDITS, "uid": uid})
-    session.add(CreditTransaction(
-        user_id=uid, amount=SUBSCRIPTION_MONTHLY_CREDITS,
-        reason="subscription", ref_id=sub.id,
-    ))
+    from app import credits as _credits
+    _credits.grant(session, uid, SUBSCRIPTION_MONTHLY_CREDITS, "subscription",
+                   idempotency_key=f"subscription:{sub.id}:{now:%Y-%m}",
+                   source_ref=sub.id, commit=False)
     sub.last_credit_grant_at = now
     session.commit()
     return True
@@ -349,11 +346,11 @@ def grant_credits(session: Session, order: Order) -> None:
     uid = _order_user_id(session, order)
     if not uid:
         raise ValueError(f"order {order.id} has no resolvable buyer")
-    session.exec(text(
-        "UPDATE users SET credits = credits + :g WHERE id = :uid"
-    ), params={"g": grant, "uid": uid})
-    session.add(CreditTransaction(user_id=uid, amount=grant,
-                                  reason="purchase", ref_id=order.id))
+    from app import credits as _credits
+    _credits.grant(session, uid, grant, "purchase",
+                   idempotency_key=f"purchase:{order.id}",
+                   source_ref=order.id, commit=False)
+    session.flush()
 
 
 def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
@@ -410,15 +407,10 @@ def reward_referral(session: Session, order: Order) -> ReferralEvent | None:
             Order.id != order.id,
         )).first()
         if not paid_before:
-            from sqlalchemy import text as _text
-            from app.models import CreditTransaction
-            session.exec(_text(
-                "UPDATE users SET credits = credits + 1 WHERE id = :uid"
-            ), params={"uid": buyer.id})
-            session.add(CreditTransaction(
-                user_id=buyer.id, amount=1, reason="referral_bonus",
-                ref_id=ev.id,
-            ))
+            from app import credits as _credits
+            _credits.grant(session, buyer.id, 1, "referral_bonus",
+                           idempotency_key=f"referral_bonus:{ev.id}",
+                           source_ref=ev.id, commit=False)
             session.flush()
     return ev
 
