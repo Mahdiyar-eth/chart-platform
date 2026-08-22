@@ -484,3 +484,14 @@ class FunnelEvent(SQLModel, table=True):
     ref: str = Field(default="", max_length=64)
     props: str = Field(default="{}", max_length=1024)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TransitForecast(SQLModel, table=True):
+    """B1 cache — transit forecast payload per chart + months, TTL 7 days."""
+    __tablename__ = "transit_forecasts"
+    id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    chart_id: str = Field(index=True, max_length=64)
+    months: int = Field(default=12)
+    payload_json: str = Field(default="{}")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    computed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
