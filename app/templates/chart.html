@@ -53,6 +53,25 @@
     </p>
   </details>
 
+  <!-- C4: onboarding — 3 next steps for a fresh chart -->
+  <section class="glass onboard" aria-label="قدم‌های بعدی">
+    <h2 class="onboard-title">چارتت آماده است — قدم بعدی؟</h2>
+    <div class="onboard-grid">
+      <a class="onb-card" href="/explore">
+        <b>۱. کاوش رایگان</b>
+        <span>اولین تحلیل عمیق چارتت — رایگان</span>
+      </a>
+      <a class="onb-card" href="/transits/{{ chart.id }}">
+        <b>۲. گذرهای پیشِ رو</b>
+        <span>۹۰ روز آیندهٔ چارتت را ببین</span>
+      </a>
+      <a class="onb-card" href="/chat/{{ chart.id }}">
+        <b>۳. گفت‌وگو با چارت</b>
+        <span>هر سؤالی دربارهٔ خودت بپرس</span>
+      </a>
+    </div>
+  </section>
+
   <!-- free insights (plan §8): Big Three + rule-engine preview -->
   <section class="glass st-2e500338" >
     <h2>نکته‌های کوتاه</h2>
@@ -103,7 +122,10 @@
     </div>
     <div class="st-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
-        <p class="muted">⏳ در حال تولید گزارش (۳–۵ دقیقه)...</p>
+        <div class="report-progress" role="status" aria-live="polite">
+          <p class="muted" style="margin:0 0 8px;">⏳ در حال تولید گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد…</p>
+          <div class="rp-track"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
+        </div>
       </template>
       <template x-if="repStatus === 'done'">
         <div class="st-64087613" >
@@ -127,7 +149,7 @@
 <script>
 function reportState(){
   return {
-    repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [],
+    repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
       if(this.audioStatus === 'generating' || !this.repId) return;
@@ -166,7 +188,7 @@ function reportState(){
       }catch(_e){}
       const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
       const d = await r.json();
-      if(d.status === 'queued' || d.status === 'running'){ this.repStatus = d.status; this._poll(); }
+      if(d.status === 'queued' || d.status === 'running'){ this.repStatus = d.status; this.repSections = d.sections_count || 0; this._poll(); }
       else if(d.status === 'done' || d.status === 'degraded'){ this.repStatus = d.status; this.pdfUrl = d.pdf_url; window.umami?.track('report_created'); }
     },
     async genReport(e){
@@ -187,6 +209,7 @@ function reportState(){
         const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
         const d = await r.json();
         this.repStatus = d.status;
+        if(typeof d.sections_count === 'number') this.repSections = Math.max(this.repSections, d.sections_count);
         if(d.pdf_url) this.pdfUrl = d.pdf_url;
         if(d.status === 'failed' || d.status === 'done' || d.status === 'degraded'){
           window.umami?.track('report_created');

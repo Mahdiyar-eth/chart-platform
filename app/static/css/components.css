@@ -89,3 +89,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* C3: compact chip button — still 40px touch target */
 .btn-chip{ min-height:40px; padding:0 var(--sp-4); }
+
+/* C4: real report progress bar (section x of 13) */
+.report-progress{ margin-top:var(--sp-4); }
+.rp-track{ height:10px; border-radius:var(--r-full); background:rgba(255,255,255,.09); overflow:hidden; }
+.rp-fill{ height:100%; border-radius:var(--r-full); background:linear-gradient(135deg,var(--gold),var(--gold-deep)); transition:width 1.2s var(--ease); }
+@media (prefers-reduced-motion:reduce){ .rp-fill{ transition:none; } }
+
+.sk-line{ height:14px; margin-bottom:var(--sp-2); }
+
+/* C4: onboarding 3-step strip */
+.onboard{ margin-top:var(--sp-5); }
+.onboard-title{ font-size:var(--fs-lg); margin:0 0 var(--sp-3); }
+.onboard-grid{ display:grid; gap:var(--sp-3); grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+.onb-card{ display:flex; flex-direction:column; gap:6px; padding:var(--sp-4); border:1px solid var(--stroke);
+  border-radius:var(--r-md); background:rgba(255,255,255,.04); color:var(--txt); text-decoration:none; min-height:44px;
+  transition:border-color .2s var(--ease), transform .15s var(--ease); }
+.onb-card:hover{ border-color:var(--gold); transform:translateY(-1px); }
+.onb-card span{ color:var(--muted); font-size:var(--fs-sm); line-height:var(--lh-normal); }

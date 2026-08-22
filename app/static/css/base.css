@@ -204,3 +204,7 @@ a:hover{ color:var(--gold); }
   
 /* C3: back links must meet the 44px touch target */
 .back-link{ display:inline-block; min-height:44px; line-height:24px; padding:10px 0; }
+
+    /* C4: light/dark toggle */
+    .theme-toggle{ margin-inline-end:8px; }
+    [data-theme="light"] .appbar, [data-theme="light"] .bottomnav, [data-theme="light"] .drawer{ background:rgba(255,255,255,.85); }

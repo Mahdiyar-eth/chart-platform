@@ -24,3 +24,13 @@
   --pure:#ffffff; --red-err:#ff5b5b; --lav:#e8e2f5;
   --star-1:rgba(255,255,255,.53); --star-2:rgba(255,255,255,.98); --star-3:rgba(255,255,255,.40); --star-4:rgba(255,255,255,.33); --star-5:rgba(255,255,255,.27);
 }
+
+/* C4: light theme (opt-in via data-theme="light") */
+[data-theme="light"]{
+  --bg:#f4f5fb; --bg2:#eceef8; --surface:#ffffff; --surface-2:#eef0fa; --surface-3:#f7f8fd;
+  --glass:rgba(20,25,60,.05); --stroke:rgba(20,25,60,.14); --border:rgba(20,25,60,.10);
+  --txt:#1a2040; --muted:#545d85; --muted-2:#68719a; --muted-3:#3d4670; --white:#1a2040;
+  --gold-deep:#b57a06; --gold-soft:rgba(224,142,11,.16); --gold-ink:#fff;
+  --accent-soft:#5a4bc4; --bg-glow:#dfe3f7;
+  --star-1:rgba(30,40,90,.35); --star-2:rgba(30,40,90,.75); --star-3:rgba(30,40,90,.28); --star-4:rgba(30,40,90,.24); --star-5:rgba(30,40,90,.18);
+}

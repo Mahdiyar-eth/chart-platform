@@ -38,7 +38,14 @@
         <div class="st-710280f4" >✨ امروز در آسمان</div>
         <button class="st-4ebb4d1b btn-chip" type="button" x-show="status?.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
       </div>
-      <div x-show="!status?.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
+      <template x-if="status && status.factsLoaded && !status.facts.length">
+        <div class="empty-state" >
+          <b>امروز گذر مهمی فعال نیست</b>
+          <p class="muted">آسمان امروز آرام است — چارت تو تحت فشار گذر خاصی نیست.</p>
+        </div>
+      </template>
+      <div x-show="!status || !status.factsLoaded" class="skeleton sk-line" aria-hidden="true"></div>
+      <div x-show="!status || !status.factsLoaded" class="skeleton sk-line" style="width:70%" aria-hidden="true"></div>
       <template x-for="(f, i) in status?.facts" :key="i">
         <div class="st-38697191" >
           <span class="st-3a38b258" aria-hidden="true"></span>
@@ -100,7 +107,7 @@ function todayApp() {
       const self = this;
       fetch("/api/today?chart_id=" + encodeURIComponent(this.chartId))
         .then(r => r.json())
-        .then(d => { if (d && typeof d === "object") { self.status = d; } })
+        .then(d => { if (d && typeof d === "object") { self.status = { ...d, factsLoaded: true }; } else { self.status = { ...(self.status||{}), facts: self.status?.facts || [], factsLoaded: true }; } })
         .catch(() => { self.status = { ...self.status, facts: [] }; });
     },
     submit() {
