@@ -24,12 +24,21 @@ def auth_otp_request(request: Request, phone: str = Form(...)):
 
 
 @router.post("/api/auth/otp/verify")
-def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(...)):
+def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(...),
+                    cap: str | None = Form(None)):
     from app.auth import set_user_cookie, verify_otp
+    from app.db import get_session
+    from app.main import claim_anonymous_charts
     from fastapi import HTTPException
     u = verify_otp(phone, code)
     if not u:
         raise HTTPException(401, "[ZAY-AUTH-001] کد نادرست یا منقضی شده")
+    if cap:
+        session = next(get_session())
+        try:
+            claim_anonymous_charts(session, u, cap)  # A5 (F-37): link guest chart
+        finally:
+            session.close()
     return set_user_cookie(request, u.id)
 
 

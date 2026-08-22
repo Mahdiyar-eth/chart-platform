@@ -778,6 +778,28 @@ def api_credits_me(request: Request, session: Session = Depends(get_session)):
     return {"balance": balance(session, user.id), "currency": "credit"}
 
 
+def claim_anonymous_charts(session, user, cap):
+    """A5 (F-37) — link an anonymous (guest) chart to a freshly-logged-in user.
+
+    Ownership lives on the BirthProfile (`profile.user_id`), NOT the Chart. A
+    guest chart has a profile with `user_id IS NULL`; claiming sets it to the
+    new user. Idempotent (re-running is a no-op) and NEVER claims a chart whose
+    profile already has an owner (a different user's chart is never stolen)."""
+    if not cap or not user:
+        return 0
+    uid = user.id if hasattr(user, "id") else user
+    chart = session.exec(select(Chart).where(Chart.access_token == cap)).first()
+    if not chart or chart.access_token != cap or not chart.profile_id:
+        return 0
+    prof = session.get(BirthProfile, chart.profile_id)
+    if not prof or prof.user_id:  # already owned -> never claim (idempotent + no steal)
+        return 0
+    prof.user_id = uid
+    session.add(prof)
+    session.commit()
+    return 1
+
+
 @app.post("/api/orders")
 def api_create_order(
     request: Request,
@@ -790,6 +812,10 @@ def api_create_order(
     session: Session = Depends(get_session),
 ):
     """Create order + payment URL (shared helper — also used by bots)."""
+    # A5 (F3): account enforcement applies to the CREDIT path (/api/purchase,
+    # already login-required). Retiring guest checkout on /api/orders is deferred
+    # pending explicit user confirmation (would break 11 guest-purchase tests).
+    user = get_current_user(request)
     from app.payment.orders import create_order, CREDIT_PACKS
     chart = session.get(Chart, chart_id) if chart_id else None
     if chart_id and not chart:
@@ -802,7 +828,6 @@ def api_create_order(
         sec = session.get(Chart, secondary_chart_id)
         if not sec or not _owns_chart(sec, session, request):
             raise HTTPException(403, "not authorized")
-    user = get_current_user(request)
     # F-20 (audit v8 P2): in the wallet path, fail FAST before creating the
     # order — no pending order + coupon reservation is left behind when the
     # balance can't cover the payable amount. The estimate applies the coupon
