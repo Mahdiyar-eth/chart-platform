@@ -18,7 +18,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 107,
+     "checked": 103,
      "pct": 0.0
     }
    },
@@ -38,7 +38,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 107,
+     "checked": 103,
      "pct": 0.0
     }
    },
@@ -58,7 +58,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 107,
+     "checked": 103,
      "pct": 0.0
     }
    },
@@ -78,7 +78,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 107,
+     "checked": 103,
      "pct": 0.0
     }
    },
@@ -98,7 +98,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 111,
+     "checked": 102,
      "pct": 0.0
     }
    }
@@ -127,7 +127,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 134,
+     "checked": 130,
      "pct": 0.0
     }
    },
@@ -147,7 +147,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 134,
+     "checked": 130,
      "pct": 0.0
     }
    },
@@ -167,7 +167,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 134,
+     "checked": 130,
      "pct": 0.0
     }
    },
@@ -187,7 +187,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 134,
+     "checked": 130,
      "pct": 0.0
     }
    },
@@ -207,7 +207,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 138,
+     "checked": 129,
      "pct": 0.0
     }
    }
@@ -236,7 +236,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 61,
+     "checked": 57,
      "pct": 0.0
     }
    },
@@ -256,7 +256,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 61,
+     "checked": 57,
      "pct": 0.0
     }
    },
@@ -276,7 +276,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 61,
+     "checked": 57,
      "pct": 0.0
     }
    },
@@ -296,879 +296,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 61,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 65,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/explore",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 66,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 66,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 66,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 66,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 70,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/today",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 45,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 45,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 45,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 45,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 49,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/sky",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 71,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 71,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 71,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 71,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 75,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/learn",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 92,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/articles",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 104,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 104,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 104,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 104,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 108,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/faq",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 88,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 92,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/contact",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 50,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 50,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 50,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 50,
-     "pct": 0.0
-    }
-   },
-   "1280": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 54,
-     "pct": 0.0
-    }
-   }
-  },
-  "console_errors": [],
-  "failed_requests": [],
-  "focus_missing": 0,
-  "perf": {}
- },
- {
-  "path": "/privacy",
-  "sizes": {
-   "320": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 52,
-     "pct": 0.0
-    }
-   },
-   "375": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 52,
-     "pct": 0.0
-    }
-   },
-   "414": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 52,
-     "pct": 0.0
-    }
-   },
-   "768": {
-    "hscroll": false,
-    "touch": [],
-    "touchCount": 0,
-    "imgNoAlt": 0,
-    "svgNoA11y": 0,
-    "inputNoLabel": 0,
-    "h1Count": 1,
-    "headingJumps": 0,
-    "dir": "rtl",
-    "textOverflow": 0,
-    "bottomOverlap": false,
-    "safeArea": true,
-    "hasEmptyStateClass": false,
-    "contrast": {
-     "fail_ratio": 0,
-     "checked": 52,
+     "checked": 57,
      "pct": 0.0
     }
    },
@@ -1199,7 +327,7 @@
   "perf": {}
  },
  {
-  "path": "/terms",
+  "path": "/explore",
   "sizes": {
    "320": {
     "hscroll": false,
@@ -1217,7 +345,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 47,
+     "checked": 62,
      "pct": 0.0
     }
    },
@@ -1237,7 +365,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 47,
+     "checked": 62,
      "pct": 0.0
     }
    },
@@ -1257,7 +385,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 47,
+     "checked": 62,
      "pct": 0.0
     }
    },
@@ -1277,7 +405,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 47,
+     "checked": 62,
      "pct": 0.0
     }
    },
@@ -1297,7 +425,879 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 51,
+     "checked": 61,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/today",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 41,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 41,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 41,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 41,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 40,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/sky",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 67,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 67,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 67,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 67,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 66,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/learn",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 83,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/articles",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 99,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/faq",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 83,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/contact",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 46,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 46,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 46,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 46,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 45,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/privacy",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 48,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 48,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 48,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 48,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 47,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/terms",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 42,
      "pct": 0.0
     }
    }
@@ -1326,7 +1326,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1346,7 +1346,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1366,7 +1366,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1386,7 +1386,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1406,7 +1406,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 52,
+     "checked": 43,
      "pct": 0.0
     }
    }
@@ -1435,7 +1435,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1455,7 +1455,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1475,7 +1475,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1495,7 +1495,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1515,7 +1515,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 52,
+     "checked": 43,
      "pct": 0.0
     }
    }
@@ -1544,7 +1544,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1564,7 +1564,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1584,7 +1584,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1604,7 +1604,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1624,7 +1624,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 52,
+     "checked": 43,
      "pct": 0.0
     }
    }
@@ -1653,7 +1653,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1673,7 +1673,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1693,7 +1693,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1713,7 +1713,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 48,
+     "checked": 44,
      "pct": 0.0
     }
    },
@@ -1733,7 +1733,7 @@
     "hasEmptyStateClass": false,
     "contrast": {
      "fail_ratio": 0,
-     "checked": 52,
+     "checked": 43,
      "pct": 0.0
     }
    }

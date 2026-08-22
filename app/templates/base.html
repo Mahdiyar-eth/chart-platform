@@ -71,17 +71,7 @@
         <button id="themeToggle" class="hamburger theme-toggle" aria-label="تغییر حالت روشن/تاریک" title="حالت روشن/تاریک" onclick="(function(b){var d=document.documentElement,t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('zayche-theme',t==='light'?'light':'dark')}catch(e){}})(this)"><svg aria-hidden="true"><use href="#icon-moon"/></svg></button>
         <button class="hamburger" aria-label="باز کردن منو" onclick="toggleDrawer(true)"><svg aria-hidden="true"><use href="#icon-menu"/></svg></button>
         <nav class="appnav" aria-label="ناوبری اصلی">
-          <a href="/" class="nav-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
-          <a href="/birth-form" class="nav-item"><svg aria-hidden="true"><use href="#icon-compass"/></svg>چارت رایگان</a>
-          <a href="/synastry" class="nav-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری</a>
-          <a href="/rectify" class="nav-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت</a>
-          <a href="/plans" class="nav-item"><svg aria-hidden="true"><use href="#icon-tag"/></svg>پلن‌ها</a>
-          <a href="/sky" class="nav-item"><svg aria-hidden="true"><use href="#icon-moon"/></svg>آسمان امروز</a>
-          <a href="/articles" class="nav-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>مقالات</a>
-          <a href="/learn" class="nav-item"><svg aria-hidden="true"><use href="#icon-book"/></svg>آموزش</a>
-          <a href="/guide" class="nav-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>راهنما</a>
-          <a href="/dashboard" class="nav-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>داشبورد</a>
-          <a href="/account" class="nav-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
+          {% for it in request.state.nav.top %}<a href="{{ it.url }}" class="nav-item{% if it.primary %} nav-primary{% endif %}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>{% endfor %}
         </nav>
         <a href="/account" class="credits-chip st-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
           <svg class="st-2535720e" aria-hidden="true" ><use href="#icon-sparkles"/></svg>
@@ -135,30 +125,24 @@
       <span>منو</span>
       <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="بستن منو"><svg aria-hidden="true"><use href="#icon-close"/></svg></button>
     </div>
-    <a href="/" class="drawer-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
-    <a href="/birth-form" class="drawer-item"><svg aria-hidden="true"><use href="#icon-compass"/></svg>چارت رایگان</a>
-    <a href="/synastry" class="drawer-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری (سازگاری)</a>
-    <a href="/rectify" class="drawer-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت تولد</a>
-    <a href="/plans" class="drawer-item"><svg aria-hidden="true"><use href="#icon-tag"/></svg>پلن‌ها و قیمت</a>
-    <a href="/sky" class="drawer-item"><svg aria-hidden="true"><use href="#icon-moon"/></svg>آسمان امروز</a>
-    <a href="/articles" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>مقالات</a>
-    <a href="/learn" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book"/></svg>آموزش نجوم</a>
-    <a href="/guide" class="drawer-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>راهنما</a>
-    <a href="/dashboard" class="drawer-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>داشبورد</a>
-    <a href="/account" class="drawer-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
-    <a href="/about" class="drawer-item"><svg aria-hidden="true"><use href="#icon-book-open"/></svg>درباره ما</a>
-    <a href="/contact" class="drawer-item"><svg aria-hidden="true"><use href="#icon-help"/></svg>تماس با پشتیبانی</a>
+    {% for gname, items in request.state.nav.drawer %}
+    <div class="drawer-group">
+      <div class="drawer-group-title">{{ gname }}</div>
+      {% for it in items %}
+      <a href="{{ it.url }}" class="drawer-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>
+      {% endfor %}
+    </div>
+    {% endfor %}
   </aside>
   <nav class="bottomnav" aria-label="ناوبری پایین">
-    <a href="/" class="bn-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>خانه</a>
-    <a href="/synastry" class="bn-item"><svg aria-hidden="true"><use href="#icon-heart"/></svg>سیناستری</a>
-    <a href="/birth-form" class="bn-fab" aria-label="چارت رایگان">
-      <span class="fab-circle"><svg aria-hidden="true"><use href="#icon-compass"/></svg></span>
-      <span>چارت رایگان</span>
+    {% for it in request.state.nav.bottom %}{% if it.primary %}
+    <a href="{{ it.url }}" class="bn-fab" aria-label="{{ it.label_fa }}">
+      <span class="fab-circle"><svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg></span>
+      <span>{{ it.label_fa }}</span>
     </a>
-    <a href="/rectify" class="bn-item"><svg aria-hidden="true"><use href="#icon-clock"/></svg>بازبینی ساعت</a>
-    <a href="/dashboard" class="bn-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>داشبورد</a>
-    <a href="/account" class="bn-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
+    {% else %}
+    <a href="{{ it.url }}" class="bn-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{{ it.label_fa }}</a>
+    {% endif %}{% endfor %}
   </nav>
   <div id="degradedBar" class="degraded-bar hidden" role="alert">
     <svg class="st-f4bfdb9b" aria-hidden="true" ><use href="#icon-help"/></svg>

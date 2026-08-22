@@ -64,6 +64,13 @@ def _asset_version():
 
 templates.env.globals["asset_version"] = _asset_version()
 
+
+# D2 (plan §7): single-source navigation, state-aware per request
+from app.nav import nav_for as _nav_for
+
+
+
+
 PLANS_SEED = [
     Plan(key="basic", name_fa="پایه", subtitle_fa="آغاز شناخت",
          price_toman=149_000, sort=1, active=True,
@@ -120,6 +127,28 @@ app = FastAPI(title="چارت تولد", lifespan=lifespan,
               openapi_url=None if _APP_ENV in ("prod", "production") else "/openapi.json")
 app.middleware("http")(security_guard)   # security.py: CSRF origin check + rate limits
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+
+@app.middleware("http")
+async def _nav_state_middleware(request: Request, call_next):
+    """D1/D2 — resolve visitor state once; expose the state-aware nav dict to all templates."""
+    request.state.has_chart = False
+    try:
+        from app.auth import get_current_user
+        u = get_current_user(request)
+        if u:
+            from sqlmodel import select as _sel
+            with Session(engine) as _s:
+                pids = _s.exec(_sel(BirthProfile.id).where(
+                    BirthProfile.user_id == u.id)).all()
+                if pids:
+                    found = _s.exec(_sel(Chart.id).where(
+                        Chart.profile_id.in_(pids))).first()
+                    request.state.has_chart = bool(found)
+    except Exception:
+        pass
+    request.state.nav = _nav_for(has_chart=request.state.has_chart)
+    return await call_next(request)
+
 
 
 def _safe_json(obj, ensure_ascii: bool = False, **kw) -> str:
