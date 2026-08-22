@@ -147,7 +147,18 @@ async def _nav_state_middleware(request: Request, call_next):
     except Exception:
         pass
     request.state.nav = _nav_for(has_chart=request.state.has_chart)
-    return await call_next(request)
+    response = await call_next(request)
+    # E4 — baseline security headers (defense in depth; nginx may also set HSTS)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)")
+    response.headers.setdefault(
+        "Content-Security-Policy-Report-Only",
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; font-src 'self'; connect-src 'self' https://analytics.negar.io",
+    )
+    return response
 
 
 

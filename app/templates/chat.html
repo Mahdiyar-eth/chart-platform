@@ -70,6 +70,7 @@ function chat(){
     async send(){
       const text = this.q.trim(); if(!text || this.busy || this.remaining <= 0) return;
       const mid = Date.now();
+      if(this.msgs.length===0) window.track && window.track('chat_first_message');
       this.msgs.push({id: mid, text, me:true}); this.q=''; this.busy=true;
       // D4: streaming answer box — the assistant message updates as tokens arrive
       const aid = mid + 1;

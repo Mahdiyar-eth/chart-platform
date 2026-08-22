@@ -191,6 +191,7 @@ function purchase() {
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
         return;
       }
+      window.track && window.track('checkout_started', {plan: planKey});
       this.busy = true;
       try {
         const fd = new FormData();

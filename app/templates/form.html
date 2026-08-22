@@ -128,7 +128,8 @@ function formState(){
         const redirect = sp.get('redirect');
         const plan = sp.get('plan');
         if (redirect === '/plans') {
-          window.location.href = '/plans?chart=' + d.chart_id + (plan ? '&plan=' + plan : '');
+          window.track && window.track('chart_created');
+        window.location.href = '/plans?chart=' + d.chart_id + (plan ? '&plan=' + plan : '');
         } else {
           window.location.href = '/chart/' + d.chart_id;
         }

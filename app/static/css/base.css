@@ -208,3 +208,8 @@ a:hover{ color:var(--gold); }
     /* C4: light/dark toggle */
     .theme-toggle{ margin-inline-end:8px; }
     [data-theme="light"] .appbar, [data-theme="light"] .bottomnav, [data-theme="light"] .drawer{ background:rgba(255,255,255,.85); }
+
+    /* D2: grouped drawer */
+    .drawer-group{ padding:10px 0; border-bottom:1px solid var(--border); }
+    .drawer-group:last-child{ border-bottom:none; }
+    .drawer-group-title{ font-size:.72rem; font-weight:800; color:var(--gold); padding:6px 18px 2px; letter-spacing:.3px; }

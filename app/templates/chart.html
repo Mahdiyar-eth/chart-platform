@@ -175,6 +175,7 @@ function reportState(){
       }catch(e){ this.audioStatus = 'failed'; }
     },
     share(){
+      window.track && window.track('share_clicked');
       const url = location.origin + '/chart/{{ chart.id }}?t={{ access_token }}';
       window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('چارت تولد من'), '_blank');
     },
@@ -192,6 +193,7 @@ function reportState(){
       else if(d.status === 'done' || d.status === 'degraded'){ this.repStatus = d.status; this.pdfUrl = d.pdf_url; window.umami?.track('report_created'); }
     },
     async genReport(e){
+      window.track && window.track('report_started');
       const btn = e.currentTarget; btn.disabled = true; btn.style.opacity = .6;
       const r = await fetch('/api/charts/{{ chart.id }}/report', {method:'POST'});
       const d = await r.json();

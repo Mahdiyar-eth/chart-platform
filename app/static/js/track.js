@@ -40,4 +40,13 @@
   if(body && body.getAttribute('data-page') === 'landing'){
     setTimeout(function(){ window.track('page_view_landing', {__ref: new URLSearchParams(location.search).get('ref') || ''}); }, 200);
   }
+
+  // G1: birth_form_start — first interaction on the birth form
+  var bf = document.getElementById('birthForm');
+  if (bf){
+    var started = false;
+    var fireStart = function(){ if (started) return; started = true; window.track('birth_form_start'); };
+    bf.addEventListener('input', fireStart, {once:true});
+    bf.addEventListener('change', fireStart, {once:true});
+  }
 })();

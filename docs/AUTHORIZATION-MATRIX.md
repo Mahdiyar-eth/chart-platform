@@ -22,6 +22,9 @@
 | `GET /api/charts/{chart_id}/preview` | Capability | `_owns_chart` |
 | `GET /api/charts/{chart_id}/transit-year.svg` | Capability | `_owns_chart` |
 | `GET /api/charts/{chart_id}/report` | Capability | `_owns_chart` |
+| `GET /api/charts/{chart_id}/forecast` | Capability | `_owns_chart` (B3) |
+| `POST /api/charts/{chart_id}/forecast/analyze` | Capability + User | `_owns_chart` + login؛ هزینهٔ transit_3m/transit_12m (B3) |
+| `GET /transits/{chart_id}` | Capability | `_owns_chart` (صفحهٔ گذرها B3) |
 | `GET /api/reports/{report_id}.docx` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/pdf` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/audio` | Capability | `_owns_chart` (C1) |
