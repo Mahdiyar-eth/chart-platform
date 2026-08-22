@@ -28,6 +28,17 @@
   {"@context":"https://schema.org","@type":"WebSite","name":"زایچه","alternateName":"چارت تولد آنلاین","inLanguage":"fa-IR","description":"گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی"}
   </script>
   <script defer src="/static/vendor/alpine.min.js"></script>
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('creditsBall', () => ({
+      show: false, balance: 0,
+      loader(){ fetch('/api/credits/me', {headers: {'Accept': 'application/json'}})
+        .then(r => { if(!r.ok) throw 0; return r.json(); })
+        .then(d => { this.balance = d.balance; this.show = true; })
+        .catch(() => {}); }
+    }));
+  });
+</script>
 <script defer src="/static/js/track.js?v={{ asset_version }}"></script>
   <script src="/static/vendor/htmx.min.js"></script>
   <script defer src="/static/sw-register.js"></script>
@@ -63,6 +74,11 @@
           <a href="/dashboard" class="nav-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>داشبورد</a>
           <a href="/account" class="nav-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
         </nav>
+        <a href="/account" class="credits-chip" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" style="margin-inline-start:auto;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:rgba(255,213,66,.12);border:1px solid rgba(255,213,66,.35);color:#ffd756;font-weight:700;font-size:.82rem;white-space:nowrap;">
+          <svg aria-hidden="true" style="width:15px;height:15px;"><use href="#icon-sparkles"/></svg>
+          <span x-text="balance" style="min-width:1ch;text-align:left;"></span>
+          <span style="font-size:.72rem;font-weight:600;color:#cbb56a;">اعتبار</span>
+        </a>
       </div>
     </header>
     {% block content %}{% endblock %}

@@ -60,3 +60,17 @@ def test_purchase_insufficient_returns_402_with_packs():
     j = r.json()
     assert j["needed"] > 0 and j["have"] == 0
     assert isinstance(j["packs"], list) and any(p["key"] == "credit12" for p in j["packs"])
+
+def test_credits_me_requires_login():
+    c = TestClient(main_app)
+    r = c.get("/api/credits/me")
+    assert r.status_code == 401
+
+
+def test_credits_me_returns_balance():
+    uid = _mk_user(7)
+    c = TestClient(main_app)
+    r = c.get("/api/credits/me", cookies=_cookie(uid))
+    assert r.status_code == 200
+    assert r.json()["balance"] == 7
+

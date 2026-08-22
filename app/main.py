@@ -767,6 +767,17 @@ def api_purchase(payload: "PurchasePayload", request: Request,
     return {"ok": True, "entitlement_id": ent.id, "remaining": balance(session, user.id)}
 
 
+@app.get("/api/credits/me")
+def api_credits_me(request: Request, session: Session = Depends(get_session)):
+    """A4: current user credit balance (401 if not logged in).
+    Drives the appbar credit chip + credit_cta.
+    """
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(401, "login required")
+    return {"balance": balance(session, user.id), "currency": "credit"}
+
+
 @app.post("/api/orders")
 def api_create_order(
     request: Request,

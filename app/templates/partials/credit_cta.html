@@ -1,0 +1,17 @@
+{# credit_cta — shown in a locked panel when the user lacks credits for an action.
+   Optional context: action_name_fa, needed (credits), have (current), next (return path). #}
+{% set have = have | default(0) %}
+{% set needed = needed | default(1) %}
+{% set action_name_fa = action_name_fa | default('این بخش') %}
+<div class="glass" style="max-width:520px;margin:0 auto;padding:22px 22px;border:1px solid rgba(255,213,66,.4);text-align:center;">
+  <svg aria-hidden="true" style="width:44px;height:44px;margin:0 auto 10px;color:var(--gold);"><use href="#icon-sparkles"/></svg>
+  <h3 style="color:#fff;font-size:1.05rem;font-weight:800;margin:0 0 6px;">{{ action_name_fa }} اعتبار می‌خواهد</h3>
+  <p style="color:var(--muted);font-size:.85rem;margin:0 0 6px;line-height:1.8;">
+    برای استفاده {{ needed }} اعتبار لازم است. {#- noqa #} اگر موجودی ({{ have }}) کافی نیست، پک اعتبار بخر —
+    <b style="color:var(--txt);">هرگز منقضی نمی‌شود.</b>
+  </p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;">
+    <a href="/plans" class="btn" style="flex:1;min-width:170px;">خرید اعتبار</a>
+    {% if next %}<a href="{{ next }}" style="flex:1;min-width:170px;display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:16px;border:1px solid var(--muted);color:var(--muted);font-weight:700;font-size:.9rem;">بازگشت</a>{% endif %}
+  </div>
+</div>
