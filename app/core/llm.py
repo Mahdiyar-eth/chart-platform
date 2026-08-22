@@ -680,6 +680,7 @@ _PART_DEFAULT_MODEL = {
     "report": "antigravity/gemini-3.6-flash-high",     # report intro/overview (sections use SECTION_MODEL_DEFAULT)
     "chat": "antigravity/gemini-3.6-flash-high",   # AI chat (phase-1 test winner: 4s, 10/10 grounded)
     "preview": "deepseek-v4-flash",  # free 3-5 insights enrichment — cheapest capable (routing matrix 2026-08-17)
+    "transit": "antigravity/gemini-3.6-flash-high",  # B2: transit narrative layer (omni-only, routing matrix 2026-08-22)
 }
 
 

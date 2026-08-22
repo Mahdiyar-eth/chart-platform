@@ -11,6 +11,7 @@
 | **گزارش کامل — سکشن‌ها** (basic/full/gold) | gemini-3.6-flash-high | OmniRoute | $0.27/گزارش طلا | 4-17s/سکشن | 3.8× سریعتر از pro؛ 40 چانک RAG |
 | **گزارش کامل — مقدمه/خلاصه** | gemini-3.6-flash-high | OmniRoute | داخل هزینهٔ بالا | — | هماهنگ با سکشن‌ها |
 | **کاوش (explore)** | gemini-3.6-flash-high | OmniRoute | ~$0.002/کارت | ~4s | کیفیت بالای کارت مستقل |
+| **گذر (transit)** B2 | gemini-3.6-flash-high | OmniRoute | ~$0.002/رویداد | ~3-4s | لایهٔ روایت گذر — مقید به شواهد (QA gate) |
 
 **Fallback زنجیره:** OmniRoute (gemini) → GO KeyPool (همان مدل→ pro/flash) → Zen free. همهٔ گره‌ها خودکار.
 
