@@ -107,3 +107,19 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   transition:border-color .2s var(--ease), transform .15s var(--ease); }
 .onb-card:hover{ border-color:var(--gold); transform:translateY(-1px); }
 .onb-card span{ color:var(--muted); font-size:var(--fs-sm); line-height:var(--lh-normal); }
+
+/* G2: claim banner */
+.claim-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;padding:14px 16px;border:1px solid var(--gold-dim, rgba(212,175,55,.35));border-radius:16px;}
+.claim-banner .claim-text b{font-size:.95rem;}
+.claim-banner .claim-text p{margin:4px 0 0;font-size:.82rem;line-height:1.7;}
+@media (max-width:520px){.claim-banner{flex-direction:column;text-align:center;} .claim-banner .btn{width:100%;min-height:44px;}}
+
+/* G4: onboarding checklist */
+.onboard-card{margin:14px 0;padding:16px;}
+.onboard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.onboard-x{background:none;border:none;color:var(--muted-2);font-size:1rem;min-width:40px;min-height:40px;cursor:pointer;}
+.onboard-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:step;}
+.onboard-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.88rem;}
+.onboard-list li::before{counter-increment:step;content:counter(step);width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--bg);font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+.onboard-list li span{flex:1;text-align:start;}
+.btn-sm{min-height:40px;padding:6px 14px;font-size:.82rem;}

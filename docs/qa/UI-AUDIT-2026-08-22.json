@@ -652,5 +652,441 @@
   "failed_requests": [],
   "focus_missing": 0,
   "perf": {}
+ },
+ {
+  "path": "/faq",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 84,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 83,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/articles",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 100,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 99,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/dashboard",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
+ },
+ {
+  "path": "/account",
+  "sizes": {
+   "320": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "375": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "414": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "768": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 44,
+     "pct": 0.0
+    }
+   },
+   "1280": {
+    "hscroll": false,
+    "touch": [],
+    "touchCount": 0,
+    "imgNoAlt": 0,
+    "svgNoA11y": 0,
+    "inputNoLabel": 0,
+    "h1Count": 1,
+    "headingJumps": 0,
+    "dir": "rtl",
+    "textOverflow": 0,
+    "bottomOverlap": false,
+    "safeArea": true,
+    "hasEmptyStateClass": false,
+    "contrast": {
+     "fail_ratio": 0,
+     "checked": 43,
+     "pct": 0.0
+    }
+   }
+  },
+  "console_errors": [],
+  "failed_requests": [],
+  "focus_missing": 0,
+  "perf": {}
  }
 ]

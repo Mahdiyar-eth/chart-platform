@@ -12,6 +12,19 @@
     </p>
   </div>
 
+  <!-- G4: onboarding checklist (localStorage-persisted, dismissable) -->
+  <div class="glass onboard-card" x-data="{open: localStorage.getItem('ob_done') !== '1'}" x-show="open" x-cloak>
+    <div class="onboard-head">
+      <b>سه قدم تا شناخت کامل</b>
+      <button class="onboard-x" type="button" aria-label="بستن" @click="localStorage.setItem('ob_done','1'); open=false">✕</button>
+    </div>
+    <ol class="onboard-list">
+      <li><span>اولین کاوش رایگان چارتت را ببین</span> <a class="btn btn-sm" href="/explore">شروع</a></li>
+      <li><span>از چارتت یک سؤال بپرس</span> <a class="btn btn-sm" href="/dashboard">گفت‌وگو</a></li>
+      <li><span>گزارش عمیق ۱۳ بخشی را فعال کن</span> <a class="btn btn-sm" href="/plans">پلن‌ها</a></li>
+    </ol>
+  </div>
+
   {% if not charts %}
   <div class="glass glow st-768d6922" >
     <p class="st-69dc3cc5" >هنوز چارتی نساخته‌ای. با ساخت چارت تولد (رایگان)، داشبورد برایت زنده می‌شود.</p>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="guide-wrap">
+  <h1>راهنمای رایگان چارت تولد</h1>
+  <p class="muted">PDF بیست‌صفحه‌ای: چارت تولد چیست، سه‌گانهٔ اصلی چطور خوانده می‌شود، و چطور از گذرهای سیاره‌ها برای برنامه‌ریزی استفاده کنی.</p>
+
+  <div class="glass guide-card" x-data="{contact:'', sent:false, err:'', url:''}">
+    <template x-if="!sent">
+      <form @submit.prevent="async () => {
+        err='';
+        try{
+          const fd = new FormData(); fd.append('contact', contact); fd.append('source', 'guide');
+          const r = await fetch('/api/subscribe', {method:'POST', body:fd});
+          const d = await r.json();
+          if(!r.ok) throw new Error(d.detail || 'خطا');
+          url = d.download_url; sent = true;
+        }catch(e){ err = e.message; }
+      }">
+        <label for="contact">برای دریافت، شمارهٔ موبایل یا ایمیلت را بنویس</label>
+        <input class="input" id="contact" x-model="contact" placeholder="۰۹xxxxxxxxx یا you@mail.com" required maxlength="200">
+        <button class="btn btn-lg" type="submit">دریافت رایگان PDF</button>
+        <p class="muted" style="font-size:.78rem;margin-top:8px">با ثبت، اجازهٔ پیام هفتگی «آسمان هفته» را هم میدهی — هر وقت بخواهی با یک کلیک لغو می‌شود.</p>
+        <p class="error-text" x-show="err" x-text="err" x-cloak></p>
+      </form>
+    </template>
+    <template x-if="sent">
+      <div>
+        <p><b>آماده است!</b> لینک دانلود:</p>
+        <a class="btn btn-lg" :href="url">دانلود راهنما (PDF)</a>
+      </div>
+    </template>
+  </div>
+</div>
+<style>
+.guide-wrap{max-width:640px;margin:0 auto;}
+.guide-card{margin-top:18px;padding:20px;display:flex;flex-direction:column;gap:10px;}
+.error-text{color:#e5484d;font-size:.85rem;}
+label{font-size:.9rem;margin-bottom:2px;display:block;}
+</style>
+{% endblock %}

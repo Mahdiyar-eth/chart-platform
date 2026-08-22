@@ -17,7 +17,7 @@ import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -285,13 +285,69 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
         _s = _p.get("sign_fa", "")
         if _s:
             sign_counts[_s] = sign_counts.get(_s, 0) + 1   # audit P1-6: real counts per sign
+    # G2: guests must be nudged to claim the chart (top funnel-leak fix)
+    from app.auth import get_current_user as _gcu
+    is_guest = _gcu(request) is None
     return templates.TemplateResponse(request, "chart.html", {
         "title": "چارت تولد", "chart": chart, "big_three": bt, "svg": svg,
         "aspect_grid": aspect_grid_svg(planets),
         "element_donut": element_donut_svg(sign_counts),
         "house_bar": house_bar_svg(houses),
         "access_token": chart.access_token or "",
+        "is_guest": is_guest,
     })
+
+
+
+@app.post("/api/subscribe")
+def api_subscribe(request: Request, contact: str = Form(...), source: str = Form("guide"),
+                  session: Session = Depends(get_session)):
+    """G3 — lead magnet/newsletter signup. Explicit consent recorded; rate-limited upstream."""
+    import re as _re
+    contact = contact.strip()
+    channel = "email" if "@" in contact else "sms"
+    if channel == "sms" and not _re.fullmatch(r"09\d{9}", contact):
+        raise HTTPException(422, "[ZAY-SUB-001] شماره موبایل معتبر نیست (۰۹xxxxxxxxx)")
+    if channel == "email" and not _re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", contact):
+        raise HTTPException(422, "[ZAY-SUB-002] ایمیل معتبر نیست")
+    from app.models import Subscriber
+    token = secrets.token_urlsafe(24)
+    sub = Subscriber(contact=contact, channel=channel, source=source, token=token)
+    session.add(sub)
+    session.commit()
+    resp = JSONResponse({"ok": True, "download_url": f"/guide/download/{token}"})
+    return resp
+
+
+@app.get("/gift-guide", response_class=HTMLResponse)
+def gift_guide_page(request: Request):
+    """G3 — lead-magnet landing: PDF رایگان پشت یک فیلد تماس."""
+    return templates.TemplateResponse(request, "guide_landing.html", {"title": "راهنمای رایگان چارت تولد"})
+
+
+@app.get("/guide/download/{token}")
+def guide_download(token: str, request: Request, session: Session = Depends(get_session)):
+    """One-time-ish gated download (token issued on subscribe)."""
+    from app.models import Subscriber
+    sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
+    if not sub:
+        raise HTTPException(404, "لینک نامعتبر است")
+    path = "/root/chart-platform/app/static/guides/zayche-guide.pdf"
+    if not os.path.exists(path):
+        raise HTTPException(404, "فایل راهنما یافت نشد")
+    return FileResponse(path, media_type="application/pdf", filename="zayche-guide.pdf")
+
+
+@app.get("/unsubscribe/{token}")
+def unsubscribe(token: str, request: Request, session: Session = Depends(get_session)):
+    """G3 — mandatory one-click unsubscribe."""
+    from app.models import Subscriber
+    sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
+    if sub and sub.unsubscribed_at is None:
+        sub.unsubscribed_at = datetime.now(timezone.utc)
+        session.add(sub)
+        session.commit()
+    return HTMLResponse("<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px'>لغو اشتراک انجام شد. دیگر پیامی دریافت نمی‌کنی.</body>")
 
 
 # ─────────────────────────── api ───────────────────────────
@@ -753,8 +809,14 @@ def payment_result_page(request: Request, order_id: str,
     if not _owns_order(order, session, request):
         raise HTTPException(403, "دسترسی غیرمجاز")
     plan = session.get(Plan, order.plan_key) if order.plan_key else None
+    ref_url = ""
+    u = get_current_user(request)
+    if u and order.status == "paid":
+        from app.payment.orders import get_or_create_referral_code
+        ref_url = (os.getenv('PUBLIC_BASE_URL', 'https://chart.negar.io')
+                   + "/?ref=" + get_or_create_referral_code(session, u.id))
     return templates.TemplateResponse(request, "payment_result.html", {
-        "title": "نتیجه‌ی پرداخت", "order": order, "plan": plan,
+        "title": "نتیجه‌ی پرداخت", "order": order, "plan": plan, "ref_url": ref_url,
     })
 
 

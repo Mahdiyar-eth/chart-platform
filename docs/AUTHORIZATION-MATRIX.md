@@ -18,6 +18,10 @@
 | `GET /chart/{chart_id}` | Capability | `_owns_chart` (توکن در URL/کوکی) |
 | `GET /api/cities` | Public | — |
 | `POST /api/charts` | Public | rate limit 20/min (B5) |
+| `POST /api/subscribe` | Public | G3 — رضایت صریح؛ rate limit مشترک |
+| `GET /gift-guide` | Public | G3 — لندینگ لید مگنت |
+| `GET /guide/download/{token}` | Capability | توکن یک‌بارمصع Subscriber |
+| `GET /unsubscribe/{token}` | Capability | توکن لغو اشتراک (بدون لاگین، طبق حریم خصوصی) |
 | `POST /api/charts/{chart_id}/report` | Capability | `_owns_chart` |
 | `GET /api/charts/{chart_id}/preview` | Capability | `_owns_chart` |
 | `GET /api/charts/{chart_id}/transit-year.svg` | Capability | `_owns_chart` |

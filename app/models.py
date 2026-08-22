@@ -506,3 +506,15 @@ class TransitAlertLog(SQLModel, table=True):
     week: str = Field(index=True, max_length=10)        # e.g. 2026-W34
     chart_id: str = Field(index=True, max_length=64)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Subscriber(SQLModel, table=True):
+    """G3 — newsletter/lead-magnet contact. Explicit consent + mandatory unsubscribe."""
+    __tablename__ = "subscribers"
+    id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
+    contact: str = Field(index=True, max_length=200)          # phone or email
+    channel: str = Field(default="sms", max_length=20)        # sms | email | telegram
+    source: str = Field(default="guide", max_length=40)       # guide | weekly-sky | referral
+    token: str = Field(default="", index=True, max_length=64) # one-time download / unsub link
+    unsubscribed_at: datetime | None = Field(default=None)
+    consent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

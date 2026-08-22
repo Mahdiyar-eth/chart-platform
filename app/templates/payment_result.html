@@ -9,6 +9,17 @@
   <p class="st-eafeb2cc" >
     پلن <b>{{ plan.name_fa if plan else '' }}</b> فعال شد — گزارش شما در صف تولید است و آماده که شد خبر می‌شوید.
   </p>
+
+  {% if ref_url %}
+  <div class="glass st-3c0d14ce" >
+    <b>دعوت از دوستان — هر دو برنده‌اید</b>
+    <p class="muted">نفر جدید ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش و او ۱ کاوش هدیه می‌گیرد.</p>
+    <div class="st-17017195" >
+      <input class="st-67bf3cb4" id="refLink2" readonly value="{{ ref_url }}" >
+      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink2').value); this.textContent='کپی شد ✓'" class="btn st-99443573" >کپی لینک دعوت</button>
+    </div>
+  </div>
+  {% endif %}
   <div class="glass st-3c0d14ce" >
     <div class="st-160277d1" >
       <span>شماره پیگیری:</span><b dir="ltr">{{ order.ref_id or '—' }}</b>

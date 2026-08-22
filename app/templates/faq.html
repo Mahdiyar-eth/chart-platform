@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block description %}{{ meta }}{% endblock %}
+{% block head_extra %}
+{% set faq_items = [] %}
+{% for cat in categories %}{% for item in cat['items'] %}{% if faq_items.append(item) %}{% endif %}{% endfor %}{% endfor %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{%- for item in faq_items -%}
+{"@type":"Question","name":"{{ item.q }}","acceptedAnswer":{"@type":"Answer","text":"{{ item.a }}"}}{{ "," if not loop.last else "" }}
+{%- endfor -%}
+]}
+</script>
+{% endblock %}
 {% block content %}
 <div class="wrap st-dea6d1e3" >
   <h1 class="st-44c1f7ac" >{{ title }}</h1>

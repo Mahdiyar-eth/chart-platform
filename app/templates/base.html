@@ -25,7 +25,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"زایچه","alternateName":"چارت تولد آنلاین","inLanguage":"fa-IR","description":"گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی"}
+  {"@context":"https://schema.org","@type":"Organization","name":"زایچه","url":"https://chart.negar.io/","logo":"https://chart.negar.io/static/icon-512.png"}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"زایچه","alternateName":"چارت تولد آنلاین","inLanguage":"fa-IR","description":"گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی","url":"https://chart.negar.io/","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://chart.negar.io/articles?q={search_term_string}"},"query-input":"required name=search_term_string"}}
   </script>
   <script defer src="/static/vendor/alpine.min.js"></script>
 <script>
@@ -56,6 +59,7 @@
       if(th==='light') document.documentElement.setAttribute('data-theme','light');
     }catch(e){} })();
   </script>
+  {% block head_extra %}{% endblock %}
 </head>
 <body {% block body_attrs %}{% endblock %}>
   {% include "partials/icon_sprite.html" %}

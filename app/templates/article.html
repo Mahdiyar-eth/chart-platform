@@ -3,6 +3,14 @@
 {% block og_title %}{{ art.title }}{% endblock %}
 {% block og_image %}{% if art.image %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ art.image }}{% endif %}{% endblock %}
 {% block twitter_card %}summary_large_image{% endblock %}
+{% block head_extra %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"{{ art.title }}","description":"{{ art.meta }}","inLanguage":"fa-IR","datePublished":"{{ art.created_at.date().isoformat() if art.created_at else '' }}","author":{"@type":"Organization","name":"زایچه"},"publisher":{"@type":"Organization","name":"زایچه"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"خانه","item":"https://chart.negar.io/"},{"@type":"ListItem","position":2,"name":"مقالات","item":"https://chart.negar.io/articles"},{"@type":"ListItem","position":3,"name":"{{ art.title }}"}]}
+</script>
+{% endblock %}
 {% block description %}{{ art.meta }}{% endblock %}
 {% block content %}
 <div class="wrap st-dea6d1e3" >

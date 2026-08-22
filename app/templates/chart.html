@@ -6,6 +6,17 @@
   <h1 class="st-8a77e5a3" >چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
+  {% if is_guest %}
+  <!-- G2: claim-your-chart banner (funnel: save before you lose it) -->
+  <div class="glass claim-banner">
+    <div class="claim-text">
+      <b>این چارت را از دست نده</b>
+      <p class="muted">با ساخت حساب رایگان، چارت همیشه در داشبوردت می‌ماند و کاوش رایگان اول هم مال تو می‌شود.</p>
+    </div>
+    <a class="btn" href="/account/login?next=/chart/{{ chart.id }}">ذخیرهٔ چارت</a>
+  </div>
+  {% endif %}
+
   <!-- funnel progress (F3): chart → explore → deep -->
   <div class="st-5d1c1741" >
     <span class="st-83c28af5" >۱ · چارت تو ✓</span>
