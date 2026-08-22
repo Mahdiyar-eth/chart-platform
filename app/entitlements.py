@@ -65,11 +65,18 @@ def consume(session: Session, ent: Entitlement, n: int = 1) -> bool:
     return True
 
 
+_QUANTITY_BY_ACTION = {"chat_pack_20": 20, "chat_pack_100": 100}
+
+
+def _action_quantity(action_key: str) -> int:
+    return _QUANTITY_BY_ACTION.get(action_key, 1)
+
+
 def grant_from_credits(session: Session, user_id: str, action_key: str, *,
                        idempotency_key: str,
                        chart_id: str | None = None,
                        ref_id: str | None = None,
-                       quantity: int = 1) -> Entitlement:
+                       quantity: int | None = None) -> Entitlement:
     """spend() then create the entitlement, atomically.
 
     Per-report decision (user, 2026-08): for reports the entitlement is tied to
@@ -89,7 +96,7 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
         return existing
     ent = Entitlement(
         user_id=user_id, kind=kind, chart_id=chart_id,
-        ref_id=ref_id, quantity=quantity, used=0,
+        ref_id=ref_id, quantity=_action_quantity(action_key) if quantity is None else quantity, used=0,
         source="credit", source_ref=tx.id,
     )
     session.add(ent)

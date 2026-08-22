@@ -8,6 +8,7 @@ import asyncio
 import json
 import os
 import secrets
+from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from hmac import compare_digest
 from pathlib import Path
@@ -33,7 +34,9 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from app.entitlements import has as ent_has, grant_from_order as ent_grant_order
+from fastapi.responses import JSONResponse
+from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
+from app.credits import balance, get_price, UnknownAction
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,)
@@ -720,6 +723,48 @@ def api_plans(session: Session = Depends(get_session)):
     plans = session.exec(select(Plan).where(Plan.active).order_by(Plan.sort)).all()
     return [{"key": p.key, "name_fa": p.name_fa, "subtitle_fa": p.subtitle_fa,
              "price_toman": p.price_toman, "features": p.features} for p in plans]
+
+
+class PurchasePayload(BaseModel):
+    action_key: str
+    chart_id: str | None = None
+
+
+@app.post("/api/purchase")
+def api_purchase(payload: "PurchasePayload", request: Request,
+                 session: Session = Depends(get_session)):
+    """A4 — unified credit purchase (single endpoint for every gated action).
+
+    No login -> 401 login_required. Insufficient credits -> 402 with
+    {needed, have, packs}. Success -> grant_from_credits -> {ok, entitlement_id}.
+    """
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True, "next": "/plans"})
+    try:
+        price = get_price(session, payload.action_key)
+    except UnknownAction:
+        return JSONResponse(status_code=400, content={"error": "unknown_action"})
+    have = balance(session, user.id)
+    if have < price:
+        packs = session.exec(
+            select(Plan).where(
+                Plan.active == True,  # noqa: E712
+                Plan.key.in_(["credit3", "credit6", "credit12"]),
+            )
+        ).all()
+        return JSONResponse(status_code=402, content={
+            "needed": price, "have": have,
+            "packs": [{"key": p.key, "name_fa": p.name_fa,
+                       "credits": p.credits_grant, "price_toman": p.price_toman}
+                      for p in packs],
+        })
+    ent = ent_grant_credits(
+        session, user.id, payload.action_key,
+        idempotency_key=f"purchase:{user.id}:{payload.action_key}:{payload.chart_id or 'none'}",
+        chart_id=payload.chart_id,
+    )
+    return {"ok": True, "entitlement_id": ent.id, "remaining": balance(session, user.id)}
 
 
 @app.post("/api/orders")

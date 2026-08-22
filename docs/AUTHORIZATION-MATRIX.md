@@ -32,6 +32,7 @@
 | `GET /payment/result` | Public/Page | صفحه پرداخت: `_owns_order` |
 | `GET /api/plans` | Public | — |
 | `POST /api/orders` | Capability (+User optional) | `_owns_chart` ×2 (سیناستری) |
+| `POST /api/purchase` | Logged-in user | unified credit purchase (401 no-auth, 402 insufficient + packs) |
 | `GET /api/orders/{order_id}` | Capability | `_owns_order` |
 | `GET /api/payments/verify` | Public | idempotent + state machine (B7) |
 | `GET /sitemap.xml` | Public | — |
