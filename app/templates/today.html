@@ -3,17 +3,17 @@
 {% block description %}هر روز یک لحظه برای دیدن آسمان و دیدن خودت: گذرهای امروز، یک سؤال برای تأمل و یک اقدام کوچک.{% endblock %}
 
 {% block content %}
-<div class="wrap" style="padding-top:18px;">
-  <h1 style="font-size:1.45rem;font-weight:800;line-height:1.5;margin-bottom:14px;">هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
+<div class="wrap st-c24b5a41" >
+  <h1 class="st-69822621" >هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
 
   <div x-data="todayApp()" x-init="init()">
     <!-- chart picker -->
-    <div class="glass" style="padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;justify-content:space-between;">
+    <div class="glass st-5a5e59ed" >
       <div>
-        <div class="muted" style="font-size:.78rem;">تاریخ</div>
-        <div style="font-weight:700;" x-text="status.today_label"></div>
+        <div class="muted st-f63147b2" >تاریخ</div>
+        <div class="st-e3ec02ac" x-text="status.today_label"></div>
       </div>
-      <select class="input" x-model="chartId" x-on:change="load()" style="max-width:190px;min-height:44px;">
+      <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="load()" >
         <template x-for="ch in charts" :key="ch.id">
           <option :value="ch.id" x-text="ch.label"></option>
         </template>
@@ -21,64 +21,64 @@
     </div>
 
     <!-- streak -->
-    <div class="glass" style="padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
-      <span style="font-size:1.6rem;">🔥</span>
+    <div class="glass st-f0e8728e" >
+      <span class="st-d4169b69" >🔥</span>
       <div>
-        <div class="muted" style="font-size:.8rem;">پیوستگی روزانه</div>
-        <div style="font-weight:800;font-size:1.05rem;" x-text="status.streak + ' روز متوالی'"></div>
+        <div class="muted st-a726b01e" >پیوستگی روزانه</div>
+        <div class="st-3c945c05" x-text="status.streak + ' روز متوالی'"></div>
       </div>
-      <div style="margin-left:auto;text-align:left;" class="muted" x-show="status.streak > 0" x-cloak>
+      <div class="muted st-ee31f211" x-show="status.streak > 0" x-cloak>
         <span x-text="status.best_streak"></span> بیشترین
       </div>
     </div>
 
     <!-- sky facts -->
-    <div class="glass" style="padding:16px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-weight:800;font-size:1.02rem;">✨ امروز در آسمان</div>
-        <button type="button" x-show="status.facts.length" x-cloak @click="shareTransit()" style="background:none;border:1px solid var(--stroke);border-radius:10px;color:var(--muted);font-size:.78rem;padding:6px 10px;cursor:pointer;">اشتراک‌گذاری گذر</button>
+    <div class="glass st-ed375c82" >
+      <div class="st-ea49063c" >
+        <div class="st-710280f4" >✨ امروز در آسمان</div>
+        <button class="st-4ebb4d1b" type="button" x-show="status.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
       </div>
       <div x-show="!status.facts.length" class="muted" x-cloak>در حال محاسبهٔ گذرهای امروز…</div>
       <template x-for="(f, i) in status.facts" :key="i">
-        <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--stroke);">
-          <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#7c6cf0;margin-top:10px;" aria-hidden="true"></span>
-          <p style="font-size:.92rem;line-height:1.7;color:var(--txt);">
-            <span style="font-weight:800;" x-text="f.planet_fa"></span>
-            امروز در <span style="font-weight:800;color:#8fb6ff;" x-text="f.sign_fa"></span> با
-            <span style="font-weight:800;" x-text="f.target_fa"></span> تو در
-            <span style="font-weight:800;color:#f5c518;" x-text="f.aspect_fa"></span> است.
+        <div class="st-38697191" >
+          <span class="st-3a38b258" aria-hidden="true"></span>
+          <p class="st-362151c5" >
+            <span class="st-2b953210" x-text="f.planet_fa"></span>
+            امروز در <span class="st-39660e9f" x-text="f.sign_fa"></span> با
+            <span class="st-2b953210" x-text="f.target_fa"></span> تو در
+            <span class="st-e5be8c0d" x-text="f.aspect_fa"></span> است.
           </p>
         </div>
       </template>
     </div>
 
     <!-- question -->
-    <div class="glass" style="padding:16px;margin-bottom:12px;">
-      <div style="font-weight:800;margin-bottom:10px;font-size:1.02rem;">🪞 سؤال امروز</div>
-      <p style="font-size:.95rem;line-height:1.8;" x-text="status.question"></p>
-      <div x-show="status.access === 'preview'" x-cloak style="margin-top:12px;">
-        <div class="glass" style="padding:12px;background:rgba(245,197,24,.07);">
-          <p class="muted" style="font-size:.85rem;margin-bottom:10px;">ثبت تأمل روزانه و پیوستگی مخصوص پلن طلایی و اشتراک ماهانه است.</p>
-          <a class="btn btn-lg" href="/plans" style="text-decoration:none;">مشاهده پلن‌ها</a>
+    <div class="glass st-ed375c82" >
+      <div class="st-24a83240" >🪞 سؤال امروز</div>
+      <p class="st-08fa3ec5" x-text="status.question"></p>
+      <div class="st-56f43562" x-show="status.access === 'preview'" x-cloak >
+        <div class="glass st-21e3cb79" >
+          <p class="muted st-9cec68b5" >ثبت تأمل روزانه و پیوستگی مخصوص پلن طلایی و اشتراک ماهانه است.</p>
+          <a class="btn btn-lg st-80d654f9" href="/plans" >مشاهده پلن‌ها</a>
         </div>
       </div>
-      <div x-show="status.access === 'full' && status.done" x-cloak style="margin-top:12px;padding:12px;border:1px solid rgba(76,209,123,.4);border-radius:14px;background:rgba(76,209,123,.08);">
-        <div style="font-weight:700;color:#7ddf9d;">✓ تأمل امروز ثبت شد</div>
-        <p class="muted" style="font-size:.85rem;margin-top:4px;" x-text="'ساعت ' + status.done_at"></p>
+      <div class="st-33c48088" x-show="status.access === 'full' && status.done" x-cloak >
+        <div class="st-52e1e5cb" >✓ تأمل امروز ثبت شد</div>
+        <p class="muted st-efc7d33a" x-text="'ساعت ' + status.done_at"></p>
       </div>
-      <div x-show="status.access === 'full' && !status.done" x-cloak style="margin-top:12px;">
-        <textarea class="input" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" style="width:100%;resize:vertical;padding:12px;"></textarea>
-        <button class="btn btn-lg" style="width:100%;margin-top:10px;" x-on:click="submit()" :disabled="busy">
+      <div class="st-56f43562" x-show="status.access === 'full' && !status.done" x-cloak >
+        <textarea class="input st-dd0a679c" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" ></textarea>
+        <button class="btn btn-lg st-9202fe4c" x-on:click="submit()" :disabled="busy">
           <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
         </button>
-        <p x-show="err" x-cloak style="margin-top:10px;color:#e76f51;font-size:.85rem;" x-text="err"></p>
+        <p class="st-068f6825" x-show="err" x-cloak x-text="err"></p>
       </div>
     </div>
 
     <!-- action -->
-    <div class="glass" style="padding:16px;margin-bottom:12px;">
-      <div style="font-weight:800;margin-bottom:8px;font-size:1.02rem;">🌱 اقدام کوچک امروز</div>
-      <p style="font-size:.95rem;line-height:1.8;" x-text="status.action"></p>
+    <div class="glass st-ed375c82" >
+      <div class="st-ef8b9018" >🌱 اقدام کوچک امروز</div>
+      <p class="st-08fa3ec5" x-text="status.action"></p>
     </div>
   </div>
 </div>

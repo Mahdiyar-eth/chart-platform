@@ -2,51 +2,51 @@
 {% block title %}آموزش چارت تولد — مقالات نجومی{% endblock %}
 {% block description %}آموزش رایگان چارت تولد به زبان ساده: معنی ۱۰ سیاره، ۱۲ خانه، ۱۲ برج و راهنماهای اصلی نجوم — برای خودشناسی و تأمل{% endblock %}
 {% block content %}
-<div style="max-width:640px; margin:0 auto; padding-top:36px;">
+<div class="st-fcff65ce" >
   <h1>آموزش چارت تولد</h1>
   <p class="muted">هر چیزی که باید درباره چارت تولد، سیارات و خانه‌ها بدانید — به زبان ساده.</p>
 
-  <h2 style="margin-top:26px;">راهنماهای اصلی</h2>
+  <h2 class="st-24d308c0" >راهنماهای اصلی</h2>
   {% for slug, g in guides.items() %}
-    <a href="/learn/{{ slug }}" class="glass" style="display:block; margin-top:10px; padding:16px; text-decoration:none;">
+    <a href="/learn/{{ slug }}" class="glass st-59b6150e" >
       <b>{{ g.title }}</b>
-      <div class="muted" style="font-size:.85rem; margin-top:4px;">{{ g.text[:90] }}…</div>
+      <div class="muted st-87f0fcbc" >{{ g.text[:90] }}…</div>
     </a>
   {% endfor %}
 
-  <h2 style="margin-top:26px;">معنی سیارات</h2>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:10px; margin-top:12px;">
+  <h2 class="st-24d308c0" >معنی سیارات</h2>
+  <div class="st-935d2fc2" >
     {% for slug, p in planets.items() %}
-      <a href="/learn/{{ slug }}" class="glass" style="padding:12px; text-decoration:none;">{{ p.title }}</a>
+      <a href="/learn/{{ slug }}" class="glass st-f18ef4f5" >{{ p.title }}</a>
     {% endfor %}
   </div>
 
-  <h2 style="margin-top:26px;">خانه‌های دوازده‌گانه</h2>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:10px; margin-top:12px;">
+  <h2 class="st-24d308c0" >خانه‌های دوازده‌گانه</h2>
+  <div class="st-935d2fc2" >
     {% for n, h in houses.items() %}
-      <a href="/learn/{{ n }}" class="glass" style="padding:12px; text-decoration:none;">{{ h.title }}</a>
+      <a href="/learn/{{ n }}" class="glass st-f18ef4f5" >{{ h.title }}</a>
     {% endfor %}
   </div>
 
-  <h2 style="margin-top:26px;">برج‌های دوازده‌گانه</h2>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px;">
-    <a href="/signs/hamal" class="glass" style="padding:12px; text-decoration:none;">♈ برج حمل</a>
-    <a href="/signs/sowr" class="glass" style="padding:12px; text-decoration:none;">♉ برج ثور</a>
-    <a href="/signs/jowza" class="glass" style="padding:12px; text-decoration:none;">♊ برج جوزا</a>
-    <a href="/signs/sartan" class="glass" style="padding:12px; text-decoration:none;">♋ برج سرطان</a>
-    <a href="/signs/asad" class="glass" style="padding:12px; text-decoration:none;">♌ برج اسد</a>
-    <a href="/signs/sowza" class="glass" style="padding:12px; text-decoration:none;">♍ برج سنبله</a>
-    <a href="/signs/mizan" class="glass" style="padding:12px; text-decoration:none;">♎ برج میزان</a>
-    <a href="/signs/aghrab" class="glass" style="padding:12px; text-decoration:none;">♏ برج عقرب</a>
-    <a href="/signs/ghows" class="glass" style="padding:12px; text-decoration:none;">♐ برج قوس</a>
-    <a href="/signs/jadi" class="glass" style="padding:12px; text-decoration:none;">♑ برج جدی</a>
-    <a href="/signs/dalv" class="glass" style="padding:12px; text-decoration:none;">♒ برج دلو</a>
-    <a href="/signs/hout" class="glass" style="padding:12px; text-decoration:none;">♓ برج حوت</a>
+  <h2 class="st-24d308c0" >برج‌های دوازده‌گانه</h2>
+  <div class="st-ae7fe0d1" >
+    <a href="/signs/hamal" class="glass st-f18ef4f5" >♈ برج حمل</a>
+    <a href="/signs/sowr" class="glass st-f18ef4f5" >♉ برج ثور</a>
+    <a href="/signs/jowza" class="glass st-f18ef4f5" >♊ برج جوزا</a>
+    <a href="/signs/sartan" class="glass st-f18ef4f5" >♋ برج سرطان</a>
+    <a href="/signs/asad" class="glass st-f18ef4f5" >♌ برج اسد</a>
+    <a href="/signs/sowza" class="glass st-f18ef4f5" >♍ برج سنبله</a>
+    <a href="/signs/mizan" class="glass st-f18ef4f5" >♎ برج میزان</a>
+    <a href="/signs/aghrab" class="glass st-f18ef4f5" >♏ برج عقرب</a>
+    <a href="/signs/ghows" class="glass st-f18ef4f5" >♐ برج قوس</a>
+    <a href="/signs/jadi" class="glass st-f18ef4f5" >♑ برج جدی</a>
+    <a href="/signs/dalv" class="glass st-f18ef4f5" >♒ برج دلو</a>
+    <a href="/signs/hout" class="glass st-f18ef4f5" >♓ برج حوت</a>
   </div>
 
-  <div class="glass glow" style="margin-top:28px; padding:22px; text-align:center;">
+  <div class="glass glow st-4a1415fb" >
     <b>چارت تولد خودت را همین حالا بساز</b>
-    <div style="margin-top:10px;"><a href="/birth-form" class="btn">ساخت چارت رایگان</a></div>
+    <div class="st-d2c171b1" ><a href="/birth-form" class="btn">ساخت چارت رایگان</a></div>
   </div>
 </div>
 {% endblock %}

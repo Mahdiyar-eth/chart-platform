@@ -56,7 +56,7 @@
 
 <div class="sky" x-data="{spec:false}">
   <header>
-    <div class="hd-icon"><svg style="width:34px;height:34px;" aria-hidden="true"><use href="#icon-moon"/></svg></div>
+    <div class="hd-icon"><svg class="st-d7326515" aria-hidden="true"><use href="#icon-moon"/></svg></div>
     <h1>آسمان امروز</h1>
     <p class="sub">{{ sky.date_fa }}</p>
   </header>
@@ -103,8 +103,8 @@
   <section class="glass">
     <div class="sec-head"><svg aria-hidden="true"><use href="#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
     {% if sky.retrogrades %}
-    <p class="mean" style="font-size:.9rem;">حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
-    <div class="retro-list" style="margin-top:12px;">
+    <p class="mean st-d6e47aa9" >حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
+    <div class="retro-list st-56f43562" >
       {% for r in sky.retrogrades %}
       <div class="retro-item">
         <span class="glyph">{{ r.glyph }}</span>
@@ -113,7 +113,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="mean" style="font-size:.9rem;">الان هیچ سیاره‌ای در حرکت رجوعی نیست.</p>
+    <p class="mean st-d6e47aa9" >الان هیچ سیاره‌ای در حرکت رجوعی نیست.</p>
     {% endif %}
   </section>
 
@@ -134,7 +134,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="mean" style="font-size:.9rem;">امروز جنبه‌ی شاخصی میان سیارات نیست.</p>
+    <p class="mean st-d6e47aa9" >امروز جنبه‌ی شاخصی میان سیارات نیست.</p>
     {% endif %}
   </section>
 
@@ -146,22 +146,22 @@
       <div class="event-row">
         <svg aria-hidden="true"><use href="#icon-moon"/></svg>
         <span class="lbl">{{ e.label }}</span>
-        <span class="dt">{{ e.date_fa }}<br><span style="color:var(--muted)">{{ e.sign_fa }}</span></span>
+        <span class="dt">{{ e.date_fa }}<br><span class="st-57f9e31d" >{{ e.sign_fa }}</span></span>
       </div>
       {% endfor %}
     </div>
   </section>
 
   <!-- 6) weekly reflection -->
-  <section class="glass" style="text-align:center;">
-    <div class="sec-head" style="justify-content:center;"><svg aria-hidden="true"><use href="#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
+  <section class="glass st-91a87015" >
+    <div class="sec-head st-03c4bb6f" ><svg aria-hidden="true"><use href="#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
     <p class="reflect">«{{ sky.reflection }}»</p>
-    <p class="note" style="margin-top:12px;">چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
+    <p class="note st-56f43562" >چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
   </section>
 
   <!-- 7) CTA -->
   <div class="glass cta-box">
-    <p style="font-weight:800;margin-bottom:12px;">می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
+    <p class="st-9704c2ae" >می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
     <a class="btn btn-lg" href="/birth-form">چارت تولد رایگان من</a>
   </div>
 

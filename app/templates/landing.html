@@ -17,20 +17,20 @@
 <div class="l-hero">
   <h1>{{ h1 }}</h1>
   <p>{{ sub }}</p>
-  <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+  <div class="st-bf0d4370" >
     <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
     <a class="btn btn-ghost" href="/plans">مشاهده پلن‌ها</a>
   </div>
-  {% if cta_note %}<p class="muted" style="margin-top:12px;font-size:.85rem;">{{ cta_note }}</p>{% endif %}
+  {% if cta_note %}<p class="muted st-92bf8576" >{{ cta_note }}</p>{% endif %}
 </div>
 
-<div class="l-row" style="margin-top:10px;">
+<div class="l-row st-d2c171b1" >
   {% for chip in chips %}<span class="l-chip">{{ chip }}</span>{% endfor %}
 </div>
 
-<div class="l-row" style="margin-top:22px;">
+<div class="l-row st-2517a51b" >
   {% for card in cards %}
-  <div class="l-card" style="flex:1;min-width:240px;max-width:330px;text-align:right;">
+  <div class="l-card st-2b0f11a4" >
     {% if card.icon %}<svg class="l-svg" aria-hidden="true"><use href="#icon-{{ card.icon }}"/></svg>{% endif %}
     <b>{{ card.title }}</b>
     <p>{{ card.body }}</p>
@@ -38,14 +38,14 @@
   {% endfor %}
 </div>
 
-<div style="max-width:720px;margin:26px auto 0;" x-data="{open:false}">
-  <div class="glass" style="padding:18px 20px;text-align:right;">
-    <b style="font-size:.95rem;color:#fff;">پاسخ صادقانه به یک سؤال رایج</b>
-    <p style="color:var(--muted);font-size:.87rem;line-height:1.95;margin:10px 0 0;">{{ faq }}</p>
+<div class="st-21a1dc51" x-data="{open:false}">
+  <div class="glass st-22bedf1a" >
+    <b class="st-28dd932f" >پاسخ صادقانه به یک سؤال رایج</b>
+    <p class="st-2794475f" >{{ faq }}</p>
   </div>
 </div>
 
-<div style="text-align:center;margin-top:26px;padding-bottom:40px;">
+<div class="st-6ca9fc10" >
   <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
 </div>
 {% endblock %}

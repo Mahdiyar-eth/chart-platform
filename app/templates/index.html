@@ -1,5 +1,5 @@
-{% block body_attrs %}data-page="landing"{% endblock %}
 {% extends "base.html" %}
+{% block body_attrs %}data-page="landing"{% endblock %}
 {% block content %}
 <style>
   .mode-btn{padding:9px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--muted);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
@@ -13,102 +13,102 @@
   .sample .tag{display:inline-block;font-size:.7rem;font-weight:800;color:var(--gold);background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;}
 </style>
 
-<header style="text-align:center; padding:36px 0 22px;" x-data="{spec:false}">
-  <h1 style="font-size:clamp(1.9rem,5vw,2.6rem); font-weight:800; line-height:1.4;">چارت تولد آنلاین — زایچه</h1>
-  <p class="muted" style="margin-top:12px; font-size:1.05rem; line-height:2; max-width:680px; margin-inline:auto;">
+<header class="st-470ff171" x-data="{spec:false}">
+  <h1 class="st-a187dc99" >چارت تولد آنلاین — زایچه</h1>
+  <p class="muted st-899f6ff5" >
     نقشه‌ی آسمانِ لحظه‌ی تولدت، برای شناخت بهتر خودت، مسیر شغلی، روابط و استعدادهایت — با محاسبه‌ی دقیق نجومی، نه فال.
   </p>
 
-  <div style="margin-top:16px; display:flex; justify-content:center; gap:8px;" role="tablist" aria-label="سطح توضیحات">
+  <div class="st-9ad9b858" role="tablist" aria-label="سطح توضیحات">
     <button type="button" class="mode-btn" :class="!spec && 'mode-on'" @click="spec=false">توضیح ساده</button>
     <button type="button" class="mode-btn" :class="spec && 'mode-on'" @click="spec=true">توضیح تخصصی</button>
   </div>
 
-  <div class="glass" style="margin-top:16px; max-width:680px; margin-inline:auto; padding:18px 20px; text-align:right;">
-    <p x-show="!spec" style="line-height:2.1; font-size:.96rem; color:var(--txt); margin:0;">
+  <div class="glass st-cee30795" >
+    <p class="st-4bbb9420" x-show="!spec" >
       کافیست تاریخ، ساعت و محل تولدت را وارد کنی تا نقشه‌ی آسمانِ همان لحظه ساخته شود. بعد از آن می‌توانی گزارش شخصیت و استعدادهایت را بخوانی، با هوش مصنوعی درباره‌ی چارتِ خودت گفت‌وگو کنی، سازگاری‌ات با دیگران را بسنجی، ساعت نامشخص تولدت را بازسازی کنی و آسمان امروز را دنبال کنی.
     </p>
-    <p x-show="spec" x-cloak style="line-height:2.1; font-size:.9rem; color:var(--muted); margin:0;">
-      محاسبه با موتور <b style="color:var(--gold);">Swiss Ephemeris</b> — همان استاندارد اخترشناسان حرفه‌ای. سیستم پیش‌فرض <b style="color:var(--gold);">تروپیکال</b> (برج‌های شمسی رایج) است و سیستم <b style="color:var(--gold);">سایدریال لاهیری</b> (ودیک) هم در فرم قابل انتخاب است. موقعیت سیاره‌ها، ۱۲ خانه، زاویه‌های اصلی و فرعی و گذرهای سیاره‌ای با دقت تا درجه محاسبه می‌شوند. هر بینشِ گزارش با «شاهد نجومی» می‌آید: کدام سیاره، در کدام خانه و با چه زاویه‌ای — قابل ردیابی، نه ادعای کلی.
+    <p class="st-0f84fef8" x-show="spec" x-cloak >
+      محاسبه با موتور <b class="st-e39ebac6" >Swiss Ephemeris</b> — همان استاندارد اخترشناسان حرفه‌ای. سیستم پیش‌فرض <b class="st-e39ebac6" >تروپیکال</b> (برج‌های شمسی رایج) است و سیستم <b class="st-e39ebac6" >سایدریال لاهیری</b> (ودیک) هم در فرم قابل انتخاب است. موقعیت سیاره‌ها، ۱۲ خانه، زاویه‌های اصلی و فرعی و گذرهای سیاره‌ای با دقت تا درجه محاسبه می‌شوند. هر بینشِ گزارش با «شاهد نجومی» می‌آید: کدام سیاره، در کدام خانه و با چه زاویه‌ای — قابل ردیابی، نه ادعای کلی.
     </p>
   </div>
 
-  <div style="margin-top:22px; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:center;">
-    <a class="btn btn-lg" href="/birth-form"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان من</a>
-    <a class="btn btn-ghost" href="/plans"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-tag"/></svg> مشاهده پلن‌ها</a>
+  <div class="st-b963591c" >
+    <a class="btn btn-lg" href="/birth-form"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان من</a>
+    <a class="btn btn-ghost" href="/plans"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-tag"/></svg> مشاهده پلن‌ها</a>
   </div>
-  <div style="margin-top:16px;">
-    <a href="/static/guides/zayche-guide.pdf" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:8px; font-size:.9rem; color:var(--gold); text-decoration:none; font-weight:600; min-height:44px; border-bottom:1px dashed rgba(245,197,24,.4); padding-bottom:2px;">
-      <svg style="width:18px;height:18px;" aria-hidden="true"><use href="#icon-book-open"/></svg> دانلود راهنمای رایگان (PDF)
+  <div class="st-1b0f4999" >
+    <a class="st-8491e6e3" href="/static/guides/zayche-guide.pdf" target="_blank" rel="noopener" >
+      <svg class="st-5304332b" aria-hidden="true"><use href="#icon-book-open"/></svg> دانلود راهنمای رایگان (PDF)
     </a>
   </div>
 </header>
 
-<section class="glass glow" style="margin-top:10px; padding:28px 22px; text-align:center;">
-  <svg style="width:42px;height:42px;color:var(--gold);margin:0 auto 8px;display:block;" aria-hidden="true"><use href="#icon-chat"/></svg>
-  <h2 style="font-size:1.4rem;">گفت‌وگو با هوش مصنوعی درباره‌ی چارتِ خودت</h2>
-  <p class="muted" style="margin-top:12px; max-width:640px; margin-inline:auto; line-height:2; font-size:.98rem;">
-    از شخصیت، شغل، رابطه یا مسیر زندگی‌ات هر چیزی بپرس — هوش مصنوعی با تکیه بر <b style="color:var(--txt);">محاسبه‌ی دقیق نجومی چارتِ خودت</b> (موقعیت سیاره‌ها، خانه‌ها و زاویه‌ها) پاسخ می‌دهد، نه با حدس کلی.
+<section class="glass glow st-d348ff27" >
+  <svg class="st-d1039ed9" aria-hidden="true"><use href="#icon-chat"/></svg>
+  <h2 class="st-bea3ad6b" >گفت‌وگو با هوش مصنوعی درباره‌ی چارتِ خودت</h2>
+  <p class="muted st-d9eba3fc" >
+    از شخصیت، شغل، رابطه یا مسیر زندگی‌ات هر چیزی بپرس — هوش مصنوعی با تکیه بر <b class="st-f18be2a6" >محاسبه‌ی دقیق نجومی چارتِ خودت</b> (موقعیت سیاره‌ها، خانه‌ها و زاویه‌ها) پاسخ می‌دهد، نه با حدس کلی.
     تاریخچه‌ی گفتگوهایت هم ذخیره می‌شود تا هر وقت خواستی برگردی و ادامه بدهی.
   </p>
-  <div style="margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+  <div class="st-b0440da7" >
     <a class="btn btn-lg" href="/birth-form">چارت بساز و گفتگو کن</a>
     <a class="btn btn-ghost" href="/plans">این ویژگی در پلن طلایی است</a>
   </div>
 </section>
 
-<section style="margin-top:30px;">
-  <h2 style="text-align:center; margin-bottom:6px;">همه‌ی امکانات زایچه</h2>
-  <p class="muted" style="text-align:center; font-size:.88rem; margin-bottom:20px;">از چارت رایگان تا گزارش کامل و ابزارهای تخصصی — همه در یک‌جا</p>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px;">
+<section class="st-2fbbbcd4" >
+  <h2 class="st-f5af4736" >همه‌ی امکانات زایچه</h2>
+  <p class="muted st-04e790e9" >از چارت رایگان تا گزارش کامل و ابزارهای تخصصی — همه در یک‌جا</p>
+  <div class="st-104ff8a2" >
 
     <a class="glass feat" href="/birth-form">
       <svg class="ic" aria-hidden="true"><use href="#icon-compass"/></svg>
       <b>چارت تولد تعاملی</b>
       <p>موتور Swiss Ephemeris — همان استاندارد اخترشناسان حرفه‌ای. نقشه‌ی دقیق و قابل چرخش، بدون فال‌بازی.</p>
-      <span class="more">ساخت چارت <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">ساخت چارت <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat" href="/plans">
       <svg class="ic" aria-hidden="true"><use href="#icon-book-open"/></svg>
       <b>گزارش ۱۳ بخشی با مدرک</b>
       <p>هر بینش با «شاهد نجومی» می‌آید: کدام سیاره، کدام خانه، کدام زاویه — قابل ردیابی تا درجه.</p>
-      <span class="more">مشاهده پلن‌ها <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">مشاهده پلن‌ها <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat flag" href="/synastry">
       <svg class="ic" aria-hidden="true"><use href="#icon-heart"/></svg>
       <b>سیناستری (سازگاری رابطه)</b>
       <p>نمره‌ی سازگاری در ۴ حوزه + ۲۵+ ارتباط سیاره‌ای میان چارت تو و طرف مقابل. برای ازدواج، شراکت و دوستی.</p>
-      <span class="more">سنجش سازگاری <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">سنجش سازگاری <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat flag" href="/rectify">
       <svg class="ic" aria-hidden="true"><use href="#icon-clock"/></svg>
       <b>بازبینی ساعت تولد</b>
       <p>ساعت دقیق تولدت را نمی‌دانی؟ از روی رویدادهای کلیدی زندگی، محتمل‌ترین زمان تولد را بازسازی می‌کنیم.</p>
-      <span class="more">یافتن ساعت تولد <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">یافتن ساعت تولد <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat" href="/sky">
       <svg class="ic" aria-hidden="true"><use href="#icon-moon"/></svg>
       <b>آسمان امروز و ترانزیت</b>
       <p>موقعیت امروز سیاره‌ها، فاز ماه، جنبه‌ها و رجوعی‌ها — رایگان برای همه. + گذرهای ۴ ماه آینده نسبت به چارتت.</p>
-      <span class="more">آسمان امروز <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">آسمان امروز <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat" href="/learn">
       <svg class="ic" aria-hidden="true"><use href="#icon-book"/></svg>
       <b>آموزش نجوم</b>
       <p>از صفر: خانه‌ها، سیاره‌ها، زاویه‌ها و خواندن چارت — به زبان ساده و گام‌به‌گام.</p>
-      <span class="more">شروع یادگیری <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">شروع یادگیری <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <a class="glass feat" href="/articles">
       <svg class="ic" aria-hidden="true"><use href="#icon-book-open"/></svg>
       <b>مقالات تخصصی</b>
       <p>بیش از ۵۰ مقاله‌ی دسته‌بندی‌شده درباره‌ی برج‌ها، سیاره‌ها، خانه‌ها، ترانزیت و سازگاری.</p>
-      <span class="more">مطالعه مقالات <svg style="width:14px;height:14px;" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <span class="more">مطالعه مقالات <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
     </a>
 
     <div class="glass feat">
@@ -119,78 +119,78 @@
   </div>
 </section>
 
-<section style="margin-top:32px;">
-  <h2 style="text-align:center; margin-bottom:6px;">نمونه‌ی انواع گزارش‌ها</h2>
-  <p class="muted" style="text-align:center; font-size:.88rem; margin-bottom:20px;">ببین گزارش کامل چه شکلی است — هر بینش بر پایه‌ی موقعیت واقعی سیاره‌های چارت نوشته می‌شود</p>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px;">
+<section class="st-c2f8546b" >
+  <h2 class="st-f5af4736" >نمونه‌ی انواع گزارش‌ها</h2>
+  <p class="muted st-04e790e9" >ببین گزارش کامل چه شکلی است — هر بینش بر پایه‌ی موقعیت واقعی سیاره‌های چارت نوشته می‌شود</p>
+  <div class="st-fb424857" >
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">شخصیت</span>
-      <b style="font-size:.92rem;">خورشید در اسد، ماه در حوت، طالع اسد</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«خورشید در اسد به تو اعتمادبه‌نفس و میل به درخشیدن می‌دهد؛ اما ماه در حوت، لایه‌ای عمیق از حساسیت و همدلی زیر این ظاهر پرشور دارد. این ترکیب یعنی رهبری گرمی که در عین حال عمیقاً احساس می‌کند…»</p>
+      <b class="st-b2e36ad1" >خورشید در اسد، ماه در حوت، طالع اسد</b>
+      <p class="muted st-b571ae96" >«خورشید در اسد به تو اعتمادبه‌نفس و میل به درخشیدن می‌دهد؛ اما ماه در حوت، لایه‌ای عمیق از حساسیت و همدلی زیر این ظاهر پرشور دارد. این ترکیب یعنی رهبری گرمی که در عین حال عمیقاً احساس می‌کند…»</p>
     </div>
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">شغل و موفقیت</span>
-      <b style="font-size:.92rem;">مریخ در سرطان، خانه یازدهم</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«مریخ در سرطان و خانه یازدهم، انرژی عمل تو را به سمت اهداف جمعی و حمایت از دیگران می‌برد. مسیر شغلی تو در کارهایی شکوفا می‌شود که هم احساسی و هم اجتماعی‌اند…»</p>
+      <b class="st-b2e36ad1" >مریخ در سرطان، خانه یازدهم</b>
+      <p class="muted st-b571ae96" >«مریخ در سرطان و خانه یازدهم، انرژی عمل تو را به سمت اهداف جمعی و حمایت از دیگران می‌برد. مسیر شغلی تو در کارهایی شکوفا می‌شود که هم احساسی و هم اجتماعی‌اند…»</p>
     </div>
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">عشق و رابطه</span>
-      <b style="font-size:.92rem;">زهره در ترازو، خانه هفتم</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«زهره در ترازو و خانه هفتم یعنی در عشق، ظرافت، عدالت و همراهی را می‌جویی. شریکِ ایده‌آل تو کسی است که هم زیبایی را می‌فهمد و هم اهل گفت‌وگوی صادقانه است…»</p>
+      <b class="st-b2e36ad1" >زهره در ترازو، خانه هفتم</b>
+      <p class="muted st-b571ae96" >«زهره در ترازو و خانه هفتم یعنی در عشق، ظرافت، عدالت و همراهی را می‌جویی. شریکِ ایده‌آل تو کسی است که هم زیبایی را می‌فهمد و هم اهل گفت‌وگوی صادقانه است…»</p>
     </div>
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">سیناستری</span>
-      <b style="font-size:.92rem;">ماه تو روی ماه او — سه‌ضلعی</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«ماه تو روی ماه او سه‌ضلعی می‌سازد؛ یعنی هماهنگی عاطفیِ طبیعی و امن. اما مریخ تو مقابل زحل او، چالشی در شیوه‌ی ابراز خواسته‌هاست که با گفتگو حل می‌شود…»</p>
+      <b class="st-b2e36ad1" >ماه تو روی ماه او — سه‌ضلعی</b>
+      <p class="muted st-b571ae96" >«ماه تو روی ماه او سه‌ضلعی می‌سازد؛ یعنی هماهنگی عاطفیِ طبیعی و امن. اما مریخ تو مقابل زحل او، چالشی در شیوه‌ی ابراز خواسته‌هاست که با گفتگو حل می‌شود…»</p>
     </div>
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">استعداد و خلاقیت</span>
-      <b style="font-size:.92rem;">عطارد در جوزا، خانه سوم</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«عطارد در جوزا و خانه سوم یعنی ذهنی تیز، زبانی چابک و استعداد طبیعی در نوشتن، تدریس و ارتباط. خلاقیت تو از کنجکاوی بی‌پایان سرچشمه می‌گیرد…»</p>
+      <b class="st-b2e36ad1" >عطارد در جوزا، خانه سوم</b>
+      <p class="muted st-b571ae96" >«عطارد در جوزا و خانه سوم یعنی ذهنی تیز، زبانی چابک و استعداد طبیعی در نوشتن، تدریس و ارتباط. خلاقیت تو از کنجکاوی بی‌پایان سرچشمه می‌گیرد…»</p>
     </div>
 
-    <div class="glass sample" style="padding:20px;">
+    <div class="glass sample st-769fed37" >
       <span class="tag">چالش و رشد</span>
-      <b style="font-size:.92rem;">زحل در جدی، خانه دهم</b>
-      <p class="muted" style="margin-top:8px; font-size:.87rem; line-height:1.9;">«زحل در جدی و خانه دهم، درس صبر و مسئولیت را به مسیر شغلی‌ات گره می‌زند. قله‌ای که دیرتر به آن می‌رسی، اما آنچه می‌سازی ماندگار و واقعی است…»</p>
+      <b class="st-b2e36ad1" >زحل در جدی، خانه دهم</b>
+      <p class="muted st-b571ae96" >«زحل در جدی و خانه دهم، درس صبر و مسئولیت را به مسیر شغلی‌ات گره می‌زند. قله‌ای که دیرتر به آن می‌رسی، اما آنچه می‌سازی ماندگار و واقعی است…»</p>
     </div>
 
   </div>
 </section>
 
-<section style="margin-top:32px;">
-  <h2 style="text-align:center; margin-bottom:18px;">چطور کار می‌کند؟</h2>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;">
-    <div class="glass" style="padding:20px;">
-      <svg style="width:24px;height:24px;color:var(--gold);" aria-hidden="true"><use href="#icon-compass"/></svg>
-      <b style="display:block; margin-top:10px;">۱ · چارت رایگان بساز</b>
-      <p class="muted" style="margin-top:6px; font-size:.88rem; line-height:1.7;">فقط تاریخ، ساعت و محل تولد. بدون ثبت‌نام، بدون هزینه.</p>
+<section class="st-c2f8546b" >
+  <h2 class="st-0bef36c7" >چطور کار می‌کند؟</h2>
+  <div class="st-7bad902b" >
+    <div class="glass st-769fed37" >
+      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-compass"/></svg>
+      <b class="st-7f153e1c" >۱ · چارت رایگان بساز</b>
+      <p class="muted st-a0f8be2d" >فقط تاریخ، ساعت و محل تولد. بدون ثبت‌نام، بدون هزینه.</p>
     </div>
-    <div class="glass" style="padding:20px;">
-      <svg style="width:24px;height:24px;color:var(--gold);" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-      <b style="display:block; margin-top:10px;">۲ · اینسایت‌های رایگان ببین</b>
-      <p class="muted" style="margin-top:6px; font-size:.88rem; line-height:1.7;">سه‌گانه‌ی اصلی و چند بینش کوتاه، فوری و رایگان — تا ببینی گزارش چه شکلی است.</p>
+    <div class="glass st-769fed37" >
+      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+      <b class="st-7f153e1c" >۲ · اینسایت‌های رایگان ببین</b>
+      <p class="muted st-a0f8be2d" >سه‌گانه‌ی اصلی و چند بینش کوتاه، فوری و رایگان — تا ببینی گزارش چه شکلی است.</p>
     </div>
-    <div class="glass" style="padding:20px;">
-      <svg style="width:24px;height:24px;color:var(--gold);" aria-hidden="true"><use href="#icon-book-open"/></svg>
-      <b style="display:block; margin-top:10px;">۳ · گزارش کامل را بگیر</b>
-      <p class="muted" style="margin-top:6px; font-size:.88rem; line-height:1.7;">۲۵+ صفحه با شواهد نجومی قابل ردیابی + PDF و Word. هر وقت خودت خواستی.</p>
+    <div class="glass st-769fed37" >
+      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-book-open"/></svg>
+      <b class="st-7f153e1c" >۳ · گزارش کامل را بگیر</b>
+      <p class="muted st-a0f8be2d" >۲۵+ صفحه با شواهد نجومی قابل ردیابی + PDF و Word. هر وقت خودت خواستی.</p>
     </div>
   </div>
-  <div style="text-align:center; margin-top:20px;">
-    <a class="btn btn-lg" href="/birth-form"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-compass"/></svg> شروع رایگان</a>
+  <div class="st-e67a6afa" >
+    <a class="btn btn-lg" href="/birth-form"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> شروع رایگان</a>
   </div>
 </section>
 
-<section class="glass glow" style="margin-top:28px; padding:26px 20px; text-align:center;">
-  <h2 style="font-size:1.25rem;">گزارش کامل — از ۱۴۹ هزار تومان</h2>
-  <p class="muted" style="margin-top:8px;">هزینه‌ی یک جلسه مشاوره، با خروجی دائمی و قابل ویرایش (Word) و شواهد نجومی.</p>
-  <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:14px;">
+<section class="glass glow st-74218447" >
+  <h2 class="st-450d3105" >گزارش کامل — از ۱۴۹ هزار تومان</h2>
+  <p class="muted st-8a77e5a3" >هزینه‌ی یک جلسه مشاوره، با خروجی دائمی و قابل ویرایش (Word) و شواهد نجومی.</p>
+  <div class="st-59314cde" >
     <span class="chip">۳ حوزه‌ی زندگی</span>
     <span class="chip">Big Three</span>
     <span class="chip">گفتگو با AI</span>
@@ -198,21 +198,21 @@
     <span class="chip">ترانزیت ۴ ماهه</span>
     <span class="chip">فصل فرهنگی-اسلامی</span>
   </div>
-  <a class="btn btn-lg" href="/plans" style="margin-top:16px;">مشاهده همه پلن‌ها و قیمت‌ها</a>
+  <a class="btn btn-lg st-1b0f4999" href="/plans" >مشاهده همه پلن‌ها و قیمت‌ها</a>
 </section>
 
-<section style="margin-top:30px; display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px;">
-  <div class="glass" style="padding:18px;">
-    <b style="font-size:.92rem;">شفافیت روش</b>
-    <p class="muted" style="margin-top:6px; font-size:.85rem; line-height:1.7;">روش محاسبه، موتور نجومی و مرز روشنِ «نقشه، نه پیش‌گویی» را شفاف نوشته‌ایم. <a href="/disclaimer" style="color:var(--gold);">سلب مسئولیت</a> و <a href="/privacy" style="color:var(--gold);">حریم خصوصی</a>.</p>
+<section class="st-47d96f90" >
+  <div class="glass st-8e11ed66" >
+    <b class="st-b2e36ad1" >شفافیت روش</b>
+    <p class="muted st-e081f918" >روش محاسبه، موتور نجومی و مرز روشنِ «نقشه، نه پیش‌گویی» را شفاف نوشته‌ایم. <a class="st-e39ebac6" href="/disclaimer" >سلب مسئولیت</a> و <a class="st-e39ebac6" href="/privacy" >حریم خصوصی</a>.</p>
   </div>
-  <div class="glass" style="padding:18px;">
-    <b style="font-size:.92rem;">حریم خصوصی</b>
-    <p class="muted" style="margin-top:6px; font-size:.85rem; line-height:1.7;">داده‌ی تولد تو فقط برای چارت خودت استفاده می‌شود و هرگز فروخته نمی‌شود. <a href="/privacy" style="color:var(--gold);">بیشتر بدان</a>.</p>
+  <div class="glass st-8e11ed66" >
+    <b class="st-b2e36ad1" >حریم خصوصی</b>
+    <p class="muted st-e081f918" >داده‌ی تولد تو فقط برای چارت خودت استفاده می‌شود و هرگز فروخته نمی‌شود. <a class="st-e39ebac6" href="/privacy" >بیشتر بدان</a>.</p>
   </div>
-  <div class="glass" style="padding:18px;">
-    <b style="font-size:.92rem;">نمونه را ببین</b>
-    <p class="muted" style="margin-top:6px; font-size:.85rem; line-height:1.7;">هنوز مطمئن نیستی؟ چارت رایگان بساز و اینسایت‌های واقعی چارت خودت را قبل از هر پرداختی ببین.</p>
+  <div class="glass st-8e11ed66" >
+    <b class="st-b2e36ad1" >نمونه را ببین</b>
+    <p class="muted st-e081f918" >هنوز مطمئن نیستی؟ چارت رایگان بساز و اینسایت‌های واقعی چارت خودت را قبل از هر پرداختی ببین.</p>
   </div>
 </section>
 {% endblock %}

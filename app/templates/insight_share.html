@@ -2,18 +2,18 @@
 {% block title %}بینش نجومی | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div style="max-width:520px;margin:0 auto;padding:36px 20px;text-align:center;">
-  <svg style="width:44px;height:44px;color:var(--gold);margin:0 auto 10px;display:block;" aria-hidden="true"><use href="#icon-sun"/></svg>
-  <div style="color:var(--muted);font-size:.85rem;">{{ date_fa }}</div>
+<div class="st-cf16c7f9" >
+  <svg class="st-328149fd" aria-hidden="true"><use href="#icon-sun"/></svg>
+  <div class="st-cb575911" >{{ date_fa }}</div>
   {% if kind == "transit" %}
-    <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0;">گذرهای امروز</h1>
+    <h1 class="st-37d5f733" >گذرهای امروز</h1>
   {% elif kind == "weekly" %}
-    <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0;">نگاهی به آسمان هفته</h1>
+    <h1 class="st-37d5f733" >نگاهی به آسمان هفته</h1>
   {% else %}
-    <h1 style="font-size:1.5rem;font-weight:800;margin:8px 0;">امروز در آسمان</h1>
+    <h1 class="st-37d5f733" >امروز در آسمان</h1>
   {% endif %}
-  <div class="glass" style="margin-top:16px;padding:22px;border-radius:18px;line-height:2;text-align:right;">{{ headline }}</div>
-  <a class="btn btn-lg" style="margin-top:22px;" href="/birth-form">چارت تولد خودت را بساز</a>
-  <p style="color:var(--muted);font-size:.8rem;margin-top:12px;">زایچه — محاسبه دقیق نجومی چارت تولد</p>
+  <div class="glass st-cf409341" >{{ headline }}</div>
+  <a class="btn btn-lg st-2517a51b" href="/birth-form">چارت تولد خودت را بساز</a>
+  <p class="st-ee3bacb5" >زایچه — محاسبه دقیق نجومی چارت تولد</p>
 </div>
 {% endblock %}

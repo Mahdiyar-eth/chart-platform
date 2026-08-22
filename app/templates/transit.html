@@ -1,33 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width:760px;margin:0 auto;padding:24px 14px 50px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-    <h1 style="font-size:23px;font-weight:800;">گذرهای کنونی سیارات</h1>
-    <a class="btn btn-ghost" href="/chart/{{ chart_id }}" style="min-height:40px;padding:0 14px;font-size:.85rem;">← چارت</a>
+<div class="st-29c04372" >
+  <div class="st-f16fa207" >
+    <h1 class="st-42c7ba33" >گذرهای کنونی سیارات</h1>
+    <a class="btn btn-ghost st-70764bf3" href="/chart/{{ chart_id }}" >← چارت</a>
   </div>
-  <p class="muted" style="font-size:.9rem;margin-bottom:18px;">
+  <p class="muted st-7e3a2bf4" >
     سیارات در حال گذر، با نقاط کلیدی چارت تولد تو پیوندهایی می‌سازند — این «آب‌وهوای» نجومی این روزهاست.
   </p>
 
-  <div style="display:flex;flex-direction:column;gap:10px;">
+  <div class="st-a56c85e3" >
     {% for e in events %}
-    <div class="glass" style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
-      <div style="font-size:26px;min-width:44px;text-align:center;">🪐</div>
-      <div style="flex:1;">
-        <div style="font-weight:800;">{{ e.planet_fa }} <span style="color:#f5c518;">{{ e.aspect }}</span> {{ {'Sun':'خورشید تولد','Moon':'ماه تولد','ASC':'طالع تولد'}.get(e.target, e.target) }}</div>
-        <div class="muted" style="font-size:.85rem;">در {{ e.sign_fa }} — اورب {{ e.orb }}°</div>
+    <div class="glass st-36aaa7de" >
+      <div class="st-0bec4c4d" >🪐</div>
+      <div class="st-97445a8d" >
+        <div class="st-2b953210" >{{ e.planet_fa }} <span class="st-dcc6ae22" >{{ e.aspect }}</span> {{ {'Sun':'خورشید تولد','Moon':'ماه تولد','ASC':'طالع تولد'}.get(e.target, e.target) }}</div>
+        <div class="muted st-9bcd21d2" >در {{ e.sign_fa }} — اورب {{ e.orb }}°</div>
       </div>
     </div>
     {% endfor %}
     {% if not events %}
-    <div class="glass" style="padding:20px;text-align:center;color:var(--muted);">
+    <div class="glass st-767a4b0e" >
       گذر مهمی در این بازه فعال نیست — چارت تو در آرامش است.
     </div>
     {% endif %}
   </div>
 
-  <p class="muted" style="font-size:.8rem;margin-top:16px;">
-    تحلیل اختصاصیِ روایت گذرهای پیشِ رو همین‌جا فعال است — <a href="/transits/{{ chart_id }}" style="color:#f5c518;">گذرهای پیشِ رو</a>
+  <p class="muted st-26650c5a" >
+    تحلیل اختصاصیِ روایت گذرهای پیشِ رو همین‌جا فعال است — <a class="st-dcc6ae22" href="/transits/{{ chart_id }}" >گذرهای پیشِ رو</a>
   </p>
 </div>
 {% endblock %}

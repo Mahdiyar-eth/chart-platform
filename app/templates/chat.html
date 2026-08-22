@@ -1,28 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width:720px;margin:0 auto;padding:20px 14px 40px;" x-data="chat()" x-init="init()">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-    <h1 style="font-size:22px;font-weight:800;color:#e8ecff;">گفت‌وگو با چارت تولد</h1>
-    <a class="btn btn-ghost" href="/chart/{{ chart_id }}" style="min-height:44px;padding:0 16px;font-size:.85rem;">← چارت</a>
+<div class="st-566e7247" x-data="chat()" x-init="init()">
+  <div class="st-8f42c5fc" >
+    <h1 class="st-8670f915" >گفت‌وگو با چارت تولد</h1>
+    <a class="btn btn-ghost st-a1e45ea4" href="/chart/{{ chart_id }}" >← چارت</a>
   </div>
-  <p class="muted" style="font-size:.9rem;margin-bottom:6px;">
+  <p class="muted st-09329ac0" >
     از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده... پاسخ بر اساس محاسبه‌ی دقیق چارت و گزارش اختصاصی توست.
   </p>
-  <p x-show="!locked" style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">
+  <p class="st-18685c79" x-show="!locked" >
     سهمیه امروز: <b x-text="remaining"></b> سوال از <b x-text="limit"></b> باقی مانده
   </p>
 
-  <div x-show="!locked && msgs.length === 0" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+  <div class="st-ac1e817f" x-show="!locked && msgs.length === 0" >
     {% for p in presets %}
-    <button class="btn btn-ghost" type="button" style="min-height:44px;padding:0 14px;font-size:.8rem;border-radius:999px;"
-            x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
+    <button class="btn btn-ghost st-02c44d08" type="button" x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
     {% endfor %}
   </div>
 
-  <div id="msgs" x-show="!locked" style="display:flex;flex-direction:column;gap:10px;min-height:46vh;max-height:58vh;overflow-y:auto;padding:4px;" x-ref="box">
+  <div class="st-ac7cd697" id="msgs" x-show="!locked" x-ref="box">
     <template x-for="m in msgs" :key="m.id">
-      <div :style="m.me ? 'align-self:flex-end;background:linear-gradient(135deg,#6a5acd,#4a3f8f);color:#fff;border-radius:16px 16px 4px 16px;' : 'align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#e8ecff;border-radius:16px 16px 16px 4px;'"
-           style="max-width:82%;padding:11px 15px;font-size:.95rem;line-height:1.7;white-space:pre-wrap;">
+      <div class="st-34b6e1f7 st-933b315d" :>
         <span x-text="m.text" :class="m.streaming ? 'streaming-cursor' : ''"></span>
       </div>
     </template>
@@ -33,23 +31,23 @@
   @keyframes blink{50%{opacity:0;}}
   </style>
 
-  <form @submit.prevent="send()" x-show="!locked" style="display:flex;gap:8px;margin-top:12px;">
-    <input class="input" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
-           :disabled="busy || remaining <= 0" style="flex:1;">
-    <button class="btn btn-lg" :disabled="busy || remaining <= 0" style="min-height:50px;padding:0 22px;">ارسال</button>
+  <form class="st-ab6fd1c0" @submit.prevent="send()" x-show="!locked" >
+    <input class="input st-97445a8d" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
+           :disabled="busy || remaining <= 0" >
+    <button class="btn btn-lg st-0d768e62" :disabled="busy || remaining <= 0" >ارسال</button>
   </form>
 
   <template x-if="locked">
-    <div style="margin-top:18px;padding:22px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(245,197,24,.10),rgba(255,255,255,.02));border:1px solid rgba(245,197,24,.28);text-align:center;">
-      <div style="width:52px;height:52px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,rgba(245,197,24,.22),rgba(245,197,24,.06));display:flex;align-items:center;justify-content:center;color:#f5c518;">
-        <svg style="width:24px;height:24px;" aria-hidden="true"><use href="#icon-lock"/></svg>
+    <div class="st-8b8f12a8" >
+      <div class="st-20bb8944" >
+        <svg class="st-8fd988a7" aria-hidden="true"><use href="#icon-lock"/></svg>
       </div>
-      <p style="color:#f5c518;font-size:1.02rem;font-weight:800;margin-bottom:6px;">گفت‌وگو با چارت تولد</p>
-      <p style="color:rgba(232,236,255,.85);font-size:.9rem;line-height:1.8;margin-bottom:18px;">
+      <p class="st-5f7269c9" >گفت‌وگو با چارت تولد</p>
+      <p class="st-b93f88bd" >
         این قابلیت بخشی از پلن‌های <b>طلایی</b> و <b>ماهانه</b> است. با فعال‌سازی، از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده...
       </p>
-      <a class="btn btn-lg" href="/plans?chart={{ chart_id }}" style="min-height:50px;width:100%;max-width:280px;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
-        <svg style="width:18px;height:18px;" aria-hidden="true"><use href="#icon-tag"/></svg> خرید و فعال‌سازی
+      <a class="btn btn-lg st-5e4603b4" href="/plans?chart={{ chart_id }}" >
+        <svg class="st-5304332b" aria-hidden="true"><use href="#icon-tag"/></svg> خرید و فعال‌سازی
       </a>
     </div>
   </template>

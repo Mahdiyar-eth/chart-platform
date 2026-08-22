@@ -4,176 +4,173 @@
 {% block description %}حساب کاربری چارت تولد: گزارش‌های خود، سفارش‌ها، اشتراک و دانلودها در یک جا{% endblock %}
 
 {% block content %}
-<div style="max-width:560px; margin:0 auto; padding-top:36px;">
+<div class="st-eef5d7d4" >
   <h1>حساب کاربری</h1>
   <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
 
-  <div x-data="dashSearch()" x-init="init()" class="glass" style="margin-top:16px; padding:14px;">
-    <input x-model="q" class="input" style="width:100%;" placeholder="جستجو در چارت‌ها، گزارش‌ها و سفارش‌ها…"
+  <div x-data="dashSearch()" x-init="init()" class="glass st-f98c0465" >
+    <input x-model="q" class="input st-0466783d" placeholder="جستجو در چارت‌ها، گزارش‌ها و سفارش‌ها…"
            :disabled="!items.length">
-    <div x-show="q.length > 0" style="margin-top:10px;">
+    <div class="st-d2c171b1" x-show="q.length > 0" >
       <template x-if="results().length === 0">
-        <p class="muted" style="font-size:.85rem; padding:6px 0;">نتیجه‌ای پیدا نشد.</p>
+        <p class="muted st-c8995649" >نتیجه‌ای پیدا نشد.</p>
       </template>
       <template x-for="it in results()" :key="it.k + it.id">
-        <a :href="it.url" style="display:flex; justify-content:space-between; align-items:center; gap:8px;
-                              padding:9px 0; min-height:44px; display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
-          <span><span class="chip" style="font-size:.68rem; margin-inline-end:8px;" x-text="it.k"></span><span x-text="it.label"></span></span>
-          <svg style="width:14px;height:14px;color:var(--muted);flex:none;" aria-hidden="true"><use href="#icon-arrow"/></svg>
+        <a class="st-35b730dd" :href="it.url" >
+          <span><span class="chip st-9cfd082a" x-text="it.k"></span><span x-text="it.label"></span></span>
+          <svg class="st-43c008d9" aria-hidden="true"><use href="#icon-arrow"/></svg>
         </a>
       </template>
     </div>
   </div>
 
   {% if not profiles %}
-  <div class="glass" style="margin-top:18px; padding:20px; text-align:center;">
+  <div class="glass st-e43a70cf" >
     <p>هنوز چارتی نساخته‌ای.</p>
-    <a class="btn" href="/birth-form" style="display:inline-block; margin-top:12px;">ساخت چارت رایگان</a>
+    <a class="btn st-8bb9d55e" href="/birth-form" >ساخت چارت رایگان</a>
   </div>
   {% else %}
-  <section class="glass" style="margin-top:18px; padding:20px;">
-    <h2 style="font-size:1.05rem;">پروفایل‌های تولد ({{ profiles|length }})</h2>
+  <section class="glass st-55521a73" >
+    <h2 class="st-96b67027" >پروفایل‌های تولد ({{ profiles|length }})</h2>
     {% for p in profiles %}
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
+    <div class="st-c949ffc2" >
       <div>
         <b>{{ p.name or 'بدون نام' }}</b>
-        <span class="muted" style="display:block; font-size:.82rem;">{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
+        <span class="muted st-498344f5" >{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
       </div>
-      <span class="chip" style="font-size:.75rem;">{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
+      <span class="chip st-0da13144" >{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
     </div>
     {% endfor %}
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px;">
-    <h2 style="font-size:1.05rem;">گزارش‌ها</h2>
+  <section class="glass st-a596fc6b" >
+    <h2 class="st-96b67027" >گزارش‌ها</h2>
     {% for r in reports %}
-    <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <div class="st-4dee1ce3" >
+      <div class="st-279b1349" >
         <div>
           <b>گزارش #{{ r.id[:8] }}</b>
-          <span class="muted" style="display:block; font-size:.82rem;">{{ r.status }}</span>
+          <span class="muted st-498344f5" >{{ r.status }}</span>
         </div>
         {% if r.status == 'done' %}
-        <a class="btn" style="font-size:.8rem; padding:6px 14px; min-height:44px; display:inline-flex; align-items:center;" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
+        <a class="btn st-9a3cf707" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
         {% endif %}
       </div>
     </div>
     {% else %}
-    <p class="muted" style="padding-top:8px;">گزارشی وجود ندارد — بعد از خرید گزارش کامل، اینجا می‌بینی.</p>
+    <p class="muted st-54dca8b5" >گزارشی وجود ندارد — بعد از خرید گزارش کامل، اینجا می‌بینی.</p>
     {% endfor %}
   </section>
 
   {% if weekly %}
-  <section class="glass" style="margin-top:14px; padding:20px;">
-    <h2 style="font-size:1.05rem;">نگاهی به آسمان هفته</h2>
+  <section class="glass st-a596fc6b" >
+    <h2 class="st-96b67027" >نگاهی به آسمان هفته</h2>
     {% for chart_id, w in weekly.items() %}
-    <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,.07);">
+    <div class="st-4dee1ce3" >
       <!-- F-08 (opus-audit verified): LLM text was rendered with |safe — a
          prompt-injected model output could inject HTML/script. Escaped now;
          line breaks kept via white-space:pre-line. -->
-      <p style="margin:0; line-height:1.8; font-size:.92rem; white-space:pre-line;">{{ w.text|e }}</p>
+      <p class="st-5b875cdc" >{{ w.text|e }}</p>
     </div>
     {% endfor %}
   </section>
   {% endif %}
 
-  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
-    <h2 style="font-size:1.05rem;">
-      <svg style="width:17px;height:17px;vertical-align:-3px;margin-left:6px;color:var(--gold);" aria-hidden="true"><use href="#icon-bell"/></svg>
+  <section class="glass st-91da6b54" >
+    <h2 class="st-96b67027" >
+      <svg class="st-49ce351b" aria-hidden="true"><use href="#icon-bell"/></svg>
       اعلان مرورگر
     </h2>
-    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
-    <button id="pushBtn" class="btn" style="padding:10px 22px;">فعال‌سازی اعلان</button>
+    <p class="muted st-afc26706" >وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
+    <button id="pushBtn" class="btn st-6764383a" >فعال‌سازی اعلان</button>
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px;">
-    <h2 style="font-size:1.05rem;">
-      <svg style="width:17px;height:17px;vertical-align:-3px;margin-left:6px;color:var(--gold);" aria-hidden="true"><use href="#icon-bell"/></svg>
+  <section class="glass st-a596fc6b" >
+    <h2 class="st-96b67027" >
+      <svg class="st-49ce351b" aria-hidden="true"><use href="#icon-bell"/></svg>
       تنظیمات اعلان
     </h2>
-    <div x-data="notifPrefs()" x-init="init()" style="margin-top:8px; font-size:.9rem;">
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
-        <input type="checkbox" x-model="f.daily_insight" style="width:18px;height:18px;"> بینش روزانه
+    <div class="st-e8c5c074" x-data="notifPrefs()" x-init="init()" >
+      <label class="st-699ab5d1" >
+        <input class="st-5304332b" type="checkbox" x-model="f.daily_insight" > بینش روزانه
       </label>
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
-        <input type="checkbox" x-model="f.weekly_reflection" style="width:18px;height:18px;"> تأمل هفتگی
+      <label class="st-699ab5d1" >
+        <input class="st-5304332b" type="checkbox" x-model="f.weekly_reflection" > تأمل هفتگی
       </label>
-      <label style="display:flex; align-items:center; gap:8px; padding:7px 0; min-height:44px; cursor:pointer;">
-        <input type="checkbox" x-model="f.report_ready" style="width:18px;height:18px;"> آماده‌شدن گزارش
+      <label class="st-699ab5d1" >
+        <input class="st-5304332b" type="checkbox" x-model="f.report_ready" > آماده‌شدن گزارش
       </label>
-      <div style="display:flex; gap:10px; padding:7px 0; align-items:center;">
-        <span class="muted" style="font-size:.82rem;">ساعت‌های سکوت (اعلان ارسال نشود):</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input" style="width:80px; min-height:44px;" title="شروع">
+      <div class="st-bc73a818" >
+        <span class="muted st-1fe86672" >ساعت‌های سکوت (اعلان ارسال نشود):</span>
+        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input st-ade0e943" title="شروع">
         <span class="muted">تا</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input" style="width:80px; min-height:44px;" title="پایان">
+        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input st-ade0e943" title="پایان">
       </div>
-      <button class="btn btn-ghost" style="margin-top:8px; padding:9px 20px;" x-on:click="save()">ذخیره تنظیمات</button>
-      <span x-text="saved" style="font-size:.8rem; color:#4caf7d; margin-right:10px;"></span>
+      <button class="btn btn-ghost st-126cde5c" x-on:click="save()">ذخیره تنظیمات</button>
+      <span class="st-d873955b" x-text="saved" ></span>
     </div>
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px;">
-    <h2 style="font-size:1.05rem;">سفارش‌ها</h2>
+  <section class="glass st-a596fc6b" >
+    <h2 class="st-96b67027" >سفارش‌ها</h2>
     {% for o in orders %}
-    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:.9rem;">
+    <div class="st-279db7b7" >
       <span>{{ o.plan_key }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
-      <span class="chip" style="font-size:.75rem;">{{ o.status }}</span>
+      <span class="chip st-0da13144" >{{ o.status }}</span>
     </div>
     {% else %}
-    <p class="muted" style="padding-top:8px;">سفارشی ثبت نشده.</p>
+    <p class="muted st-54dca8b5" >سفارشی ثبت نشده.</p>
     {% endfor %}
   </section>
   {% endif %}
 
-  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
-    <h2 style="font-size:1.05rem;">کیف پول من</h2>
+  <section class="glass st-91da6b54" >
+    <h2 class="st-96b67027" >کیف پول من</h2>
     <div x-data="wallet()" x-init="init()" x-cloak>
-      <p class="muted" style="font-size:.85rem;margin-bottom:8px;">اعتبار حاصل از دعوت دوستان</p>
-      <div style="font-size:1.7rem;font-weight:800;color:var(--gold);" x-text="fmt(balance)"></div>
-      <p class="muted" style="font-size:.8rem;margin:8px 0;">کد دعوت تو: <b style="color:#fff;direction:ltr;display:inline-block;" x-text="code"></b></p>
-      <button class="btn" x-show="balance > 0" @click="askWithdraw()" style="padding:9px 20px;margin-top:6px;">
+      <p class="muted st-5691c99e" >اعتبار حاصل از دعوت دوستان</p>
+      <div class="st-8f85853e" x-text="fmt(balance)"></div>
+      <p class="muted st-cfd8b750" >کد دعوت تو: <b class="st-f74a7c57" x-text="code"></b></p>
+      <button class="btn st-c0a00e55" x-show="balance > 0" @click="askWithdraw()" >
         درخواست تسویه
       </button>
     </div>
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;" x-data="subs()" x-init="init()" x-cloak>
-    <h2 style="font-size:1.05rem;">اشتراک همراه «آسمان امروز»</h2>
-    <p class="muted" style="font-size:.85rem; margin:6px 0 14px;">Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
+  <section class="glass st-91da6b54" x-data="subs()" x-init="init()" x-cloak>
+    <h2 class="st-96b67027" >اشتراک همراه «آسمان امروز»</h2>
+    <p class="muted st-afc26706" >Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
     <template x-for="s in items" :key="s.id">
-      <div style="padding:10px 0;border-top:1px solid var(--stroke);" :data-sub="s.id">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div style="text-align:right;">
-            <b style="color:#dfe6ff;" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
-            <span class="chip" style="font-size:.72rem;margin-inline-start:6px;"
-                  x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
-            <div class="muted" style="font-size:.75rem;margin-top:3px;"
-                 x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
+      <div class="st-2e7c8e8a" :data-sub="s.id">
+        <div class="st-24ce67f3" >
+          <div class="st-54c2afb7" >
+            <b class="st-ef7ba8ad" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
+            <span class="chip st-bceed3d2" x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
+            <div class="muted st-41a52463" x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <a class="btn" style="font-size:.78rem;padding:6px 12px;" href="/plans">تمدید</a>
-            <button class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px;min-height:44px;color:#ff9d9d;" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
-            <button class="btn" style="font-size:.78rem;padding:6px 12px;min-height:44px;background:rgba(255,107,107,.2);border-color:rgba(255,107,107,.5);" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
+          <div class="st-a76d597a" >
+            <a class="btn st-3fd7213e" href="/plans">تمدید</a>
+            <button class="btn btn-ghost st-fb376871" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
+            <button class="btn st-e69017e5" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
           </div>
         </div>
       </div>
     </template>
-    <div x-show="!items.length" class="muted" style="font-size:.85rem;padding:8px 0;">
-      اشتراک فعالی نداری — <a href="/plans" style="color:var(--gold);">شروع کن</a>
+    <div x-show="!items.length" class="muted st-ea93c4be" >
+      اشتراک فعالی نداری — <a class="st-e39ebac6" href="/plans" >شروع کن</a>
     </div>
   </section>
 
-  <section class="glass" style="margin-top:14px; padding:20px; text-align:center;">
-    <h2 style="font-size:1.05rem;">اعتبار کاوش من</h2>
-    <div style="font-size:1.7rem;font-weight:800;color:var(--gold);">{{ user.credits }} <span style="font-size:.95rem;color:#b8c2f0;font-weight:600;">اعتبار</span></div>
-    <p class="muted" style="font-size:.8rem;margin:8px 0;">هر کاوش در «خودت را کشف کن» ۱ اعتبار مصرف می‌کند. اعتبارت منقضی نمی‌شود.</p>
-    <a class="btn" href="/plans" style="display:inline-block;padding:10px 22px;">خرید پک اعتبار</a>
+  <section class="glass st-91da6b54" >
+    <h2 class="st-96b67027" >اعتبار کاوش من</h2>
+    <div class="st-8f85853e" >{{ user.credits }} <span class="st-8ae7f242" >اعتبار</span></div>
+    <p class="muted st-cfd8b750" >هر کاوش در «خودت را کشف کن» ۱ اعتبار مصرف می‌کند. اعتبارت منقضی نمی‌شود.</p>
+    <a class="btn st-15da6d34" href="/plans" >خرید پک اعتبار</a>
     {% if ledger %}
-    <div style="text-align:right;margin-top:14px;border-top:1px solid var(--stroke);padding-top:10px;">
-      <div class="muted" style="font-size:.78rem;margin-bottom:6px;">آخرین تراکنش‌ها</div>
+    <div class="st-6f8669bd" >
+      <div class="muted st-97f1bfbb" >آخرین تراکنش‌ها</div>
       {% for t in ledger %}
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:4px 0;">
-        <span style="color:#dfe6ff;">
+      <div class="st-e3b17106" >
+        <span class="st-ef7ba8ad" >
           {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% elif t.reason == 'subscription' %}اعتبار ماهانه اشتراک{% elif t.reason == 'referral_bonus' %}هدیه معرفی{% else %}{{ t.reason }}{% endif %}
         </span>
         <span style="font-weight:700;{% if t.amount >= 0 %}color:#7ee2a8;{% else %}color:#ff9d9d;{% endif %}">
@@ -185,38 +182,38 @@
     {% endif %}
   </section>
 
-  <div class="glass glow" style="margin-top:14px; padding:20px; text-align:right;">
-    <h2 style="font-size:1.05rem;">دعوت از دوستان</h2>
-    <p class="muted" style="font-size:.85rem;">نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش ثبت می‌کنی و او ۱ اعتبار کاوش هدیه می‌گیرد.</p>
-    <div style="display:flex; gap:8px; margin-top:10px; direction:ltr;">
-      <input id="refLink" readonly value="{{ ref_url }}" style="flex:1; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#eee; font-size:.85rem;">
-      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn" style="padding:10px 14px;">کپی</button>
+  <div class="glass glow st-432e9cb9" >
+    <h2 class="st-96b67027" >دعوت از دوستان</h2>
+    <p class="muted st-9bcd21d2" >نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش ثبت می‌کنی و او ۱ اعتبار کاوش هدیه می‌گیرد.</p>
+    <div class="st-17017195" >
+      <input class="st-67bf3cb4" id="refLink" readonly value="{{ ref_url }}" >
+      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn st-99443573" >کپی</button>
     </div>
   </div>
 
-  <div style="margin-top:18px; display:flex; gap:10px;">
-    <a class="btn btn-ghost" href="/plans" style="flex:1; text-align:center;">مشاهده پلن‌ها</a>
-    <a class="btn btn-ghost" href="/birth-form" style="flex:1; text-align:center;">چارت جدید</a>
+  <div class="st-b508653a" >
+    <a class="btn btn-ghost st-516bc368" href="/plans" >مشاهده پلن‌ها</a>
+    <a class="btn btn-ghost st-516bc368" href="/birth-form" >چارت جدید</a>
   </div>
   <!-- F-29 (runtime audit): confirm() replaced with an Alpine modal — native
        confirm() is invisible/unreliable on mobile and banned by design rules -->
-  <div x-data="{ open: false }" style="margin-top:10px;">
-    <a href="/account/export" class="btn btn-ghost" style="display:block; width:100%; margin-bottom:10px; text-align:center;">خروجی داده‌ها (JSON)</a>
-    <button @click="open = true" class="btn btn-ghost" style="width:100%; color:#ff6b6b; border-color:rgba(255,107,107,.4);">حذف کامل حساب و داده‌ها</button>
-    <div x-cloak x-show="open" class="modal-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px;" @click.self="open = false">
-      <div class="glass" style="max-width:360px; width:100%; padding:22px; border-radius:16px; text-align:center;">
-        <div style="font-size:1.6rem; margin-bottom:8px;">⚠️</div>
-        <h3 style="margin-bottom:10px;">حذف کامل حساب</h3>
-        <p class="muted" style="font-size:.88rem; line-height:1.8;">همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
-        <form method="post" action="/account/delete" style="margin-top:14px;">
+  <div class="st-d2c171b1" x-data="{ open: false }" >
+    <a href="/account/export" class="btn btn-ghost st-306269ce" >خروجی داده‌ها (JSON)</a>
+    <button @click="open = true" class="btn btn-ghost st-57a14acc" >حذف کامل حساب و داده‌ها</button>
+    <div x-cloak x-show="open" class="modal-backdrop st-0751ea05" @click.self="open = false">
+      <div class="glass st-99c3d369" >
+        <div class="st-e0cf0e75" >⚠️</div>
+        <h3 class="st-761d3add" >حذف کامل حساب</h3>
+        <p class="muted st-22bf9de2" >همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
+        <form class="st-d6f2af6e" method="post" action="/account/delete" >
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn" style="width:100%; background:#e5484d; border-color:#e5484d; margin-bottom:8px;">بله، حذف کن</button>
-          <button type="button" @click="open = false" class="btn btn-ghost" style="width:100%;">انصراف</button>
+          <button type="submit" class="btn st-f9c4962a" >بله، حذف کن</button>
+          <button type="button" @click="open = false" class="btn btn-ghost st-0466783d" >انصراف</button>
         </form>
       </div>
     </div>
   </div>
-  <a class="muted" href="/privacy" style="display:block; text-align:center; margin-top:14px; font-size:.8rem;">حریم خصوصی</a>
+  <a class="muted st-49e845e7" href="/privacy" >حریم خصوصی</a>
 </div>
 <script>
 /* G10 (§90) — dashboard search over profiles/reports/orders */

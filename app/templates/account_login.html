@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width:400px; margin:0 auto; padding:40px 12px;">
-  <div class="glass glow" style="padding:26px; border-radius:18px; text-align:center;">
-    <h1 style="font-size:1.3rem;">ورود با شماره موبایل</h1>
-    <p class="muted" style="margin-top:8px; font-size:.85rem;">کد تأیید ۵ رقمی به موبایلت پیامک می‌شود</p>
+<div class="st-082e8a15" >
+  <div class="glass glow st-eeb1e977" >
+    <h1 class="st-27e46985" >ورود با شماره موبایل</h1>
+    <p class="muted st-ce310a7b" >کد تأیید ۵ رقمی به موبایلت پیامک می‌شود</p>
 
-    <div x-data="login()" x-cloak style="margin-top:18px; text-align:right;">
+    <div class="st-a4ecc208" x-data="login()" x-cloak >
       <template x-if="!sent">
         <form @submit.prevent="send()">
           <label>شماره موبایل</label>
-          <input class="input" type="tel" x-model="phone" inputmode="numeric" placeholder="09xxxxxxxxx" dir="ltr" style="text-align:left;">
-          <button class="btn" type="submit" style="width:100%; margin-top:12px;" :disabled="busy" x-text="busy ? 'در حال ارسال…' : 'ارسال کد'"></button>
+          <input class="input st-6be0d8ba" type="tel" x-model="phone" inputmode="numeric" placeholder="09xxxxxxxxx" dir="ltr" >
+          <button class="btn st-6dae102d" type="submit" :disabled="busy" x-text="busy ? 'در حال ارسال…' : 'ارسال کد'"></button>
         </form>
       </template>
       <template x-if="sent">
         <form @submit.prevent="verify()">
           <label>کد تأیید</label>
-          <input class="input" type="tel" x-model="code" inputmode="numeric" placeholder="00000" dir="ltr" style="text-align:left; letter-spacing:.5em;">
-          <p class="muted" style="font-size:.8rem; margin-top:6px;" x-show="devCode">کد تست (dev): <b x-text="devCode" style="color:#f5c518;"></b></p>
-          <button class="btn" type="submit" style="width:100%; margin-top:12px;" :disabled="busy" x-text="busy ? 'در حال ورود…' : 'ورود'"></button>
-          <button type="button" class="muted" style="background:none; border:none; margin-top:10px; width:100%; font-size:.8rem; min-height:44px; display:flex; align-items:center; justify-content:center;" @click="sent=false">تغییر شماره</button>
+          <input class="input st-a04b6b13" type="tel" x-model="code" inputmode="numeric" placeholder="00000" dir="ltr" >
+          <p class="muted st-5e5f5be4" x-show="devCode">کد تست (dev): <b class="st-dcc6ae22" x-text="devCode" ></b></p>
+          <button class="btn st-6dae102d" type="submit" :disabled="busy" x-text="busy ? 'در حال ورود…' : 'ورود'"></button>
+          <button type="button" class="muted st-f1d4f2ad" @click="sent=false">تغییر شماره</button>
         </form>
       </template>
-      <p x-show="error" x-text="error" style="color:#ff6b6b; margin-top:10px; font-size:.85rem;"></p>
+      <p class="st-c40e909d" x-show="error" x-text="error" ></p>
     </div>
   </div>
 </div>

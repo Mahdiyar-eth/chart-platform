@@ -2,33 +2,33 @@
 {% block title %}{{ title }}{% endblock %}
 {% block description %}{{ meta }}{% endblock %}
 {% block content %}
-<div class="wrap" style="max-width:900px;margin:0 auto;padding:40px 16px 80px;" x-data="{cat:'همه'}">
-  <h1 style="font-size:1.6rem;margin-bottom:6px;">{{ title }}</h1>
-  <div style="height:3px;width:64px;background:linear-gradient(90deg,#d4af37,transparent);border-radius:2px;margin:10px 0 22px;"></div>
+<div class="wrap st-9c227a85" x-data="{cat:'همه'}">
+  <h1 class="st-44c1f7ac" >{{ title }}</h1>
+  <div class="st-600f44c9" ></div>
 
   {% if articles %}
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;" role="tablist" aria-label="دسته‌بندی مقالات">
+  <div class="st-45ca303e" role="tablist" aria-label="دسته‌بندی مقالات">
     <button type="button" class="cat-chip" :class="cat==='همه'?'cat-chip-active':''" @click="cat='همه'">همه</button>
     {% for c in categories %}
     <button type="button" class="cat-chip" :class="cat==='{{ c }}'?'cat-chip-active':''" @click="cat='{{ c }}'">{{ c }}</button>
     {% endfor %}
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;">
+  <div class="st-70fb7da9" >
     {% for a in articles %}
-    <a href="/articles/{{ a.slug }}" x-show="cat==='همه' || cat==='{{ a.category }}'"
-       style="display:block;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;text-decoration:none;transition:transform .15s,border-color .15s;">
-      {% if a.image %}<img src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" style="width:100%;height:140px;object-fit:cover;display:block;">{% endif %}
-      <div style="padding:14px;">
-        <div style="font-size:.72rem;color:#d4af37;margin-bottom:6px;">{{ a.category }}</div>
-        <div style="font-weight:700;font-size:.92rem;line-height:1.6;color:#f2edfa;">{{ a.title }}</div>
-        <div style="font-size:.78rem;color:#9a92b0;margin-top:8px;">{{ a.excerpt }}</div>
+    <a class="st-2b6e758b" href="/articles/{{ a.slug }}" x-show="cat==='همه' || cat==='{{ a.category }}'"
+       >
+      {% if a.image %}<img class="st-dbc8ee96" src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" >{% endif %}
+      <div class="st-8ebc4372" >
+        <div class="st-48eddc88" >{{ a.category }}</div>
+        <div class="st-eb16482b" >{{ a.title }}</div>
+        <div class="st-137199ee" >{{ a.excerpt }}</div>
       </div>
     </a>
     {% endfor %}
   </div>
   {% else %}
-  <p style="color:#9a92b0;">مقالات به‌زودی منتشر می‌شوند.</p>
+  <p class="st-aa80ddc5" >مقالات به‌زودی منتشر می‌شوند.</p>
   {% endif %}
 </div>
 

@@ -9,38 +9,38 @@
 } %}
 {% set report_plans = plans | rejectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
-<div style="max-width:1040px;margin:0 auto;padding:28px 18px 70px;" x-data="purchase()">
-  <h1 style="text-align:center;font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;">پلن‌های گزارش چارت تولد</h1>
-  <p style="text-align:center;color:#b8c2f0;margin-bottom:10px;line-height:2;max-width:680px;margin-inline:auto;">
+<div class="st-8c4cf147" x-data="purchase()">
+  <h1 class="st-64374dd7" >پلن‌های گزارش چارت تولد</h1>
+  <p class="st-7e8899c5" >
     همه‌ی پلن‌ها بر اساس چارتِ محاسبه‌شده‌ی خودت تولید می‌شوند. اول رایگان چارت بساز و پیش‌نمایش را ببین، بعد انتخاب کن.
   </p>
-  <div style="text-align:center;margin-bottom:28px;">
-    <a href="/birth-form" class="btn btn-lg"><svg style="width:20px;height:20px;" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان بساز</a>
+  <div class="st-63b0a75d" >
+    <a href="/birth-form" class="btn btn-lg"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان بساز</a>
   </div>
 
-  <div class="glass" x-show="true" style="max-width:520px;margin:0 auto 26px;padding:14px 18px;display:flex;gap:10px;align-items:center;border-color:rgba(255,215,130,.35);">
-    <input x-model="coupon" @input="couponMsg=''"
+  <div class="glass st-ad292c1c" x-show="true" >
+    <input class="st-1f9c58e5" x-model="coupon" @input="couponMsg=''"
            placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr"
-           style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#eee;font-size:.9rem;text-align:left;">
-    <button class="btn" @click="applyCoupon()" style="flex:none;">اعمال</button>
-    <span x-show="couponMsg" x-text="couponMsg" style="font-size:.8rem;color:#ffd782;"></span>
+           >
+    <button class="btn st-ffe01040" @click="applyCoupon()" >اعمال</button>
+    <span class="st-39654bf1" x-show="couponMsg" x-text="couponMsg" ></span>
   </div>
 
-  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
+  <div class="st-8f9ba925" >
 
     {% for p in report_plans %}
     <div class="glass" style="flex:1;min-width:260px;max-width:320px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if p.key == 'full' %}border:2px solid var(--gold);{% endif %}">
-      {% if p.key == 'full' %}<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f5c518,#e08e0b);color:#1a1400;font-size:11px;font-weight:800;padding:3px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(245,197,24,.4);">پیشنهاد ما</div>{% endif %}
-      <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 4px;">{{ p.name_fa }}</h2>
-      <p style="color:#b8c2f0;font-size:12.5px;margin:0 0 10px;line-height:1.7;">{{ p.subtitle_fa }}</p>
-      <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:6px;">
-        {{ "{:,}".format(p.price_toman) }} <span style="font-size:13px;color:#b8c2f0;font-weight:500;">تومان</span>
+      {% if p.key == 'full' %}<div class="st-8596a042" >پیشنهاد ما</div>{% endif %}
+      <h2 class="st-b98bffce" >{{ p.name_fa }}</h2>
+      <p class="st-75a458ba" >{{ p.subtitle_fa }}</p>
+      <div class="st-95fed6f6" >
+        {{ "{:,}".format(p.price_toman) }} <span class="st-77abc5c7" >تومان</span>
       </div>
-      <div style="font-size:12px;color:#9aa2c4;margin-bottom:16px;line-height:1.8;">{{ audience.get(p.key, '') }}</div>
-      <ul style="list-style:none;padding:0;margin:0 0 22px;flex:1;">
+      <div class="st-c9f42765" >{{ audience.get(p.key, '') }}</div>
+      <ul class="st-8d0b247b" >
         {% for f in p.features %}
-        <li style="padding:7px 0;font-size:13.5px;color:#dfe6ff;display:flex;gap:9px;align-items:flex-start;line-height:1.65;">
-          <svg style="width:16px;height:16px;color:var(--gold);flex:none;margin-top:2px;" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
+        <li class="st-4428f346" >
+          <svg class="st-3b513b2f" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
         </li>
         {% endfor %}
       </ul>
@@ -50,9 +50,9 @@
       </button>
       <button x-show="walletLoaded && balance !== null && balance >= {{ p.price_rial }}"
               @click="buy('{{ p.key }}', true)"
-              class="btn"
-              style="width:100%;margin-top:10px;background:rgba(30,160,90,.18);border:1px solid rgba(30,160,90,.5);color:#7ee2a8;">
-        <svg style="width:15px;height:15px;vertical-align:-3px;margin-left:5px;" aria-hidden="true"><use href="#icon-wallet"/></svg>
+              class="btn st-02f80eba"
+              >
+        <svg class="st-ab26a349" aria-hidden="true"><use href="#icon-wallet"/></svg>
         پرداخت با موجودی کیف پول
       </button>
     </div>
@@ -60,39 +60,39 @@
 
   </div>
 
-  <div class="glass" style="max-width:520px;margin:0 auto;padding:24px 22px;border-radius:20px;border:1px solid rgba(236,100,120,.5);display:flex;flex-direction:column;align-items:center;text-align:center;">
-    <h2 style="font-size:19px;font-weight:800;color:#fff;margin:0 0 4px;display:flex;align-items:center;gap:8px;">
-      <svg style="width:20px;height:20px;color:#ec6480;flex:none;" aria-hidden="true"><use href="#icon-heart"/></svg>
+  <div class="glass st-62240463" >
+    <h2 class="st-fccfd422" >
+      <svg class="st-a1ddd4d1" aria-hidden="true"><use href="#icon-heart"/></svg>
       تحلیل سازگاری دو چارت (سیناستری)
     </h2>
-    <p style="color:#b8c2f0;font-size:12.5px;margin:6px 0 10px;line-height:1.8;">سنجش هم‌راستایی سیارات شما و شریک زندگی‌تان: ۴ حوزه (عشق، ذهن، کار، معنا) + ۲۵+ ارتباط سیاره‌ای + تفسیر اختصاصی. محصولی مستقل — بدون نیاز به گزارش کامل.</p>
-    <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:14px;">
-      ۴۹۹,۰۰۰ <span style="font-size:13px;color:#b8c2f0;font-weight:500;">تومان</span>
+    <p class="st-075ea2e7" >سنجش هم‌راستایی سیارات شما و شریک زندگی‌تان: ۴ حوزه (عشق، ذهن، کار، معنا) + ۲۵+ ارتباط سیاره‌ای + تفسیر اختصاصی. محصولی مستقل — بدون نیاز به گزارش کامل.</p>
+    <div class="st-15825bd6" >
+      ۴۹۹,۰۰۰ <span class="st-77abc5c7" >تومان</span>
     </div>
-    <a class="btn btn-lg" href="/synastry" style="width:100%;">شروع سیناستری (نمرهٔ کلی رایگان)</a>
-    <p class="muted" style="font-size:.78rem;margin-top:10px;">اول نمره و خلاصه را رایگان ببین؛ تحلیل کامل پس از پرداخت.</p>
+    <a class="btn btn-lg st-0466783d" href="/synastry" >شروع سیناستری (نمرهٔ کلی رایگان)</a>
+    <p class="muted st-c5b59991" >اول نمره و خلاصه را رایگان ببین؛ تحلیل کامل پس از پرداخت.</p>
   </div>
 
   {% if credit_packs %}
-  <h2 style="text-align:center;font-size:22px;font-weight:800;color:#fff;margin:44px 0 6px;">پک اعتبار کاوش</h2>
-  <p style="text-align:center;color:#b8c2f0;font-size:13.5px;margin-bottom:18px;line-height:1.9;">
-    هر کاوش در «خودت را کشف کن» ۱ اعتبار می‌خواهد. اعتبارت <b style="color:#dfe6ff;">هرگز منقضی نمی‌شود</b> — هرچه بخواهی نگهش می‌داری.
+  <h2 class="st-0a50819b" >پک اعتبار کاوش</h2>
+  <p class="st-80877d75" >
+    هر کاوش در «خودت را کشف کن» ۱ اعتبار می‌خواهد. اعتبارت <b class="st-ef7ba8ad" >هرگز منقضی نمی‌شود</b> — هرچه بخواهی نگهش می‌داری.
   </p>
-  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch;">
+  <div class="st-8f9ba925" >
     {% for p in credit_packs %}
-    <div class="glass" style="flex:1;min-width:220px;max-width:280px;padding:24px 20px;border-radius:20px;display:flex;flex-direction:column;border:1px solid rgba(124,108,240,.45);">
-      <div style="font-size:30px;font-weight:800;color:#c9c2ff;margin-bottom:2px;">{{ p.credits_grant }}<span style="font-size:14px;color:#9aa2c4;font-weight:600;"> اعتبار</span></div>
-      <div style="font-size:26px;font-weight:800;color:var(--gold);margin:6px 0 12px;">
-        {{ "{:,}".format(p.price_toman) }} <span style="font-size:12.5px;color:#b8c2f0;font-weight:500;">تومان</span>
+    <div class="glass st-d28a5047" >
+      <div class="st-7e3e28e0" >{{ p.credits_grant }}<span class="st-ac546e71" > اعتبار</span></div>
+      <div class="st-88bea0ed" >
+        {{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7" >تومان</span>
       </div>
-      <ul style="list-style:none;padding:0;margin:0 0 18px;flex:1;">
+      <ul class="st-c695199b" >
         {% for f in p.features %}
-        <li style="padding:5px 0;font-size:13px;color:#dfe6ff;display:flex;gap:8px;align-items:flex-start;line-height:1.6;">
-          <svg style="width:15px;height:15px;color:#7c6cf0;flex:none;margin-top:2px;" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
+        <li class="st-a68febc0" >
+          <svg class="st-b802c325" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
         </li>
         {% endfor %}
       </ul>
-      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected" style="width:100%;background:rgba(124,108,240,.22);border:1px solid rgba(124,108,240,.5);">
+      <button class="btn btn-lg st-833ce406" @click="buy('{{ p.key }}')" data-track="pack_selected" >
         خرید پک {{ p.credits_grant }}تایی
       </button>
     </div>
@@ -100,48 +100,48 @@
   </div>
   {% endif %}
 
-  <p style="text-align:center;color:#b8c2f0;font-size:12.5px;margin-top:26px;">
+  <p class="st-54402d71" >
     پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود.
   </p>
 
-  <div style="max-width:680px;margin:32px auto 0;">
-    <h2 style="font-size:1.05rem;color:#fff;margin-bottom:12px;">سؤالات پرتکرار درباره پلن‌ها</h2>
-    <div class="glass" style="padding:16px 18px;margin-bottom:10px;">
-      <b style="font-size:.9rem;color:#fff;">فرق پلن کامل و طلایی چیست؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">پلن کامل همان گزارش ۱۳ بخشی با شواهد نجومی است. پلن طلایی همه‌ی آن را دارد، به‌علاوه‌ی گفت‌وگوی شخصی با هوش مصنوعی درباره‌ی چارتت (۵ سوال در روز)، فصل فرهنگی-اسلامی و نقشه‌ی گذرهای ۴ ماه آینده.</p>
+  <div class="st-8420aeac" >
+    <h2 class="st-ad331caf" >سؤالات پرتکرار درباره پلن‌ها</h2>
+    <div class="glass st-83980512" >
+      <b class="st-b9f81216" >فرق پلن کامل و طلایی چیست؟</b>
+      <p class="st-74e1d4ce" >پلن کامل همان گزارش ۱۳ بخشی با شواهد نجومی است. پلن طلایی همه‌ی آن را دارد، به‌علاوه‌ی گفت‌وگوی شخصی با هوش مصنوعی درباره‌ی چارتت (۵ سوال در روز)، فصل فرهنگی-اسلامی و نقشه‌ی گذرهای ۴ ماه آینده.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;margin-bottom:10px;">
-      <b style="font-size:.9rem;color:#fff;">سیناستری جداگانه است؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">بله. سیناستری (سنجش سازگاری دو چارت) یک محصول مستقل است و نیازی به خرید گزارش کامل ندارد. اول می‌توانی نمره‌ی کلی را رایگان ببینی.</p>
+    <div class="glass st-83980512" >
+      <b class="st-b9f81216" >سیناستری جداگانه است؟</b>
+      <p class="st-74e1d4ce" >بله. سیناستری (سنجش سازگاری دو چارت) یک محصول مستقل است و نیازی به خرید گزارش کامل ندارد. اول می‌توانی نمره‌ی کلی را رایگان ببینی.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;">
-      <b style="font-size:.9rem;color:#fff;">اگر پلن پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">چارت و گزارش‌هایت ذخیره می‌مانند. کافیست پلن بالاتر را بخری؛ گزارش کامل‌تر روی همان چارت تولید می‌شود.</p>
+    <div class="glass st-bb1d98a1" >
+      <b class="st-b9f81216" >اگر پلن پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
+      <p class="st-74e1d4ce" >چارت و گزارش‌هایت ذخیره می‌مانند. کافیست پلن بالاتر را بخری؛ گزارش کامل‌تر روی همان چارت تولید می‌شود.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;margin-top:10px;border-color:rgba(255,215,130,.35);">
-      <b style="font-size:.9rem;color:#ffd782;">کد تخفیف شروع: LANCH20</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">۲۰٪ تخفیف روی اولین گزارش عمیق (پایه، کامل یا طلایی). در مرحله‌ی پرداخت کد را وارد کن — فقط یک بار، برای اولین گزارشت.</p>
+    <div class="glass st-20feeded" >
+      <b class="st-0e08cf41" >کد تخفیف شروع: LANCH20</b>
+      <p class="st-74e1d4ce" >۲۰٪ تخفیف روی اولین گزارش عمیق (پایه، کامل یا طلایی). در مرحله‌ی پرداخت کد را وارد کن — فقط یک بار، برای اولین گزارشت.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;margin-top:10px;">
-      <b style="font-size:.9rem;color:#fff;">تولید گزارش چقدر طول می‌کشد؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">معمولاً ۳ تا ۵ دقیقه. می‌توانی صفحه را ببندی؛ به‌محض آماده شدن، گزارش در «حساب من» و (اگر اشتراک اعلان دادی) با نوتیفیکیشن در دسترس است.</p>
+    <div class="glass st-df1a6875" >
+      <b class="st-b9f81216" >تولید گزارش چقدر طول می‌کشد؟</b>
+      <p class="st-74e1d4ce" >معمولاً ۳ تا ۵ دقیقه. می‌توانی صفحه را ببندی؛ به‌محض آماده شدن، گزارش در «حساب من» و (اگر اشتراک اعلان دادی) با نوتیفیکیشن در دسترس است.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;margin-top:10px;">
-      <b style="font-size:.9rem;color:#fff;">اگر از نتیجه راضی نبودم؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده می‌شود. کافیست از صفحهٔ <a href="/refund" style="color:#8fb6ff;">شرایط بازگشت وجه</a> درخواست ثبت کنی.</p>
+    <div class="glass st-df1a6875" >
+      <b class="st-b9f81216" >اگر از نتیجه راضی نبودم؟</b>
+      <p class="st-74e1d4ce" >تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده می‌شود. کافیست از صفحهٔ <a class="st-6aa99fbc" href="/refund" >شرایط بازگشت وجه</a> درخواست ثبت کنی.</p>
     </div>
-    <div class="glass" style="padding:16px 18px;margin-top:10px;">
-      <b style="font-size:.9rem;color:#fff;">داده‌های تولدم چه می‌شود؟</b>
-      <p style="color:#b8c2f0;font-size:.86rem;margin:6px 0 0;line-height:1.9;">فقط برای محاسبهٔ چارت و تولید گزارش استفاده می‌شود؛ به هیچ‌کس فروخته یا اشتراک داده نمی‌شود. جزئیات در <a href="/privacy" style="color:#8fb6ff;">حریم خصوصی</a>.</p>
+    <div class="glass st-df1a6875" >
+      <b class="st-b9f81216" >داده‌های تولدم چه می‌شود؟</b>
+      <p class="st-74e1d4ce" >فقط برای محاسبهٔ چارت و تولید گزارش استفاده می‌شود؛ به هیچ‌کس فروخته یا اشتراک داده نمی‌شود. جزئیات در <a class="st-6aa99fbc" href="/privacy" >حریم خصوصی</a>.</p>
     </div>
   </div>
 </div>
 
 <div x-data="purchase()" x-cloak>
-  <div x-show="busy" style="position:fixed;inset:0;background:rgba(20,10,40,.55);backdrop-filter:blur(4px);z-index:99;display:flex;align-items:center;justify-content:center;">
-    <div class="glass" style="padding:26px 40px;border-radius:18px;text-align:center;">
-      <svg style="width:32px;height:32px;color:var(--gold);margin:0 auto 10px;animation:spin 1s linear infinite;" aria-hidden="true"><use href="#icon-refresh"/></svg>
-      <div style="font-weight:700;">در حال اتصال به درگاه پرداخت...</div>
+  <div class="st-f265ab7f" x-show="busy" >
+    <div class="glass st-8f0163b3" >
+      <svg class="st-392787e9" aria-hidden="true"><use href="#icon-refresh"/></svg>
+      <div class="st-e3ec02ac" >در حال اتصال به درگاه پرداخت...</div>
     </div>
   </div>
 </div>

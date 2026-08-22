@@ -47,6 +47,7 @@
   <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/base.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/components.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/generated.css?v={{ asset_version }}">
   
 </head>
 <body {% block body_attrs %}{% endblock %}>
@@ -74,10 +75,10 @@
           <a href="/dashboard" class="nav-item"><svg aria-hidden="true"><use href="#icon-home"/></svg>داشبورد</a>
           <a href="/account" class="nav-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
         </nav>
-        <a href="/account" class="credits-chip" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" style="margin-inline-start:auto;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:rgba(255,213,66,.12);border:1px solid rgba(255,213,66,.35);color:#ffd756;font-weight:700;font-size:.82rem;white-space:nowrap;">
-          <svg aria-hidden="true" style="width:15px;height:15px;"><use href="#icon-sparkles"/></svg>
-          <span x-text="balance" style="min-width:1ch;text-align:left;"></span>
-          <span style="font-size:.72rem;font-weight:600;color:#cbb56a;">اعتبار</span>
+        <a href="/account" class="credits-chip st-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
+          <svg class="st-2535720e" aria-hidden="true" ><use href="#icon-sparkles"/></svg>
+          <span class="st-b90e7f87" x-text="balance" ></span>
+          <span class="st-93056532" >اعتبار</span>
         </a>
       </div>
     </header>
@@ -152,7 +153,7 @@
     <a href="/account" class="bn-item"><svg aria-hidden="true"><use href="#icon-user"/></svg>حساب من</a>
   </nav>
   <div id="degradedBar" class="degraded-bar hidden" role="alert">
-    <svg aria-hidden="true" style="width:16px;height:16px;flex:none;"><use href="#icon-help"/></svg>
+    <svg class="st-f4bfdb9b" aria-hidden="true" ><use href="#icon-help"/></svg>
     <span></span>
   </div>
   <script>
@@ -196,7 +197,7 @@
     <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
       <div class="d-title" id="dlgTitle"></div>
       <div class="d-msg" id="dlgMsg"></div>
-      <input id="dlgInput" style="display:none"/>
+      <input class="st-6b99de8b" id="dlgInput" />
       <div class="dialog-btns">
         <button id="dlgCancel" class="d-cancel" type="button">انصراف</button>
         <button id="dlgOk" class="d-ok" type="button">تأیید</button>

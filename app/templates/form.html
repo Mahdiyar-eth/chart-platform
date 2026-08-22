@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="padding-top:36px;">
-  <a href="/" class="muted" style="text-decoration:none; font-size:.9rem;">→ بازگشت</a>
-  <h1 style="margin-top:10px;">فرم تولد</h1>
-  <p class="muted" style="font-size:.9rem;line-height:1.8;margin-bottom:14px;">
+<div class="st-4f250d9e" >
+  <a href="/" class="muted st-e3ad472b" >→ بازگشت</a>
+  <h1 class="st-d2c171b1" >فرم تولد</h1>
+  <p class="muted st-7953b730" >
     این اطلاعات فقط برای محاسبهٔ دقیق چارت تولدت استفاده می‌شود: موقعیت سیارات در لحظه و مکان تولدت.
     تاریخ، ساعت و شهر تولدت ذخیره می‌شود تا چارتت همیشه در دسترس باشد؛ هیچ‌کدام به اشتراک گذاشته یا فروخته نمی‌شود.
   </p>
-  <p class="muted" style="font-size:.85rem;line-height:1.7;margin-bottom:14px;">
+  <p class="muted st-13f79ba6" >
     اگر ساعت دقیق را نمی‌دانی، «نه / تقریبی» را انتخاب کن — چارت با طلوع خورشید محاسبه می‌شود (خانه‌ها تقریبی خواهند بود).
   </p>
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
-  <form id="birthForm" class="glass glow" style="padding:24px 20px;" x-data="formState()" @submit.prevent="submit($event)" x-cloak>
+  <form id="birthForm" class="glass glow st-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)" x-cloak>
     <div class="steps">
       <template x-for="(s, i) in 5" :key="i">
         <div class="step-dot" :class="{'on': i < step}"><i></i></div>
@@ -25,12 +25,12 @@
         <button type="button" class="chip" :class="{'sel': cal === 'jalali'}" @click="cal = 'jalali'">شمسی</button>
         <button type="button" class="chip" :class="{'sel': cal === 'gregorian'}" @click="cal = 'gregorian'">میلادی</button>
       </div>
-      <label style="margin-top:12px;">سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <label class="st-56f43562" >سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
       <div>
         <button type="button" class="chip" :class="{'sel': zodiac === 'tropical'}" @click="zodiac = 'tropical'">تروپیکال (پیش‌فرض)</button>
         <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
       </div>
-      <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px;">
+      <div class="st-2d89ff3a" >
         <div><label>سال</label><input class="input" type="number" x-model.number="year" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
         <div><label>ماه</label><input class="input" type="number" x-model.number="month" min="1" max="12"></div>
         <div><label>روز</label><input class="input" type="number" x-model.number="day" min="1" max="31"></div>
@@ -45,21 +45,21 @@
         <button type="button" class="chip" :class="{'sel': !timeKnown}" @click="timeKnown = false">نه / تقریبی</button>
       </div>
       <template x-if="timeKnown">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+        <div class="st-c119740e" >
           <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" min="0" max="23"></div>
           <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" min="0" max="59"></div>
         </div>
       </template>
-      <p class="muted" style="margin-top:10px; font-size:.85rem;" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
+      <p class="muted st-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
     </div>
 
     <!-- STEP 3: city -->
     <div x-show="step === 3" x-transition>
       <label>شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
       <input class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران">
-      <div style="margin-top:10px;">
+      <div class="st-d2c171b1" >
         <template x-for="c in cities" :key="c.city_fa + c.province_fa">
-          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted" style="font-size:.75rem;" x-text="' (' + c.province_fa + ')'"></span></button>
+          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted st-0da13144" x-text="' (' + c.province_fa + ')'"></span></button>
         </template>
       </div>
     </div>
@@ -78,15 +78,15 @@
     <div x-show="step === 5" x-transition>
       <label>سؤال شخصی (اختیاری)</label>
       <input class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟">
-      <p class="muted" style="margin-top:12px; font-size:.9rem;">در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
+      <p class="muted st-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
     </div>
 
-    <div style="display:flex; gap:10px; margin-top:26px;">
-      <button type="button" class="btn btn-ghost" x-show="step > 1" @click="step--" style="flex:1;">قبلی</button>
-      <button type="button" class="btn" x-show="step < 5" @click="next()" style="flex:2;">ادامه</button>
-      <button type="submit" class="btn" x-show="step === 5" style="flex:2;" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
+    <div class="st-82b7dc59" >
+      <button type="button" class="btn btn-ghost st-97445a8d" x-show="step > 1" @click="step--" >قبلی</button>
+      <button type="button" class="btn st-4b3de78f" x-show="step < 5" @click="next()" >ادامه</button>
+      <button type="submit" class="btn st-4b3de78f" x-show="step === 5" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
     </div>
-    <p x-show="error" x-text="error" style="color:#ff6b6b; margin-top:12px; font-size:.9rem;"></p>
+    <p class="st-4060f471" x-show="error" x-text="error" ></p>
   </form>
 </div>
 
