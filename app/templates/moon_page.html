@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block og_title %}{{ title }}{% endblock %}
+{% block description %}{{ meta_description }}{% endblock %}
+{% block canonical %}{{ canonical }}{% endblock %}
+{% block content %}
+<div class="st-dea6d0cd">
+  <nav class="st-5f258b10">
+    <a class="st-ae3c1652" href="/moon">ماه در برج‌ها</a>
+    <span class="st-8f93fd3a">←</span><span>{{ page.title }}</span>
+  </nav>
+
+  <h1 class="st-8b296798">{{ page.title }}</h1>
+
+  {% set el = page.element %}
+  {% set el_bg = "#7c6cf0" if el == "هوا" else ("#f5c518" if el == "آتش" else ("#2a9d8f" if el == "خاک" else "#4f9ddb")) %}
+  <div class="st-3fe03a38">
+    <span style="display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:999px;font-size:.82rem;font-weight:700;background:{{ el_bg }}22;border:1px solid {{ el_bg }}55;color:{{ el_bg }};">عنصر: {{ el }}</span>
+    <span class="st-55958bf4">حاکم برج: {{ page.ruler }}</span>
+  </div>
+
+  <div class="glass st-ce30f877">
+    <p>{{ page.intro }}</p>
+  </div>
+
+  {% set sections = [
+    ("عشق و رابطه", page.love),
+    ("کار و مسیر شغلی", page.work),
+    ("سایه و درس ماه", page.challenge),
+    ("راه آرامش", page.self_care)
+  ] %}
+  <div class="st-6788b499">
+    {% for label, body in sections %}
+    {% if body %}
+    <div class="glass st-20495c40">
+      <div class="st-8d446200">
+        <span class="st-e04ca4b4"></span>
+        <h2 class="st-51e7af29">{{ label }}</h2>
+      </div>
+      <p class="st-a2fba331">{{ body }}</p>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="glass glow st-ce30f877">
+    <b>برج ماه خودت را کشف کن</b>
+    <p class="muted">چارت تولد رایگان بساز؛ جایگاه دقیق ماه، خانه‌ها و ترانزیت‌های امروزت را ببین.</p>
+    <a href="/birth-form" class="btn btn-lg">ساخت چارت رایگان</a>
+  </div>
+
+  {% if neighbors %}
+  <nav class="glass st-20495c40" aria-label="برج‌های دیگر">
+    <b>ماه در برج‌های دیگر:</b>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
+      {% for n in neighbors %}<a href="/moon-in/{{ n.slug }}" class="btn-chip">{{ n.fa }}</a>{% endfor %}
+    </div>
+  </nav>
+  {% endif %}
+</div>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"{{ page.title }}","inLanguage":"fa","mainEntityOfPage":"{{ canonical }}","author":{"@type":"Organization","name":"زایچه"},"publisher":{"@type":"Organization","name":"زایچه"}}
+</script>
+{% endblock %}

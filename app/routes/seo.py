@@ -40,6 +40,49 @@ def birth_chart_city(request: Request, slug: str):
     })
 
 
+@router.get("/moon", response_class=HTMLResponse)
+def moon_index(request: Request):
+    from app.seo.content import SIGNS
+    from app.seo.moon_signs import MOON_SIGNS
+    items = []
+    for slug, page in MOON_SIGNS.items():
+        meta = SIGNS[slug]
+        fa_name = meta["title"].split(" ")[1]
+        items.append({"slug": slug, "fa": fa_name,
+                      "element": meta["element"], "intro": page["intro"][:110] + "…"})
+    return templates.TemplateResponse(request, "moon_index.html", {
+        "title": "ماه در برج‌ها — معنی جایگاه ماه در چارت تولد",
+        "items": items,
+        "meta_description": "معنی ماه در ۱۲ برج: احساسات، عشق، کار و راه آرامش. جایگاه ماه چارت تولدت را رایگان کشف کن.",
+        "canonical": f"{request.url.scheme}://{request.url.netloc}/moon",
+    })
+
+
+@router.get("/moon-in/{slug}", response_class=HTMLResponse)
+def moon_in_sign(request: Request, slug: str):
+    from fastapi import HTTPException
+    from app.seo.content import SIGNS
+    from app.seo.moon_signs import MOON_SIGNS
+    page = MOON_SIGNS.get(slug)
+    if not page:
+        raise HTTPException(404, "not found")
+    meta = SIGNS[slug]
+    full = dict(page)
+    full["element"] = meta["element"]
+    full["ruler"] = meta["ruler"]
+    fa_name = meta["title"].split(" ")[1]
+    full["title"] = f"ماه در {fa_name} — احساسات، عشق و کار"
+    neighbors = [{"slug": sl, "fa": SIGNS[sl]["title"].split(" ")[1]}
+                 for sl in MOON_SIGNS if sl != slug]
+    return templates.TemplateResponse(request, "moon_page.html", {
+        "title": full["title"],
+        "page": full,
+        "neighbors": neighbors,
+        "meta_description": (meta.get("keywords") or full["title"]),
+        "canonical": f"{request.url.scheme}://{request.url.netloc}/moon-in/{slug}",
+    })
+
+
 @router.get("/sitemap.xml")
 def sitemap_xml():
     import os
@@ -55,6 +98,9 @@ def sitemap_xml():
         urls += [f"/learn/{k}" for k in PLANETS]
         urls += [f"/learn/{k}" for k in HOUSES]
         urls += [f"/signs/{s['slug']}" for s in SIGNS.values()]
+        from app.seo.moon_signs import MOON_SIGNS
+        urls.append("/moon")
+        urls += [f"/moon-in/{k}" for k in MOON_SIGNS]
     except Exception:  # noqa: BLE001
         pass
     try:

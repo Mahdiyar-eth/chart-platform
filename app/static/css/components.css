@@ -123,3 +123,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .onboard-list li::before{counter-increment:step;content:counter(step);width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--bg);font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
 .onboard-list li span{flex:1;text-align:start;}
 .btn-sm{min-height:40px;padding:6px 14px;font-size:.82rem;}
+
+/* G8b: breadcrumb links are touch targets too */
+.st-5f258b10 a{ display:inline-flex; align-items:center; min-height:40px; }
