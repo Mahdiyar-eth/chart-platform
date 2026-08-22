@@ -106,7 +106,10 @@
 | `POST /api/admin/coupons` | Admin | `_is_admin` |
 | `GET /api/admin/coupons` | Admin | `_is_admin` |
 | `GET /api/admin/prompts` | Admin | `_is_admin` |
-| `POST /api/admin/prompts/{prompt_key}` | Admin | `_is_admin` |
+| `POST /api/admin/prompts/{prompt_key}` | Admin |
+| `POST /api/admin/credit-price/{action_key}` | Admin | admin-only (A7) |
+| `POST /api/admin/credits/grant` | Admin | admin-only manual grant + AuditLog (A7) |
+| `GET /api/admin/credit-report` | Admin | admin-only credit economy report (A7) | `_is_admin` |
 | `POST /api/admin/orders/{order_id}/refund` | Admin | `_is_admin` |
 | `POST /api/admin/orders/{order_id}/regenerate` | Admin | `_is_admin` |
 | `GET /api/admin/llm-cost` | Admin | `_is_admin` |

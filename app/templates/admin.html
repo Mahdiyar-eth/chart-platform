@@ -607,4 +607,64 @@
     }
   </script>
 </div>
+
+  <h2 style="font-size:17px;font-weight:700;margin:20px 0 10px;">اقتصاد اعتبار (A7) — قیمتها · گزارش فروش/خرج · اعطای دستی</h2>
+  <div id="credit-panel" style="display:grid;gap:14px;max-width:900px;">
+    <div class="credit-report"></div>
+    <div class="credit-prices"></div>
+    <div class="credit-grant"></div>
+  </div>
+  <script>
+    async function loadCreditReport(){
+      const r = await fetch('/api/admin/credit-report'); if(!r.ok) return;
+      const j = await r.json();
+      document.querySelector('.credit-report').innerHTML =
+        '<h3 style="color:#dfe6ff;margin:0 0 8px;">گزارش اعتبار</h3>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">'+
+        `<div class="stat">فروش‌شده <b>${j.credits_sold}</b></div>`+
+        `<div class="stat">خرج‌شده <b>${j.credits_spent}</b></div>`+
+        `<div class="stat">خالص <b>${j.net}</b></div>`+
+        '</div>';
+    }
+    async function loadCreditPrices(){
+      const r = await fetch('/api/admin/credit-report'); if(!r.ok) return;
+      const j = await r.json();
+      const rows = Object.entries(j.prices||{}).map(([k,v])=>
+        `<tr><td dir="ltr" style="text-align:left;">${k}</td>`+
+        `<td><input id="price-${k}" type="number" value="${v}" style="width:72px;background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:6px;padding:4px;color:#fff;"/></td>`+
+        `<td><button onclick="setPrice('${k}')" class="btn">ذخیره</button></td></tr>`).join('');
+      document.querySelector('.credit-prices').innerHTML =
+        '<h3 style="color:#dfe6ff;margin:0 0 8px;">قیمت هر اکشن (اعتبار)</h3>'+
+        '<table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,.03);border-radius:10px;overflow:hidden;">'+
+        `<tr style="background:rgba(255,255,255,.06);"><th>اکشن</th><th>اعتبار</th><th></th></tr>${rows}</table>`;
+    }
+    async function setPrice(key){
+      const v = document.querySelector('#price-'+key).value;
+      if (v === '' || +v <= 0) { showToast('عدد معتبر بده', false); return; }
+      const fd = new FormData(); fd.append('credits', v);
+      const r = await fetch('/api/admin/credit-price/' + key, {method:'POST', body: fd});
+      const j = await r.json();
+      if (j.ok) { loadCreditPrices(); showToast('ذخیره شد ✅', true); } else showToast('خطا: ' + (j.detail||''), false);
+    }
+    async function grantCredit(){
+      const uid = document.getElementById('grant-uid').value.trim();
+      const amt = document.getElementById('grant-amt').value.trim();
+      const rs  = document.getElementById('grant-rs').value.trim();
+      if (!uid || !amt) { showToast('کاربر و مقدار را بده', false); return; }
+      const fd = new FormData(); fd.append('user_id', uid); fd.append('amount', amt); fd.append('reason', rs || 'admin_grant');
+      const r = await fetch('/api/admin/credits/grant', {method:'POST', body: fd});
+      const j = await r.json();
+      if (j.ok) showToast('اعطا شد ✅', true); else showToast('خطا: ' + (j.detail||''), false);
+    }
+    document.addEventListener('DOMContentLoaded', ()=>{ loadCreditReport(); loadCreditPrices(); });
+  </script>
+  <div class="credit-grant" style="margin-top:10px;">
+    <h3 style="color:#dfe6ff;margin:0 0 8px;">اعطای دستی اعتبار</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input id="grant-uid" placeholder="user_id" dir="ltr" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+      <input id="grant-amt" type="number" placeholder="مقدار" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+      <input id="grant-rs" placeholder="دلیل" style="background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:7px;padding:6px;color:#fff;"/>
+      <button onclick="grantCredit()" class="btn" style="padding:6px 16px;">اعطا</button>
+    </div>
+  </div>
 {% endblock %}

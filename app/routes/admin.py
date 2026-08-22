@@ -384,3 +384,62 @@ def api_admin_llm_cost(request: Request, session: Session = Depends(get_session)
         }
 
     return {"24h": _agg(60 * 24), "7d": _agg(60 * 24 * 7), "30d": _agg(60 * 24 * 30)}
+
+
+@router.post("/api/admin/credit-price/{action_key}")
+def admin_credit_price_set(action_key: str, request: Request, session: Session = Depends(get_session),
+                           credits: int = Form(...)):
+    """A7 — change a credit action's price without redeploying (admin only)."""
+    from fastapi import HTTPException
+    from app.db import engine
+    from app.security import audit
+    from app.models import CreditPrice
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    if credits <= 0:
+        raise HTTPException(400, "credits must be > 0")
+    cp = session.get(CreditPrice, action_key)
+    if not cp:
+        raise HTTPException(404, "unknown action")
+    cp.credits = credits
+    session.add(cp)
+    session.commit()
+    audit(engine, "admin", "credit_price_set", "CreditPrice", f"{action_key}={credits}")
+    return {"ok": True, "action_key": action_key, "credits": credits}
+
+
+@router.post("/api/admin/credits/grant")
+def admin_credit_grant(request: Request, session: Session = Depends(get_session),
+                       user_id: str = Form(...), amount: int = Form(...),
+                       reason: str = Form("admin_grant")):
+    """A7 — manually grant credits to a user (with reason, recorded in AuditLog)."""
+    from fastapi import HTTPException
+    from app.db import engine
+    from app.security import audit
+    from app.credits import grant as credit_grant
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    uid = user_id.strip()
+    if amount <= 0:
+        raise HTTPException(400, "amount must be > 0")
+    credit_grant(session, uid, amount, reason,
+                 idempotency_key=f"admin_grant:{uid}:{amount}:{reason}")
+    audit(engine, "admin", "credit_grant", "User", f"{uid} += {amount} ({reason})")
+    return {"ok": True, "user_id": uid, "amount": amount}
+
+
+@router.get("/api/admin/credit-report")
+def admin_credit_report(request: Request, session: Session = Depends(get_session)):
+    """A7 — credit economy report: sold / spent / net / per-action spends."""
+    from fastapi import HTTPException
+    from sqlalchemy import func
+    from app.models import CreditTransaction, CreditPrice
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    sold = session.exec(select(func.coalesce(func.sum(CreditTransaction.amount), 0)).where(CreditTransaction.amount > 0)).one()
+    spent = session.exec(select(func.coalesce(func.sum(-CreditTransaction.amount), 0)).where(CreditTransaction.amount < 0)).one()
+    prices = {p.key: p.credits for p in session.exec(select(CreditPrice)).all()}
+    by_action = dict(session.exec(select(CreditTransaction.reason, func.count(CreditTransaction.id)).group_by(CreditTransaction.reason)).all())
+    return {"credits_sold": int(sold), "credits_spent": int(spent),
+            "net": int(sold) - int(spent), "prices": prices,
+            "actions_count": by_action}
