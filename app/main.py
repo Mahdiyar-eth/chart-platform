@@ -1680,9 +1680,10 @@ def _chat_account_key(chart, order, request) -> str:
 def _chat_daily_limit(order) -> int:
     """Gold=5/day, monthly=15/day (admin-overridable via secrets table).
     X6: entitlement-only chat (order=None) uses the gold default."""
-    _pk = getattr(order, "plan_key", None)
-    limit_key = "chat_daily_limit_gold" if _pk == "gold" else "chat_daily_limit_monthly"
-    default = "5" if _pk == "gold" else "15"
+    _pk = getattr(order, "plan_key", None) or ("gold" if order is None else None)
+    is_goldish = _pk in ("gold",) or (_pk is None and order is None)
+    limit_key = "chat_daily_limit_gold" if is_goldish else "chat_daily_limit_monthly"
+    default = "5" if is_goldish else "15"
     try:
         return int(secret_store.get_secret(limit_key, limit_key.upper(), default))
     except ValueError:

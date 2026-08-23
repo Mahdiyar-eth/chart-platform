@@ -51,8 +51,15 @@ def cached_forecast(session, chart_id: str, months: int, chart_json: dict,
             except Exception:  # noqa: BLE001
                 prev = {}
             if isinstance(prev, dict) and prev.get("narratives"):
+                # Y17/N12b: drop narratives whose event vanished after recompute
+                # (content drift, not crash) so the page never shows analysis for
+                # a transit that no longer exists in this window.
+                _live = {e.get("id") for e in result}
+                _kept = [n for n in prev["narratives"]
+                         if not (n.get("event") or {}).get("id")  # legacy: no anchor → keep
+                         or n["event"]["id"] in _live]
                 row.payload_json = json.dumps({"events": result,
-                                               "narratives": prev["narratives"]},
+                                               "narratives": _kept},
                                               ensure_ascii=False)
                 row.computed_at = now
                 session.add(row)

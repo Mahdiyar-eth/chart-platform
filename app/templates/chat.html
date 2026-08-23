@@ -49,6 +49,13 @@
       <a class="btn btn-lg st-5e4603b4" href="/plans?chart={{ chart_id }}" >
         <svg class="st-5304332b" aria-hidden="true"><use href="#icon-tag"/></svg> خرید و فعال‌سازی
       </a>
+
+      <div class="mt-3">
+        {% with action_key="chat_pack_20", action_name_fa="گفت‌وگو با چارت",
+                needed=2, chart_id=chart_id %}
+          {% include "partials/credit_cta.html" %}
+        {% endwith %}
+      </div>
     </div>
   </template>
 </div>
