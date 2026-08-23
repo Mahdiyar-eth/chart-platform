@@ -29,11 +29,17 @@ def _usable(ent: Entitlement, now: datetime) -> bool:
 
 
 def has(session: Session, user_id: str, kind: str, *,
-        chart_id: str | None = None, ref_id: str | None = None) -> Entitlement | None:
+        chart_id: str | None = None, ref_id: str | None = None,
+        unbound_only: bool = False) -> Entitlement | None:
     """Return the first usable entitlement for (user, kind [, chart]/[ref]).
 
     Never cross-chart/cross-ref: an entitlement for chart X is NOT valid for
-    chart Y (closed per plan A3)."""
+    chart Y (closed per plan A3).
+
+    Z5 (Opus R3): when `unbound_only=True`, skip entitlements already bound to
+    a report (ref_id set) so an upgrade/second purchase picks the NEWLY bought
+    entitlement instead of recycling the first one (which made the regenerate
+    path bind nothing and inherit the WRONG tier/ref)."""
     now = _now()
     ents = session.exec(
         select(Entitlement).where(
@@ -52,6 +58,8 @@ def has(session: Session, user_id: str, kind: str, *,
             continue
         if ref_id is not None and ent.ref_id != ref_id:
             continue
+        if unbound_only and ent.ref_id is not None:
+            continue  # already spent on a report — not the upgrade target
         # A request WITH scope must match an entitlement that carries that scope;
         # unscoped ents only satisfy unscoped lookups (e.g. chat packs).
         if _usable(ent, now):

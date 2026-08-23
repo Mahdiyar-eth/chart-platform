@@ -322,6 +322,62 @@ def verdict(rec) -> list[str]:
     return issues
 
 
+def _load_project_classes() -> set:
+    """Z10: gather every class selector defined in the project's CSS (base/
+    components/generated/tokens + scoped template blocks). Used to flag
+    Tailwind-on-dead-classes (P1-1) that render bare."""
+    import re as _re, glob as _glob
+    css_dirs = ["app/static/css", ]
+    classes = set()
+    for d in css_dirs:
+        for f in _glob.glob(os.path.join(d, "*.css")):
+            txt = open(f, encoding="utf-8").read()
+            classes.update(_re.findall(r"\.([A-Za-z_][A-Za-z0-9_-]*)\s*[{:,\s]", txt))
+    # scoped per-template <style> blocks
+    for tpl in _glob.glob("app/templates/**/*.html", recursive=True):
+        txt = open(tpl, encoding="utf-8").read()
+        for block in _re.findall(r"<style[^>]*>(.*?)</style>", txt, _re.S):
+            classes.update(_re.findall(r"\.([A-Za-z_][A-Za-z0-9_-]*)\s*[{:,\s]", block))
+    return classes
+
+
+def check_undefined_classes() -> list[str]:
+    """Z10: Flag every class=... token on a template that is NOT a known CSS
+    class and NOT an Alpine/HTMX pseudo-class (x-, :, @, #, .modifier).
+    Jinja expressions inside class="..." are stripped first (they are not
+    literal class names)."""
+    import re as _re, glob as _glob
+    known = _load_project_classes()
+    # pseudo/state/directive prefixes that never need CSS definitions
+    ignore_pfx = ("x-", ":", "@", "hover:", "focus:", "dark:", "active:",
+                  "group-", "sm:", "md:", "lg:", "xl:", "print:", "st-")
+    problems = []
+    for tpl in _glob.glob("app/templates/**/*.html", recursive=True):
+        txt = open(tpl, encoding="utf-8").read()
+        for m in _re.finditer(r'class="([^"]+)"', txt):
+            for tok in m.group(1).split():
+                if tok.startswith(ignore_pfx):
+                    continue
+                # drop tokens that are or contain Jinja/Alpine expression syntax
+                if "{{" in tok or "}}" in tok or "{%" in tok or "%}" in tok \
+                   or "'" in tok or '"' in tok or "{" in tok or "}" in tok \
+                   or "?" in tok or "!" in tok or "= " in tok or "<" in tok \
+                   or "==" in tok or "&&" in tok or "||" in tok \
+                   or "." in tok or "(" in tok:
+                    continue
+                if ":" in tok:  # Alpine :class modifier
+                    continue
+                if tok in known:
+                    continue
+                problems.append(f"{tpl}: undefined class `{tok}`")
+    # dedupe, keep order
+    seen = set(); out = []
+    for p in problems:
+        if p not in seen:
+            seen.add(p); out.append(p)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://127.0.0.1:8798")
@@ -336,6 +392,15 @@ def main() -> int:
 
     pages = [p.strip() for p in args.pages.split(",") if p.strip()]
     if args.limit_pages: pages = pages[: args.limit_pages]
+
+    # Z10: static undefined-class check (catches Tailwind-on-dead-CSS like P1-1)
+    undefined = check_undefined_classes()
+    if undefined:
+        print(f"[Z10] {len(undefined)} undefined class(es) in templates:")
+        for u in undefined[:25]:
+            print("   -", u)
+    else:
+        print("[Z10] all template classes resolve to project CSS ✓")
 
     results, all_issues = [], []
     with sync_playwright() as pw:

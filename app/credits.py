@@ -119,13 +119,17 @@ def spend(session: Session, user_id: str, action_key: str, *,
 
 
 def refund(session: Session, tx_id: str, reason: str = "refund",
-           amount: int | None = None) -> CreditTransaction:
+           amount: int | None = None) -> CreditTransaction | None:
     """Refund a failed/refunded spend. Idempotent: calling twice with the same
     (tx, amount-bucket) returns the same refund tx (never credits back twice).
 
     X3/R3: `amount` enables PARTIAL refunds (proportional QA policy). A full
     refund is amount=None; a partial refund of a later full call uses a
     different idempotency bucket so both can coexist.
+
+    Z13 (Opus R3): returns None when nothing can be refunded (already fully
+    refunded / zero room) instead of a phantom marker row — callers must report
+    refunded_credits=0.
 
     Returns the refund ledger row (positive amount)."""
     original = session.get(CreditTransaction, tx_id)
@@ -148,7 +152,7 @@ def refund(session: Session, tx_id: str, reason: str = "refund",
         existing_all = _find_idempotent(session, f"refund:{original.id}")
         if existing_all:
             return existing_all
-        return original  # nothing left to refund — no-op marker
+        return None  # Z13: no room left to refund — signal "nothing refunded"
     # idempotency: look for an existing refund row keyed to this tx (+bucket)
     idem = f"refund:{original.id}" if amount is None else f"refund:{original.id}:{amount}"
     existing = _find_idempotent(session, idem)

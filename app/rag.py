@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 
 from app.db import engine
-from app.models import Report, ReportChunk
+from app.models import Report, ReportChunk, FunnelEvent, TransitAlertLog
 
 log = logging.getLogger("rag")
 
@@ -134,6 +134,22 @@ def prune_old_chunks(days: int = 180) -> int:
             if not rep or rep.created_at.timestamp() < cutoff:
                 s.delete(rc)
                 deleted += 1
+        s.commit()
+    return deleted
+
+
+def prune_analytics(days: int = 90) -> int:
+    """Z15 (Opus R3 P2-6): retention for the high-volume, non-user-keyed event
+    tables that never get cleaned on account delete. Drop funnel events and
+    transit-alert-log rows older than N days to bound DB growth."""
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    deleted = 0
+    with Session(engine) as s:
+        for ev in s.exec(select(FunnelEvent).where(FunnelEvent.created_at < cutoff)).all():
+            s.delete(ev); deleted += 1
+        for tal in s.exec(select(TransitAlertLog).where(TransitAlertLog.created_at < cutoff)).all():
+            s.delete(tal); deleted += 1
         s.commit()
     return deleted
 

@@ -35,9 +35,12 @@ from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
 from app.credits import balance, get_price, UnknownAction
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
-                        User, WeeklyReflection, WithdrawalRequest,)
+                        User, WeeklyReflection, WithdrawalRequest,
+                        CreditTransaction, Entitlement, Exploration,  # Z1 deletion cascade
+                        PushSubscription, ConsentLog, NotificationPrefs, TransitAlertLog,
+)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -654,7 +657,12 @@ def api_create_report(chart_id: str, request: Request,
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
     _u = get_current_user(request)
-    ent = ent_has(session, _u.id, "report", chart_id=chart_id) if _u else None
+    ent = ent_has(session, _u.id, "report", chart_id=chart_id,
+                  unbound_only=True) if _u else None
+    if ent is None and _u:
+        # Z5: fall back to any usable entitlement (legacy/edge) so we never
+        # 403 a purchase the user already paid for.
+        ent = ent_has(session, _u.id, "report", chart_id=chart_id)
     if not paid and not ent:
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
     # Y2/N2: Entitlement has NO source_action field — derive the tier from the
@@ -2521,8 +2529,12 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
 
 
 @app.get("/transits/{chart_id}")
-def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
-    """B3 — transit timeline page (free deterministic data + paid analysis if owned)."""
+def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session),
+                  months: int = Query(default=12)):
+    """B3 — transit timeline page (free deterministic data + paid analysis if owned).
+
+    Z6 (Opus R3): `months` now honored from the query (3 or 12); the JS selector
+    passes it to analyze() too, so the page and the JSON are consistent."""
     user = get_current_user(request)
     from app.models import Chart, TransitForecast
     chart = session.get(Chart, chart_id)
@@ -2530,11 +2542,12 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         return RedirectResponse("/account/login", status_code=303) if not user \
             else RedirectResponse("/", status_code=303)
     from app.astrology.transit_cache import cached_forecast
+    _m = 12 if months not in (3, 12) else months  # Z6: honor ?months=
     try:
         import json as _json
-        ev12 = cached_forecast(session, chart_id, 12, chart.chart_json)
+        ev12 = cached_forecast(session, chart_id, _m, chart.chart_json)
         payload = session.exec(select(TransitForecast).where(
-            TransitForecast.chart_id == chart_id, TransitForecast.months == 12)).first()
+            TransitForecast.chart_id == chart_id, TransitForecast.months == _m)).first()
         pdata = _json.loads(payload.payload_json) if payload and payload.payload_json else {}
         if not isinstance(pdata, dict):
             pdata = {}
@@ -2548,6 +2561,7 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         "analysis": analysis,
         "chart": chart,
         "have_credits": (user.credits if user else 0),
+        "months": _m,
     })
 
 
@@ -2791,6 +2805,27 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # with any withdrawal request could not delete their account.
     for wd in session.exec(select(WithdrawalRequest).where(WithdrawalRequest.user_id == u.id)).all():
         session.delete(wd)
+    # Z1/R3 (2026-08-23): the credit economy added user-FK rows that deletion
+    # missed — a PAYING user could never delete their account (IntegrityError
+    # 500). "Blast radius" rule: every new table with FK→users must appear here,
+    # in the data export, and in retention policy.
+    for tx in session.exec(select(CreditTransaction).where(CreditTransaction.user_id == u.id)).all():
+        session.delete(tx)
+    for ent in session.exec(select(Entitlement).where(Entitlement.user_id == u.id)).all():
+        session.delete(ent)
+    for ex in session.exec(select(Exploration).where(Exploration.user_id == u.id)).all():
+        session.delete(ex)
+    for ps in session.exec(select(PushSubscription).where(PushSubscription.user_id == u.id)).all():
+        session.delete(ps)
+    for cl in session.exec(select(ConsentLog).where(ConsentLog.user_id == u.id)).all():
+        session.delete(cl)
+    for np_ in session.exec(select(NotificationPrefs).where(NotificationPrefs.user_id == u.id)).all():
+        session.delete(np_)
+    # Z15 (Opus R3 P2-6): transit alert log is user-keyed (users.id for web) —
+    # never cleaned on delete before; remove it so the account truly disappears.
+    for tal in session.exec(select(TransitAlertLog).where(TransitAlertLog.user_key == u.id)).all():
+        session.delete(tal)
+    # funnel events are anonymous (session-scoped, no FK) — nothing to delete.
     session.flush()
 
     for c in charts:

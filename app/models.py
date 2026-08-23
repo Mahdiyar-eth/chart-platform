@@ -7,7 +7,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Index, Integer, UniqueConstraint, text
+import sqlalchemy as sa
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, UniqueConstraint, text
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
@@ -444,7 +445,7 @@ class NotificationPrefs(SQLModel, table=True):
     daily_insight: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     weekly_reflection: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     report_ready: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
-    transit_alerts: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))  # B4: weekly transit push opt-out
+    transit_alerts: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true", nullable=False))  # B4/Z11: NOT NULL (model = truth; c8d2 had flipped it nullable)
     quiet_start: int = Field(default=23)   # local hour (0-23)
     quiet_end: int = Field(default=7)      # local hour (0-23)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -494,7 +495,16 @@ class TransitForecast(SQLModel, table=True):
         UniqueConstraint("chart_id", "months", name="uq_transit_chart_months"),  # X-R23
     )
     id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
-    chart_id: str = Field(index=True, max_length=64)
+    # Z2/R3: FK restored — this table holds PAID narratives (personal data);
+    # it must die with the chart (PRIVACY.md), not outlive it. The c8d2e3f4a5b6
+    # migration had dropped the constraint to satisfy `alembic check` — fixed
+    # in the right direction here (model first, then migration).
+    chart_id: str = Field(
+        max_length=64,
+        sa_column=Column("chart_id", String(64),
+                         sa.ForeignKey("charts.id", ondelete="CASCADE"),
+                         nullable=False, index=True),
+    )
     months: int = Field(default=12)
     payload_json: str = Field(default="{}")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

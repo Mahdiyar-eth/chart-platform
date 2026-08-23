@@ -1,62 +1,79 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-6">
-  <h1 class="text-xl font-bold mb-4">گذرهای پیشِ رو</h1>
-  <p class="text-sm opacity-70 mb-5">گذرِ سیاره‌های کند به نقاط مهمِ تولدِ تو، در بازه‌ی ۱۲ ماه — دادهٔ قطعی و رایگان. تحلیلِ تأملیِ هر بخش با اعتبار باز می‌شود.</p>
+<style>
+  /* Z9 (Opus R3 P1-1): page was written with Tailwind classes that are NOT
+     defined anywhere in this project (no Tailwind build) → it rendered bare.
+     Rewritten with the project's real semantic classes + this scoped block for
+     the few layout utilities the page needs. Do NOT add Tailwind here. */
+  .tw-maxw{ max-width:720px; margin:0 auto; padding:0 16px 28px; }
+  .tw-h1{ font-size:1.35rem; font-weight:700; margin:18px 0 8px; }
+  .tw-sub{ font-size:.9rem; opacity:.72; margin-bottom:18px; }
+  .tw-stack{ display:flex; flex-direction:column; gap:12px; }
+  .tw-head{ font-weight:600; margin:6px 0 8px; }
+  .tw-evrow{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px; }
+  .tw-dot{ opacity:.7; margin:0 4px; }
+  .tw-meta{ font-size:.78rem; opacity:.62; margin-top:6px; }
+  .tw-btn{ width:100%; margin-top:14px; }
+  .tw-toggles{ display:flex; gap:8px; margin-top:10px; }
+  .tw-toggle{ flex:1; padding:9px; font-size:.86rem; border-radius:var(--r-md); text-align:center; cursor:pointer; }
+  .tw-toggle.on{ background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:var(--gold-ink); border:none; }
+  .tw-off{ opacity:.55; }
+  .tw-ana{ margin-top:22px; }
+  .tw-anitext{ font-size:.9rem; line-height:1.7; margin:4px 0; }
+  .tw-aniqu{ font-style:italic; opacity:.8; }
+</style>
 
-  <div
-    x-data="transitsApp()"
-    x-init="init()"
-    class="space-y-4"
-  >
+<div class="tw-maxw">
+  <h1 class="tw-h1">گذرهای پیشِ رو</h1>
+  <p class="muted tw-sub">گذرِ سیاره‌های کند به نقاط مهمِ تولدِ تو، در بازه‌ی {{ '۳' if months == 3 else '۱۲' }} ماه — دادهٔ قطعی و رایگان. تحلیلِ تأملیِ هر بخش با اعتبار باز می‌شود.</p>
+
+  <div x-data="transitsApp()" x-init="init()" class="tw-stack">
+
     <!-- free deterministic timeline -->
     <template x-if="events.length">
       <div>
-        <h2 class="text-base font-semibold mb-2">تایم‌لاین نجومی (رایگان)</h2>
-        <div class="space-y-2">
+        <h2 class="tw-head">تایم‌لاین نجومی (رایگان)</h2>
+        <div class="tw-stack">
           <template x-for="e in events" :key="e.id">
-            <div class="border rounded-xl p-3">
-              <div class="flex items-center justify-between flex-wrap">
-                <div class="font-semibold">
+            <div class="card">
+              <div class="tw-evrow">
+                <div class="tw-head">
                   <span x-text="e.transit_planet_fa || e.transit_planet"></span>
-                  <span class="opacity-70 mx-1">·</span>
+                  <span class="tw-dot">·</span>
                   <span x-text="e.aspect_fa || e.aspect"></span>
-                  <span class="opacity-70 mx-1">·</span>
+                  <span class="tw-dot">·</span>
                   <span x-text="e.natal_target_fa || e.natal_target"></span>
                 </div>
               </div>
-              <div class="text-xs opacity-60 mt-1">
+              <div class="tw-meta">
                 در برج <span x-text="e.transit_sign_fa"></span> · خانهٔ
                 <span x-text="e.natal_house"></span>ِ <span x-text="e.natal_target_fa || e.natal_target"></span> · بازه: <span x-text="e.window_start"></span> تا <span x-text="e.window_end"></span>
                 <template x-if="e.retro_passes > 1">
-                  <span class="ms-1">· رجعت (<span x-text="e.retro_passes"></span> برخورد)</span>
+                  <span>· رجعت (<span x-text="e.retro_passes"></span> برخورد)</span>
                 </template>
               </div>
             </div>
           </template>
         </div>
-        <button
-          @click="analyze()"
-          class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl"
-          :class="busy ? 'opacity-50 pointer-events-none' : ''"
-        >
+
+        <button @click="analyze()" class="btn btn-primary btn-lg tw-btn" :class="busy ? 'tw-off' : ''">
           <span x-text="busy ? 'در حال تحلیل…' : ('تحلیل تأملی گذرها — ' + (months==='3' ? '۲' : '۵') + ' اعتبار')"></span>
         </button>
-        <div class="flex gap-2 mt-3 mb-1" role="group" aria-label="بازهٔ تحلیل">
+
+        <div class="tw-toggles" role="group" aria-label="بازهٔ تحلیل">
           <button type="button" @click="months='3'" :aria-pressed="months==='3'"
-                  class="flex-1 py-2 rounded-xl border text-sm font-medium"
-                  :class="months==='3' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 dark:border-white/20'">۳ ماه</button>
+                  class="tw-toggle" :class="months==='3' ? 'on' : ''">۳ ماه</button>
           <button type="button" @click="months='12'" :aria-pressed="months==='12'"
-                  class="flex-1 py-2 rounded-xl border text-sm font-medium"
-                  :class="months==='12' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 dark:border-white/20'">۱۲ ماه</button>
+                  class="tw-toggle" :class="months==='12' ? 'on' : ''">۱۲ ماه</button>
         </div>
       </div>
     </template>
-    <p x-show="!events.length" class="text-sm opacity-60">رویداد گذری در این بازه محاسبه نشد.</p>
+
+    <p x-show="!events.length" class="muted tw-meta">رویداد گذری در این بازه محاسبه نشد.</p>
 
     <!-- 402 → credit pack CTA -->
     <template x-if="needCredits">
-      <div class="mt-3">
+      <div>
         {% with action_key="transit_12m", action_name_fa="تحلیل تأملی گذرها",
                 needed=5, have=have_credits|default(0), chart_id=chart_id, next="/transits/" ~ chart_id %}
           {% include "partials/credit_cta.html" %}
@@ -66,16 +83,18 @@
 
     <!-- paid analysis -->
     <template x-if="narratives.length">
-      <div class="mt-6 space-y-4">
-        <h2 class="text-base font-semibold">تحلیلِ تأملی</h2>
-        <template x-for="(n,i) in narratives" :key="i">
-          <div class="border rounded-xl p-4">
-            <div class="font-semibold mb-1" x-text="n.headline"></div>
-            <p class="text-sm leading-6 mb-2" x-text="n.what_it_means"></p>
-            <p class="text-sm italic opacity-80 mb-2" x-text="'سؤال تأمل: ' + n.reflection_question"></p>
-            <p class="text-xs opacity-60" x-text="n.window_text"></p>
-          </div>
-        </template>
+      <div class="tw-ana">
+        <h2 class="tw-head">تحلیلِ تأملی</h2>
+        <div class="tw-stack">
+          <template x-for="(n,i) in narratives" :key="i">
+            <div class="card">
+              <div class="tw-head" x-text="n.headline"></div>
+              <p class="tw-anitext" x-text="n.what_it_means"></p>
+              <p class="tw-aniqu tw-anitext" x-text="'سؤال تأمل: ' + n.reflection_question"></p>
+              <p class="tw-meta" x-text="n.window_text"></p>
+            </div>
+          </template>
+        </div>
       </div>
     </template>
   </div>
@@ -85,7 +104,7 @@
 function transitsApp() {
   return {
     chartId: {{ chart_id|tojson }},
-    months: "12",
+    months: {{ months|tojson }},
     events: {{ events|tojson }},
     narratives: {{ analysis|tojson }},
     busy: false,

@@ -1,0 +1,57 @@
+/* Z10 (Opus R3 P1-1): utility classes referenced by several templates
+   (credits/orders/reports/error/form/chat) that were never defined — the
+   author used Tailwind names but this project has NO Tailwind build, so those
+   pages rendered bare. This layer defines ONLY the classes actually used,
+   mapped onto the project's token system. Do NOT add classes here that are
+   not referenced by a template. */
+.max-w-2xl{ max-width:672px; margin-left:auto; margin-right:auto; }
+.max-w-xl{ max-width:576px; }
+.mx-auto{ margin-left:auto; margin-right:auto; }
+.px-4{ padding-left:var(--sp-4); padding-right:var(--sp-4); }
+.py-3{ padding-top:var(--sp-3); padding-bottom:var(--sp-3); }
+.py-8{ padding-top:var(--sp-8); padding-bottom:var(--sp-8); }
+.py-20{ padding-top:calc(var(--sp-8)*2.2); padding-bottom:calc(var(--sp-8)*2.2); }
+.mt-1{ margin-top:var(--sp-1); }
+.mt-3{ margin-top:var(--sp-3); }
+.mt-4{ margin-top:var(--sp-4); }
+.mb-1{ margin-bottom:var(--sp-1); }
+.mb-2{ margin-bottom:var(--sp-2); }
+.mb-3{ margin-bottom:var(--sp-3); }
+.mb-4{ margin-bottom:var(--sp-4); }
+.mb-6{ margin-bottom:var(--sp-6); }
+.mb-8{ margin-bottom:var(--sp-8); }
+.gap-2{ gap:var(--sp-2); }
+.gap-3{ gap:var(--sp-3); }
+.space-y-3 > * + *{ margin-top:var(--sp-3); }
+.divide-y > * + *{ border-top:1px solid var(--stroke); }
+.flex{ display:flex; }
+.inline-block{ display:inline-block; }
+.flex-wrap{ flex-wrap:wrap; }
+.flex-1{ flex:1 1 0%; }
+.items-center{ align-items:center; }
+.justify-between{ justify-content:space-between; }
+.text-center{ text-align:center; }
+.text-xs{ font-size:var(--fs-xs); }
+.text-sm{ font-size:var(--fs-sm); }
+.text-base{ font-size:var(--fs-md); }
+.text-lg{ font-size:var(--fs-lg); }
+.text-2xl{ font-size:var(--fs-2xl); }
+.text-4xl{ font-size:var(--fs-3xl); }
+.text-6xl{ font-size:calc(var(--fs-3xl)*1.7); }
+.font-normal{ font-weight:400; }
+.font-medium{ font-weight:500; }
+.font-semibold{ font-weight:600; }
+.font-bold{ font-weight:700; }
+.font-black{ font-weight:800; }
+.opacity-70{ opacity:.7; }
+.opacity-80{ opacity:.8; }
+.cursor-pointer{ cursor:pointer; }
+/* component-y classes referenced by admin/credits that have no definition */
+.stat{ font-weight:700; font-size:var(--fs-2xl); color:var(--gold-text, var(--gold)); }
+.credit-report,.credit-prices,.credit-grant{ display:block; width:100%; text-align:left; margin-bottom:var(--sp-4); padding:var(--sp-4); }
+.modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:60; }
+.credits-chip{ display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:var(--r-full); background:var(--nav-ink-a08, rgba(255,255,255,.08)); }
+/* city search dropdown (form/chat/synastry) — referenced by JS, had no CSS */
+.city-suggest-a,.city-suggest-b{ position:absolute; z-index:40; top:calc(100% + 4px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-md); box-shadow:0 12px 32px rgba(0,0,0,.18); }
+.city-suggest-a > div,.city-suggest-b > div{ padding:var(--sp-3) var(--sp-4); cursor:pointer; border-bottom:1px solid var(--stroke); }
+.city-suggest-a > div:hover,.city-suggest-b > div:hover{ background:var(--nav-ink-a08, rgba(255,255,255,.06)); }
