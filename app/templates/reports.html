@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">گزارش‌های من</h1>
+  {% if reports %}
+  <div class="glass divide-y">
+    {% for r in reports %}
+    <div class="flex items-center justify-between py-3 px-4 text-sm">
+      <div>
+        <div class="font-medium">گزارش {{ {'basic':'پایه','full':'کامل','gold':'طلایی'}.get(r.plan_key, r.plan_key) }}</div>
+        <div class="muted">{{ r.created_at.strftime('%Y-%m-%d') }}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="chip">{{ {'queued':'در صف','processing':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, r.status) }}</span>
+        {% if r.status in ('done','degraded') %}
+        <a class="btn" href="/chart/{{ r.chart_id }}">مشاهده در چارت</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">هنوز گزارشی نساخته‌ای. از صفحهٔ چارت می‌توانی سفارش بدهی.</p>
+  {% endif %}
+</div>
+{% endblock content %}

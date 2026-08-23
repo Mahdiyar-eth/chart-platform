@@ -48,7 +48,8 @@ def has(session: Session, user_id: str, kind: str, *,
         # would unlock every report/chart of the user. Both credit grants and
         # legacy order backfills are chart/report-scoped, so strict matching is
         # safe for existing customers.
-        if chart_id is not None and ent.chart_id != chart_id:
+        _user_level = kind in ("chat", "audio")  # packs usable across the user's own charts
+        if not _user_level and chart_id is not None and ent.chart_id != chart_id:
             continue
         if ref_id is not None and ent.ref_id != ref_id:
             continue

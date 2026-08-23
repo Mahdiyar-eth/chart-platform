@@ -37,9 +37,10 @@ from app.db import engine, get_session, init_db
 from fastapi.responses import JSONResponse
 from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
 from app.credits import balance, get_price, UnknownAction
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, CreditTransaction,
+                        Exploration, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
-                        User, WeeklyReflection, WithdrawalRequest,)
+                        TransitForecast, User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -288,6 +289,7 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
     # G2: guests must be nudged to claim the chart (top funnel-leak fix)
     from app.auth import get_current_user as _gcu
     is_guest = _gcu(request) is None
+    _cu = get_current_user(request)
     return templates.TemplateResponse(request, "chart.html", {
         "title": "چارت تولد", "chart": chart, "big_three": bt, "svg": svg,
         "aspect_grid": aspect_grid_svg(planets),
@@ -295,6 +297,7 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
         "house_bar": house_bar_svg(houses),
         "access_token": chart.access_token or "",
         "is_guest": is_guest,
+        "user": _cu,
     })
 
 
@@ -619,12 +622,19 @@ def api_create_report(chart_id: str, request: Request,
     # ownership (P0-1): only the owner (user_id or capability token) may trigger
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
-    # plan v3.0 §8/§12: report generation happens AFTER payment — plan_key drives section set
+    # plan v3.0 §8/§12: report generation happens AFTER payment — plan_key drives
+    # section set. X8/R4: TWO purchase paths now unlock generation: legacy paid
+    # order OR a credit entitlement scoped to this chart. plan_key comes from
+    # whichever path matched.
     paid = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    if not paid:
+    _u = get_current_user(request)
+    ent = ent_has(session, _u.id, "report", chart_id=chart_id) if _u else None
+    if not paid and not ent:
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
+    _credit_plan = {"report_basic": "basic", "report_full": "full",
+                    "report_gold": "gold"}.get(getattr(ent, "source_action", "") or "")
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
@@ -656,7 +666,8 @@ def api_create_report(chart_id: str, request: Request,
                 session.commit()
             return {"report_id": existing.id, "status": existing.status,
                     "queued": ok, "plan_key": existing.plan_key, "existing": True}
-    rep = Report(chart_id=chart_id, status="queued", plan_key=paid.plan_key or "full")
+    rep = Report(chart_id=chart_id, status="queued",
+                 plan_key=(paid.plan_key if paid else (_credit_plan or "full")))
     session.add(rep)
     session.commit()
     session.refresh(rep)
@@ -1449,7 +1460,8 @@ def rectify_page(request: Request):
 @app.post("/api/rectify")
 def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...), month: int = Form(...),
                 day: int = Form(...), calendar: str = Form("jalali"),
-                events_json: str = Form(...)):  # [["marriage",2019,6,12], ...]
+                events_json: str = Form(...),  # [["marriage",2019,6,12], ...]
+                session: Session = Depends(get_session)):
     if not _rate_limit(f"rectify:{_rl_client(request)}", 6, 300):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     import json as _json
@@ -1466,6 +1478,14 @@ def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...
         raise HTTPException(400, "حداقل یک رویداد لازم است")
     r = rectify_birth_time(city[0]["lat"], city[0]["lon"], year, month, day, events,
                            jalali=calendar == "jalali")
+    # R8/X11: rectify costs credits — charged only after a successful computation.
+    # Guests still get the deterministic baseline (funnel); logged-in users pay.
+    u = get_current_user(request)
+    if u:
+        from app.credits import spend
+        import uuid as _uuid
+        spend(session, u.id, "rectify",
+              idempotency_key=f"rectify:{u.id}:{year}-{month}-{day}:{_uuid.uuid4().hex[:8]}")
     return {"best_time": r.best_time, "score": r.score, "candidates": r.candidates,
             "events_used": r.events_used, "details": r.details}
 
@@ -1512,6 +1532,17 @@ def api_report_audio_request(report_id: str, request: Request,
         # allow one retry — flip back to none so the worker re-generates
         rep.audio_status = "none"
         session.commit()
+    # R8/X11: audio costs 1 credit — charged at generation request, idempotent per
+    # (report,user) so re-POST while queued never double-charges. Guests (capability
+    # token) keep the free path — the funnel demo stays open.
+    u = get_current_user(request)
+    if u:
+        from app.credits import spend, CreditError
+        try:
+            spend(session, u.id, "report_audio",
+                  idempotency_key=f"audio:{report_id}:{u.id}")
+        except CreditError:
+            raise HTTPException(402, "اعتبار کافی برای نسخهٔ صوتی نیست")
     # enqueue (redis path; failure surfaces as 503 — never inline TTS)
     try:
         import asyncio as _a
@@ -1607,9 +1638,11 @@ def _chat_account_key(chart, order, request) -> str:
 
 
 def _chat_daily_limit(order) -> int:
-    """Gold=5/day, monthly=15/day (admin-overridable via secrets table)."""
-    limit_key = "chat_daily_limit_gold" if order.plan_key == "gold" else "chat_daily_limit_monthly"
-    default = "5" if order.plan_key == "gold" else "15"
+    """Gold=5/day, monthly=15/day (admin-overridable via secrets table).
+    X6: entitlement-only chat (order=None) uses the gold default."""
+    _pk = getattr(order, "plan_key", None)
+    limit_key = "chat_daily_limit_gold" if _pk == "gold" else "chat_daily_limit_monthly"
+    default = "5" if _pk == "gold" else "15"
     try:
         return int(secret_store.get_secret(limit_key, limit_key.upper(), default))
     except ValueError:
@@ -2233,6 +2266,67 @@ def set_notif_prefs(request: Request, session: Session = Depends(get_session),
     return {"ok": True}
 
 
+@app.get("/credits", response_class=HTMLResponse)
+def credits_page(request: Request, session: Session = Depends(get_session)):
+    """X12 — credit wallet page: balance, transaction history, pack purchases.
+    Closes the review's 'economy unreachable from UI' gap for credits."""
+    from app.credits import balance as credit_balance
+    from app.models import CreditTransaction, CreditPrice
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    bal = credit_balance(session, u.id)
+    txs = session.exec(
+        select(CreditTransaction).where(CreditTransaction.user_id == u.id)
+        .order_by(CreditTransaction.created_at.desc()).limit(30)
+    ).all()
+    packs = session.exec(
+        select(CreditPrice).where(
+            CreditPrice.active == True  # noqa: E712
+        )
+    ).all()
+    packs = [p for p in packs if p.action_key.startswith("chat_pack") or p.action_key.startswith("transit")]
+    return templates.TemplateResponse(request, "credits.html", {
+        "title": "اعتبار من", "user": u, "balance": bal, "txs": txs, "packs": packs,
+    })
+
+
+@app.get("/orders", response_class=HTMLResponse)
+def orders_page(request: Request, session: Session = Depends(get_session)):
+    """X13 — order history page (was API-only; review: unreachable from UI)."""
+    from app.models import Order
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    rows = session.exec(
+        select(Order).where(Order.user_id == u.id)
+        .order_by(Order.created_at.desc()).limit(50)
+    ).all()
+    return templates.TemplateResponse(request, "orders.html", {
+        "title": "سفارش‌های من", "orders": rows,
+    })
+
+
+@app.get("/reports", response_class=HTMLResponse)
+def reports_page(request: Request, session: Session = Depends(get_session)):
+    """X13 — report history page with download links (token gate intact)."""
+    from app.models import Report, Chart, BirthProfile
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    my_chart_ids = set(session.exec(
+        select(Chart.id).join(BirthProfile, Chart.profile_id == BirthProfile.id)
+        .where(BirthProfile.user_id == u.id)
+    ).all())
+    rows = session.exec(
+        select(Report).order_by(Report.created_at.desc()).limit(200)
+    ).all()
+    rows = [r for r in rows if r.chart_id in my_chart_ids][:50]
+    return templates.TemplateResponse(request, "reports.html", {
+        "title": "گزارش‌های من", "reports": rows,
+    })
+
+
 @app.get("/account/login", response_class=HTMLResponse)
 def account_login_page(request: Request):
     return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})
@@ -2373,6 +2467,7 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         "events": ev12,
         "analysis": analysis,
         "chart": chart,
+        "have_credits": (user.credits if user else 0),
     })
 
 

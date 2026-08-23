@@ -48,9 +48,12 @@
 
     <!-- 402 → credit pack CTA -->
     <template x-if="needCredits">
-      <a href="/plans" class="block text-center bg-amber-100 text-amber-800 font-medium py-3 rounded-xl mt-3">
-        اعتبار کافی نیست — خرید بستهٔ اعتبار
-      </a>
+      <div class="mt-3">
+        {% with action_key="transit_12m", action_name_fa="تحلیل تأملی گذرها",
+                needed=5, have=have_credits|default(0), chart_id=chart_id, next="/transits/" ~ chart_id %}
+          {% include "partials/credit_cta.html" %}
+        {% endwith %}
+      </div>
     </template>
 
     <!-- paid analysis -->

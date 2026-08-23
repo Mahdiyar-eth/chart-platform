@@ -86,6 +86,9 @@
 | `GET /api/auth/me` | User | کوکی ورود |
 | `POST /api/auth/logout` | User | کوکی ورود |
 | `GET /account` | User | کوکی ورود |
+| `GET /credits` | User | کوکی ورود — کیف اعتبار + تاریخچه (R2-X12) |
+| `GET /orders` | User | کوکی ورود — سفارش‌های خود کاربر (R2-X13) |
+| `GET /reports` | User | کوکی ورود — گزارش‌های چارت‌های خود کاربر (R2-X13) |
 | `GET /account/login` | Public | rate limit |
 | `GET /account/export` | User | owner-only JSON export (G1 — no secrets) |
 | `GET /dashboard` | User | session cookie; hero + 8 cards (G15) |

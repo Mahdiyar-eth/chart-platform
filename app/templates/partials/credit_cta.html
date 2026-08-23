@@ -1,17 +1,63 @@
 {# credit_cta — shown in a locked panel when the user lacks credits for an action.
-   Optional context: action_name_fa, needed (credits), have (current), next (return path). #}
+   X9/X10: now includes a real "unlock with credits" button wired to POST /api/purchase.
+   Context: action_key (e.g. report_basic), action_name_fa, needed, have, chart_id, next. #}
 {% set have = have | default(0) %}
 {% set needed = needed | default(1) %}
 {% set action_name_fa = action_name_fa | default('این بخش') %}
-<div class="glass st-302eccda" >
+{% set action_key = action_key | default('') %}
+{% set chart_id = chart_id | default('') %}
+<div class="glass st-302eccda" x-data="creditBuy()" >
   <svg class="st-724cb239" aria-hidden="true" ><use href="#icon-sparkles"/></svg>
   <h3 class="st-50a8adba" >{{ action_name_fa }} اعتبار می‌خواهد</h3>
   <p class="st-84342225" >
-    برای استفاده {{ needed }} اعتبار لازم است. {#- noqa #} اگر موجودی ({{ have }}) کافی نیست، پک اعتبار بخر —
-    <b class="st-f18be2a6" >هرگز منقضی نمی‌شود.</b>
+    برای استفاده {{ needed }} اعتبار لازم است. موجودی شما: <b x-text="have">{{ have }}</b> اعتبار.
+    <span x-show="!enough" class="st-f18be2a6" >پک اعتبار بخر — هرگز منقضی نمی‌شود.</span>
   </p>
   <div class="st-3efa89b9" >
-    <a href="/plans" class="btn st-a17b2f9a" >خرید اعتبار</a>
+    {% if action_key and chart_id %}
+    <button type="button" class="btn btn-accent" @click="buy('{{ action_key }}', '{{ chart_id }}')"
+            :disabled="busy || enough"
+            x-text="msg ? msg : (enough ? 'در حال بازکردن…' : 'باز کردن با ' + '{{ needed }}' + ' اعتبار')"></button>
+    {% endif %}
+    <a href="/plans" class="btn st-a17b2f9a" >خرید پک اعتبار</a>
     {% if next %}<a class="st-589cae48" href="{{ next }}" >بازگشت</a>{% endif %}
   </div>
 </div>
+<script>
+function creditBuy(){
+  return {
+    have: {{ have }},
+    needed: {{ needed }},
+    busy: false,
+    msg: '',
+    get enough(){ return this.have >= this.needed; },
+    async buy(actionKey, chartId){
+      if (this.busy) return;
+      this.busy = true; this.msg = 'در حال انجام…';
+      try {
+        const r = await fetch('/api/purchase', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({action_key: actionKey, chart_id: chartId})
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.ok) {
+          this.msg = 'باز شد! در حال بارگذاری…';
+          setTimeout(() => location.reload(), 700);
+        } else if (j.login_required) {
+          location.href = '/account/login?next={{ next | default("/plans") }}';
+        } else if (r.status === 402) {
+          this.msg = 'اعتبار کافی نیست — پک بخر';
+          this.busy = false;
+        } else {
+          this.msg = (j.message || 'خطا؛ دوباره تلاش کن');
+          this.busy = false;
+        }
+      } catch(e) {
+        this.msg = 'خطای شبکه'; this.busy = false;
+      }
+    }
+  }
+}
+</script>

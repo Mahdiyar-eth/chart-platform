@@ -126,6 +126,17 @@
       <span class="chip">پرمیوم ۶۹۹ هزار</span>
     </div>
     <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">خرید گزارش کامل</a>
+    {% if user %}
+    <details class="mt-3">
+      <summary class="text-sm opacity-70 cursor-pointer">یا با اعتبار باز کن</summary>
+      <div class="mt-3">
+        {% with action_key="report_basic", action_name_fa="گزارش پایه", needed=7,
+                have=user.credits|default(0), chart_id=chart.id, next="/chart/" ~ chart.id %}
+          {% include "partials/credit_cta.html" %}
+        {% endwith %}
+      </div>
+    </details>
+    {% endif %}
     <div class="st-1f205fde" >
       <a class="st-57f9e31d" href="/chat/{{ chart.id }}" >💬 گفت‌وگو با چارت</a>
       <a class="st-57f9e31d" href="/transit/{{ chart.id }}" >گذرهای کنونی</a>

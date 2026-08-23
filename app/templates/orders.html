@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">سفارش‌های من</h1>
+  {% if orders %}
+  <div class="glass divide-y">
+    {% for o in orders %}
+    <div class="flex items-center justify-between py-3 px-4 text-sm">
+      <div>
+        <div class="font-medium">{{ o.plan_key }}</div>
+        <div class="muted">{{ o.created_at.strftime('%Y-%m-%d') }}</div>
+      </div>
+      <span class="chip">{{ {'pending':'در انتظار پرداخت','paid':'پرداخت‌شده','failed':'ناموفق','canceled':'لغوشده'}.get(o.status, o.status) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">هنوز سفارشی ثبت نکرده‌ای. <a class="link" href="/plans">دیدن پلن‌ها</a></p>
+  {% endif %}
+</div>
+{% endblock content %}

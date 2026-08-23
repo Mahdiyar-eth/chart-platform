@@ -35,6 +35,9 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("faq", "سؤالات پرتکرار", "/faq", icon="icon-help", group="یادگیری"),
     
     NavItem("account", "حساب من", "/account", icon="icon-user", group="حساب"),
+    NavItem("credits", "اعتبار من", "/credits", icon="icon-sparkles", group="حساب"),
+    NavItem("orders", "سفارش‌ها", "/orders", icon="icon-tag", group="حساب"),
+    NavItem("reports", "گزارش‌ها", "/reports", icon="icon-book-open", group="حساب"),
     NavItem("about", "درباره ما", "/about", icon="icon-link", group="دربارهٔ ما"),
     NavItem("contact", "تماس با پشتیبانی", "/contact", icon="icon-chat", group="دربارهٔ ما"),
     NavItem("privacy", "حریم خصوصی", "/privacy", icon="icon-lock", group="دربارهٔ ما"),
