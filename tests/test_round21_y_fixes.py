@@ -118,8 +118,10 @@ def test_y3_cached_month_never_recharges(llm_mock):
         assert balance(s, uid) == 20  # NOTHING spent on cached content
 
 
-def test_y5_rectify_double_click_charges_once():
-    """Y5/N5: deterministic idempotency key — same inputs twice = ONE charge."""
+def test_y15_rectify_double_click_never_charges():
+    """Y15 supersedes Y5's charging test: rectify is FREE for everyone now.
+    Double-click still must return identical deterministic results (same engine,
+    pure function) and zero credit movement — rate limit is the abuse guard."""
     uid = _mk_user(credits=10)
     c = TestClient(main_app); ck = {USER_COOKIE: _user_cookie_value(uid)}
     evs = json.dumps([["marriage", 2019, 6, 12]])
@@ -131,8 +133,9 @@ def test_y5_rectify_double_click_charges_once():
                                       "day": 10, "calendar": "jalali", "events_json": evs},
                 cookies=ck)
     assert r2.status_code == 200
+    assert r1.json()["best_time"] == r2.json()["best_time"]  # deterministic
     with Session(engine) as s:
-        assert balance(s, uid) == 8  # charged ONCE (2 credits), not twice
+        assert balance(s, uid) == 10  # never charged
 
 
 def test_y6_refund_cumulative_cap():

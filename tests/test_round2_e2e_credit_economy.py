@@ -138,18 +138,18 @@ def test_x8_report_via_credits_no_order(llm_mock, monkeypatch):
         assert balance(s, uid) == 3  # 10 - 7 (report_full)
 
 
-def test_r8_rectify_charges_logged_in_user(llm_mock):
-    """R8: rectify spends 'rectify' price for logged-in users; guests free."""
+def test_y15_rectify_free_for_everyone(llm_mock):
+    """Y15 (owner decision): rectify is FREE for everyone — deterministic engine
+    (no LLM cost), used as an acquisition tool. Rate limit is the abuse guard."""
     uid = _mk_user(credits=10)
-    cid = _mk_chart(uid)  # noqa — ownership not needed for rectify
     c = TestClient(main_app); ck = _cookie(uid)
     evs = json.dumps([["marriage", 2019, 6, 12]])
     r1 = c.post("/api/rectify", data={"city_fa": "تهران", "year": 1373, "month": 6,
                                       "day": 1, "events_json": evs}, cookies=ck)
     assert r1.status_code == 200, r1.text[:200]
     with Session(engine) as s:
-        assert balance(s, uid) == 8  # 10 - rectify(2)
-    # guest path stays free
+        assert balance(s, uid) == 10  # untouched
+    # guest path also free
     r2 = c.post("/api/rectify", data={"city_fa": "تهران", "year": 1373, "month": 6,
                                       "day": 1, "events_json": evs})
     assert r2.status_code == 200

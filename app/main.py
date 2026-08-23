@@ -1500,8 +1500,7 @@ def rectify_page(request: Request):
 @app.post("/api/rectify")
 def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...), month: int = Form(...),
                 day: int = Form(...), calendar: str = Form("jalali"),
-                events_json: str = Form(...),  # [["marriage",2019,6,12], ...]
-                session: Session = Depends(get_session)):
+                events_json: str = Form(...)):  # [["marriage",2019,6,12], ...]
     if not _rate_limit(f"rectify:{_rl_client(request)}", 6, 300):
         raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     import json as _json
@@ -1518,14 +1517,10 @@ def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...
         raise HTTPException(400, "حداقل یک رویداد لازم است")
     r = rectify_birth_time(city[0]["lat"], city[0]["lon"], year, month, day, events,
                            jalali=calendar == "jalali")
-    # R8/X11: rectify costs credits — charged only after a successful computation.
-    # Guests still get the deterministic baseline (funnel); logged-in users pay.
-    u = get_current_user(request)
-    if u:
-        from app.credits import spend
-        spend(session, u.id, "rectify",
-              idempotency_key=f"rectify:{u.id}:{year}-{month}-{day}:{calendar}:"
-                             f"{city_fa.strip()}:{events_json[:120]}")  # Y5/N5: deterministic — no uuid4
+    # Y15 (owner decision 2026-08-23): rectify is FREE for everyone — it is a
+    # deterministic engine (no LLM cost) and works as an acquisition tool.
+    # Abuse is bounded by the rate limit above; the credit_prices row for
+    # 'rectify' stays seeded but inactive-by-policy (no gate reads it here).
     return {"best_time": r.best_time, "score": r.score, "candidates": r.candidates,
             "events_used": r.events_used, "details": r.details}
 
