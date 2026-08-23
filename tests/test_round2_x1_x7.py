@@ -1,7 +1,8 @@
 """Round-2 X1–X7 acceptance tests (Claude review R1–R7) — LLM mocked, $0."""
 import os, json, uuid, types
+from pathlib import Path
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -204,3 +205,4 @@ def test_x4_purchase_creates_entitlement_atomically(transit_env):
         with Session(engine) as s:
             ent = s.get(Entitlement, j["entitlement_id"])
             assert ent is not None and ent.chart_id == cid
+

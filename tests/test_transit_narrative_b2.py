@@ -1,6 +1,7 @@
 """B2 — transit narrative layer acceptance tests (LLM mocked → $0, no live network)."""
 import os, types, json
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+from pathlib import Path
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 from app.astrology.engine import compute_from_fields, ensure_ephe
 from app.astrology.golden_data import GOLDEN_CHARTS
 from app.report.transit_narrative import (

@@ -1,7 +1,8 @@
 """Round 2.1 (Opus R2) acceptance: Y1-Y9. NO gate monkeypatching (new rule)."""
 import os, json, uuid
+from pathlib import Path
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session

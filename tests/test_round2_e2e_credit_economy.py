@@ -1,8 +1,9 @@
 """X11 mandatory E2E: buy pack -> report -> transit analysis -> chat -> balance.
 LLM fully mocked ($0). Mirrors Claude review's REQUIRED acceptance test."""
 import os, json, uuid, types
+from pathlib import Path
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -205,5 +206,6 @@ def test_r22_ttl_rewrite_preserves_narratives():
         cached_forecast(s, cid, 3, chart)
         row=s.exec(select(TransitForecast).where(TransitForecast.chart_id==cid,
                    TransitForecast.months==3)).first()
-        data=json.loads(row.payload_json)
+        data = json.loads(row.payload_json)
         assert isinstance(data, dict) and data.get("narratives"), "paid narratives wiped!"
+

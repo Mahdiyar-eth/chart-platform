@@ -1,7 +1,8 @@
 """B4 — weekly transit alerts acceptance tests (delivery mocked, DB real)."""
 import os, json, uuid
+from pathlib import Path
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 os.environ.setdefault("CREATE_ALL_ON_BOOT", "1")
 
 from datetime import datetime, timedelta, timezone
@@ -83,3 +84,4 @@ async def test_2_respects_prefs_and_dedup_and_link():
         assert len(delivered) == 1, "anti-duplicate: max one push per week"
     finally:
         bh.send_message = orig
+

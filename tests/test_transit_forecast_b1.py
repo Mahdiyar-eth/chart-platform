@@ -1,6 +1,7 @@
 """B1 — transit forecast engine acceptance tests (deterministic, no LLM)."""
 import os, time, uuid
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+from pathlib import Path
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 import swisseph as swe
