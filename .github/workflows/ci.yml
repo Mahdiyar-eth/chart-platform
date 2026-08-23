@@ -41,13 +41,16 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install deps
+      - name: Install deps (venv)
         run: |
-          pip install -r requirements.txt
+          # R4/W5: create the venv the repo's scripts expect (venv/bin/*), install
+          # deps into it, then activate for every subsequent step.
           sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0
-      - name: Test
+          python -m venv venv
+          venv/bin/pip install --upgrade pip
+          venv/bin/pip install -r requirements.txt
+          venv/bin/pip install pytest-cov bandit ruff pip-audit
+          echo ".../venv/bin" >> "$GITHUB_PATH"
+      - name: Test (drift gate + full suite + lint + scans)
         run: |
-          # R4/W5: init_db() self-provisions the pgvector extension (guarded) when
-          # CREATE_ALL_ON_BOOT=1, so no separate psql step is needed. The fresh-DB
-          # drift gate in ci.sh also installs vector itself.
-          scripts/ci.sh
+          bash scripts/ci.sh

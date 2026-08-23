@@ -6,48 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo "==> alembic chain check (fresh EMPTY DB → upgrade head → drift check)"
-# Z4/R3: the drift gate MUST run against a truly empty database. Running it on
-# the dev/test DB (which has create_all artifacts) hides missing migrations —
-# exactly how the subscribers table slipped through (Opus R3, P0-3).
-DRIFT_DB="postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_drift"
-venv/bin/python - <<PYEOF
-import os, sqlalchemy as sa
-os.environ["DATABASE_URL"] = os.environ["DATABASE_URL_ADMIN"] = "$DRIFT_DB"
-admin = sa.create_engine("postgresql://chart_test:chart_test_pw@127.0.0.1:5432/postgres")
-with admin.connect() as conn:
-    conn.execution_options(isolation_level="AUTOCOMMIT")
-    conn.execute(sa.text("DROP DATABASE IF EXISTS chart_platform_drift WITH (FORCE)"))
-    conn.execute(sa.text("CREATE DATABASE chart_platform_drift"))
-    conn.execute(sa.text("GRANT ALL PRIVILEGES ON DATABASE chart_platform_drift TO chart_test"))
-print("drift db recreated (empty)")
-PYEOF
-# pgvector must live in the drift DB; create it. In CI the app's connection user
-# (chart_test) IS the service superuser, so try via the app URL first; on a local
-# box where chart_test isn't superuser, fall back to sudo -u postgres.
-DATABASE_URL="$DRIFT_DB" venv/bin/python - <<PYEOF
-import os, sqlalchemy as sa
-try:
-    e = sa.create_engine(os.environ["DATABASE_URL"])
-    with e.connect() as c:
-        c.execution_options(isolation_level="AUTOCOMMIT")
-        c.execute(sa.text("CREATE EXTENSION IF NOT EXISTS vector"))
-        c.execute(sa.text("GRANT ALL ON SCHEMA public TO chart_test"))
-    print("vector created via app user")
-except Exception as ex:  # noqa: BLE001 — fall back below
-    print("app-user vector failed:", str(ex)[:80])
-PYEOF
-sudo -u postgres psql -d chart_platform_drift -c "CREATE EXTENSION IF NOT EXISTS vector; \
-  GRANT ALL ON SCHEMA public TO chart_test;" >/dev/null 2>&1 || echo "(sudo vector step skipped)"
-DATABASE_URL="$DRIFT_DB" venv/bin/alembic upgrade head
-DATABASE_URL="$DRIFT_DB" venv/bin/alembic check
-venv/bin/python - <<PYEOF
-import sqlalchemy as sa
-admin = sa.create_engine("postgresql://chart_test:chart_test_pw@127.0.0.1:5432/postgres")
-with admin.connect() as conn:
-    conn.execution_options(isolation_level="AUTOCOMMIT")
-    conn.execute(sa.text("DROP DATABASE IF EXISTS chart_platform_drift WITH (FORCE)"))
-print("drift db dropped")
-PYEOF
+bash scripts/drift_gate.sh
 
 echo "==> pytest + coverage (gate: >= 60%)"
 venv/bin/python -m pytest tests/ -q --cov=app --cov-report=term-missing --cov-fail-under=60
