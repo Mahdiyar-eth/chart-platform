@@ -56,6 +56,9 @@ SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/c
 APP_ENV=production DATABASE_URL="$SMOKE_DB" \
   AUTH_SECRET="smoke-test-auth-secret-000" ADMIN_SECRET="smoke-test-admin-secret-000" \
   SECRETS_MASTER_KEY="smoke-test-master-key-000" \
+  RATE_LIMIT_BACKEND="redis" \
+  R2_ACCESS_KEY_ID="smoke-test-r2-access" R2_SECRET_ACCESS_KEY="smoke-test-r2-secret" \
+  R2_ENDPOINT="https://smoke.example" R2_BUCKET="zayche-storage" \
   venv/bin/python - <<'PY'
 from fastapi.testclient import TestClient
 import app.main as m
@@ -106,7 +109,7 @@ echo "==> brand-language scan (فال/پیش‌بینی ممنوع)"
 BAD=$(grep -rniE "پیش ?بینی|فال|طالع ?بینی" \
   app/templates app/content app/bots app/report app/chat --include="*.html" --include="*.json" --include="*.py" \
   | grep -v app/report/qa.py \
-  | grep -viE "فال[‌ ]?[‌ ]?(بازی|گویی)|نه فال|فال قطعی|پیش‌بینی قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج" \
+  | grep -viE "فال[‌ ]?[‌ ]?(بازی|گویی)|نه فال|فال قطعی|پیش‌بینی قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج|بدون فال‌بازی|از ادعای قطعی دربارهٔ آینده" \
   | grep -viE "پیش[‌ ]?بینی (نیست|در آسترولوژی|قطع)|پیش[‌ ]?بین" || true)
 
 if [ -n "$BAD" ]; then
