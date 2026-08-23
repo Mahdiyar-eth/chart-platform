@@ -18,11 +18,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi.testclient import TestClient
 
-from app.main import app
-
 # Conftest does not set R2_* — so storage.configured() is False in tests and the
 # local MEDIA_DIR fallback is the active path.
-import app.storage as storage
+from app import storage
+from app.main import app
 
 
 @pytest.fixture()

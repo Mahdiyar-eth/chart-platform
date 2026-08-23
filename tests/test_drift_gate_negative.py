@@ -17,7 +17,6 @@ available (CI + this host). It never touches `chart_platform_test`. Marked slow.
 """
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
