@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16   # R4/W5: includes the vector extension so CREATE EXTENSION works in CI
         env:
           POSTGRES_DB: chart_platform_test
           POSTGRES_USER: chart_test
@@ -45,16 +45,9 @@ jobs:
         run: |
           pip install -r requirements.txt
           sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0
-      - name: Create pgvector extension
-        run: |
-          # R4/W1: models.py uses pgvector.sqlalchemy.Vector — the Postgres
-          # service needs the extension installed before create_all runs.
-          # POSTGRES_USER in the service container is a superuser, so the
-          # extension can be created via the app's own DATABASE_URL user.
-          PGPASSWORD=chart_test_pw psql -h 127.0.0.1 -U chart_test -d chart_platform_test \
-            -c "CREATE EXTENSION IF NOT EXISTS vector;"
-          PGPASSWORD=chart_test_pw psql -h 127.0.0.1 -U chart_test -d postgres \
-            -c "SELECT extname FROM pg_extension WHERE extname='vector';"
       - name: Test
         run: |
+          # R4/W5: init_db() self-provisions the pgvector extension (guarded) when
+          # CREATE_ALL_ON_BOOT=1, so no separate psql step is needed. The fresh-DB
+          # drift gate in ci.sh also installs vector itself.
           scripts/ci.sh

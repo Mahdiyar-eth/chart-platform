@@ -21,9 +21,23 @@ with admin.connect() as conn:
     conn.execute(sa.text("GRANT ALL PRIVILEGES ON DATABASE chart_platform_drift TO chart_test"))
 print("drift db recreated (empty)")
 PYEOF
-# pgvector must live in the drift DB; only superuser can create it.
+# pgvector must live in the drift DB; create it. In CI the app's connection user
+# (chart_test) IS the service superuser, so try via the app URL first; on a local
+# box where chart_test isn't superuser, fall back to sudo -u postgres.
+DATABASE_URL="$DRIFT_DB" venv/bin/python - <<PYEOF
+import os, sqlalchemy as sa
+try:
+    e = sa.create_engine(os.environ["DATABASE_URL"])
+    with e.connect() as c:
+        c.execution_options(isolation_level="AUTOCOMMIT")
+        c.execute(sa.text("CREATE EXTENSION IF NOT EXISTS vector"))
+        c.execute(sa.text("GRANT ALL ON SCHEMA public TO chart_test"))
+    print("vector created via app user")
+except Exception as ex:  # noqa: BLE001 — fall back below
+    print("app-user vector failed:", str(ex)[:80])
+PYEOF
 sudo -u postgres psql -d chart_platform_drift -c "CREATE EXTENSION IF NOT EXISTS vector; \
-  GRANT ALL ON SCHEMA public TO chart_test;" >/dev/null 2>&1 || echo "(vector step skipped — check superuser)"
+  GRANT ALL ON SCHEMA public TO chart_test;" >/dev/null 2>&1 || echo "(sudo vector step skipped)"
 DATABASE_URL="$DRIFT_DB" venv/bin/alembic upgrade head
 DATABASE_URL="$DRIFT_DB" venv/bin/alembic check
 venv/bin/python - <<PYEOF

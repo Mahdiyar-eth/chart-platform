@@ -1,7 +1,7 @@
 """DB session + init (Postgres). For tests: override engine with temp SQLite."""
 import os
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlmodel import Session, SQLModel
 
 from app.env import IS_PROD
@@ -23,6 +23,15 @@ def init_db() -> None:
     # would silently ignore drift. It runs only when explicitly enabled
     # (tests / fresh dev DBs), never on a normal production boot.
     if os.getenv("CREATE_ALL_ON_BOOT", "0") == "1":
+        # R4/W5: ensure the pgvector extension exists before create_all (models
+        # use VECTOR(384)). Idempotent + guarded: in CI the service POSTGRES_USER
+        # is a superuser so this succeeds; locally it's a no-op if already present.
+        # Never raise on privilege failure — the drift gate/migrations own DDL.
+        try:
+            with engine.begin() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception:  # noqa: BLE001 — best-effort; schema may already be ready
+            pass
         SQLModel.metadata.create_all(engine)
     seed_plans()
     seed_credit_prices()
