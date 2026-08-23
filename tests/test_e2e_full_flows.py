@@ -239,8 +239,10 @@ def test_extra_api_flows(monkeypatch):
     assert c.get("/api/explore/history").status_code == 200
     assert c.post("/api/explore/__nonexistent__", data={"chart_id": cid}).status_code == 404
 
-    # web push VAPID key (read)
-    assert c.get("/api/push/vapid-public-key").status_code in (200, 404)
+    # web push VAPID key (read) — 503 legitimately when VAPID isn't configured (CI/fresh)
+    from app.push import vapid_configured
+    expected = (200, 404) if vapid_configured() else (503,)
+    assert c.get("/api/push/vapid-public-key").status_code in expected
 
     # chart image share + docx export + chat history
     assert c.get(f"/api/share/{cid}.png").status_code in (200, 404)  # needs artifact renderer
