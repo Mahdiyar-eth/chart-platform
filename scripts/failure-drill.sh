@@ -25,7 +25,9 @@ runpg "createdb -O chart_app $DRILL_DB"
 
 echo "== 3/6 restore backup into drill DB =="
 runpg "pg_restore -d $DRILL_DB $BK" >/dev/null 2>&1 || true
-runpg "psql -d $DRILL_DB -tAc 'SELECT count(*) FROM alembic_version'" | grep -q . && echo "  alembic_version restored OK"
+runpg "psql -d $DRILL_DB -tAc 'SELECT count(*) FROM alembic_version'" | grep -q . \
+  && echo "  alembic_version restored OK" \
+  || { echo "  FAILED: alembic_version missing after restore"; exit 1; }
 
 echo "== 4/6 intentionally BROKEN migration (missing table) =="
 # real password from project .env (never hardcode).
@@ -66,7 +68,8 @@ echo "  broken migration failed as designed (exit $rc) ✅"
 echo "$out" | tail -2
 # prove aborted cleanly: head unchanged (transactional DDL rolled back)
 AFTER_REV=$(pgd "SELECT version_num FROM alembic_version" | tr -d ' \n')
-[ "$AFTER_REV" = "$HEAD_REV" ] && echo "  alembic version untouched after abort ✅" || echo "  WARNING: version drifted: $AFTER_REV"
+[ "$AFTER_REV" = "$HEAD_REV" ] && echo "  alembic version untouched after abort ✅" \
+  || { echo "  FAILED: version drifted after abort: $AFTER_REV"; exit 1; }
 
 echo "== 5/6 restore from the SAME fresh backup (rollback) =="
 runpg "dropdb --if-exists $DRILL_DB"

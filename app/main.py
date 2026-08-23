@@ -1273,8 +1273,11 @@ def api_share_card(chart_id: str, request: Request,
     from fastapi.responses import FileResponse
     try:
         path = render_share_card(chart.chart_json, chart_id)
-    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed) → 404, not 500
-        raise HTTPException(404, "share card renderer unavailable")
+    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed)
+        # R.5 / V6 (P2-3): 503 "service unavailable" not 404 — the chart EXISTS,
+        # the renderer doesn't. 404 would mislead a client into thinking the chart
+        # is gone; 503 says "try later" (same principle as the VAPID fix).
+        raise HTTPException(503, "share card renderer unavailable")
     return FileResponse(path, media_type="image/png")
 
 

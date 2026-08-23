@@ -103,21 +103,12 @@ fi
 echo "✓ no hardcoded secrets"
 
 echo "==> brand-language scan (فال/پیش‌بینی ممنوع)"
-# Promotional fortune-telling is banned; allow: the QA detector itself (qa.py),
-# the educational article contrasting natal charts with daily horoscopes,
-# and the DISCLAIMER («نه تعیین سرنوشت»).
-BAD=$(grep -rniE "پیش ?بینی|فال|طالع ?بینی" \
-  app/templates app/content app/bots app/report app/chat --include="*.html" --include="*.json" --include="*.py" \
-  | grep -v app/report/qa.py \
-  | grep -viE "فال[‌ ]?[‌ ]?(بازی|گویی)|نه فال|فال قطعی|پیش‌بینی قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج|بدون فال‌بازی|از ادعای قطعی دربارهٔ آینده" \
-  | grep -viE "پیش[‌ ]?بینی (نیست|در آسترولوژی|قطع)|پیش[‌ ]?بین" || true)
-
-if [ -n "$BAD" ]; then
-  echo "❌ banned brand-language found:"
-  echo "$BAD"
+# R.5 / V7 (P2-1): explicit file:line ALLOWLIST (scripts/brand_allowlist.txt), not a
+# growing substring grep -v chain that weakens whitelisting. qa.py (the detector)
+# is always allowed; every other hit must be explicitly allowlisted.
+if ! venv/bin/python scripts/brand_language_gate.py; then
   exit 1
 fi
-echo "✓ no banned brand-language"
 
 echo "==> absolute-path scan (R4/W7: no hardcoded /root/chart-platform in app/)"
 # A hardcoded absolute path breaks the app on ANY other host (Docker WORKDIR=/app).
