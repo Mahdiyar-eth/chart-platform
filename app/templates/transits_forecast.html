@@ -1,75 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-  /* Z9 (Opus R3 P1-1): page was written with Tailwind classes that are NOT
-     defined anywhere in this project (no Tailwind build) → it rendered bare.
-     Rewritten with the project's real semantic classes + this scoped block for
-     the few layout utilities the page needs. Do NOT add Tailwind here. */
+  /* R4/W8: transits page redesign — the reviewer flagged the R3 version as a
+     flat 5287px wall of (chronological) cards with the buy button buried at the
+     bottom. This version:
+       - sorts by WEIGHT (major aspects first, so زحل doesn't drown in مریخ minutia)
+       - groups events by month window with headers
+       - shows an intensity bar per event
+       - puts the 3m/12m selector + CTA at the TOP
+       - shows a PAID sample narrative as a teaser so the user sees what 5 credits buys
+     Uses only real project classes + this scoped block. NO Tailwind. */
   .tw-maxw{ max-width:720px; margin:0 auto; padding:0 16px 28px; }
-  .tw-h1{ font-size:1.35rem; font-weight:700; margin:18px 0 8px; }
-  .tw-sub{ font-size:.9rem; opacity:.72; margin-bottom:18px; }
-  .tw-stack{ display:flex; flex-direction:column; gap:12px; }
-  .tw-head{ font-weight:600; margin:6px 0 8px; }
+  .tw-h1{ font-size:1.4rem; font-weight:700; margin:18px 0 4px; }
+  .tw-sub{ font-size:.88rem; opacity:.72; margin-bottom:14px; }
+  .tw-cta{ margin:0 0 16px; }   /* CTA sits ABOVE the wall (not buried) */
+  .tw-stack{ display:flex; flex-direction:column; gap:10px; }
+  .tw-monthhead{ font-size:.8rem; font-weight:700; color:var(--gold-text,var(--gold)); margin:14px 0 2px; letter-spacing:.02em; }
   .tw-evrow{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px; }
-  .tw-dot{ opacity:.7; margin:0 4px; }
-  .tw-meta{ font-size:.78rem; opacity:.62; margin-top:6px; }
-  .tw-btn{ width:100%; margin-top:14px; }
-  .tw-toggles{ display:flex; gap:8px; margin-top:10px; }
-  .tw-toggle{ flex:1; padding:9px; font-size:.86rem; border-radius:var(--r-md); text-align:center; cursor:pointer; }
+  .tw-head{ font-weight:650; margin:0; }
+  .tw-dot{ opacity:.65; margin:0 5px; }
+  .tw-meta{ font-size:.78rem; opacity:.62; margin-top:5px; }
+  .tw-bar{ height:5px; border-radius:99px; background:var(--nav-ink-a10, rgba(255,255,255,.09)); margin-top:8px; overflow:hidden; }
+  .tw-barfill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--gold),var(--gold-deep)); }
+  .tw-strong{ border-left:3px solid var(--gold); padding-left:10px; }  /* highlight top-weight events */
+  .tw-btn{ width:100%; }
+  .tw-toggles{ display:flex; gap:8px; margin:10px 0 4px; }
+  .tw-toggle{ flex:1; padding:10px; font-size:.88rem; border-radius:var(--r-md); text-align:center; cursor:pointer; border:1px solid var(--stroke); }
   .tw-toggle.on{ background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:var(--gold-ink); border:none; }
   .tw-off{ opacity:.55; }
-  .tw-ana{ margin-top:22px; }
+  .tw-ana{ margin-top:18px; }
+  .tw-teaser{ border:1px dashed var(--gold); background:var(--surface); }
   .tw-anitext{ font-size:.9rem; line-height:1.7; margin:4px 0; }
   .tw-aniqu{ font-style:italic; opacity:.8; }
+  .tw-lock-note{ font-size:.8rem; opacity:.65; margin:6px 0 0; }
 </style>
 
 <div class="tw-maxw">
   <h1 class="tw-h1">گذرهای پیشِ رو</h1>
-  <p class="muted tw-sub">گذرِ سیاره‌های کند به نقاط مهمِ تولدِ تو، در بازه‌ی {{ '۳' if months == 3 else '۱۲' }} ماه — دادهٔ قطعی و رایگان. تحلیلِ تأملیِ هر بخش با اعتبار باز می‌شود.</p>
+  <p class="muted tw-sub">گذرِ سیاره‌های کند به نقاط مهمِ تولدِ تو، در بازهٔ {{ '۳' if months == 3 else '۱۲' }} ماه — دادهٔ قطعی و رایگان، مرتب‌شده بر اهمیت. تحلیلِ تأملیِ هر بخش با اعتبار باز می‌شود.</p>
 
   <div x-data="transitsApp()" x-init="init()" class="tw-stack">
 
-    <!-- free deterministic timeline -->
-    <template x-if="events.length">
+    <!-- CTA + selector ABOVE the wall (W8) -->
+    <div class="tw-cta">
+      <div class="tw-toggles" role="group" aria-label="بازهٔ تحلیل">
+        <button type="button" @click="setMonth('3')" :aria-pressed="months==='3'"
+                class="tw-toggle" :class="months==='3' ? 'on' : ''">۳ ماه</button>
+        <button type="button" @click="setMonth('12')" :aria-pressed="months==='12'"
+                class="tw-toggle" :class="months==='12' ? 'on' : ''">۱۲ ماه</button>
+      </div>
+      <button @click="analyze()" class="btn btn-primary btn-lg tw-btn" :class="busy ? 'tw-off' : ''">
+        <span x-text="busy ? 'در حال تحلیل…' : ('تحلیل تأملی گذرها — ' + (months==='3' ? '۲' : '۵') + ' اعتبار')"></span>
+      </button>
+    </div>
+
+    <!-- free deterministic timeline, weight-sorted + month-grouped -->
+    <template x-if="grouped.length">
       <div>
         <h2 class="tw-head">تایم‌لاین نجومی (رایگان)</h2>
-        <div class="tw-stack">
-          <template x-for="e in events" :key="e.id">
-            <div class="card">
-              <div class="tw-evrow">
-                <div class="tw-head">
-                  <span x-text="e.transit_planet_fa || e.transit_planet"></span>
-                  <span class="tw-dot">·</span>
-                  <span x-text="e.aspect_fa || e.aspect"></span>
-                  <span class="tw-dot">·</span>
-                  <span x-text="e.natal_target_fa || e.natal_target"></span>
+        <template x-for="g in grouped" :key="g.month">
+          <div>
+            <div class="tw-monthhead" x-text="g.label"></div>
+            <div class="tw-stack">
+              <template x-for="e in g.events" :key="e.id">
+                <div class="card" :class="e.weight >= 6 ? 'tw-strong' : ''">
+                  <div class="tw-evrow">
+                    <div class="tw-head">
+                      <span x-text="e.transit_planet_fa || e.transit_planet"></span>
+                      <span class="tw-dot">·</span>
+                      <span x-text="e.aspect_fa || e.aspect"></span>
+                      <span class="tw-dot">·</span>
+                      <span x-text="e.natal_target_fa || e.natal_target"></span>
+                    </div>
+                    <span class="badge" x-show="e.weight >= 6">مهم</span>
+                  </div>
+                  <div class="tw-bar"><div class="tw-barfill" :style="'width:' + barPct(e.weight) + '%'"></div></div>
+                  <div class="tw-meta">
+                    <span x-text="e.window_start"></span> تا <span x-text="e.window_end"></span> · برج <span x-text="e.transit_sign_fa"></span> · خانهٔ
+                    <span x-text="e.natal_house"></span>ِ <span x-text="e.natal_target_fa || e.natal_target"></span>
+                    <template x-if="e.retro_passes > 1">
+                      <span>· رجعت (<span x-text="e.retro_passes"></span> برخورد)</span>
+                    </template>
+                  </div>
                 </div>
-              </div>
-              <div class="tw-meta">
-                در برج <span x-text="e.transit_sign_fa"></span> · خانهٔ
-                <span x-text="e.natal_house"></span>ِ <span x-text="e.natal_target_fa || e.natal_target"></span> · بازه: <span x-text="e.window_start"></span> تا <span x-text="e.window_end"></span>
-                <template x-if="e.retro_passes > 1">
-                  <span>· رجعت (<span x-text="e.retro_passes"></span> برخورد)</span>
-                </template>
-              </div>
+              </template>
             </div>
-          </template>
-        </div>
-
-        <button @click="analyze()" class="btn btn-primary btn-lg tw-btn" :class="busy ? 'tw-off' : ''">
-          <span x-text="busy ? 'در حال تحلیل…' : ('تحلیل تأملی گذرها — ' + (months==='3' ? '۲' : '۵') + ' اعتبار')"></span>
-        </button>
-
-        <div class="tw-toggles" role="group" aria-label="بازهٔ تحلیل">
-          <button type="button" @click="months='3'" :aria-pressed="months==='3'"
-                  class="tw-toggle" :class="months==='3' ? 'on' : ''">۳ ماه</button>
-          <button type="button" @click="months='12'" :aria-pressed="months==='12'"
-                  class="tw-toggle" :class="months==='12' ? 'on' : ''">۱۲ ماه</button>
-        </div>
+          </div>
+        </template>
+        <p x-show="!grouped.length" class="muted tw-meta">رویداد گذری در این بازه محاسبه نشد.</p>
       </div>
     </template>
-
-    <p x-show="!events.length" class="muted tw-meta">رویداد گذری در این بازه محاسبه نشد.</p>
 
     <!-- 402 → credit pack CTA -->
     <template x-if="needCredits">
@@ -97,6 +117,22 @@
         </div>
       </div>
     </template>
+
+    <!-- PAID SAMPLE teaser (W8): even before buying, show one narrative so the
+         user sees exactly what 5 credits unlocks. Rendered from a server-side
+         sample only when the user hasn't bought yet. -->
+    <template x-if="!narratives.length && sampleNarrative">
+      <div class="card tw-teaser tw-ana">
+        <h2 class="tw-head">نمونهٔ تحلیل بابت اعتبار</h2>
+        <div class="tw-head" x-text="sampleNarrative.headline"></div>
+        <p class="tw-anitext" x-text="sampleNarrative.what_it_means"></p>
+        <p class="tw-aniqu tw-anitext" x-text="'سؤال تأمل: ' + sampleNarrative.reflection_question"></p>
+        <p class="tw-lock-note">این یک نمونه است — با {{ '۲' if months == 3 else '۵' }} اعتبار، تحلیلِ کاملِ همین گذرها را می‌گیری.</p>
+        <button @click="analyze()" class="btn btn-ghost tw-btn" :class="busy ? 'tw-off' : ''">
+          <span x-text="busy ? 'در حال تحلیل…' : 'باز کردن این تحلیل (اعتبار)'"></span>
+        </button>
+      </div>
+    </template>
   </div>
 </div>
 
@@ -104,12 +140,42 @@
 function transitsApp() {
   return {
     chartId: {{ chart_id|tojson }},
-    months: {{ months|tojson }},
+    months: String({{ months|tojson }}),   // W8: coerce to string so months==='3'/'12' compare correctly
     events: {{ events|tojson }},
     narratives: {{ analysis|tojson }},
+    sampleNarrative: {{ sample_narrative|tojson }},
     busy: false,
     needCredits: false,
-    init() {},
+    init() { this.sortAndGroup(); },
+    setMonth(m) {
+      if (this.months === m) return;
+      // W8: month toggle re-renders the FREE deterministic events server-side
+      // (never calls the paid analyze endpoint here — that only happens on the
+      // explicit "تحلیل تأملی" button, which is the actual credit purchase).
+      window.location.href = `/transits/${this.chartId}?months=${m}`;
+    },
+    sortAndGroup() {
+      // W8: sort by WEIGHT desc (major first), then chronologically for ties
+      const sorted = [...this.events].sort((a, b) =>
+        (b.weight || 0) - (a.weight || 0) || String(a.window_start).localeCompare(String(b.window_start)));
+      // group by window_start month (YYYY-MM)
+      const byMonth = {};
+      const FA = {"01":"فروردین","02":"اردیبهشت","03":"خرداد","04":"تیر","05":"مرداد","06":"شهریور",
+                  "07":"مهر","08":"آبان","09":"آذر","10":"دی","11":"بهمن","12":"اسفند"};
+      for (const e of sorted) {
+        const m = String(e.window_start || "").slice(0, 7);
+        if (!m) continue;
+        const key = m; const mm = m.slice(5,7);
+        const label = FA[mm] ? FA[mm] : m;
+        if (!byMonth[key]) byMonth[key] = { month: key, label, events: [] };
+        byMonth[key].events.push(e);
+      }
+      this.grouped = Object.values(byMonth).sort((a,b) => a.month.localeCompare(b.month));
+    },
+    barPct(w) {
+      // normalize weight to a 0-100 intensity bar (max ~9 for a major aspect)
+      return Math.min(100, Math.round((w || 1) / 9 * 100));
+    },
     async analyze() {
       this.busy = true; this.needCredits = false;
       try {
@@ -117,10 +183,11 @@ function transitsApp() {
         const r = await fetch(`/api/charts/${this.chartId}/forecast/analyze`, { method: "POST", body: fd });
         const j = await r.json();
         if (r.status === 402) { this.needCredits = true; }
-        else if (j && Array.isArray(j.narratives)) { this.narratives = j.narratives; this.events = j.events || this.events; }
-      } catch (e) {
-        console.error(e);
-      } finally { this.busy = false; }
+        else if (j && Array.isArray(j.narratives)) {
+          this.narratives = j.narratives; this.events = j.events || this.events; this.sortAndGroup();
+        }
+      } catch (e) { console.error(e); }
+      finally { this.busy = false; }
     },
   };
 }

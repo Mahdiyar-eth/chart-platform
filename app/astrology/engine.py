@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -19,7 +20,7 @@ from zoneinfo import ZoneInfo
 import jdatetime
 import swisseph as swe
 
-EPHE_PATH = os.getenv("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+EPHE_PATH = os.getenv("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent.parent / "ephe"))
 DEFAULT_CONFIG = {
     "house_system": "P",
     "zodiac": "tropical",

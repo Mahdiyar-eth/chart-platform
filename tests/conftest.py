@@ -15,6 +15,17 @@ os.environ["ENRICH_INSIGHTS"] = "0"  # no LLM calls in tests — deterministic f
 os.environ["RATE_LIMIT_BACKEND"] = "memory"  # tests stay hermetic (no shared Redis keys)
 os.environ["APP_ENV"] = "development"        # tests run in dev mode — prod fail-closed gates off
 os.environ["CREATE_ALL_ON_BOOT"] = "1"       # tests build schema via create_all (no Alembic in CI)
+# R4/W2: app.main raises at IMPORT if these are unset. They're gitignored (never in
+# repo) so a fresh CI checkout has NO .env — set secure test defaults here so the
+# suite is hermetic without any external key. Never put real prod secrets here.
+os.environ.setdefault("ADMIN_PIN", "000000")            # dev/admin-panel PIN (test only)
+os.environ.setdefault("AUTH_SECRET", "test-auth-secret-000")
+os.environ.setdefault("SECRETS_MASTER_KEY", "test-master-key-000")
+os.environ.setdefault("ADMIN_SECRET", "test-admin-secret-000")
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-000")
+# NOTE: R2_* and VAPID_* are NOT set here — they are lazily imported (not
+# import-blocking) and several tests legitimately exercise real storage / push,
+# which would break if pointed at a fake endpoint.
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 

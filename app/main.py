@@ -39,7 +39,7 @@ from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Funn
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,
                         CreditTransaction, Entitlement, Exploration,  # Z1 deletion cascade
-                        PushSubscription, ConsentLog, NotificationPrefs, TransitAlertLog,
+                        PushSubscription, ConsentLog, NotificationPrefs, TransitAlertLog, Subscriber,
 )
 from app import secret_store
 
@@ -2528,6 +2528,18 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
             "refunded_events": failed_n["n"], "refunded_credits": refunded.get("amount")}
 
 
+def _sample_narrative() -> dict:
+    """W8: a deterministic teaser narrative shown on the transits page when the
+    user has NOT yet bought the analysis — so they see exactly what 5 credits
+    unlocks. Pure static copy (no LLM), never replaces a real purchase."""
+    return {
+        "headline": "زحل در نسبت با خورشید — مرور بنیان‌ها",
+        "what_it_means": "این فاصلهٔ زاویه‌ای، دوره‌ای از تثبیت و مسئولیت را برجسته می‌کند؛ فرصتی برای بازبینی ساختارهای شغلی و بلندمدت در چارت تو.",
+        "reflection_question": "کدام تعهد را آگاهانه مرور می‌کنی؟",
+        "window_text": "بازهٔ شکل‌گیری این فاصلهٔ زاویه‌ای (نمونه)",
+    }
+
+
 @app.get("/transits/{chart_id}")
 def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session),
                   months: int = Query(default=12)):
@@ -2562,6 +2574,7 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         "chart": chart,
         "have_credits": (user.credits if user else 0),
         "months": _m,
+        "sample_narrative": analysis if analysis else _sample_narrative(),
     })
 
 
@@ -2825,6 +2838,12 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # never cleaned on delete before; remove it so the account truly disappears.
     for tal in session.exec(select(TransitAlertLog).where(TransitAlertLog.user_key == u.id)).all():
         session.delete(tal)
+    # W9 (Opus R4, P2): lead-magnet subscribers are keyed by contact (phone/email),
+    # not user_id — never cleaned on delete; remove rows matching the account's phone
+    # so a deleted account leaves no newsletter/lead-magnet trail (privacy blast-radius).
+    if getattr(u, "phone", None):
+        for sub in session.exec(select(Subscriber).where(Subscriber.contact == u.phone)).all():
+            session.delete(sub)
     # funnel events are anonymous (session-scoped, no FK) — nothing to delete.
     session.flush()
 
@@ -2851,7 +2870,7 @@ def _load_pages() -> dict:
     from pathlib import Path as _P
 
     base: dict = {}
-    p = _P("/root/chart-platform/app/content/pages.json")
+    p = _P(BASE_DIR / "content" / "pages.json")
     if p.exists():
         base = _json.loads(p.read_text("utf-8"))
     try:
@@ -2910,7 +2929,7 @@ def _load_articles() -> list[dict]:
         pass
     import json as _json
     from pathlib import Path as _P
-    p = _P("/root/chart-platform/app/content/articles.json")
+    p = _P(BASE_DIR / "content" / "articles.json")
     return _json.loads(p.read_text("utf-8")) if p.exists() else []
 
 

@@ -336,7 +336,7 @@ def api_admin_health(request: Request, session: Session = Depends(get_session)):
         h["queue"] = None
 
     # last restore drill (from deploy-backups/drill logs when present)
-    drill_log = Path("/root/chart-platform/logs/restore-drill.log")
+    drill_log = Path(__file__).resolve().parent.parent.parent / "logs" / "restore-drill.log"
     if drill_log.exists():
         lines = [l for l in drill_log.read_text().splitlines() if l.strip()]
         h["last_drill"] = lines[-1][:200] if lines else None

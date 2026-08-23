@@ -143,4 +143,15 @@ if [ -n "$BAD" ]; then
 fi
 echo "✓ no banned brand-language"
 
+echo "==> absolute-path scan (R4/W7: no hardcoded /root/chart-platform in app/)"
+# A hardcoded absolute path breaks the app on ANY other host (Docker WORKDIR=/app).
+# The reviewer caught 7 in R4; the sweep is now complete and must stay green.
+ABSPATH=$(grep -rn "/root/chart-platform" app/ --include="*.py" 2>/dev/null || true)
+if [ -n "$ABSPATH" ]; then
+  echo "❌ hardcoded absolute path in app/:"
+  echo "$ABSPATH"
+  exit 1
+fi
+echo "✓ no hardcoded absolute paths (host-portable)"
+
 echo "==> CI OK"

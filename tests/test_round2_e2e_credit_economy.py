@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 from app.db import engine
 from app.main import app as main_app
-from app.models import User
+from app.models import User, Order
 from app.credits import balance
 
 def _cookie(uid):
@@ -43,8 +43,13 @@ from app.astrology.golden_data import GOLDEN_CHARTS
 
 @pytest.fixture()
 def llm_mock(monkeypatch):
-    """Patch the transit narrative router + report worker LLM to deterministic OK."""
-    import app.report.transit_narrative as tn
+    """Patch the LLM router to a deterministic fake — NO real paid API call.
+
+    R4/W4: the endpoint (main.py) does `from app.core.llm import build_router`
+    and passes it INTO narrate_transit. Patching transit_narrative.build_router
+    is therefore DEAD (never consulted). We patch app.core.llm.build_router,
+    the actual source, so the patch is effective and the test is hermetic."""
+    import app.core.llm as cl
     class _R:
         async def complete(self, prompt, system=None, **_k):
             import re as _re
@@ -57,10 +62,12 @@ def llm_mock(monkeypatch):
                 "headline": f"گذر {fa.get(p1,p1)} در نسبت با {fa.get(p2,p2)} و پیوند آن با {target}",
                 "what_it_means": f"این چیدمان میان {fa.get(p1,p1)} و {fa.get(p2,p2)} برای {target} زمینهٔ مرور بنیان‌ها را فراهم می‌کند.",
                 "reflection_question": "کدام پیوند را آگاهانه مرور می‌کنی؟",
-                "window_text": "بازهٔ شکل‌گیری این فاصلهٔ زاویهای.",
+                "window_text": "بازهٔ شکل‌گیری این فاصلهٔ زاویه‌ای.",
             }, ensure_ascii=False)
-            return types.SimpleNamespace(ok=True, text=txt, usage=None, cost=0.0, provider="mock")
-    monkeypatch.setattr(tn, "build_router", lambda *a, **k: _R())
+            return types.SimpleNamespace(ok=True, text=txt, usage=types.SimpleNamespace(total=40),
+                                         cost=0.0, provider="mock")
+    monkeypatch.setattr(cl, "build_router", lambda *a, **k: _R())
+    monkeypatch.setattr(cl, "build_chat_router", lambda *a, **k: _R())  # R4/W4: chat path builds its own router
 
 
 def test_x11_buy_then_use_everything(llm_mock):
@@ -155,19 +162,25 @@ def test_y15_rectify_free_for_everyone(llm_mock):
     assert r2.status_code == 200
 
 
-def test_r8_audio_request_402_when_broke(monkeypatch):
-    """R8: audio generation request charges report_audio; 402 without credits."""
+def test_r8_audio_request_402_when_broke():
+    """R8 (W10): audio request charges report_audio; 402 without credits.
+
+    NO gate monkeypatch (reviewer's law): a legitimate paid Order satisfies
+    _report_gate, and 0 credits triggers the 402 naturally through the real
+    spend path. Guarantees the credit gate is exercised, not bypassed."""
     uid = _mk_user(credits=0)
     cid = _mk_chart(uid)
     with Session(engine) as s:
         rid = "r" + uuid.uuid4().hex[:8]
         s.add(Report(id=rid, chart_id=cid, plan_key="full", status="done"))
+        # W10: satisfy _report_gate through a REAL paid Order (no monkeypatch) so the
+        # credit spend is what 402s, not a bypassed permission check.
+        s.add(Order(id="o" + uuid.uuid4().hex[:8], user_id=uid, chart_id=cid,
+                    report_id=rid, plan_key="full", status="paid", amount_rial=349_000))
         s.commit()
     c = TestClient(main_app); ck = _cookie(uid)
-    import app.main as _m
-    monkeypatch.setattr(_m, "_report_gate", lambda *a, **k: True)
     r = c.post(f"/api/reports/{rid}/audio", cookies=ck)
-    assert r.status_code == 402, r.text[:200]
+    assert r.status_code == 402, r.text[:200]  # real gate passed, but 0 credits → 402
 
 
 def test_r22_ttl_rewrite_preserves_narratives():
