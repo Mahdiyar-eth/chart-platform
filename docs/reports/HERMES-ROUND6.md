@@ -2,6 +2,9 @@
 
 ## نتیجه: بازبینی R6 هیچ یافتهٔ بحرانی/مهمی نداشت (🟢 دور ۵ پذیرفته شد). فیکسهای اختیاری U1–U4 + ممیزی محتوای F1 انجام و راستیآزمایی شد.
 
+**CI واقعی از مخزن:** PR #2 → GitHub Actions **run #32675020918 → SUCCESS** (729 passed · 3 skipped · «All checks passed!»).
+لینک: https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32675020918
+
 ## راستیآزمایی Opus R6
 بازبین مستقل تأیید کرد:
 - سوئیت **714 passed · 3 skipped · 0 failed** — دقیقاً برابر ادعای دور قبل
