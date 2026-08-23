@@ -2572,12 +2572,15 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         analysis = pdata.get("narratives") or []
     except Exception:  # noqa: BLE001
         ev12, analysis = [], []
-    from app.astrology.transit_forecast import open_month_keys, top_by_weight
+    from app.astrology.transit_forecast import month_label_map, open_month_keys, top_by_weight
     # R.5 / V9+V10: compute the top-5 globally-weighed events and the set of
     # month-groups to leave expanded (current + next 2) server-side so the page
     # sells (teaser above the fold) and the wall of 28 cards is collapsible.
+    # R.6 / U2: month labels carry the Persian year when the window spans two
+    # years, so «آبان ۱۴۰۵» and «آبان ۱۴۰۶» are distinguishable.
     top_events = top_by_weight(ev12, 5)
     open_months = open_month_keys(ev12, 3)
+    month_labels = month_label_map(ev12)
     return templates.TemplateResponse(request, "transits_forecast.html", {
         "title": "گذرهای پیشِ رو",
         "chart_id": chart_id,
@@ -2589,6 +2592,7 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         "sample_narrative": analysis if analysis else _sample_narrative(),
         "top_events": top_events,
         "open_months": open_months,
+        "month_labels": month_labels,
     })
 
 

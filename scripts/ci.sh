@@ -72,6 +72,15 @@ PY
 echo "==> compileall (syntax)"
 venv/bin/python -m compileall -q app/ scripts/
 
+echo "==> bash -n (syntax) on all scripts/*.sh (R.6 / U4)"
+# A non-parseable script silently never runs (e.g. runtime_withdrawal_race.sh had a
+# dangling continuation; the drill was dead for months). This gate makes any future
+# unparseable shell script fail the build instead of rotting silently.
+for _s in scripts/*.sh; do
+  bash -n "$_s" || { echo "❌ bash -n FAILED: $_s"; exit 1; }
+done
+echo "✓ all scripts/*.sh parse cleanly"
+
 echo "==> ruff (bug rules: F pyflakes + E9 syntax)"
 venv/bin/ruff check --select F,E9 app/ tests/ scripts/
 

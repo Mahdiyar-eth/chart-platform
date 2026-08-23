@@ -4,9 +4,10 @@ set -u
 COOKIE_C="$1"
 ADMIN_CK="chart_admin=8b12ecfd10326d01044deddb5e213c91304ff1873fd1e6068da4c2ca4de91f5b"
 
-# 1) user C requests a withdrawal of 400k (balance 1,000,000)
-WID="111f86e7-f098-46eb-a6e2-2489fc4131e9"
-  -d 'amount_rial=400000' | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('withdrawal_id','') or d.get('id','') or '')")
+# 1) user C requests a withdrawal of 400k (balance 1,000,000); capture the id
+WID=$(curl -s -b "$COOKIE_C" -X POST "https://chart.negar.io/api/wallet/withdraw" \
+  -d 'amount_rial=400000' \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('withdrawal_id','') or d.get('id','') or '')")
 echo "WID=$WID"
 
 # 2) three admins resolve it as 'paid' at the same time

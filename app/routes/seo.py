@@ -305,10 +305,18 @@ def page_article(slug: str, request: Request):
     art = next((a for a in arts if a["slug"] == slug), None)
     if not art:
         raise HTTPException(404, "article not found")
+    # B-3 (F1 audit): related links must be TOPIC-related, not arbitrary. Prefer
+    # same-category siblings (up to 6) so a reader following "مقالات مرتبط" stays
+    # on-topic; only fall back to other categories when the category is too sparse.
+    _cat = art.get("category", "")
+    others = [a for a in arts if a["slug"] != slug and a.get("category") == _cat]
+    if len(others) < 3:  # category too thin → pad with other topics (still relevant by order)
+        others += [a for a in arts if a["slug"] != slug and a.get("category") != _cat]
+    others = others[:6]
     return templates.TemplateResponse(request, "article.html", {
         "title": art["title"], "meta": art.get("meta", ""), "art": art,
         "banner_svg": article_banner_svg(art.get("category", ""), art["title"]),
-        "others": [a for a in arts if a["slug"] != slug][:6],
+        "others": others,
     })
 
 
