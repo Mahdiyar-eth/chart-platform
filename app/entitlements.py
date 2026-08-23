@@ -43,10 +43,17 @@ def has(session: Session, user_id: str, kind: str, *,
         )
     ).all()
     for ent in ents:
-        if chart_id is not None and ent.chart_id and ent.chart_id != chart_id:
+        # X5/R5: scope is MANDATORY. An unscoped entitlement (NULL chart_id /
+        # ref_id) must never satisfy a scoped request — otherwise one purchase
+        # would unlock every report/chart of the user. Both credit grants and
+        # legacy order backfills are chart/report-scoped, so strict matching is
+        # safe for existing customers.
+        if chart_id is not None and ent.chart_id != chart_id:
             continue
-        if ref_id is not None and ent.ref_id and ent.ref_id != ref_id:
+        if ref_id is not None and ent.ref_id != ref_id:
             continue
+        # A request WITH scope must match an entitlement that carries that scope;
+        # unscoped ents only satisfy unscoped lookups (e.g. chat packs).
         if _usable(ent, now):
             return ent
     return None
@@ -72,6 +79,18 @@ def _action_quantity(action_key: str) -> int:
     return _QUANTITY_BY_ACTION.get(action_key, 1)
 
 
+_EXPIRY_DAYS_BY_KIND = {"chat": 30}  # X6/R7: product promise "بستهٔ ۳۰ روزه"
+
+
+def _expiry_for_kind(kind: str):
+    """X6/R7 — entitlement expiry by kind. Returns naive UTC datetime or None."""
+    from datetime import timedelta
+    days = _EXPIRY_DAYS_BY_KIND.get(kind)
+    if not days:
+        return None
+    return _now() + timedelta(days=days)
+
+
 def grant_from_credits(session: Session, user_id: str, action_key: str, *,
                        idempotency_key: str,
                        chart_id: str | None = None,
@@ -83,7 +102,7 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
     ref_id=report.id so buying one report can't unlock another."""
 
     tx = spend(session, user_id, action_key, idempotency_key=idempotency_key,
-               chart_id=chart_id)
+               chart_id=chart_id, commit=False)  # X4/R6: single atomic commit below
     # kind is derived from the action_key (e.g. report_full -> 'report')
     kind = _kind_for_action(action_key)
     existing = session.exec(
@@ -98,9 +117,14 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
         user_id=user_id, kind=kind, chart_id=chart_id,
         ref_id=ref_id, quantity=_action_quantity(action_key) if quantity is None else quantity, used=0,
         source="credit", source_ref=tx.id,
+        expires_at=_expiry_for_kind(kind),  # X6/R7: packs expire (chat pack = 30d)
     )
     session.add(ent)
-    session.commit()
+    try:
+        session.commit()  # X4/R6: credits decrement + entitlement in ONE commit
+    except Exception:
+        session.rollback()
+        raise
     session.refresh(ent)
     return ent
 

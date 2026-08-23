@@ -32,7 +32,12 @@ def cached_forecast(session, chart_id: str, months: int, chart_json: dict,
         )).first()
     now = _now_naive()
     if row is not None and row.computed_at and (now - row.computed_at) <= timedelta(days=ttl_days):
-        return json.loads(row.payload_json)
+        data = json.loads(row.payload_json)
+        # X1/R1: payload may hold the merged dict {events, narratives} after a paid
+        # analyze — always normalize to the events list for callers.
+        if isinstance(data, dict):
+            return data.get("events") or []
+        return data
 
     result = forecast(chart_json, months=months, start=start)
     if session is not None:

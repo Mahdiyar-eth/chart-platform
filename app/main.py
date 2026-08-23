@@ -861,6 +861,13 @@ def api_purchase(payload: "PurchasePayload", request: Request,
                        "credits": p.credits_grant, "price_toman": p.price_toman}
                       for p in packs],
         })
+    # X5/R5: chart-scoped actions MUST carry chart_id — an unscoped report/
+    # transit/rectify entitlement would unlock every chart of the user.
+    _CHART_SCOPED_PREFIXES = ("report", "transit", "rectify", "synastry")
+    if payload.action_key.startswith(_CHART_SCOPED_PREFIXES) and not payload.chart_id:
+        return JSONResponse(status_code=400, content={
+            "error": "chart_id_required",
+            "message": "برای این خرید، شناسهٔ چارت الزامی است"})
     ent = ent_grant_credits(
         session, user.id, payload.action_key,
         idempotency_key=f"purchase:{user.id}:{payload.action_key}:{payload.chart_id or 'none'}",
@@ -1701,12 +1708,23 @@ def _chat_guarded_context(request: Request, chart_id: str,
     # another chart's paid quota or answer questions about someone else's birth chart
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این گفتگو ندارید")
-    # paid check: chat requires GOLD/monthly (audit P0-4 — plan §7)
+    # paid check: chat requires GOLD/monthly (audit P0-4 — plan §7) OR a
+    # credit chat-pack entitlement (X6/R7: the pack must actually be CONSUMED
+    # per message and must not be expired).
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    if not order or order.plan_key not in ("gold", "monthly"):
+    _ent_chat = None
+    u = get_current_user(request)
+    if u:
+        from app.entitlements import has as ent_has
+        _ent_chat = ent_has(session, u.id, "chat", chart_id=chart_id)
+    if _ent_chat is None and (not order or order.plan_key not in ("gold", "monthly")):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
+    try:
+        request.state.chat_ent = _ent_chat  # X6: consumed after a successful answer
+    except Exception:  # noqa: BLE001
+        pass
     # audit r4 A9: monthly subscriptions EXPIRE — a paid order alone is not enough
     if not _monthly_sub_active(session, order, chart_id):
         raise HTTPException(403, "اشتراک ماهانه‌ات منقضی شده؛ برای ادامه گفت‌وگو آن را تمدید کن")
@@ -1787,6 +1805,16 @@ def api_chat(
         shown = _chat_quota_info(session, chart_id, order, acct)["used"]
     result["quota"] = {"used": shown, "limit": daily_limit,
                        "remaining": max(0, daily_limit - shown)}
+    # X6/R7: a chat-pack entitlement is CONSUMED per successful answer.
+    _ent = getattr(request.state, "chat_ent", None)
+    if _ent is not None:
+        from app.entitlements import consume as ent_consume
+        if not ent_consume(session, _ent, 1):
+            result["pack_exhausted"] = True
+        else:
+            session.commit()  # R26: consume() itself does not commit
+            result["pack"] = {"used": _ent.used, "limit": _ent.quantity,
+                              "remaining": max(0, _ent.quantity - _ent.used)}
     return result
 
 
@@ -2225,10 +2253,10 @@ def api_chart_forecast(chart_id: str, request: Request, session: Session = Depen
     analysis = []
     try:
         import json as _json
-        payload = _json.loads(
-            session.exec(select(TransitForecast).where(
-                TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first().payload_json)
-        analysis = payload.get("narratives") or []
+        prow = session.exec(select(TransitForecast).where(
+            TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+        pd = _json.loads(prow.payload_json) if prow and prow.payload_json else {}
+        analysis = (pd.get("narratives") or []) if isinstance(pd, dict) else []
     except Exception:  # noqa: BLE001
         analysis = []
     return {"months": months, "events": events, "analysis": analysis}
@@ -2250,7 +2278,11 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
     action = f"transit_{months}m"
     from app.credits import InsufficientCredits, refund as _refund, spend
     try:
-        tx = spend(session, user.id, action, idempotency_key=f"transit:{chart_id}:{months}", chart_id=chart_id)
+        from datetime import datetime as _dt
+        _period = _dt.now(timezone.utc).strftime("%Y-%m")  # X2/R2: monthly bucket
+        tx = spend(session, user.id, action,
+                   idempotency_key=f"transit:{user.id}:{chart_id}:{months}:{_period}",
+                   chart_id=chart_id)
     except InsufficientCredits as e:
         return JSONResponse(status_code=402, content={
             "code": "ZAY-AI-002", "message": "اعتبار کافی نیست",
@@ -2259,27 +2291,59 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
     from app.astrology.transit_cache import cached_forecast, store_transit_analysis
     from app.astrology.transit_forecast import forecast
     from app.core.llm import build_router
+    from app.models import TransitForecast
     from app.report.transit_narrative import narrate_transit
     events = cached_forecast(session, chart_id, months, chart.chart_json)
     if isinstance(events, dict):
         events = events.get("events") or []
+    # X2/R2: if a paid analysis already exists in cache, return it — never re-run LLM.
+    import json as _json
+    _row = session.exec(select(TransitForecast).where(
+        TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+    _existing = []
+    if _row and _row.payload_json:
+        try:
+            _pd = _json.loads(_row.payload_json)
+            if isinstance(_pd, dict):
+                _existing = _pd.get("narratives") or []
+        except Exception:  # noqa: BLE001
+            _existing = []
     refunded = {"n": 0}
+    if _existing:
+        return {"months": months, "events": events, "narratives": _existing,
+                "metrics": {"cached": True}, "refunded": 0}
+
+    failed_n = {"n": 0}
 
     def _on_fail(ev):
-        nonlocal_refunded = refunded
-        nonlocal_refunded["n"] += 1
-        try:
-            _refund(session, tx.id, reason=f"{action} QA refund")
-        except Exception:  # noqa: BLE001
-            pass
+        # X3/R3: count only; a single partial refund is issued after generation.
+        failed_n["n"] += 1
 
     narratives, m = narrate_transit(events, chart.chart_json, router=build_router("transit"),
                                     plan_key=action, on_event_failed=_on_fail)
     store_transit_analysis(session, chart_id, months, {"narratives": narratives})
     session.commit()  # persist the credit spend + stored analysis (get_session does not autoc...[truncated]
+    # X3/R3 policy (documented 2026-08-23): partial QA failure refunds the FAILED
+    # share only: ceil(price * failed/total). Full refund iff ALL events fail.
+    total_ev = len(events) or 1
+    if failed_n["n"]:
+        from app.credits import get_price as _gp
+        import math as _math
+        _price = _gp(session, action)
+        if failed_n["n"] >= total_ev:
+            _refund_amount = _price          # nothing usable → full refund
+        else:
+            _refund_amount = min(_price, _math.ceil(_price * failed_n["n"] / total_ev))
+        try:
+            rr = _refund(session, tx.id,
+                         reason=f"{action} partial QA refund ({failed_n['n']}/{total_ev})",
+                         amount=_refund_amount)
+            refunded["amount"] = abs(rr.amount) if rr else None
+        except Exception:  # noqa: BLE001 — never break the response on refund issues
+            refunded["amount"] = None
     return {"months": months, "events": events, "narratives": narratives,
             "metrics": {k: v for k, v in m.items() if k != "provider" and not isinstance(v, (set,))},
-            "refunded": refunded["n"]}
+            "refunded_events": failed_n["n"], "refunded_credits": refunded.get("amount")}
 
 
 @app.get("/transits/{chart_id}")
@@ -2297,7 +2361,10 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         ev12 = cached_forecast(session, chart_id, 12, chart.chart_json)
         payload = session.exec(select(TransitForecast).where(
             TransitForecast.chart_id == chart_id, TransitForecast.months == 12)).first()
-        analysis = _json.loads(payload.payload_json or "{}").get("narratives") or [] if payload else []
+        pdata = _json.loads(payload.payload_json) if payload and payload.payload_json else {}
+        if not isinstance(pdata, dict):
+            pdata = {}
+        analysis = pdata.get("narratives") or []
     except Exception:  # noqa: BLE001
         ev12, analysis = [], []
     return templates.TemplateResponse(request, "transits_forecast.html", {
