@@ -258,3 +258,30 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
 
     events.sort(key=lambda e: e.window_start)
     return [e.to_json() for e in events]
+
+
+def top_by_weight(events: list[dict], n: int = 5) -> list[dict]:
+    """R.5 / V9 — the N globally highest-weight transits, independent of month.
+
+    The R4 page only sorted WITHIN each month, so a heavy Saturn transit 10 months
+    out was buried ~4000px below monthly groups. This returns the top-N across the
+    WHOLE window sorted by weight desc (ties broken chronologically), which feeds
+    the '۵ گذر مهم امسال' teaser. Pure + deterministic so it is unit-testable.
+    """
+    def _key(e: dict) -> tuple:
+        return (-(e.get("weight") or 0), e.get("window_start") or "")
+
+    return sorted(events, key=_key)[:n]
+
+
+def open_month_keys(events: list[dict], open_count: int = 3) -> list[str]:
+    """R.5 / V10 — the first `open_count` month-groups (YYYY-MM) to show expanded.
+
+    Transits are computed forward from 'now', so the earliest month-groups ARE the
+    current month + the next few. Everything outside this set is collapsed into
+    `<details>`, which is what brings the 5439px wall under the 3000px target.
+    Returns a SORTED list (chronological) so it serialises to JSON for the template.
+    Empty/no-events → empty list (nothing open).
+    """
+    months = sorted({str(e.get("window_start") or "")[:7] for e in events if e.get("window_start")})
+    return months[:open_count]

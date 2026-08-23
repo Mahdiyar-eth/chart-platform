@@ -1,19 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-  /* R4/W8: transits page redesign — the reviewer flagged the R3 version as a
-     flat 5287px wall of (chronological) cards with the buy button buried at the
-     bottom. This version:
-       - sorts by WEIGHT (major aspects first, so زحل doesn't drown in مریخ minutia)
-       - groups events by month window with headers
-       - shows an intensity bar per event
-       - puts the 3m/12m selector + CTA at the TOP
-       - shows a PAID sample narrative as a teaser so the user sees what 5 credits buys
-     Uses only real project classes + this scoped block. NO Tailwind. */
+  /* R4/W8: transits page redesign — weight-sorted, month-grouped, intensity bar,
+     CTA+selector at TOP. R.5/V8-V10: sample teaser moved right under the CTA, a
+     global-weight '5 مهم' section added, and month groups are collapsible (only
+     the current month + next 2 are expanded; the rest sit in <details>). */
   .tw-maxw{ max-width:720px; margin:0 auto; padding:0 16px 28px; }
   .tw-h1{ font-size:1.4rem; font-weight:700; margin:18px 0 4px; }
   .tw-sub{ font-size:.88rem; opacity:.72; margin-bottom:14px; }
-  .tw-cta{ margin:0 0 16px; }   /* CTA sits ABOVE the wall (not buried) */
+  .tw-cta{ margin:0 0 16px; }   /* CTA sits ABOVE the wall */
   .tw-stack{ display:flex; flex-direction:column; gap:10px; }
   .tw-monthhead{ font-size:.8rem; font-weight:700; color:var(--gold-text,var(--gold)); margin:14px 0 2px; letter-spacing:.02em; }
   .tw-evrow{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px; }
@@ -33,6 +28,18 @@
   .tw-anitext{ font-size:.9rem; line-height:1.7; margin:4px 0; }
   .tw-aniqu{ font-style:italic; opacity:.8; }
   .tw-lock-note{ font-size:.8rem; opacity:.65; margin:6px 0 0; }
+  /* R.5: collapsed month-group <details> keep height down */
+  .tw-details summary{ cursor:pointer; font-size:.82rem; font-weight:650; color:var(--gold,var(--gold-text)); margin-top:12px; padding:6px 0; }
+  .tw-details[open] summary{ margin-bottom:2px; }
+  .tw-mini{ padding:10px 12px; }
+  .tw-mini .tw-bar{ margin-top:6px; }
+  .tw-stack{ gap:9px; }
+  .tw-topblock .tw-stack{ gap:6px; }
+  /* R.5/V10: compact transit cards — the default .card padding (24px) is too
+     heavy for a dense timeline; 14px keeps rows readable but shrinks the wall. */
+  .tw-maxw .card{ padding:12px 14px; }
+  .tw-maxw .tw-meta{ font-size:.74rem; line-height:1.45; }
+  .tw-maxw .tw-head{ line-height:1.35; }
 </style>
 
 <div class="tw-maxw">
@@ -54,16 +61,60 @@
       </button>
     </div>
 
-    <!-- free deterministic timeline, weight-sorted + month-grouped -->
+    <!-- PAID SAMPLE teaser — R.5/V8: right under the CTA so the user SEES what
+         5 credits unlocks without scrolling past ~24 cards. -->
+    <template x-if="!narratives.length && sampleNarrative">
+      <div class="card tw-teaser tw-ana">
+        <h2 class="tw-head">نمونهٔ تحلیل بابت اعتبار</h2>
+        <div class="tw-head" x-text="sampleNarrative.headline"></div>
+        <p class="tw-anitext" x-text="sampleNarrative.what_it_means"></p>
+        <p class="tw-aniqu tw-anitext" x-text="'سؤال تأمل: ' + sampleNarrative.reflection_question"></p>
+        <p class="tw-lock-note">این یک نمونه است — با {{ '۲' if months == 3 else '۵' }} اعتبار، تحلیلِ کاملِ همین گذرها را می‌گیری.</p>
+        <button @click="analyze()" class="btn btn-ghost tw-btn" :class="busy ? 'tw-off' : ''">
+          <span x-text="busy ? 'در حال تحلیل…' : 'باز کردن این تحلیل (اعتبار)'"></span>
+        </button>
+      </div>
+    </template>
+
+    <!-- R.5/V9: the 5 globally most important transits this year (server-sorted,
+         independent of month). Sells the value of the paid analysis up front. -->
+    <template x-if="topEvents.length">
+      <div class="tw-topblock">
+        <h2 class="tw-head">۵ گذر مهمِ امسال</h2>
+        <div class="tw-stack">
+          <template x-for="e in topEvents" :key="e.id">
+            <div class="card tw-strong tw-mini">
+              <div class="tw-evrow">
+                <div class="tw-head">
+                  <span x-text="e.transit_planet_fa || e.transit_planet"></span>
+                  <span class="tw-dot">·</span>
+                  <span x-text="e.aspect_fa || e.aspect"></span>
+                  <span class="tw-dot">·</span>
+                  <span x-text="e.natal_target_fa || e.natal_target"></span>
+                </div>
+                <span class="badge">مهم</span>
+              </div>
+              <div class="tw-bar"><div class="tw-barfill" :style="'width:' + barPct(e.weight) + '%'"></div></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- free deterministic timeline: global weight-sort, month-grouped,
+         R.5/V10: current + next 2 months open, the rest in <details>. -->
     <template x-if="grouped.length">
       <div>
         <h2 class="tw-head">تایم‌لاین نجومی (رایگان)</h2>
         <template x-for="g in grouped" :key="g.month">
-          <div>
-            <div class="tw-monthhead" x-text="g.label"></div>
+          <!-- R.5/V10: one <details> per month-group; `open` bound to isOpen so
+               current + next 2 are expanded by default and the rest collapsed.
+               Single root child satisfies Alpine x-for; no per-event duplication. -->
+          <details class="tw-details" :open="isOpen(g.month)" :data-month="g.month">
+            <summary x-text="g.label"></summary>
             <div class="tw-stack">
               <template x-for="e in g.events" :key="e.id">
-                <div class="card" :class="e.weight >= 6 ? 'tw-strong' : ''">
+<div class="card" :class="e.weight >= 6 ? 'tw-strong' : ''">
                   <div class="tw-evrow">
                     <div class="tw-head">
                       <span x-text="e.transit_planet_fa || e.transit_planet"></span>
@@ -85,8 +136,9 @@
                 </div>
               </template>
             </div>
-          </div>
+          </details>
         </template>
+
         <p x-show="!grouped.length" class="muted tw-meta">رویداد گذری در این بازه محاسبه نشد.</p>
       </div>
     </template>
@@ -117,22 +169,6 @@
         </div>
       </div>
     </template>
-
-    <!-- PAID SAMPLE teaser (W8): even before buying, show one narrative so the
-         user sees exactly what 5 credits unlocks. Rendered from a server-side
-         sample only when the user hasn't bought yet. -->
-    <template x-if="!narratives.length && sampleNarrative">
-      <div class="card tw-teaser tw-ana">
-        <h2 class="tw-head">نمونهٔ تحلیل بابت اعتبار</h2>
-        <div class="tw-head" x-text="sampleNarrative.headline"></div>
-        <p class="tw-anitext" x-text="sampleNarrative.what_it_means"></p>
-        <p class="tw-aniqu tw-anitext" x-text="'سؤال تأمل: ' + sampleNarrative.reflection_question"></p>
-        <p class="tw-lock-note">این یک نمونه است — با {{ '۲' if months == 3 else '۵' }} اعتبار، تحلیلِ کاملِ همین گذرها را می‌گیری.</p>
-        <button @click="analyze()" class="btn btn-ghost tw-btn" :class="busy ? 'tw-off' : ''">
-          <span x-text="busy ? 'در حال تحلیل…' : 'باز کردن این تحلیل (اعتبار)'"></span>
-        </button>
-      </div>
-    </template>
   </div>
 </div>
 
@@ -142,11 +178,15 @@ function transitsApp() {
     chartId: {{ chart_id|tojson }},
     months: String({{ months|tojson }}),   // W8: coerce to string so months==='3'/'12' compare correctly
     events: {{ events|tojson }},
+    topEvents: {{ top_events|tojson }},     // R.5/V9: server-computed global top-5
+    openMonths: {{ open_months|tojson }},   // R.5/V10: expanded month-groups (YYYY-MM)
     narratives: {{ analysis|tojson }},
     sampleNarrative: {{ sample_narrative|tojson }},
     busy: false,
     needCredits: false,
+    grouped: [],
     init() { this.sortAndGroup(); },
+    isOpen(m) { return this.openMonths.includes(m); },   // R.5/V10
     setMonth(m) {
       if (this.months === m) return;
       // W8: month toggle re-renders the FREE deterministic events server-side
