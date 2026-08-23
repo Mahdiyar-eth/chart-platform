@@ -490,6 +490,9 @@ class FunnelEvent(SQLModel, table=True):
 class TransitForecast(SQLModel, table=True):
     """B1 cache — transit forecast payload per chart + months, TTL 7 days."""
     __tablename__ = "transit_forecasts"
+    __table_args__ = (
+        UniqueConstraint("chart_id", "months", name="uq_transit_chart_months"),  # X-R23
+    )
     id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
     chart_id: str = Field(index=True, max_length=64)
     months: int = Field(default=12)

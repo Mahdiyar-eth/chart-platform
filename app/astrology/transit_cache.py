@@ -43,6 +43,21 @@ def cached_forecast(session, chart_id: str, months: int, chart_json: dict,
     if session is not None:
         if row is None:
             row = TransitForecast(chart_id=chart_id, months=months)
+        else:
+            # X-R22: TTL rewrite must NOT wipe paid narratives. Re-merge them onto
+            # the fresh deterministic list.
+            try:
+                prev = json.loads(row.payload_json or "{}")
+            except Exception:  # noqa: BLE001
+                prev = {}
+            if isinstance(prev, dict) and prev.get("narratives"):
+                row.payload_json = json.dumps({"events": result,
+                                               "narratives": prev["narratives"]},
+                                              ensure_ascii=False)
+                row.computed_at = now
+                session.add(row)
+                session.commit()
+                return result
         row.payload_json = json.dumps(result, ensure_ascii=False)
         row.computed_at = now
         session.add(row)

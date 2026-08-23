@@ -2362,6 +2362,34 @@ def reports_page(request: Request, session: Session = Depends(get_session)):
     })
 
 
+@app.exception_handler(404)
+async def not_found_fa(request: Request, exc):
+    """X20/R15: friendly Persian 404 (HTML for pages, JSON for APIs)."""
+    if request.url.path.startswith(("/api/", "/static/")):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "یافت نشد"}, status_code=404)
+    return templates.TemplateResponse(request, "error.html", {
+        "title": "صفحه پیدا نشد", "code": 404,
+        "message": "این صفحه وجود ندارد یا جابه‌جا شده است.",
+    }, status_code=404)
+
+
+@app.exception_handler(500)
+async def server_error_fa(request: Request, exc):
+    """X20/R15: friendly Persian 500."""
+    if request.url.path.startswith(("/api/", "/static/")):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "خطای داخلی سرور"}, status_code=500)
+    try:
+        return templates.TemplateResponse(request, "error.html", {
+            "title": "خطای غیرمنتظره", "code": 500,
+            "message": "مشکلی پیش آمد؛ چند لحظه بعد دوباره تلاش کن.",
+        }, status_code=500)
+    except Exception:  # noqa: BLE001 — templates themselves broken
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse("<h1>خطای غیرمنتظره</h1>", status_code=500)
+
+
 @app.get("/account/login", response_class=HTMLResponse)
 def account_login_page(request: Request):
     return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})

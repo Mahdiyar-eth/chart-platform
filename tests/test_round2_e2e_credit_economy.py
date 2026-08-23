@@ -5,7 +5,7 @@ os.environ["DATABASE_URL"] = "postgresql://chart_test:***@127.0.0.1:5432/chart_p
 os.environ["SWISSEPH_EPHE_PATH"] = "/root/chart-platform/ephe"
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, select
 from app.db import engine
 from app.main import app as main_app
 from app.models import User, Entitlement, CreditTransaction
@@ -37,7 +37,8 @@ def _mk_chart(uid):
         s.commit()
     return cid
 
-from app.models import Chart, Report  # after env set
+from app.models import BirthProfile, Chart, Report, TransitForecast  # after env set
+from app.astrology.golden_data import GOLDEN_CHARTS
 
 
 @pytest.fixture()
@@ -160,3 +161,29 @@ def test_r8_audio_request_402_when_broke(monkeypatch):
     monkeypatch.setattr(_m, "_report_gate", lambda *a, **k: True)
     r = c.post(f"/api/reports/{rid}/audio", cookies=ck)
     assert r.status_code == 402, r.text[:200]
+
+
+def test_r22_ttl_rewrite_preserves_narratives():
+    """TTL-expired rewrite keeps paid narratives."""
+    from app.astrology.transit_cache import cached_forecast, store_transit_analysis
+    uid="u"+uuid.uuid4().hex[:8]; cid="c"+uuid.uuid4().hex[:8]
+    with Session(engine) as s:
+        s.add(User(id=uid, phone=uid+"@t")); s.commit()
+        p=BirthProfile(user_id=uid, raw_year=1373, raw_month=5, raw_day=10); s.add(p); s.flush()
+        from app.astrology.engine import compute_from_fields, ensure_ephe
+        ensure_ephe()
+        chart=compute_from_fields(**GOLDEN_CHARTS[0]["birth"]).chart_json
+        s.add(Chart(id=cid, profile_id=p.id, chart_json=chart)); s.commit()
+    with Session(engine) as s:
+        store_transit_analysis(s, cid, 3, {"narratives": [{"headline":"خریداری‌شده"}]})
+    with Session(engine) as s:
+        row=s.exec(select(TransitForecast).where(TransitForecast.chart_id==cid,
+                   TransitForecast.months==3)).first()
+        row.computed_at=row.computed_at.replace(year=row.computed_at.year-1)  # force TTL expiry
+        s.add(row); s.commit()
+    with Session(engine) as s:
+        cached_forecast(s, cid, 3, chart)
+        row=s.exec(select(TransitForecast).where(TransitForecast.chart_id==cid,
+                   TransitForecast.months==3)).first()
+        data=json.loads(row.payload_json)
+        assert isinstance(data, dict) and data.get("narratives"), "paid narratives wiped!"

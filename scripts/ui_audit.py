@@ -19,6 +19,8 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
+THEME = os.environ.get("AUDIT_THEME", "dark")
+
 VIEWPORTS = [(320, 690), (375, 812), (414, 896), (768, 1024), (1280, 800)]
 
 DEFAULT_PAGES = [
@@ -111,7 +113,7 @@ def contrast_ok(page):
     """Check 5 - sample key text elements' contrast ratio (alpha-aware)."""
     js = r"""
 () => {
-  const BASE = [13, 20, 48];
+  const BASE = document.documentElement.getAttribute("data-theme") === "light" ? [244,245,251] : [13,20,48];
   function parse(c) {
     const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
     return m ? [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]] : null;
@@ -197,6 +199,9 @@ def audit_page(page, base, path, shots_dir, date_tag, context=None):
     for (w, h) in VIEWPORTS:
         page.set_viewport_size({"width": w, "height": h})
         url = base + path
+        page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        if THEME == "light":  # X19/R13: audit the LIGHT theme too
+            page.evaluate("try{localStorage.setItem('zayche-theme','light')}catch(e){}")
         page.goto(url, wait_until="networkidle", timeout=30000)
         page.wait_for_timeout(350)
         d = page.evaluate(CHECK_JS)

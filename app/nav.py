@@ -26,7 +26,9 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("explore", "کاوش", "/explore", icon="icon-star", needs_chart=True),
     NavItem("synastry", "سیناستری", "/synastry", icon="icon-heart"),
     NavItem("rectify", "بازبینی ساعت", "/rectify", icon="icon-clock"),
-    NavItem("transits", "گذرها", "/sky", icon="icon-sun"),
+    # R16: /sky = public "today's sky" page — label must say that; the PERSONAL
+    # transit timeline lives on the chart page (/transits/{chart_id}) + dashboard.
+    NavItem("transits", "آسمان امروز", "/sky", icon="icon-sun"),
     NavItem("plans", "پلن‌ها", "/plans", icon="icon-tag"),
     # drawer-only groups:
     NavItem("articles", "مقالات", "/articles", icon="icon-book-open", group="یادگیری"),
@@ -70,7 +72,7 @@ def nav_for(*, has_chart: bool) -> dict:
     top = [by_key[k] for k in _TOP_BASE if _visible(by_key[k], has_chart)]
     if has_chart and by_key["mychart"] not in top:
         top.insert(1, by_key["mychart"])
-    top = top[:6]  # max 5 items + brand-safe cap
+    top = top[:5]  # R18/X21: hard cap — max 5 top items
 
     groups: dict[str, list[NavItem]] = {}
     for it in NAV_ITEMS:

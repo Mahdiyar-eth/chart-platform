@@ -48,7 +48,7 @@ _RETRO_STATION = 0.03      # deg/day threshold (a planet moving this slow treats
 
 _MAX_EXACT_DATES = 3
 RETRO_GROUP_DAYS = 180.0   # consecutive crossings within this many julian days = one retro event
-DETECT_ORB = 8.0           # only count a crossing when the planet is this near the aspect
+  # (DETECT_ORB defined once above — duplicate removed X22/R24)
 
 
 @dataclass
@@ -148,38 +148,6 @@ def _iso_dt(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _crossing_points(body_swe: int, target_lon: float, aspect: float,
-                     jd0: float, jd1: float, days: int) -> list[float]:
-    """Scan daily [jd0, jd0+days], return Julian days where the signed
-    separation from `aspect` crosses zero (bisection to <1 arc-min)."""
-    lons = [0.0] * (days + 1)
-    for d in range(days + 1):
-        lons[d], _ = _transit_lon(body_swe, jd0 + d)
-    exacts: list[float] = []
-    for d in range(days):
-        g0 = _norm180(lons[d] - target_lon - aspect)
-        g1 = _norm180(lons[d + 1] - target_lon - aspect)
-        if g0 == 0.0:
-            exacts.append(jd0 + d)
-            continue
-        if g0 * g1 < 0:
-            lo, hi = jd0 + d, jd0 + d + 1
-            glo = g0
-            for _ in range(BISECT_MAX):
-                mid = (lo + hi) / 2.0
-                mlon, _ = _transit_lon(body_swe, mid)
-                gmid = _norm180(mlon - target_lon - aspect)
-                if gmid == 0.0:
-                    lo = hi = mid
-                    break
-                if (gmid > 0) == (glo > 0):
-                    lo, glo = mid, gmid
-                else:
-                    hi = mid
-            exacts.append((lo + hi) / 2.0)
-    return exacts
-
-
 @dataclass
 class _EventRaw:
     body: str
@@ -268,8 +236,6 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
         # dedup gates: keep a crossing only if it is a genuine aspect hold
         w = WEIGHT_PLANET.get(r.body, 1) * WEIGHT_TARGET.get(r.target, 1) * WEIGHT_ASPECT.get(int(r.aspect), 1)
         exacts = r.exacts[:_MAX_EXACT_DATES]
-        if len(r.exacts) > _MAX_EXACT_DATES:
-            pass
         # window: around each exact crossing, |orb| <= TRANSIT_ORB
         # approximate half-window (days) from speed: orb/speed
         half_days = TRANSIT_ORB / max(abs(r.speed), 1e-4) if r.speed else 7.0
