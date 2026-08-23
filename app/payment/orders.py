@@ -217,8 +217,7 @@ def grant_subscription_credits(session: Session, sub: Subscription,
     Idempotent: re-running within the same month is a no-op. The user is
     resolved from the sub's chart → profile chain. Returns True when granted.
     """
-    from sqlalchemy import text
-    from app.models import CreditTransaction, BirthProfile
+    from app.models import BirthProfile
     now = utcnow()
     last = sub.last_credit_grant_at
     if last and _local_month_key(ensure_utc(last), tz_name) == _local_month_key(now, tz_name):
@@ -337,8 +336,6 @@ def _order_user_id(session: Session, order: Order) -> str | None:
 def grant_credits(session: Session, order: Order) -> None:
     """P6 — credit-pack purchase: atomic credit grant + ledger row.
     The amount is taken from plans.credits_grant (never parsed from the key)."""
-    from sqlalchemy import text
-    from app.models import CreditTransaction
     plan = session.get(Plan, order.plan_key)
     grant = plan.credits_grant if plan else 0
     if grant <= 0:

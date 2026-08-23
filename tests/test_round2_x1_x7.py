@@ -1,14 +1,14 @@
 """Round-2 X1–X7 acceptance tests (Claude review R1–R7) — LLM mocked, $0."""
-import os, json, uuid, types, math
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
-os.environ["SWISSEPH_EPHE_PATH"] = "/root/chart-platform/ephe"
+import os, json, uuid, types
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 from app.db import engine
 from app.main import app as main_app
-from app.models import User, TransitForecast, Entitlement
-from app.credits import grant as credit_grant, spend, CreditError
+from app.models import User, Entitlement
+from app.credits import spend, CreditError
 from app.entitlements import grant_from_credits, has as ent_has, consume as ent_consume
 
 def _cookie(uid):
@@ -40,9 +40,9 @@ class _Router:
         import re as _re
         m = _re.search(r"([A-Za-z]+)_([A-Za-z]+)_([0-9]+)", prompt or "")
         if m:
-            p1, p2, orb = m.group(1), m.group(2), m.group(3)
+            p1, p2, _orb2 = m.group(1), m.group(2), m.group(3)
         else:
-            p1, p2, orb = "Mars", "Saturn", "120"
+            p1, p2, _orb = "Mars", "Saturn", "120"
         fa = {"Mars": "مریخ", "Saturn": "زحل", "Jupiter": "مشتری", "Venus": "ناهید",
               "Mercury": "عطارد", "Sun": "خورشید", "Moon": "ماه"}
         f1, f2 = fa.get(p1, p1), fa.get(p2, p2)
@@ -135,7 +135,7 @@ def test_x3_partial_failure_refunds_proportionally(transit_env):
     r = c.post(f"/api/charts/{cid}/forecast/analyze", data={"months": "3"}, cookies=ck)
     j = r.json()
     failed = j.get("refunded_events", 0)
-    total = len(j.get("events", [])) or 1
+    _total = len(j.get("events", [])) or 1
     if failed:
         price = j.get("metrics", {}).get("price") or 2
         assert j.get("refunded_credits") is not None
@@ -162,7 +162,7 @@ def test_x6_chat_pack_consumed_and_expires(transit_env):
     """X6/R7: chat pack grants expiry + consume() decrements per message."""
     uid, _, _ = transit_env
     with Session(engine) as s:
-        ent = grant_from_credits.__wrapped__ if hasattr(grant_from_credits, "__wrapped__") else None
+        _ent = grant_from_credits.__wrapped__ if hasattr(grant_from_credits, "__wrapped__") else None
         e = Entitlement(user_id=uid, kind="chat", quantity=20, used=0,
                         source="credit", source_ref="t" + uuid.uuid4().hex[:8])
         s.add(e); s.commit(); eid = e.id

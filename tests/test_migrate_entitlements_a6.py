@@ -1,6 +1,6 @@
 """A6 — entitlement backfill acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"]="postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"]="1"
 
 from sqlmodel import Session, select
@@ -48,7 +48,7 @@ def test_backfill_idempotent_run_twice():
     uid = _mk_user()
     ids = [_order(uid, "gold", "paid"), _order(uid, "synastry", "paid")]
     with Session(engine) as s:
-        rep1 = backfill_entitlements(s, dry_run=False)
+        _rep1 = backfill_entitlements(s, dry_run=False)
     n1 = len(_ents_for(ids))
     with Session(engine) as s:
         rep2 = backfill_entitlements(s, dry_run=False)

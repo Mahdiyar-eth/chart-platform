@@ -13,9 +13,7 @@ import argparse
 import datetime
 import json
 import os
-import re
 import sys
-from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -220,7 +218,7 @@ def audit_page(page, base, path, shots_dir, date_tag, context=None):
     page.set_viewport_size({"width": 375, "height": 812})
     page.goto(base + path, wait_until="networkidle", timeout=30000)
     # keyboard-realistic: real Tab presses via Playwright (CDP), then inspect activeElement
-    async_tab_js = r"""
+    _async_tab_js = r"""
 async (n) => {
   const seen = [];
   let missing = 0;
@@ -236,7 +234,7 @@ async (n) => {
         page.keyboard.press("Tab")
         missing = 0
         checked = 0
-        prev = None
+        _prev = None
         for _ in range(25):
             page.keyboard.press("Tab")
             info = page.evaluate(
@@ -278,7 +276,7 @@ async (n) => {
         # fresh page = clean performance timeline (no prior viewport/scroll history)
         ppage = context.new_page() if context is not None else None
         target = ppage or page
-        await_like = target.goto(base + path, wait_until="domcontentloaded", timeout=30000)
+        _await_like = target.goto(base + path, wait_until="domcontentloaded", timeout=30000)
         rec["perf"] = target.evaluate(perf_js)
         if ppage:
             ppage.close()

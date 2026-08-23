@@ -93,7 +93,7 @@ def test_fresh_pending_order_not_swept(monkeypatch):
     with Session(engine) as s:
         o = s.get(Order, oid)
         assert o.status == "pending"  # just created, still fresh
-        released = sweep_stale_orders(s, stale_minutes=30)
+        _released = sweep_stale_orders(s, stale_minutes=30)
         assert s.get(Order, oid).status == "pending", "fresh order must not be expired"
         assert s.exec(select(Coupon).where(Coupon.code == code)).first().used_count == 1
 

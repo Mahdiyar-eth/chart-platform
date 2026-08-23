@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from app.db import engine
 from app.main import app as main_app
-from app.models import Chart, Coupon, Order, Report
+from app.models import Coupon, Order, Report
 from sqlmodel import Session, select
 
 

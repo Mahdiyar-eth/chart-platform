@@ -1,7 +1,7 @@
 """Phase 2: evaluate the AFTER (v2 prompt) run — grounding + rubric vs BEFORE."""
 import asyncio, json, re, sys
 sys.path.insert(0, "/root/chart-platform")
-from scripts.ai_benchmark_v4 import SIGNS, SIGNS_FA, make_chart
+from scripts.ai_benchmark_v4 import SIGNS_FA, make_chart
 from scripts.model_cmp_eval2 import planet_sign_pairs, norm, RUBRIC
 from app.core.llm import build_go_pool
 

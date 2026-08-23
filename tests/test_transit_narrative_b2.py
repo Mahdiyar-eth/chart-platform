@@ -1,13 +1,10 @@
 """B2 — transit narrative layer acceptance tests (LLM mocked → $0, no live network)."""
 import os, types, json
 os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
-from datetime import datetime, timezone
-from sqlmodel import Session
-from app.db import engine
 from app.astrology.engine import compute_from_fields, ensure_ephe
 from app.astrology.golden_data import GOLDEN_CHARTS
 from app.report.transit_narrative import (
-    narrate_transit, transit_user_prompt, B2_RULES, MAX_RETRIES,
+    narrate_transit, transit_user_prompt,
 )
 
 
@@ -33,7 +30,7 @@ def _make_narrative(target="خورشید"):
         "what_it_means": f"گذرِ زحل در همنشینی با {target}ِ تولد، از ۱۰ مهر تا ۲۵ آذر، "
                          f"تو را به ساده‌کردن و مرور بنیادها دعوت می‌کند. این یک دورهٔ درونی است.",
         "reflection_question": "اگر فقط یک تعهد را در این بازه سبک‌تر کنی، کدام است؟",
-        "window_text": f"بازهٔ تقریبی از ۲۰۲۶-۱۰-۰۱ تا ۲۰۲۶-۱۲-۱۵، با گذرهای دقیق در آبان و دی.",
+        "window_text": "بازهٔ تقریبی از ۲۰۲۶-۱۰-۰۱ تا ۲۰۲۶-۱۲-۱۵، با گذرهای دقیق در آبان و دی.",
     }
 
 

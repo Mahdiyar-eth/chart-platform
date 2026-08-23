@@ -1,5 +1,4 @@
 """G2/G3 — claim banner (funnel leak fix) + lead-magnet subscribe/download/unsubscribe."""
-import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -44,7 +43,13 @@ def test_unsubscribe_flips_flag():
         s.commit()
         sub = Subscriber(contact="09123456789", source="test", token="tok-unsub-1")
         s.add(sub); s.commit()
-    r = client.get("/unsubscribe/tok-unsub-1")
+    # X15/R11: state change is POST-only (GET renders a confirm page — email prefetch safe)
+    r_get = client.get("/unsubscribe/tok-unsub-1")
+    assert r_get.status_code == 200
+    with Session(eng) as s:
+        row = s.exec(select(Subscriber).where(Subscriber.token == "tok-unsub-1")).one()
+        assert row.unsubscribed_at is None  # GET must NOT flip
+    r = client.post("/unsubscribe/tok-unsub-1")
     assert r.status_code == 200
     with Session(eng) as s:
         row = s.exec(select(Subscriber).where(Subscriber.token == "tok-unsub-1")).one()

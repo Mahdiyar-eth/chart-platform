@@ -9,10 +9,8 @@ from sqlmodel import Session, select
 from app.main import app as main_app
 from app.db import engine
 from app.models import Order, Report
-import importlib
 
 # fake OK gateway
-import tests.conftest as cf
 class OkZP:
     def verify(self, *a, **k): return {"ref_id":"200000000099","card_pan":"621986****0000"}
     def request(self, *a, **k): return "Sfake", "https://sandbox.zarinpal.com/pg/StartPay/Sfake"

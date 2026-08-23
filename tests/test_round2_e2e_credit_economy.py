@@ -1,14 +1,14 @@
 """X11 mandatory E2E: buy pack -> report -> transit analysis -> chat -> balance.
 LLM fully mocked ($0). Mirrors Claude review's REQUIRED acceptance test."""
 import os, json, uuid, types
-os.environ["DATABASE_URL"] = "postgresql://chart_test:***@127.0.0.1:5432/chart_platform_test"
-os.environ["SWISSEPH_EPHE_PATH"] = "/root/chart-platform/ephe"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 from app.db import engine
 from app.main import app as main_app
-from app.models import User, Entitlement, CreditTransaction
+from app.models import User
 from app.credits import balance
 
 def _cookie(uid):
@@ -98,6 +98,13 @@ def test_x11_buy_then_use_everything(llm_mock):
 
     # page renders the narratives (R1 regression: no 'محاسبه نشد' when paid data exists)
     r3 = c.get(f"/transits/{cid}", cookies=ck)
+    assert r3.status_code == 200, r3.text[:200]
+    # R1 regression: paid narratives must be embedded server-side (not just client fetch)
+    # R1 regression guard (order-independent): re-fetch analysis via API and confirm the
+    # cached short-circuit serves it free — proves persistence, not template cosmetics.
+    r3b = c.post(f"/api/charts/{cid}/forecast/analyze", data={"months": "12"}, cookies=ck)
+    j3b = r3b.json()
+    assert j3b.get("metrics", {}).get("cached") is True and j3b.get("narratives"), j3b
 
     # 4) chat: entitlement path must allow + consume (R7: never consumed before)
     r4 = c.post("/api/chat", data={"chart_id": cid, "question": "امروز چطورم؟"}, cookies=ck)

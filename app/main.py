@@ -16,7 +16,6 @@ from pathlib import Path
 import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
-from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,13 +33,11 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from fastapi.responses import JSONResponse
 from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
 from app.credits import balance, get_price, UnknownAction
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, CreditTransaction,
-                        Exploration, FunnelEvent, LLMRun, Order, Plan,
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
-                        TransitForecast, User, WeeklyReflection, WithdrawalRequest,)
+                        User, WeeklyReflection, WithdrawalRequest,)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -56,7 +53,7 @@ def _asset_version():
     d = BASE_DIR / "static" / "css"
     if not d.is_dir():
         return "0"
-    h = hashlib.md5()
+    h = hashlib.sha256()
     for f in sorted(d.iterdir()):
         if f.suffix == ".css":
             h.update(f.name.encode())
@@ -660,8 +657,15 @@ def api_create_report(chart_id: str, request: Request,
     ent = ent_has(session, _u.id, "report", chart_id=chart_id) if _u else None
     if not paid and not ent:
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
-    _credit_plan = {"report_basic": "basic", "report_full": "full",
-                    "report_gold": "gold"}.get(getattr(ent, "source_action", "") or "")
+    # Y2/N2: Entitlement has NO source_action field — derive the tier from the
+    # CreditTransaction that funded it (ent.source_ref = tx id, reason = action key).
+    _credit_plan = None
+    if ent is not None and ent.source_ref:
+        from app.models import CreditTransaction as _CT
+        _tx = session.get(_CT, ent.source_ref)
+        if _tx is not None:
+            _credit_plan = {"report_basic": "basic", "report_full": "full",
+                            "report_gold": "gold"}.get(_tx.reason or "")
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
@@ -698,6 +702,15 @@ def api_create_report(chart_id: str, request: Request,
     session.add(rep)
     session.commit()
     session.refresh(rep)
+    # Y1/N1: a credit-bought report must be DOWNLOADABLE — bind the user's
+    # unscoped report entitlement to THIS report (ref_id), matching what
+    # _report_gate checks. Legacy paid orders already carry report_id.
+    if _u and not paid and ent is not None and not ent.ref_id:
+        from app.timeutil import ensure_utc, utcnow
+        if not (ent.expires_at and ensure_utc(ent.expires_at) < utcnow()):
+            ent.ref_id = rep.id
+            session.add(ent)
+            session.commit()
     ok = _enqueue_report(rep.id)
     if not ok:
         rep.status = "failed"
@@ -1510,9 +1523,9 @@ def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...
     u = get_current_user(request)
     if u:
         from app.credits import spend
-        import uuid as _uuid
         spend(session, u.id, "rectify",
-              idempotency_key=f"rectify:{u.id}:{year}-{month}-{day}:{_uuid.uuid4().hex[:8]}")
+              idempotency_key=f"rectify:{u.id}:{year}-{month}-{day}:{calendar}:"
+                             f"{city_fa.strip()}:{events_json[:120]}")  # Y5/N5: deterministic — no uuid4
     return {"best_time": r.best_time, "score": r.score, "candidates": r.candidates,
             "events_used": r.events_used, "details": r.details}
 
@@ -1727,7 +1740,7 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    allowed = bool(order and order.plan_key in ("gold", "monthly"))
+    allowed = bool(order and order.plan_key in ("gold", "monthly", "yearly"))
     if not allowed:
         return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
     if not _monthly_sub_active(session, order, chart_id):  # A9: expired monthly
@@ -1779,7 +1792,7 @@ def _chat_guarded_context(request: Request, chart_id: str,
     if u:
         from app.entitlements import has as ent_has
         _ent_chat = ent_has(session, u.id, "chat", chart_id=chart_id)
-    if _ent_chat is None and (not order or order.plan_key not in ("gold", "monthly")):
+    if _ent_chat is None and (not order or order.plan_key not in ("gold", "monthly", "yearly")):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
     try:
         request.state.chat_ent = _ent_chat  # X6: consumed after a successful answer
@@ -2366,8 +2379,7 @@ def reports_page(request: Request, session: Session = Depends(get_session)):
 async def not_found_fa(request: Request, exc):
     """X20/R15: friendly Persian 404 (HTML for pages, JSON for APIs)."""
     if request.url.path.startswith(("/api/", "/static/")):
-        from fastapi.responses import JSONResponse
-        return JSONResponse({"detail": "یافت نشد"}, status_code=404)
+                return JSONResponse({"detail": "یافت نشد"}, status_code=404)
     return templates.TemplateResponse(request, "error.html", {
         "title": "صفحه پیدا نشد", "code": 404,
         "message": "این صفحه وجود ندارد یا جابه‌جا شده است.",
@@ -2432,6 +2444,32 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
     if not chart or not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این چارت ندارید")
     months = 3 if months not in (3, 12) else months
+    # Y3/N3: check the paid-analysis cache BEFORE spending — a cached month must
+    # never cost the user another charge.
+    import json as _json
+    from app.models import TransitForecast
+    _row = session.exec(select(TransitForecast).where(
+        TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+    _existing = []
+    if _row and _row.payload_json:
+        try:
+            _pd = _json.loads(_row.payload_json)
+            if isinstance(_pd, dict):
+                _existing = _pd.get("narratives") or []
+        except Exception:  # noqa: BLE001
+            _existing = []
+
+    if _existing:
+        # Y3/N3: cached analysis → zero charge.
+        events_cached = []
+        try:
+            _pd = _json.loads(_row.payload_json) if _row and _row.payload_json else {}
+            events_cached = (_pd.get("events") or []) if isinstance(_pd, dict) else []
+        except Exception:  # noqa: BLE001
+            events_cached = []
+        return {"months": months, "events": events_cached, "narratives": _existing,
+                "metrics": {"cached": True}, "refunded": 0}
+
     action = f"transit_{months}m"
     from app.credits import InsufficientCredits, refund as _refund, spend
     try:
@@ -2446,29 +2484,12 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
             "need": e.needed, "balance": e.have, "credit_packs": True})
 
     from app.astrology.transit_cache import cached_forecast, store_transit_analysis
-    from app.astrology.transit_forecast import forecast
     from app.core.llm import build_router
-    from app.models import TransitForecast
     from app.report.transit_narrative import narrate_transit
     events = cached_forecast(session, chart_id, months, chart.chart_json)
     if isinstance(events, dict):
         events = events.get("events") or []
-    # X2/R2: if a paid analysis already exists in cache, return it — never re-run LLM.
-    import json as _json
-    _row = session.exec(select(TransitForecast).where(
-        TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
-    _existing = []
-    if _row and _row.payload_json:
-        try:
-            _pd = _json.loads(_row.payload_json)
-            if isinstance(_pd, dict):
-                _existing = _pd.get("narratives") or []
-        except Exception:  # noqa: BLE001
-            _existing = []
     refunded = {"n": 0}
-    if _existing:
-        return {"months": months, "events": events, "narratives": _existing,
-                "metrics": {"cached": True}, "refunded": 0}
 
     failed_n = {"n": 0}
 
@@ -3249,7 +3270,7 @@ def _today_plan_access(session: Session, chart: Chart) -> str:
     order = session.exec(
         select(Order).where(Order.chart_id == chart.id, Order.status == "paid")
     ).first()
-    if order and order.plan_key in ("gold", "monthly") and _monthly_sub_active(session, order, chart.id):
+    if order and order.plan_key in ("gold", "monthly", "yearly") and _monthly_sub_active(session, order, chart.id):
         return "full"
     return "preview"
 

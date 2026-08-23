@@ -1,7 +1,7 @@
 """Round-2 phase-3 security tests (X14-X17 / R9-R12) — $0, no LLM."""
 import os, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
-os.environ["SWISSEPH_EPHE_PATH"] = "/root/chart-platform/ephe"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
 from pathlib import Path
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select

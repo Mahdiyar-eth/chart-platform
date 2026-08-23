@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import or_
 from sqlmodel import Session, select
 
 from app.credits import spend
@@ -65,8 +64,10 @@ def consume(session: Session, ent: Entitlement, n: int = 1) -> bool:
     Guarded UPDATE — no read-modify-write race. Returns False when exhausted."""
     from sqlalchemy import text
     res = session.execute(text(
-        "UPDATE entitlements SET used = used + :n WHERE id = :id AND used <= quantity - :n"
-    ), params={"n": n, "id": ent.id})
+        "UPDATE entitlements SET used = used + :n WHERE id = :id "
+        "AND used <= quantity - :n AND (expires_at IS NULL OR expires_at >= :now)"
+    ), params={"n": n, "id": ent.id,
+              "now": datetime.now(timezone.utc).replace(tzinfo=None)})
     if res.rowcount == 0:
         return False
     session.refresh(ent)
@@ -188,6 +189,7 @@ def _kind_for_plan(plan_key: str) -> str | None:
         "transit_3m": "transit",
         "chat_pack_20": "chat",
         "monthly": "chat",
+        "yearly": "chat",
         "rectify": "rectify",
     }.get(plan_key)
 

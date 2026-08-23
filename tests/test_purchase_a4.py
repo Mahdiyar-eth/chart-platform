@@ -1,6 +1,6 @@
 """A4 — unified purchase endpoint acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
 
 from fastapi.testclient import TestClient

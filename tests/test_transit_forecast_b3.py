@@ -1,7 +1,7 @@
 """B3 — transit forecast API + page acceptance tests (LLM mocked → $0, no live spend)."""
 import os, json, types, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
-os.environ["SWISSEPH_EPHE_PATH"] = "/root/chart-platform/ephe"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 from app.db import engine
@@ -9,8 +9,6 @@ from app.main import app as main_app
 from app.models import BirthProfile, Chart, User
 from app.astrology.engine import compute_from_fields, ensure_ephe
 from app.astrology.golden_data import GOLDEN_CHARTS
-from app.credits import grant as credit_grant
-from app.auth import _user_cookie_value
 
 
 def _cookie(uid):

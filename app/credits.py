@@ -132,9 +132,23 @@ def refund(session: Session, tx_id: str, reason: str = "refund",
     if not original:
         raise CreditError("تراکنش اعتباری یافت نشد")
     cost = abs(original.amount)
+    # Y6/N6: cumulative cap — total refunds for this tx can never exceed `cost`.
+    refunded_so_far = session.execute(text(
+        "SELECT COALESCE(SUM(amount), 0) FROM credit_transactions "
+        "WHERE reason = 'refund' AND ref_id = :rid"), params={"rid": original.id}).scalar() or 0
+    room = cost - int(refunded_so_far)
     if amount is not None:
         if amount <= 0 or amount > cost:
             raise CreditError("مبلغ بازگشت نامعتبر است")
+    else:
+        amount = max(room, 0)
+    if amount > room:
+        amount = room  # clamp partial to remaining room (never over-refund)
+    if amount <= 0:
+        existing_all = _find_idempotent(session, f"refund:{original.id}")
+        if existing_all:
+            return existing_all
+        return original  # nothing left to refund — no-op marker
     # idempotency: look for an existing refund row keyed to this tx (+bucket)
     idem = f"refund:{original.id}" if amount is None else f"refund:{original.id}:{amount}"
     existing = _find_idempotent(session, idem)

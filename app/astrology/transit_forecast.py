@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 import swisseph as swe
 
 from app.astrology.engine import (
-    ASPECT_FA, ASPECT_NAMES, SIGNS_FA, _house_of, _retro, ensure_ephe,
+    ASPECT_FA, ASPECT_NAMES, SIGNS_FA, _house_of, ensure_ephe,
     jd_from_utc, sign_of,
 )
 
@@ -182,7 +182,6 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
         for d in range(days + 1):
             lons[d], speeds[d] = _transit_lon(body_swe, jd0 + d)
         for target, tlon in targets.items():
-            weight_t = WEIGHT_TARGET.get(target, 1)
             for aspect in ASPECTS:
                 # crossings via daily sign-change scan on precomputed lons
                 exacts: list[float] = []

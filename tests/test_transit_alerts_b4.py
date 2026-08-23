@@ -1,6 +1,6 @@
 """B4 — weekly transit alerts acceptance tests (delivery mocked, DB real)."""
 import os, json, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
 os.environ.setdefault("CREATE_ALL_ON_BOOT", "1")
 
@@ -11,7 +11,7 @@ from app.db import engine
 from sqlmodel import Session, select
 from app.models import (BirthProfile, Chart, NotificationPrefs, Subscription,
                         TransitAlertLog, TransitForecast, User)
-from app.report.transit_alerts import pick_alert_event, alert_text, run_transit_alerts
+from app.report.transit_alerts import pick_alert_event, run_transit_alerts
 
 
 def _ev(w, days_ahead, tp="Saturn", tgt="Sun"):
@@ -69,7 +69,7 @@ async def test_2_respects_prefs_and_dedup_and_link():
             pr.transit_alerts = True
             s.add(pr)
             s.commit()
-        r2 = await run_transit_alerts()
+        _r2 = await run_transit_alerts()
         assert len(delivered) == 1
         chat_id, text, platform = delivered[0]
         assert f"/transits?c={cid}" in text
