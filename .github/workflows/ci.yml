@@ -56,3 +56,4 @@ jobs:
       - name: Test (drift gate + full suite + lint + scans)
         run: |
           bash scripts/ci.sh
+# re-trigger CI (checkout was transient infra failure)
