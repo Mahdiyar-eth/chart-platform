@@ -305,7 +305,11 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
 @app.post("/api/subscribe")
 def api_subscribe(request: Request, contact: str = Form(...), source: str = Form("guide"),
                   session: Session = Depends(get_session)):
-    """G3 — lead magnet/newsletter signup. Explicit consent recorded; rate-limited upstream."""
+    """G3 — lead magnet/newsletter signup. Explicit consent recorded.
+    X14/R15: rate-limited HERE (5/10min per IP) — when the real SMS service is
+    connected this endpoint becomes an SMS-bomb vector otherwise."""
+    if not _rate_limit(f"subscribe:{_rl_client(request)}", 5, 600):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     import re as _re
     contact = contact.strip()
     channel = "email" if "@" in contact else "sms"
@@ -314,6 +318,17 @@ def api_subscribe(request: Request, contact: str = Form(...), source: str = Form
     if channel == "email" and not _re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", contact):
         raise HTTPException(422, "[ZAY-SUB-002] ایمیل معتبر نیست")
     from app.models import Subscriber
+    existing = session.exec(select(Subscriber).where(Subscriber.contact == contact)).first()
+    if existing and existing.unsubscribed_at is None:
+        # R10: one row per contact — re-issue the same download link.
+        resp = JSONResponse({"ok": True, "download_url": f"/guide/download/{existing.token}",
+                             "already_subscribed": True})
+        return resp
+    if existing:  # previously unsubscribed → resubscribe in place (keep same row)
+        existing.unsubscribed_at = None
+        session.add(existing); session.commit()
+        resp = JSONResponse({"ok": True, "download_url": f"/guide/download/{existing.token}"})
+        return resp
     token = secrets.token_urlsafe(24)
     sub = Subscriber(contact=contact, channel=channel, source=source, token=token)
     session.add(sub)
@@ -335,7 +350,7 @@ def guide_download(token: str, request: Request, session: Session = Depends(get_
     sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
     if not sub:
         raise HTTPException(404, "لینک نامعتبر است")
-    path = "/root/chart-platform/app/static/guides/zayche-guide.pdf"
+    path = Path(__file__).resolve().parent / "static" / "guides" / "zayche-guide.pdf"
     if not os.path.exists(path):
         raise HTTPException(404, "فایل راهنما یافت نشد")
     return FileResponse(path, media_type="application/pdf", filename="zayche-guide.pdf")
@@ -343,14 +358,26 @@ def guide_download(token: str, request: Request, session: Session = Depends(get_
 
 @app.get("/unsubscribe/{token}")
 def unsubscribe(token: str, request: Request, session: Session = Depends(get_session)):
-    """G3 — mandatory one-click unsubscribe."""
+    """G3 + X15/R16: GET only RENDERS the confirm page — email clients prefetch
+    links, so a state-changing GET let a bot silently unsubscribe people."""
+    return HTMLResponse(
+        "<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px' dir='rtl'>"
+        "<h2>لغو اشتراک خبرنامه</h2>"
+        f"<form method='post' action='/unsubscribe/{token}'>"
+        "<button type='submit' style='padding:12px 32px;font-size:16px;cursor:pointer'>بله، لغو کن</button>"
+        "</form></body>")
+
+
+@app.post("/unsubscribe/{token}")
+def unsubscribe_confirm(token: str, session: Session = Depends(get_session)):
+    """X15: the state change lives here (POST)."""
     from app.models import Subscriber
     sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
     if sub and sub.unsubscribed_at is None:
         sub.unsubscribed_at = datetime.now(timezone.utc)
         session.add(sub)
         session.commit()
-    return HTMLResponse("<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px'>لغو اشتراک انجام شد. دیگر پیامی دریافت نمی‌کنی.</body>")
+    return HTMLResponse("<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px' dir='rtl'>لغو اشتراک انجام شد. دیگر پیامی دریافت نمی‌کنی.</body>")
 
 
 # ─────────────────────────── api ───────────────────────────
@@ -2176,8 +2203,12 @@ class TrackPayload(BaseModel):
 
 
 @app.post("/api/track")
-async def api_track(payload: TrackPayload, session: Session = Depends(get_session)):
-    """G1 — anonymous funnel event beacon (fire-and-forget from track.js)."""
+async def api_track(payload: TrackPayload, request: Request,
+                    session: Session = Depends(get_session)):
+    """G1 — anonymous funnel event beacon (fire-and-forget from track.js).
+    X14/R15: 60/min per IP — unbounded writes to funnel_events were possible."""
+    if not _rate_limit(f"track:{_rl_client(request)}", 60, 60):
+        raise HTTPException(429, "too many")
     ev = payload.event
     if ev not in FUNNEL_EVENTS:
         raise HTTPException(400, "unknown event")
@@ -2193,9 +2224,13 @@ def api_admin_funnel(request: Request, session: Session = Depends(get_session)):
     """G1 — conversion funnel: per-step counts + conversion rate + drop-off."""
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
-    counts: dict[str, int] = {}
-    for ev in session.exec(select(FunnelEvent.event)).all():
-        counts[ev] = counts.get(ev, 0) + 1
+    # X16/R12: GROUP BY in the DB — loading every row into Python OOMs at scale.
+    from sqlalchemy import func as _func
+    rows = session.exec(
+        select(FunnelEvent.event, _func.count(FunnelEvent.id))
+        .group_by(FunnelEvent.event)
+    ).all()
+    counts: dict[str, int] = {ev: int(n) for ev, n in rows}
     steps = []
     prev = None
     for name in FUNNEL_STEPS:

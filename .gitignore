@@ -33,6 +33,7 @@ dist/
 build/
 *.pdf
 !docs/*.pdf
+!app/static/guides/*.pdf
 
 # IDE
 .idea/
