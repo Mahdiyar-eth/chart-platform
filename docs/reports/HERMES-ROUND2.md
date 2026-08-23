@@ -27,5 +27,10 @@
 - کانتینر بازبینی Claude فاقد venv/DB بود؛ «~۶۲۰ تست» را خودش تأیید نکرده بود — ما ۶17+1 را همینجا اجرا کردیم.
 - R4 تقصیر پلن بود نه اجرا — در دور ۲ تصحیح شد.
 
-## استقرار
-merge --ff-only main + systemctl restart chart-web chart-worker (بعد از تأیید کاربر).
+## استقرار prod (انجام شد — ۱۴۰۴/۰۶/۰۱)
+- merge --ff-only + push main = `b7a490a`؛ chart-web/chart-worker restart → active.
+- **باگ prod که همینجا کشف شد:** جدول `subscribers` (لیدمگنت G3) در DB پروड هرگز ساخته نشده بود
+  (CREATE_ALL فقط در تستها فعال است) → /gift-guide ثبت ایمیل در prod خطای ۵۰۰ میداد.
+  فیکس: create_all همان جدول + راستیآزمایی زنده (subscribe OK، dedupe با same-token OK،
+  download توکن نامعتبر ۴۰۴). ردیفهای probe پاکسازی شد.
+- وریفای نهایی prod: ۱۰ صفحهٔ کلیدی ۲۰۰ + ۴۰۴ فارسی سالم.
