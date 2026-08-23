@@ -1271,7 +1271,10 @@ def api_share_card(chart_id: str, request: Request,
         raise HTTPException(404, "chart not found")
     from app.share.card import render_share_card
     from fastapi.responses import FileResponse
-    path = render_share_card(chart.chart_json, chart_id)
+    try:
+        path = render_share_card(chart.chart_json, chart_id)
+    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed) → 404, not 500
+        raise HTTPException(404, "share card renderer unavailable")
     return FileResponse(path, media_type="image/png")
 
 

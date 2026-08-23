@@ -50,6 +50,9 @@ jobs:
           venv/bin/pip install --upgrade pip
           venv/bin/pip install -r requirements.txt
           venv/bin/pip install pytest-cov bandit ruff pip-audit
+          # R4/W5: chart share-card renders via headless Chromium — install it.
+          venv/bin/playwright install chromium
+          venv/bin/playwright install-deps chromium 2>/dev/null || true
           echo ".../venv/bin" >> "$GITHUB_PATH"
       - name: Test (drift gate + full suite + lint + scans)
         run: |
