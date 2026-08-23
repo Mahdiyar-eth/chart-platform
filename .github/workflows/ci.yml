@@ -11,6 +11,8 @@ jobs:
     services:
       postgres:
         image: pgvector/pgvector:pg16   # R4/W5: includes the vector extension so CREATE EXTENSION works in CI
+        volumes:
+          - ./ci/postgres-init:/docker-entrypoint-initdb.d:ro   # R4/W5: create vector as superuser at boot
         env:
           POSTGRES_DB: chart_platform_test
           POSTGRES_USER: chart_test
