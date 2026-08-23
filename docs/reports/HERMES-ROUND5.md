@@ -63,7 +63,8 @@
 ### CI سبز از مخزن (AC-5)
 PR #1 (`claude/opus-review-r5-round4` → `main`) باز شد؛ GitHub Actions **run #32673129800**:
 - **714 passed, 3 skipped, 51 warnings in 58.79s**، `DRIFT-GATE: CLEAN`، «All checks passed!» ⇒ **SUCCESS**
-- لینک: https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673129800
+- لینک run#1: https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673129800
+- لینک run#2 (بعد از کامیت docs): https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673355507 — SUCCESS
 - لاگ: `docs/qa/CI-ROUND5-2026-08-23.log`
 
 ## کامیت‌های این دور (شاخهٔ claude/opus-review-r5-round4)
