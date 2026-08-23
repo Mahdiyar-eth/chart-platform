@@ -1273,8 +1273,11 @@ def api_share_card(chart_id: str, request: Request,
     from fastapi.responses import FileResponse
     try:
         path = render_share_card(chart.chart_json, chart_id)
-    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed) → 404, not 500
-        raise HTTPException(404, "share card renderer unavailable")
+    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed)
+        # R.5 / V6 (P2-3): 503 "service unavailable" not 404 — the chart EXISTS,
+        # the renderer doesn't. 404 would mislead a client into thinking the chart
+        # is gone; 503 says "try later" (same principle as the VAPID fix).
+        raise HTTPException(503, "share card renderer unavailable")
     return FileResponse(path, media_type="image/png")
 
 
@@ -2569,6 +2572,12 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         analysis = pdata.get("narratives") or []
     except Exception:  # noqa: BLE001
         ev12, analysis = [], []
+    from app.astrology.transit_forecast import open_month_keys, top_by_weight
+    # R.5 / V9+V10: compute the top-5 globally-weighed events and the set of
+    # month-groups to leave expanded (current + next 2) server-side so the page
+    # sells (teaser above the fold) and the wall of 28 cards is collapsible.
+    top_events = top_by_weight(ev12, 5)
+    open_months = open_month_keys(ev12, 3)
     return templates.TemplateResponse(request, "transits_forecast.html", {
         "title": "گذرهای پیشِ رو",
         "chart_id": chart_id,
@@ -2578,6 +2587,8 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         "have_credits": (user.credits if user else 0),
         "months": _m,
         "sample_narrative": analysis if analysis else _sample_narrative(),
+        "top_events": top_events,
+        "open_months": open_months,
     })
 
 

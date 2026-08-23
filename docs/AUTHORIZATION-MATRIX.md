@@ -154,6 +154,7 @@
 | `PUT /api/admin/content/pages/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/content/media` | Admin | `_is_admin` |
 | `DELETE /api/admin/content/media/{mid}` | Admin | `_is_admin` |
+| `GET /media/{key:path}` | Public | R.5/V4 — serves a CMS media object from the LOCAL MEDIA_DIR fallback; **only reachable when R2 is NOT configured** (dev/fresh CI). When R2 is configured (prod) it 404s and media is served via presigned URL instead, so no object is exposed. |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.

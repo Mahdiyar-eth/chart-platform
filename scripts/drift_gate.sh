@@ -33,7 +33,11 @@ PYEOF
 sudo -u postgres psql -d chart_platform_drift -c "CREATE EXTENSION IF NOT EXISTS vector; \
   GRANT ALL ON SCHEMA public TO chart_test;" >/dev/null 2>&1 || echo "(sudo vector step skipped)"
 DATABASE_URL="$DRIFT_DB" venv/bin/alembic upgrade head
-DATABASE_URL="$DRIFT_DB" venv/bin/alembic check && echo "DRIFT-GATE: CLEAN"
+if ! DATABASE_URL="$DRIFT_DB" venv/bin/alembic check; then
+  echo "DRIFT-GATE: FAILED (new upgrade operations detected)"
+  exit 1
+fi
+echo "DRIFT-GATE: CLEAN"
 venv/bin/python - <<PYEOF
 import sqlalchemy as sa
 admin = sa.create_engine("postgresql://chart_test:chart_test_pw@127.0.0.1:5432/postgres")
