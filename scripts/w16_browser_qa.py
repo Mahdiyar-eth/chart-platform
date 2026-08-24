@@ -91,7 +91,6 @@ def main():
 
         # R12/P1-10: log in FIRST so /dashboard shows the real W9 dashboard
         logged_in = _login(page)
-        dash_markers = ["سلام", "امروزِ تو", "تحلیل‌های عمیق", "دوره‌ای"]
         for w in (390, 1280):
             if not logged_in:
                 res = {"url": "/dashboard", "width": w, "ok": False,
@@ -104,8 +103,6 @@ def main():
             # verify it is NOT the login page
             if "ورود با شماره موبایل" in res.get("screenshot", ""):
                 pass  # screenshot path only; content check below
-            body = open(res["screenshot"], "rb")  # keep file handle out
-            body = None
             login_page = page.locator("text=ورود با شماره").count() > 0 \
                 or "otp" in (page.url or "")
             if login_page:

@@ -556,10 +556,15 @@ def admin_cost_revenue(request: Request, session: Session = Depends(get_session)
     products.sort(key=lambda x: -x["revenue_toman"])
     margin = None
     if total_rev_toman > 0:
-        margin = round(max(0.0, 1.0 - (total_cost_usd * 1_000_000 / total_rev_toman)) * 100, 2)
+        # R12/P2-15: the USD→Toman assumption must be explicit. This is a
+        # PLANNING estimate at a configurable rate, not an accounting figure.
+        USD_TOMAN_ESTIMATE = 1_000_000  # planning rate: $1 ≈ ۱٬۰۰۰٬۰۰۰ تومان (label shown in admin UI)
+        margin = round(max(0.0, 1.0 - (total_cost_usd * USD_TOMAN_ESTIMATE / total_rev_toman)) * 100, 2)
     return {
         "window_days": days,
         "credit_rate_toman": CREDIT_TOMAN,
+        "usd_toman_estimate": 1_000_000,  # R12/P2-15: explicit planning rate
+        "margin_is_planning_estimate": True,
         "products": products,
         "llm_cost_by_kind": [{"kind": k, "cost_usd": float(c or 0), "calls": int(n)}
                              for k, c, n in cost_rows],

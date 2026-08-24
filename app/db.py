@@ -72,11 +72,10 @@ def seed_plans() -> None:
         dict(key="monthly", name_fa="اشتراک ماهانه", subtitle_fa="همراه ماهانه‌ی زایچه — برای دنبال‌کنندگان آسمان", price_toman=99_000,
              features=["نگاهی به آسمان امروز (Today) — هر روز", "تأمل هفتگی کوتاه در ربات و سایت",
                        "اعلان گذرهای مهم سیاره‌ای", "۵ اعتبار کاوش در ماه"],
-             sort=5),
+             sort=5, active=False),  # R12/P2-11: subscription retired from sale (owner §12-1)
         dict(key="yearly", name_fa="اشتراک سالانه", subtitle_fa="همراه سالانه — دو ماه رایگان نسبت به ماهانه", price_toman=890_000,
-             features=["همه‌ی امکانات اشتراک ماهانه", "معادل ۱۰ ماه برای ۱۲ ماه (دو ماه رایگان)",
-                       "۵ اعتبار کاوش در ماه", "اولویت در صف تولید گزارش"],
-             sort=8),
+             features=[],
+             sort=8, active=False),  # R12/P2-11: retired
     ]
     with Session(engine) as s:
         for item in catalog:
@@ -87,6 +86,8 @@ def seed_plans() -> None:
                 existing.subtitle_fa = item["subtitle_fa"]
                 existing.features = item["features"]
                 existing.sort = item["sort"]
+                if "active" in item:
+                    existing.active = item["active"]  # R12/P2-11: honor retirements
                 s.add(existing)
             else:
                 s.add(Plan(**item))

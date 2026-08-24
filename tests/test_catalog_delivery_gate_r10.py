@@ -40,6 +40,10 @@ def _expected_kinds(action_key: str, title_fa: str) -> set[str]:
     # report_audio is an ADD-ON (kind "audio") — the title mentions صوتی.
     if "صوتی" in title_fa or "نسخهٔ صوتی" in title_fa:
         return {"audio"}
+    # R12/P2-13: check the GOLD BUNDLE before the "چت" shortcut — its title
+    # contains چت but must deliver report+chat+transit (the R.9 money bug).
+    if action_key == "report_gold" or ("همراهی" in title_fa and "چت" in title_fa):
+        return {"report", "chat", "transit"}
     if "چت" in title_fa or action_key.startswith("chat_pack"):
         kinds.add("chat")
         return kinds  # chat packs are the chat product

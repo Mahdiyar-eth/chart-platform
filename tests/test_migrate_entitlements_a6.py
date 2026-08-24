@@ -34,7 +34,7 @@ def _ents_for(order_ids):
 def test_backfill_preserves_access_for_5_legacy_orders():
     uid = _mk_user()
     plans = {"basic": "report", "full": "report", "gold": "report",
-             "synastry": "synastry", "monthly": "chat"}
+             "synastry": "synastry_full", "monthly": "chat"}
     ids = {p: _order(uid, p, "paid") for p in plans}
     with Session(engine) as s:
         backfill_entitlements(s, dry_run=False)

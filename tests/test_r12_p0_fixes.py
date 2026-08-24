@@ -6,8 +6,6 @@ P0-2: a FAILED LLM enrichment must not poison the permanent freepreview
       cache — the fallback cache entry carries a short TTL (900s), while a
       SUCCESS is cached permanently.
 """
-import asyncio
-import json
 import os
 import uuid
 
@@ -20,7 +18,7 @@ from sqlmodel import Session
 from app.auth import _user_cookie_value
 from app.db import engine
 from app.main import app as main_app
-from app.models import BirthProfile, Chart, Entitlement, User
+from app.models import BirthProfile, Chart, User
 
 
 def _natal() -> dict:

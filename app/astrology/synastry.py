@@ -95,10 +95,18 @@ def synastry(chart_a: dict, chart_b: dict, variant: str = "love") -> dict:
     return {
         "variant": variant,
         "variant_title_fa": v["title_fa"],
+        "question": v["question"],  # R12/P2-14: expose the variant's lens question
+        "lens_planets": sorted(v["planets_a"]),  # R12/P2-14: the lens is now explicit
         "connections_count": len(connections),
         "connections": sorted(connections, key=lambda c: -1.0 / (1.0 + c["orb"]))[:24],
         "domains": domains,
         "primary_domains": lens,
+        # R12/P2-14: connections are FILTERED by the lens planets — the love
+        # report really reads Venus/Moon/Mars(/Mercury) links, the work report
+        # Sun/Mars/Saturn/Jupiter links, instead of sharing one raw list.
+        "lens_connections": [c for c in
+                             sorted(connections, key=lambda c: -1.0 / (1.0 + c["orb"]))
+                             if c["a"] in v["planets_a"]][:24],
         "overall": overall,
         "verdict": _verdict(overall),
     }
