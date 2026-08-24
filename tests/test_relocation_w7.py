@@ -6,7 +6,6 @@ comparison, and the explicit disclaimer. Gate: 6 credits.
 import json
 import os
 import uuid
-from datetime import datetime
 
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
@@ -16,7 +15,6 @@ from sqlmodel import Session
 
 from app.auth import _user_cookie_value
 from app.db import engine
-from app.entitlements import grant_from_credits
 from app.main import app as main_app
 from app.models import BirthProfile, Chart, User
 from app.report.relocation import compare_cities, relocation_chart

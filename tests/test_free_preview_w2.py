@@ -15,7 +15,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:543
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.db import engine
 from app.main import app as main_app
@@ -99,7 +99,6 @@ def _client_with_chart(cid: str) -> TestClient:
     with Session(engine) as s:
         ch = s.get(Chart, cid)
         assert ch is not None, "chart fixture missing"
-        tok = ch.access_token or ""
     # query-param capability token (same path the UI uses)
     return c
 

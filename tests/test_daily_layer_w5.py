@@ -100,12 +100,20 @@ def test_w5_llm_insight_cached_per_day(monkeypatch):
 
     async def run():
         FakeRouter.calls = 0
+        # flush the (chart,date) cache so this test is order-independent
+        import redis as _r
+        for db in ("0", "1"):
+            try:
+                _r.Redis.from_url(f"redis://127.0.0.1:6379/{db}").delete(
+                    f"today:{FakeChart.id}:{DAY1.date().isoformat()}")
+            except Exception:  # noqa: BLE001
+                pass
         p1 = await get_daily_layer(None, FakeChart(), "Asia/Tehran")
         n_first = FakeRouter.calls
         p2 = await get_daily_layer(None, FakeChart(), "Asia/Tehran")
         n_second = FakeRouter.calls - n_first
         return p1, p2, n_first, n_second
-    p1, p2, first, second = asyncio.get_event_loop().run_until_complete(run())
+    p1, p2, first, second = asyncio.new_event_loop().run_until_complete(run())
     assert p1["insight"], "insight should be produced by the LLM"
     assert first == 1, f"expected exactly 1 LLM call on first load, got {first}"
     assert second == 0, "same-day second load must come from the cache (zero calls)"
@@ -123,7 +131,7 @@ def test_w5_api_daily_endpoint_gated_and_shaped(monkeypatch):
         ch = Chart(profile_id=p.id, chart_json=_real_chart_json(),
                    access_token="tok" + uuid.uuid4().hex[:12])
         s.add(ch); s.commit(); s.refresh(ch)
-        cid, tok = ch.id, ch.access_token
+        cid = ch.id
     c = TestClient(main_app, base_url="https://testserver")
     c.cookies.set("chart_user", _user_cookie_value(uid))
     r = c.get(f"/api/today/daily?chart_id={cid}")

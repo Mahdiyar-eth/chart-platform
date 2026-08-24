@@ -12,7 +12,7 @@ from __future__ import annotations
 import swisseph as swe
 
 from app.astrology.big_three import SIGNS_FA
-from app.astrology.engine import BirthData, compute_chart, jd_from_utc, to_utc
+from app.astrology.engine import jd_from_utc
 from app.report.qa import FORBIDDEN_PATTERNS
 
 swe.set_ephe_path("ephe")
@@ -48,7 +48,6 @@ def relocation_chart(natal_chart: dict, lat: float, lon: float) -> dict:
     utc_dt = datetime.strptime(utc_str, "%Y-%m-%d %H:%M:%S")
     jd = jd_from_utc(utc_dt)
     is_sidereal = (natal_chart.get("engine_config") or {}).get("zodiac") == "sidereal"
-    flags = swe.FLG_SWIEPH | swe.FLG_SPEED
     ayan = swe.get_ayanamsa_ut(jd) if is_sidereal else 0.0
     cusps_raw, ascmc_raw = swe.houses(jd, lat, lon, b"P")
     if ayan:

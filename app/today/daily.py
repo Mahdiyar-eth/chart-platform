@@ -18,7 +18,7 @@ FREE product: this is the return hook, not revenue.
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from app.astrology.big_three import SIGNS_FA
 from app.astrology.transits import _aspect as _aspect_of
@@ -92,7 +92,6 @@ def _today_moon(chart_json: dict, when=None) -> dict:
                 break
         if natal_house is None and ordered:
             natal_house = ordered[0][0]
-    phase_deg = chart_json.get("moon_phase_deg")
     return {
         "sign_fa": SIGNS_FA[s_idx],
         "natal_house": natal_house,
@@ -104,7 +103,6 @@ def _venus_mars_today(chart_json: dict, when=None) -> dict | None:
     import swisseph as swe
     from datetime import datetime, timezone
     now = when or datetime.now(timezone.utc)
-    from app.astrology.engine import jd_from_utc
     jd = swe.julday(now.year, now.month, now.day, now.hour / 24)
     natal = chart_json.get("planets", {})
     angles = chart_json.get("angles", {})
@@ -254,8 +252,8 @@ async def daily_insight_async(cards: dict) -> str | None:
              f"با {sky.get('target_fa', sky.get('target', ''))} (اورب {sky.get('orb')})")
     prompt = INSIGHT_TEMPLATE.format(transit_block=block)
     try:
-        from app.core.llm import build_chat_router
-        router = build_chat_router()
+        from app.core import llm as _llm
+        router = _llm.build_chat_router()
         res = await router.complete(prompt, max_tokens=160, temperature=0.7)
         if not res.ok:
             return None
@@ -271,7 +269,6 @@ async def daily_insight_async(cards: dict) -> str | None:
 async def get_daily_layer(session, chart, tz_name: str) -> dict:
     """Full N1 payload for /today: 5 cards + LLM insight cached per (chart,date).
     Cache key: `today:{chart_id}:{YYYY-MM-DD}` — tomorrow is a NEW key (AC-3)."""
-    import json as _json
     import os
     cards = build_daily_cards(session, chart, tz_name)
     key_date = cards["date"]
@@ -293,6 +290,7 @@ async def get_daily_layer(session, chart, tz_name: str) -> dict:
     insight = await daily_insight_async(cards)
     if insight:
         payload["insight"] = insight
+        payload["fresh"] = True
         try:
             import redis.asyncio as redis_async
             r = redis_async.from_url(os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),

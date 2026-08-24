@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import re
 
-from app.astrology.big_three import ELEMENTS, MODALITIES, SIGNS_FA, big_three
+from app.astrology.big_three import big_three
 from app.astrology.svg_wheel import PLANET_FA
 from app.report.qa import FORBIDDEN_PATTERNS
 from app.report.rules import evaluate
@@ -202,7 +202,6 @@ def _factors_block_for_free(chart: dict, active_domains: list[str]) -> str:
     """Compact evidence block across the given domains (+ big three fallback)."""
     lines: list[str] = []
     seen: set[str] = set()
-    bt = big_three(chart)
     for key, fa in (("Sun", "Sun"), ("Moon", "Moon"), ("ASC", "ASC")):
         src = (chart.get("planets") or chart.get("angles") or {}).get(key) or {}
         if key == "ASC":

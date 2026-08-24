@@ -7,7 +7,6 @@ The price-editing endpoint already existed (A7); W14 adds:
 All three are admin-only.
 """
 import os
-import uuid
 
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"

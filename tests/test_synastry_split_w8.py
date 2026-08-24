@@ -96,7 +96,6 @@ def test_w8_full_endpoint_gated_per_variant():
 def test_w8_catalogue_has_both_products():
     """Both new products exist in credit_prices at 8 credits (plan §6)."""
     from app.credits import get_price
-    from app.credits import UnknownAction
     with Session(engine) as s:
         from app.db import seed_credit_prices
         seed_credit_prices()

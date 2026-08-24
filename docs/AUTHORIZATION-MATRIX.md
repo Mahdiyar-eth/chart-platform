@@ -132,6 +132,17 @@
 | `POST /api/admin/secrets/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/secrets/{key}/reveal` | Admin | `_is_admin` |
 | `POST /api/admin/llm/test` | Admin | `_is_admin` |
+| `GET /api/admin/token-caps` | Admin | `_is_admin` (MASTER W14) |
+| `POST /api/admin/token-caps/{product}` | Admin | `_is_admin` + audit (W14) |
+| `GET /api/admin/cost-revenue` | Admin | `_is_admin` (W14) |
+| `GET /solar/{chart_id}` | Owner | `_owns_chart` (MASTER W6) |
+| `POST /api/solar/purchase` | Owner+Login | `_owns_chart` + credit spend (W6) |
+| `GET /api/solar/{chart_id}` | Owner+9cr | `_owns_chart` + entitlement solar (W6) |
+| `GET /api/solar/{chart_id}/teaser` | Owner | `_owns_chart` — free teaser (W6) |
+| `GET /relocation/{chart_id}` | Owner | `_owns_chart` (MASTER W7) |
+| `GET /api/relocation/{chart_id}` | Owner+6cr | `_owns_chart` + entitlement relocation (W7) |
+| `POST /api/relocation/purchase` | Owner+Login | `_owns_chart` + credit spend (W7) |
+| `GET /api/today/daily` | Owner | `_owns_chart` — free daily layer (W5) |
 | `GET /api/explore/cards` | Public | none (catalog) |
 | `GET /explore` | User | `get_current_user` + `_owns_chart` (or redirect) |
 | `POST /api/explore/{card_key}` | User | `get_current_user` + `_owns_chart` + credit spend (atomic, 1 credit) |

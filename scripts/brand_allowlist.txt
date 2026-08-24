@@ -9,3 +9,4 @@ app/chat/retrieval.py:61
 app/templates/index.html:74
 app/report/preview.py:188
 app/report/solar_service.py:81
+app/report/solar_service.py:80

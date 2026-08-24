@@ -6,7 +6,6 @@ the SR chart of a given year never changes.
 """
 from __future__ import annotations
 
-import json
 
 from app.report.solar import solar_return_for, sr_sections
 
@@ -18,10 +17,11 @@ async def build_solar_product(session, user_id: str, natal_chart: dict,
     sr = solar_return_for(natal_chart, lat, lon, tz_name, zodiac=zodiac)
     sec = sr_sections(sr, natal_chart)
     sec["narrative"] = None
-    # permanent cache per chart+SR-year
+    # permanent cache per chart+SR-year (sha1 is fine — not security-sensitive,
+    # but bandit wants usedforsecurity=False to prove it)
     import hashlib
     year_key = sr.moment_utc.strftime("%Y")
-    cache_key = f"solar:{hashlib.sha1(f'{user_id}:{lat}:{lon}:{year_key}'.encode()).hexdigest()[:16]}"
+    cache_key = f"solar:{hashlib.sha1(f'{user_id}:{lat}:{lon}:{year_key}'.encode(), usedforsecurity=False).hexdigest()[:16]}"
     try:
         import redis.asyncio as redis_async
         r = redis_async.from_url(_redis_url(), decode_responses=True)

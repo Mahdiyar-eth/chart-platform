@@ -120,7 +120,6 @@ def solar_return_for(natal_chart: dict, current_lat: float,
         # pick the most recent SR that is not in the future beyond a small margin
     # choose the latest SR ≤ now+1d (the active solar year), else earliest
     now_naive = now_local.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
-    valid = [sr for sr in [best]]
     sr_active = None
     # recompute both years properly and select
     results = []
@@ -160,7 +159,6 @@ def sr_sections(sr: SolarReturn, natal_chart: dict) -> dict:
     """Deterministic content: mood line, dominant house, top-5 dated transits,
     main theme, seasonal reflection question."""
     cj = sr.chart_json
-    asc_house = 1
     # dominant house = SR ASC sign's natural house proxy: use SR ASC as house 1;
     # the strongest planet = closest to an angle gets highlighted via houses.
     planets_in_house: dict[int, list[str]] = {}

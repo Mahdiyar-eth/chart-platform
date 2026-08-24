@@ -8,7 +8,6 @@ Runs against the local QA server (:8899). For each page, at 390px AND 1280px:
 - screenshot saved to docs/qa/w16/
 """
 import json
-import os
 import sys
 from pathlib import Path
 

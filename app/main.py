@@ -1677,7 +1677,6 @@ def api_report_audio_request(report_id: str, request: Request,
 
 def _enqueue_audio(report_id: str) -> object:
     """Synchronous bridge to enqueue the audio job (no async endpoint)."""
-    import asyncio
 
     async def _do():
         from arq import create_pool
@@ -3605,7 +3604,6 @@ def api_relocation_report(chart_id: str, request: Request,
                           session: Session = Depends(get_session),
                           cities_json: str = ""):
     """AC-5 — compare up to 3 destination cities side-by-side. Gate: 6 credits."""
-    import json as _json
     from app.report.relocation import compare_cities
     chart = session.get(Chart, chart_id)
     if not chart or not _owns_chart(chart, session, request):

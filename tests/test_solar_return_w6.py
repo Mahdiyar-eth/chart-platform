@@ -13,7 +13,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:543
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.auth import _user_cookie_value
 from app.db import engine
@@ -31,7 +31,6 @@ def _natal() -> dict:
 def test_ac4_solar_return_moment_sub_arcminute():
     """GOLDEN TEST: returned Sun longitude == natal Sun longitude <1 arcmin."""
     natal = _natal()
-    natal_sun = float(natal["planets"]["Sun"]["longitude"])
     sr = solar_return_for(natal, 35.6889, 51.3897, "Asia/Tehran",
                           when_local=datetime(2026, 8, 24, 12, 0))
     # the SR must be within the current solar year window
