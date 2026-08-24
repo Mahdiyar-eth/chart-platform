@@ -744,17 +744,23 @@ def api_create_report(chart_id: str, request: Request,
 
 @app.get("/api/charts/{chart_id}/preview")
 async def api_chart_preview(chart_id: str, request: Request, session: Session = Depends(get_session)):
-    """Free 3-5 insights — deterministic baseline, enriched with a cheap LLM
-    (deepseek-flash flat-subscription) when available, cached in Redis to avoid
-    repeat spend. Falls back to the deterministic one-liners on any failure."""
+    """MASTER W2 — the free preview must ANSWER the user's own question.
+
+    Deterministic baseline (3 patterns with evidence + next-transit teaser +
+    element summary) is instant and free. When the user wrote a personal
+    question in the form, ONE cheap LLM call (preview router = deepseek-flash)
+    adds `question_answer` + 3 LLM patterns — cached PERMANENTLY per chart_id
+    (`freepreview:{chart_id}`, no TTL): the second load of the same chart
+    costs ZERO LLM calls (AC-1). Any failure → deterministic baseline only.
+    """
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "not authorized")
-    from app.report.preview import enrich_insights_async, free_insights
+    from app.report.preview import enrich_free_preview_async, free_insights
     insights = free_insights(chart.chart_json)
-    cache_key = f"enriched:{chart_id}"
+    cache_key = f"freepreview:{chart_id}"
 
     async def _cache_get() -> dict | None:
         try:
@@ -768,7 +774,8 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
     async def _cache_set(val: dict) -> None:
         try:
             r = redis_async.from_url(_REDIS_URL, decode_responses=True)
-            await r.set(cache_key, json.dumps(val, ensure_ascii=False), ex=7 * 86400)
+            # W2/§9: permanent cache — one LLM call PER CHART, ever.
+            await r.set(cache_key, json.dumps(val, ensure_ascii=False))
             await r.aclose()
         except Exception:
             pass
@@ -779,14 +786,25 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
         return cached
     if os.getenv("ENRICH_INSIGHTS", "1") == "0":
         return insights  # enrichment disabled (tests / config)
+
+    profile_meta: dict = {}
+    if chart.profile_id:
+        prof = session.get(BirthProfile, chart.profile_id)
+        if prof:
+            profile_meta = {"personal_question": prof.personal_question or "",
+                            "focus_areas": list(prof.focus_areas or [])}
+    profile_meta["_patterns"] = insights.get("patterns", [])
     try:
-        enriched = await asyncio.wait_for(
-            enrich_insights_async(chart.chart_json, insights), timeout=7.0)
+        enriched = await enrich_free_preview_async(chart.chart_json, profile_meta)
         if enriched:
-            await _cache_set(enriched)
-            return enriched
+            insights.update(enriched)
+            insights["enriched"] = True
+            insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+            await _cache_set(insights)
+            return insights
     except Exception:
         pass
+    await _cache_set(insights)  # deterministic result also cached (no retry spend)
     return insights
 
 

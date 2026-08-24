@@ -83,9 +83,10 @@
     </div>
   </section>
 
-  <!-- free insights (plan §8): Big Three + rule-engine preview -->
+  <!-- free preview (MASTER W2): answer to YOUR question + 3 patterns + next transit -->
   <section class="glass st-2e500338" >
-    <h2>نکته‌های کوتاه</h2>
+    <h2>پاسخ چارت به سؤال تو</h2>
+    {% if big_three.get('Moon') %}
     <ul class="st-95982eda" >
       <li class="st-4dce153e" >
         <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
@@ -98,13 +99,39 @@
         <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
       </li>
       {% endif %}
-      <template x-for="ins in insights" :key="ins.domain">
-        <li class="st-4dce153e" >
-          <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-sparkles"/></svg></span><span x-text="ins.insight"></span>
-        </li>
-      </template>
     </ul>
-    <p class="muted st-ae75db1b" >برای تحلیل عمیق هر ۱۳ حوزه، گزارش کامل را تهیه کنید.</p>
+    {% endif %}
+    <!-- the user's own question, answered (LLM, cached forever per chart) -->
+    <template x-if="preview.question_answer">
+      <div class="glass st-ad292c1c" style="margin-top:12px;">
+        <b>سؤالی که موقع ساخت چارت پرسیدی:</b>
+        <p class="muted st-ae75db1b" x-text="preview.personal_question"></p>
+        <p style="margin:8px 0 0;" x-text="preview.question_answer"></p>
+      </div>
+    </template>
+    <!-- 3 dominant patterns with astrological evidence -->
+    <template x-for="pat in preview.patterns" :key="pat.evidence + pat.title">
+      <div style="margin-top:10px;">
+        <b x-text="(pat.title || pat.domain_title) + ': '"></b>
+        <span x-text="pat.text || pat.insight"></span>
+        <div class="muted st-ae75db1b" x-text="'شاهد: ' + (pat.evidence || '')"></div>
+      </div>
+    </template>
+    <template x-for="ins in preview.insights" :key="'i' + ins.domain">
+      <div style="margin-top:10px;">
+        <b x-text="ins.domain_title + ': '"></b>
+        <span x-text="ins.insight"></span>
+      </div>
+    </template>
+    <!-- one upcoming transit with date -->
+    <template x-if="preview.next_transit">
+      <p class="muted st-ae75db1b" style="margin-top:12px;" x-text="'⏳ ' + preview.next_transit.headline"></p>
+    </template>
+    <!-- element distribution in one honest line -->
+    <template x-if="preview.element_summary && preview.element_summary.line">
+      <p class="muted st-ae75db1b" x-text="'⚖️ ' + preview.element_summary.line"></p>
+    </template>
+    <p class="muted st-ae75db1b" style="margin-top:12px;">این فقط نگاه اول است. گزارش کامل هر ۱۳ حوزه را جداگانه با شواهد نجومی و پیشنهاد عملی باز می‌کند.</p>
   </section>
 
   <!-- annual transit timeline (plan §9.3) -->
@@ -172,6 +199,7 @@
 function reportState(){
   return {
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
+    preview: { patterns: [], insights: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
       if(this.audioStatus === 'generating' || !this.repId) return;
@@ -208,6 +236,14 @@ function reportState(){
         const p = await fetch('/api/charts/{{ chart.id }}/preview?t={{ access_token }}');
         const pd = await p.json();
         this.insights = (pd.insights || []).slice(0, 5);
+        this.preview = {
+          patterns: pd.patterns || [],
+          insights: pd.insights || [],
+          question_answer: pd.question_answer || '',
+          personal_question: pd.personal_question || '',
+          next_transit: pd.next_transit || null,
+          element_summary: pd.element_summary || null,
+        };
       }catch(_e){}
       const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
       const d = await r.json();
