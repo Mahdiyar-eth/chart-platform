@@ -18,7 +18,6 @@ and report honest coverage + real findings.
 """
 import json
 import os
-import sys
 from pathlib import Path
 
 import urllib.request

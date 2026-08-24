@@ -9,7 +9,6 @@ Output: docs/qa/INTERACTION-INVENTORY.md + .json
 """
 import json
 import os
-import sys
 import urllib.request
 from pathlib import Path
 
@@ -99,7 +98,7 @@ def main():
 
     md = ["# 🤖 سیاههٔ تعاملی — INTERACTION-INVENTORY", "",
           f"> **مخرج:** {len(out)} آیتم تعاملی در {len(PAGES)} صفحهٔ عمومی (حالت مهمان).",
-          f"> این عدد، مخرج همهٔ ادعاهای «کلیک شد» در P2-2 است.",
+          "> این عدد، مخرج همهٔ ادعاهای «کلیک شد» در P2-2 است.",
           "", "| صفحه | آیتمها | تفکیک |"]
     for path in PAGES:
         items = by_page.get(path, [])
