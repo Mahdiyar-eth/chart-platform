@@ -28,16 +28,20 @@
     <span class="st-39654bf1" x-show="couponMsg" x-text="couponMsg"></span>
   </div>
 
-  <!-- ★ جدول واحد اعتباری — هر ردیف: چه میگیری / چند اعتبار / باز کردن -->
-  <h2 class="st-0a50819b">گزارشها — با اعتبار باز کن</h2>
-  <p class="st-80877d75">هر ردیف یک محصول است؛ روی «باز کردن» بزن، اگر اعتبار کافی داشت بلافاصله قفلش باز میشود. اعتبارها هرگز منقضی نمیشوند.</p>
-  <div class="st-8f9ba925">
+  <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار)،
+       نرخ تومانی شفاف بالای جدول، کارت‌های فشرده قابل مقایسه (<3000px) -->
+  <h2 class="st-0a50819b">محصولها — با اعتبار باز کن</h2>
+  <p class="st-80877d75">
+    نرخ مرجع: هر اعتبار ۵۰٬۰۰۰ تومان (پک‌های بالاتر ارزان‌تر میشوند).
+    روی «باز کردن» بزن، اگر اعتبار کافی داشت بلافاصله قفلش باز میشود. اعتبارها هرگز منقضی نمیشوند.
+  </p>
+  <div class="st-8f9ba925 plans-grid" >
     {% for p in credit_products %}
-    <div class="glass" style="flex:1;min-width:260px;max-width:340px;padding:24px 20px;border-radius:20px;display:flex;flex-direction:column;{% if p.action_key == 'report_full' %}border:2px solid var(--gold);{% endif %}">
+    <div class="glass plan-card" style="{% if p.action_key == 'report_full' %}border:2px solid var(--gold);{% endif %}">
       {% if p.action_key == 'report_full' %}<div class="st-8596a042">پیشنهاد ما</div>{% endif %}
-      <h2 class="st-b98bffce">{{ p.title_fa }}</h2>
-      <div class="st-95fed6f6">
-        <span class="st-ef7ba8ad">{{ p.credits }} اعتبار</span>
+      <h2 class="plan-name">{{ p.title_fa }}</h2>
+      <div class="plan-price"><span class="plan-credits">{{ p.credits }}</span> اعتبار
+        <span class="plan-toman">≈ {{ "{:,}".format(p.credits * 50000) }} تومان</span>
       </div>
       <div class="st-c9f42765">
         {% if p.action_key == 'report_basic' %}پاسخ کوتاه به ۵ پرسش اصلی: شخصیت، احساسات، روابط، کار، توانمندی‌ها — هر جمله با شاهد چارت خودت.
@@ -128,6 +132,17 @@
 </div>
 
 <style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+<style>
+/* MASTER W10 — compact comparable product grid */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+.plan-card{padding:22px 18px;border-radius:20px;display:flex;flex-direction:column;}
+/* the NAME is visually dominant; the credit price is secondary (AC-6) */
+.plan-name{font-size:1.35rem;font-weight:800;line-height:1.6;margin:0 0 4px;}
+.plan-price{margin:2px 0 10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.plan-credits{font-size:1rem;font-weight:700;color:var(--gold,#d4af37);}
+.plan-toman{font-size:.78em;opacity:.65;}
+@media (prefers-reduced-motion: reduce){.plans-grid,.plan-card{transition:none!important;animation:none!important;}}
+</style>
 
 <script>
 function purchase() {
