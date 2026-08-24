@@ -1526,24 +1526,33 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
 
 @app.post("/api/synastry/full")
 def api_synastry_full(request: Request, session: Session = Depends(get_session),
-                      chart_a: str = Form(...), chart_b: str = Form(...)):
-    """Full synastry report — requires OWNING both charts AND a paid synastry order (audit r4 A4)."""
+                      chart_a: str = Form(...), chart_b: str = Form(...),
+                      variant: str = Form("love")):
+    """Full synastry — MASTER W8: variant='love'|'work' selects the lens.
+    Requires OWNING both charts AND a paid/credited synastry product (audit r4 A4)."""
     from app.astrology.synastry import synastry
+    if variant not in ("love", "work"):
+        raise HTTPException(400, "variant باید love یا work باشد")
     ca = session.get(Chart, chart_a)
     cb = session.get(Chart, chart_b)
     if not ca or not cb:
         raise HTTPException(404, "chart not found")
     if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
         raise HTTPException(403, "not authorized")
-    paid = session.exec(
+    user = get_current_user(request)
+    action_key = "synastry_love" if variant == "love" else "synastry_work"
+    credited = bool(user and ent_has(session, user.id, "synastry",
+                                     chart_id=chart_a))
+    paid_legacy = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
             Order.chart_id == chart_a, Order.secondary_chart_id == chart_b,
         )
     ).first()
-    if not paid:
-        raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا سیناستری را خریداری کنید")
-    return synastry(ca.chart_json, cb.chart_json)
+    if not credited and not paid_legacy:
+        raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا این سازگاری را خریداری کنید")
+    result = synastry(ca.chart_json, cb.chart_json, variant=variant)
+    return {**result, "action_key": action_key}
 
 
 @app.get("/api/synastry/access")
