@@ -42,8 +42,8 @@
   اضافه و نصبِ بدون pin از `ci.yml` حذف شد (یک انتشار ناسازگار دیگر CI را نمی‌شکند).
 
 ## راستی‌آزمایی
-- سوئیت: ~۷۵۷ تست سبز (۰ fail) · گیت‌های ci.sh (bash -n، compileall، ruff F/E9، drift، brand، bandit، secret، abs-path) ✅
-- **CI از مخزن:** run #… → SUCCESS
+- سوئیت: **۷۵۵ تست سبز** (۰ fail) · گیت‌های ci.sh (bash -n، compileall، ruff F/E9، drift، brand، bandit، secret، abs-path) ✅
+- **CI از مخزن:** run **#32728358075** → **SUCCESS** (755 passed · 3 skipped · `All checks passed!`)
 
 ## مدارک
 - گزارش `docs/reports/HERMES-ROUND9.md` · تست‌های جدید (`test_gold_bundle_r9.py`, `test_article_images_r9.py`) +
