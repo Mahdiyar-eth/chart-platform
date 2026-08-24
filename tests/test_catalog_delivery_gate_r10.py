@@ -43,7 +43,12 @@ def _expected_kinds(action_key: str, title_fa: str) -> set[str]:
     if "چت" in title_fa or action_key.startswith("chat_pack"):
         kinds.add("chat")
         return kinds  # chat packs are the chat product
-    if "گذر" in title_fa or "ماه آینده" in title_fa:
+    # MASTER W6/W7/W8 — the new products have dedicated kinds
+    if action_key == "solar_return" or "سالیانه" in title_fa:
+        kinds.add("solar")
+    if action_key == "relocation" or "مهاجرت" in title_fa:
+        kinds.add("relocation")
+    if ("گذر" in title_fa or "ماه آینده" in title_fa) and not action_key.startswith(("solar", "relocation")):
         kinds.add("transit")
     if "سیناستری" in title_fa or "به هم می‌خوریم" in title_fa or "سازگاری" in title_fa:
         kinds.add("synastry")
