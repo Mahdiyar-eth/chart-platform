@@ -31,8 +31,8 @@
 - **AC-2 (S2):** `test_glossary_inbound_r8` — /articles، /learn، /faq، /signs/{x}، ≥۳ صفحهٔ مقاله، همه ≥۱ لینک ✅
 - **AC-3 (S3):** ۵۰/۵۰ مقاله لینک عمیق `/glossary#<term>`؛ لنگرها بدون escape رندر شد ✅
 - **AC-4 (ضد-یتیمی عمومی):** `test_no_orphan_sitemap_pages` — هر مسیر sitemap از یک قالب لینک ورودی دارد ✅
-- سوئیت: ~۷۴۹ تست سبز · گیت‌های ci.sh (bash -n، compileall، ruff F/E9، drift، brand، bandit، secret، abs-path) ✅
-- **CI از مخزن:** run #… → SUCCESS
+- سوئیت: **۷۴۷ تست سبز** · گیت‌های ci.sh (bash -n، compileall، ruff F/E9، drift، brand، bandit، secret، abs-path) ✅
+- **CI از مخزن:** run **#32678232006** → **SUCCESS** (747 passed · 3 skipped · `All checks passed!`)
 
 ## مدارک
 - گزارش `docs/reports/HERMES-ROUND8.md` · تست‌ها (`test_glossary_inbound_r8.py` + به‌روزرسانی `test_glossary_r7.py` / `test_nav_d1.py`) · `app/seo/glossary.py` (+`link_glossary_terms`) · قالب‌های به‌روزشده
