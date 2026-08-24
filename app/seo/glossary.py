@@ -118,6 +118,55 @@ def build_glossary() -> list[dict]:
     return out
 
 
+def link_glossary_terms(body: list[dict], max_linked: int = 6) -> list[dict]:
+    """R.8 / S3 — deep-link the first occurrence of glossary terms in article body.
+
+    The plan's F3 goal: «هر اصطلاح تخصصی در اولین ظهور، توضیح ساده داشته باشد».
+    We wrap the first occurrence of each glossary term (inside `p` text) with
+    `<a href="/glossary#TERM">…</a>` so a reader meeting «مقارنه» for the first
+    time can jump straight to its anchor. Limited to `max_linked` terms per article
+    so prose doesn't become a link farm. Pure + deterministic → unit-testable.
+    """
+    if not body:
+        return body
+    from app.seo.glossary import build_glossary as _bg  # local import (no cycle)
+
+    terms = [t["term"] for t in _bg() if t["term"]]
+    out = []
+    used: set[str] = set()
+    for block in body:
+        nb = dict(block)
+        if "p" in nb and isinstance(nb["p"], str):
+            linked = nb["p"]
+            for t in terms:
+                if len(used) >= max_linked:
+                    break
+                if t in used:
+                    continue
+                idx = _find_term(linked, t)
+                if idx == -1:
+                    continue
+                linked = linked[:idx] + f'<a href="/glossary#{t}">{t}</a>' + linked[idx + len(t):]
+                used.add(t)
+            nb["p"] = linked
+        out.append(nb)
+    return out
+
+
+def _find_term(text: str, term: str) -> int:
+    """First occurrence of `term` in text NOT already inside an <a …>…</a> tag."""
+    start = 0
+    while True:
+        idx = text.find(term, start)
+        if idx == -1:
+            return -1
+        open_a = text.rfind("<a", 0, idx)
+        close_a = text.rfind("</a>", 0, idx)
+        if open_a == -1 or (close_a != -1 and close_a > open_a):
+            return idx
+        start = idx + 1
+
+
 if __name__ == "__main__":
     g = build_glossary()
     print(f"total terms: {len(g)}")

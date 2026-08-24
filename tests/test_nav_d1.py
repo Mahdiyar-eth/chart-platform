@@ -45,3 +45,15 @@ def test_top_nav_compact_five_to_six():
     for hc in (False, True):
         top = nav_for(has_chart=hc)["top"]
         assert 4 <= len(top) <= 6         # desktop pill must stay compact
+
+
+def test_glossary_in_learning_drawer():
+    """R.8 / S1 — the glossary must be reachable from nav, not an orphan page."""
+    for hc in (False, True):
+        drawer = nav_for(has_chart=hc)["drawer"]
+        for group, items in drawer:
+            if group == "یادگیری":
+                urls = [it.url for it in items]
+                assert "/glossary" in urls, f"glossary missing from یادگیری group: {urls}"
+                return
+        raise AssertionError("یادگیری drawer group not found")
