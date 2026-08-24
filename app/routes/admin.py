@@ -438,7 +438,7 @@ def admin_credit_report(request: Request, session: Session = Depends(get_session
         raise HTTPException(403, "admin only")
     sold = session.exec(select(func.coalesce(func.sum(CreditTransaction.amount), 0)).where(CreditTransaction.amount > 0)).one()
     spent = session.exec(select(func.coalesce(func.sum(-CreditTransaction.amount), 0)).where(CreditTransaction.amount < 0)).one()
-    prices = {p.key: p.credits for p in session.exec(select(CreditPrice)).all()}
+    prices = {p.action_key: p.credits for p in session.exec(select(CreditPrice)).all()}
     by_action = dict(session.exec(select(CreditTransaction.reason, func.count(CreditTransaction.id)).group_by(CreditTransaction.reason)).all())
     return {"credits_sold": int(sold), "credits_spent": int(spent),
             "net": int(sold) - int(spent), "prices": prices,

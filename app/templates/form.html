@@ -55,8 +55,8 @@
 
     <!-- STEP 3: city -->
     <div x-show="step === 3" x-transition>
-      <label>شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
-      <input class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران">
+      <label for="birth-city">شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <input id="birth-city" class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران" aria-label="شهر تولد">
       <div class="st-d2c171b1" >
         <template x-for="c in cities" :key="c.city_fa + c.province_fa">
           <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted st-0da13144" x-text="' (' + c.province_fa + ')'"></span></button>
@@ -76,8 +76,8 @@
 
     <!-- STEP 5: question + submit -->
     <div x-show="step === 5" x-transition>
-      <label>سؤال شخصی (اختیاری)</label>
-      <input class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟">
+      <label for="birth-question">سؤال شخصی (اختیاری)</label>
+      <input id="birth-question" class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟" aria-label="سؤال شخصی">
       <p class="muted st-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
     </div>
 

@@ -952,12 +952,14 @@ def api_purchase(payload: "PurchasePayload", request: Request,
 
 @app.get("/api/credits/me")
 def api_credits_me(request: Request, session: Session = Depends(get_session)):
-    """A4: current user credit balance (401 if not logged in).
-    Drives the appbar credit chip + credit_cta.
-    """
+    """A4: current user credit balance.
+
+    R.9 / Q6 (P3): a guest has no logged-in user — return 200 with balance 0
+    instead of a 401 that logged a console error on EVERY page (the appbar chip
+    called this for guests too)."""
     user = get_current_user(request)
     if not user:
-        raise HTTPException(401, "login required")
+        return {"balance": 0, "currency": "credit", "guest": True}
     return {"balance": balance(session, user.id), "currency": "credit"}
 
 
@@ -1063,6 +1065,9 @@ def api_create_order(
         raise HTTPException(404, "plan not found")
     except ValueError as e:
         raise HTTPException(400, str(e))
+    except ZarinpalError:
+        # R.9 / Q3: gateway outage mid-payment must be a friendly 502, not a raw 500.
+        raise HTTPException(502, "درگاه پرداخت موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید.")
     except RuntimeError as e:
         raise HTTPException(502, str(e))
     return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority,
@@ -2497,6 +2502,33 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
 
     action = f"transit_{months}m"
     from app.credits import InsufficientCredits, refund as _refund, spend
+    # R.9 / Q1 (P1): a gold buyer already owns a transit entitlement for this chart
+    # (report_gold → report+chat+transit). Honour it instead of charging again.
+    _ent = ent_has(session, user.id, "transit", chart_id=chart_id)
+    if _ent:
+        # Consume the bundled transit entitlement (quantity bucket) and proceed to
+        # generate the analysis for free.
+        from app.entitlements import consume as ent_consume
+        ent_consume(session, _ent, 1)
+        from app.astrology.transit_cache import cached_forecast, store_transit_analysis
+        from app.core.llm import build_router
+        from app.report.transit_narrative import narrate_transit
+        events = cached_forecast(session, chart_id, months, chart.chart_json)
+        if isinstance(events, dict):
+            events = events.get("events") or []
+        failed_n = {"n": 0}
+
+        def _on_fail_gold(ev):
+            failed_n["n"] += 1
+
+        narratives, m = narrate_transit(events, chart.chart_json, router=build_router("transit"),
+                                        plan_key=action, on_event_failed=_on_fail_gold)
+        store_transit_analysis(session, chart_id, months, {"narratives": narratives})
+        session.commit()
+        return {"months": months, "events": events, "narratives": narratives,
+                "metrics": {k: v for k, v in m.items() if k != "provider" and not isinstance(v, (set,))},
+                "refunded_events": failed_n["n"],
+                "refunded_credits": None, "entitlement": True}
     try:
         from datetime import datetime as _dt
         _period = _dt.now(timezone.utc).strftime("%Y-%m")  # X2/R2: monthly bucket
