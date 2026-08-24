@@ -50,7 +50,8 @@ jobs:
           python -m venv venv
           venv/bin/pip install --upgrade pip
           venv/bin/pip install -r requirements.txt
-          venv/bin/pip install pytest-cov bandit ruff pip-audit
+          # R.9/Q7: lint/audit tools are now PINNED in requirements.txt, so a future
+          # release can't silently bump them and break CI. No unpinned install here.
           # R4/W5: chart share-card renders via headless Chromium — install it.
           venv/bin/playwright install chromium
           venv/bin/playwright install-deps chromium 2>/dev/null || true

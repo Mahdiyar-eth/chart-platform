@@ -43,7 +43,12 @@ DATABASE_URL
 .env
 
 # Generated FLUX article images (regenerable via scripts/generate_article_images.py)
-app/static/articles/
+# R.9/Q4 (P2): article images were gitignored as "regenerable via FLUX", but that
+# left them only on ONE host — a fresh clone/deploy served 50 broken <img> and
+# og:image (the final audit found every article image 404 on a fresh host). They
+# are small (~5.6MB total) and self-contained, so they live with the code now.
+# (Regenerate with scripts/generate_article_images.py if the set changes.)
+#app/static/articles/
 
 # Umami (analytics) secrets
 deploy/umami.env

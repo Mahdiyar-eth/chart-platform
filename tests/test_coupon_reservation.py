@@ -130,6 +130,26 @@ def test_gateway_down_at_creation_releases_slot(monkeypatch):
         assert cp.used_count == 0, "slot must be released when gateway is down"
 
 
+def test_gateway_constructor_error_is_friendly_502(monkeypatch):
+    """R.9 / Q3 (P2): a ZarinpalError from the CONSTRUCTOR (no merchant id / bad
+    config) must surface as a friendly 502, not a raw 500 (ZarinpalError previously
+    extended bare Exception and escaped the create_order try/except)."""
+    class BadConfigZP:
+        def __init__(self):
+            from app.payment.zarinpal import ZarinpalError
+            raise ZarinpalError("ZARINPAL_MERCHANT_ID is not set")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", BadConfigZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", BadConfigZP)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    c.cookies.update({"chart_access": json.dumps({cid: tok})})
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold"})
+    assert r.status_code == 502, r.status_code
+    assert "درگاه" in r.text or "دوباره" in r.text  # friendly Persian message, not 500 detail
+
+
+
 def test_refund_returns_slot(monkeypatch):
     """Admin refund of a paid coupon order returns the reserved slot."""
     monkeypatch.setattr("app.main.ZarinpalClient", FakeZP)

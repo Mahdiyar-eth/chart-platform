@@ -89,7 +89,27 @@ def _action_quantity(action_key: str) -> int:
     return _QUANTITY_BY_ACTION.get(action_key, 1)
 
 
-_EXPIRY_DAYS_BY_KIND = {"chat": 30}  # X6/R7: product promise "بستهٔ ۳۰ روزه"
+# R.9 / Q1 (P1): a single purchase may grant MULTIPLE entitlement kinds. The
+# catalogue sells "report_gold" as «گزارش ۱۳بخشه + چت ۳۰روزه + گذر ۱۲ماهه», but
+# _kind_for_action collapsed it to just "report" — so a gold buyer (14 credits)
+# got only what a full (7 credits) buyer got, and had to RE-pay for transit.
+# This maps a credit action to the full set of kinds it unlocks.
+_MULTI_KIND_BY_ACTION = {
+    "report_gold": ["report", "chat", "transit"],
+}
+
+# Kind → lifetime (days) for the gold-bundle entitlements. chat is a 30-day pack
+# (existing promise); transit in the gold bundle is the 12-month forecast.
+_EXPIRY_DAYS = {"chat": 30}
+_EXPIRY_DAYS_BY_KIND = _EXPIRY_DAYS  # alias (back-compat)
+
+
+def _kinds_for_action(action_key: str) -> list[str]:
+    """Kinds granted by a credit action — may be >1 (e.g. report_gold)."""
+    multi = _MULTI_KIND_BY_ACTION.get(action_key)
+    if multi:
+        return multi
+    return [_kind_for_action(action_key)]
 
 
 def _expiry_for_kind(kind: str):
@@ -113,30 +133,40 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
 
     tx = spend(session, user_id, action_key, idempotency_key=idempotency_key,
                chart_id=chart_id, commit=False)  # X4/R6: single atomic commit below
-    # kind is derived from the action_key (e.g. report_full -> 'report')
-    kind = _kind_for_action(action_key)
-    existing = session.exec(
-        select(Entitlement).where(
-            Entitlement.source == "credit",
-            Entitlement.source_ref == tx.id,
+    # R.9 / Q1: one action may grant several kinds (report_gold → report+chat+transit).
+    kinds = _kinds_for_action(action_key)
+    first = None
+    for kind in kinds:
+        existing = session.exec(
+            select(Entitlement).where(
+                Entitlement.source == "credit",
+                Entitlement.source_ref == tx.id,
+                Entitlement.kind == kind,
+            )
+        ).first()
+        if existing:
+            if first is None:
+                first = existing
+            continue
+        # chat in a bundle is a 30-day pack; transit is the single 12-month analysis
+        qty = _action_quantity(action_key) if quantity is None else quantity
+        ent = Entitlement(
+            user_id=user_id, kind=kind, chart_id=chart_id,
+            ref_id=ref_id, quantity=qty, used=0,
+            source="credit", source_ref=tx.id,
+            expires_at=_expiry_for_kind(kind),  # chat=30d; report/transit=None
         )
-    ).first()
-    if existing:
-        return existing
-    ent = Entitlement(
-        user_id=user_id, kind=kind, chart_id=chart_id,
-        ref_id=ref_id, quantity=_action_quantity(action_key) if quantity is None else quantity, used=0,
-        source="credit", source_ref=tx.id,
-        expires_at=_expiry_for_kind(kind),  # X6/R7: packs expire (chat pack = 30d)
-    )
-    session.add(ent)
+        session.add(ent)
+        if first is None:
+            first = ent
     try:
-        session.commit()  # X4/R6: credits decrement + entitlement in ONE commit
+        session.commit()  # X4/R6: credits decrement + entitlement(s) in ONE commit
     except Exception:
         session.rollback()
         raise
-    session.refresh(ent)
-    return ent
+    if first is not None:
+        session.refresh(first)
+    return first
 
 
 def grant_from_order(session: Session, order: Order) -> Entitlement | None:
