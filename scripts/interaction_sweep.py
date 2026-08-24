@@ -69,11 +69,11 @@ def _collect_controls(page, path):
 
 
 def _click_outcome(page, el):
-    """R10/R1 — click and observe the WHOLE page + network, not a 300-char slice.
+    """R10/R1+R2/S2 — click and observe ONLY user-perceivable changes.
 
-    The reviewer caught the old version only comparing the first 300 chars of
-    <body>, so any toast / late-DOM change / bottom-of-page update read as DEAD.
-    Now we compare the full body HTML + watch network requests + URL + toast nodes.
+    S2 fix: a raw HTML diff (hidden attribute / class toggle) must NOT be OK.
+    Only visible text, toast/dialog, network activity or navigation counts.
+    The old version returned OK on any DOM HTML change, even invisible.
     """
     errors_before = []
     requests = []
@@ -81,14 +81,14 @@ def _click_outcome(page, el):
     page.on("request", lambda r: requests.append(r.url) if "api" in r.url else None)
     try:
         before_url = page.url
-        before_html = (page.inner_html("body") or "")
-        before_text_len = len(page.inner_text("body") or "")
+        before_text = (page.inner_text("body") or "").strip()
+        before_text_len = len(before_text)
         before_toasts = page.locator(".toast, [role=alert], [role=dialog]").count()
         el.click(timeout=2500)
         page.wait_for_timeout(500)
         after_url = page.url
-        after_html = (page.inner_html("body") or "")
-        after_text_len = len(page.inner_text("body") or "")
+        after_text = (page.inner_text("body") or "").strip()
+        after_text_len = len(after_text)
         after_toasts = page.locator(".toast, [role=alert], [role=dialog]").count()
         errors = errors_before
         # navigation happened?
@@ -97,17 +97,17 @@ def _click_outcome(page, el):
             if resp in (500, 404):
                 return ("BROKEN", f"nav→{resp} {after_url}")
             return ("OK", f"nav→{after_url}")
-        # ANY DOM change (full body HTML, not a slice) → the click did something.
-        if after_html != before_html:
-            return ("OK", "DOM changed")
-        # network activity that isn't the initial page-load path → live action
-        if requests:
-            return ("OK", "network: " + requests[-1][:80])
-        # a toast/alert/dialog node APPEARED (compare before/after count)?
+        # user-perceivable: toast/dialog node appeared
         if after_toasts > before_toasts:
             return ("OK", "toast/dialog appeared")
+        # user-perceivable: visible text changed (length or content)
         if after_text_len != before_text_len:
-            return ("OK", "text length changed")
+            return ("OK", "visible text changed")
+        if after_text != before_text:
+            return ("OK", "visible text changed")
+        # network activity (API call) — live action even without visible change yet
+        if requests:
+            return ("OK", "network: " + requests[-1][:80])
         if errors:
             return ("BROKEN", "; ".join(errors[:2]))
         return ("DEAD", "click: no observable change")
