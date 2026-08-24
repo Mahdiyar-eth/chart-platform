@@ -2,26 +2,37 @@
 {% block title %}داشبورد | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-c3ccaf1c" >
-  <div class="st-5aa6e94e" >
-    <h1 class="st-aa57f901" >
-      امروز در چارت تو چه خبر است؟
-    </h1>
-    <p class="muted st-bc2db4a1" >
-      خوش آمدی، {{ user.phone }} — بینش روزانه، گذرها و همهٔ ابزارها در یک نگاه.
-    </p>
+<div class="st-c3ccaf1c" x-data="{ person: '' }">
+  <!-- MASTER W9 header: greeting + Jalali/Tehran date + multi-person switcher -->
+  <div class="glass st-5aa6e94e" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+    <div>
+      <h1 class="st-aa57f901" style="margin:0;">سلام، {{ user.phone or "دوست من" }} 👋</h1>
+      <p class="muted st-bc2db4a1" style="margin:6px 0 0;" x-text="person || 'امروز در چارت تو چه خبر است؟'"></p>
+      {% if today_fa %}<p class="muted st-bc2db4a1" style="margin:2px 0 0;">📅 {{ today_fa }}</p>{% endif %}
+    </div>
+    <div style="min-width:200px;" x-show="people.length" x-cloak>
+      <label class="muted st-bc2db4a1" for="peopleSwitcher">چارت فعال</label>
+      <select id="peopleSwitcher" class="input st-8c0b5cf4" style="width:100%;"
+              x-data="peopleInit()" x-init="people = peopleList(); person = people.length ? people[0].label : ''"
+              @change="goTo($event.target)">
+        <template x-for="pp in people" :key="pp.id">
+          <option :value="pp.chart_id" x-text="pp.label"></option>
+        </template>
+        <option value="__add__">+ افزودن نفر جدید</option>
+      </select>
+    </div>
   </div>
 
-  <!-- G4: onboarding checklist (localStorage-persisted, dismissable) -->
+  <!-- G4: onboarding checklist -->
   <div class="glass onboard-card" x-data="{open: localStorage.getItem('ob_done') !== '1'}" x-show="open" x-cloak>
     <div class="onboard-head">
       <b>سه قدم تا شناخت کامل</b>
       <button class="onboard-x" type="button" aria-label="بستن" @click="localStorage.setItem('ob_done','1'); open=false">✕</button>
     </div>
     <ol class="onboard-list">
-      <li><span>اولین کاوش رایگان چارتت را ببین</span> <a class="btn btn-sm" href="/explore">شروع</a></li>
+      <li><span>اولین «یک سؤال، یک جواب» رایگان چارتت را ببین</span> <a class="btn btn-sm" href="/explore">شروع</a></li>
       <li><span>از چارتت یک سؤال بپرس</span> <a class="btn btn-sm" href="/dashboard">گفت‌وگو</a></li>
-      <li><span>گزارش عمیق ۱۳ بخشی را فعال کن</span> <a class="btn btn-sm" href="/plans">پلن‌ها</a></li>
+      <li><span>«شناخت کامل» ۱۳ بخشی را باز کن</span> <a class="btn btn-sm" href="/plans">محصولات</a></li>
     </ol>
   </div>
 
@@ -31,22 +42,37 @@
     <a href="/birth-form" class="btn btn-lg st-8bb9d55e" >ساخت چارت رایگان</a>
   </div>
   {% else %}
+
+  <!-- امروزِ تو teaser (free daily layer, W5) -->
   {% if daily and daily.headline %}
   <a href="/today" class="glass glow st-8080a2b6" >
     <div class="st-6ed8e93b" >
       <svg class="st-d3038558" aria-hidden="true"><use href="#icon-sun"/></svg>
       <div>
-        <div class="st-0b5df111" >امروز در چارت تو — {{ daily.date or '' }}</div>
+        <div class="st-0b5df111" >امروزِ تو{% if daily.date %} — {{ daily.date }}{% endif %}</div>
         <div class="st-d69aeccd" >{{ daily.headline }}</div>
-        <div class="muted st-9bb4061a" >باز کردن «امروز» ←</div>
+        <div class="muted st-9bb4061a" >پنج کارت تأملی امروز ←</div>
       </div>
     </div>
   </a>
   {% endif %}
 
-  <div class="st-357e321d" >
-    {% for c in cards %}
-    <a href="{{ c.url }}" class="glass st-889c67d2" >
+  <!-- W9: compact 2-column grid — deep analyses then periodic tools -->
+  <h2 class="muted" style="font-size:1rem;margin:18px 4px 8px;">تحلیل‌های عمیق</h2>
+  <div class="dash-grid" >
+    {% for c in deep_cards %}
+    <a href="{{ c.url }}" class="glass dash-card" >
+      <svg class="st-4a808a1f" aria-hidden="true"><use href="#icon-{{ c.icon }}"/></svg>
+      <b class="st-551f5233" >{{ c.title }}</b>
+      <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <h2 class="muted" style="font-size:1rem;margin:18px 4px 8px;">دوره‌ای و ابزارها</h2>
+  <div class="dash-grid" >
+    {% for c in periodic_cards %}
+    <a href="{{ c.url }}" class="glass dash-card" >
       <svg class="st-4a808a1f" aria-hidden="true"><use href="#icon-{{ c.icon }}"/></svg>
       <b class="st-551f5233" >{{ c.title }}</b>
       <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
@@ -59,4 +85,23 @@
   </p>
   {% endif %}
 </div>
+
+<script>
+const _people = {{ people_json|safe }};
+function peopleInit() {
+  return { people: _people };
+}
+function goTo(sel) {
+  const v = sel.value;
+  if (v === '__add__') { location.href = '/birth-form'; return; }
+  if (v) location.href = '/chart/' + v;
+}
+</script>
+<style>
+/* W9 compact two-column grid — collapses to one column on small screens */
+.dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+@media (max-width:480px){.dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}}
+.dash-card{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:16px;min-height:96px;}
+@media (prefers-reduced-motion: reduce){.dash-card,.dash-grid{transition:none!important;animation:none!important;}}
+</style>
 {% endblock %}

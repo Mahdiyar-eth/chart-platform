@@ -2165,8 +2165,10 @@ async def bale_webhook(secret: str, request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard_page(request: Request, session: Session = Depends(get_session)):
-    """G15 (§22) — dashboard as the primary product: hero «امروز در چارت تو
-    چه خبر است؟» + 8 retention cards. Login-gated; chart-less users get a CTA."""
+    """G15 (§22) + MASTER W9 — dashboard as the primary product:
+    greeting + Persian (Jalali/Tehran) date, multi-person chart switcher,
+    «امروزِ تو» teaser and a compact 2-column grid of deep-analysis /
+    periodic cards. Login-gated; chart-less users get a CTA."""
     u = get_current_user(request)
     if not u:
         return RedirectResponse("/account/login?next=/dashboard", status_code=303)
@@ -2174,6 +2176,14 @@ def dashboard_page(request: Request, session: Session = Depends(get_session)):
     profile_ids = [p.id for p in profiles]
     charts = (session.exec(select(Chart).where(Chart.profile_id.in_(profile_ids))
                            .order_by(Chart.created_at.desc())).all() if profile_ids else [])
+    # W9 multi-person switcher meta: one entry per PROFILE (person), not per chart
+    people = []
+    for p in profiles:
+        ch = next((c for c in charts if c.profile_id == p.id), None)
+        people.append({"id": p.id,
+                       "name": p.name or "بدون نام",
+                       "chart_id": ch.id if ch else "",
+                       "label": f"{p.name or 'بدون نام'} — {p.raw_year}/{p.raw_month}/{p.raw_day}"})
     chart_ids = [c.id for c in charts]
     reports = (session.exec(select(Report).where(Report.chart_id.in_(chart_ids))
                             .order_by(Report.created_at.desc())).all() if chart_ids else [])
@@ -2184,31 +2194,45 @@ def dashboard_page(request: Request, session: Session = Depends(get_session)):
         from app.today.service import today_status
         try:
             st = today_status(session, charts[0])
-            daily = {"date": st.get("date_fa") if st else None,
-                     "headline": (st.get("daily") or {}).get("headline") if st else None}
+            daily = {"date": st.get("today_label") if st else None,
+                     "headline": (st.get("question") or "")[:90] if st else None}
         except Exception:  # noqa: BLE001 — dashboard must never 500 on a service hiccup
             daily = None
-    cards = [
-        {"key": "today", "title": "امروز در چارت تو", "desc": "بینش روزانه بر اساس چارت تولدت",
-         "url": "/today", "icon": "sun"},
-        {"key": "weekly", "title": "نگاهی به آسمان هفته", "desc": "تأمل هفتگی و گذرهای پیش رو",
-         "url": "/today?view=week", "icon": "moon"},
-        {"key": "chat", "title": "گفت‌وگو با چارت", "desc": "سؤال بپرس؛ پاسخ از گزارش و چارت تو",
-         "url": f"/chat/{charts[0].id}" if charts else "/birth-form", "icon": "chat"},
-        {"key": "explore", "title": "خودت را کشف کن", "desc": "کاوش تعاملی شخصیت و مسیر زندگی",
+    from app.timeutil import jalali_today_label
+    try:
+        today_fa = jalali_today_label()
+    except Exception:  # noqa: BLE001
+        today_fa = ""
+    newest = charts[0].id if charts else ""
+    deep_cards = [
+        {"key": "explore", "title": "یک سؤال، یک جواب", "desc": "پاسخ کوتاه به یک پرسش مشخص از چارتت",
          "url": "/explore", "icon": "compass"},
-        {"key": "reports", "title": "گزارش‌ها", "desc": f"{len(done)} گزارش آماده — دانلود PDF",
+        {"key": "chat", "title": "از چارتت بپرس", "desc": "گفت‌وگوی شخصی با هوش مصنوعی روی چارت تو",
+         "url": f"/chat/{newest}" if newest else "/birth-form", "icon": "chat"},
+        {"key": "reports", "title": "شناخت کامل", "desc": f"{len(done)} گزارش آماده — دانلود PDF",
          "url": "/account", "icon": "book"},
-        {"key": "synastry", "title": "سازگاری دو چارت", "desc": "سیناستری با شریک زندگی‌ات",
+        {"key": "synastry", "title": "سازگاری دو نفر", "desc": "عاطفی یا کاری — با شاهد نجومی",
          "url": "/synastry", "icon": "heart"},
-        {"key": "wallet", "title": "کیف پول", "desc": f"{u.credits} اعتبار — دعوت دوستان",
-         "url": "/account", "icon": "wallet"},
-        {"key": "plans", "title": "پلن‌ها", "desc": "گزارش کامل، طلایی و اشتراک",
+        {"key": "solar", "title": "چارت سالیانه", "desc": "سال تولد تا تولد بعدی — تم و گذرهای کلیدی",
+         "url": f"/solar/{newest}" if newest else "/plans", "icon": "sun"},
+        {"key": "relocation", "title": "چارت مهاجرت", "desc": "کدام شهر برای کدام بخش زندگی‌ات",
+         "url": f"/relocation/{newest}" if newest else "/birth-form", "icon": "compass"},
+    ]
+    periodic_cards = [
+        {"key": "transit12", "title": "۱۲ ماه آیندهٔ من", "desc": "مهم‌ترین گذرهای سال با تاریخ دقیق",
+         "url": f"/transit/{newest}" if newest else "/birth-form", "icon": "moon"},
+        {"key": "audio", "title": "گزارش صوتی", "desc": "گزارشت را گوش کن",
+         "url": "/account", "icon": "sparkles"},
+        {"key": "credits", "title": "اعتبار و دعوت دوستان", "desc": f"{u.credits} اعتبار",
+         "url": "/credits", "icon": "wallet"},
+        {"key": "products", "title": "همهٔ محصولات", "desc": "با اعتبار باز کن",
          "url": "/plans", "icon": "sparkles"},
     ]
     return templates.TemplateResponse(request, "dashboard.html", {
         "title": "داشبورد — زایچه", "user": u, "charts": charts,
-        "daily": daily, "cards": cards, "reports_done": len(done),
+        "people_json": _safe_json(people), "daily": daily, "today_fa": today_fa,
+        "deep_cards": deep_cards, "periodic_cards": periodic_cards,
+        "reports_done": len(done),
     })
 
 
