@@ -1,98 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
-{% set audience = {
-  'basic': 'اگر تازه‌کار هستی و می‌خواهی با چارتت و سه‌گانه‌ی اصلی‌ات آشنا شوی',
-  'full': 'اگر شناخت عمیق و قابل ردیابی از همه‌ی جنبه‌های زندگی‌ات می‌خواهی',
-  'gold': 'اگر علاوه بر گزارش کامل، گفت‌وگوی شخصی با هوش مصنوعی و گذرهای آینده را می‌خواهی',
-  'synastry': 'اگر می‌خواهی سازگاری رابطه‌ات را با شریک، همسر یا همکارت بسنجی',
-  'monthly': 'اگر می‌خواهی هر هفته نگاهی به آسمان و تأمل هفتگی داشته باشی'
-} %}
-{% set report_plans = plans | rejectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
+{# R.10 / P1-2 (A4 de-narrowing): UNIFIED credit table instead of parallel toman plans.
+   The back-end is credit-based (POST /api/purchase), but this page still sold
+   basic/full/gold as toman plans via /api/orders — "two parallel money systems".
+   Now: the main table lists credit PRODUCTS from credit_prices; each row buys via
+   /api/purchase. Credit packs (the ONLY place toman appears) stay; the monthly/
+   yearly subscription is a distinct product shown separately. #}
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
+{% set subs = plans | selectattr('key', 'in', ['monthly','yearly']) | list %}
 <div class="st-8c4cf147" x-data="purchase()">
-  <h1 class="st-64374dd7" >پلن‌های گزارش چارت تولد</h1>
-  <p class="st-7e8899c5" >
-    همه‌ی پلن‌ها بر اساس چارتِ محاسبه‌شده‌ی خودت تولید می‌شوند. اول رایگان چارت بساز و پیش‌نمایش را ببین، بعد انتخاب کن.
+  <h1 class="st-64374dd7">پلنها و گزارش چارت تولد</h1>
+  <p class="st-7e8899c5">
+    همهٔ گزارشها از روی همان چارتِ رایگانِ خودت تولید میشوند. اول چارت رایگان بساز و پیشنمایش را ببین، بعد با اعتبار باز کن.
   </p>
-  <div class="st-63b0a75d" >
+
+  <div class="st-63b0a75d">
     <a href="/birth-form" class="btn btn-lg"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان بساز</a>
   </div>
 
-  <div class="glass st-ad292c1c" x-show="true" >
-    <input class="input st-1f9c58e5" x-model="coupon" @input="couponMsg=''"
-           placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr"
-           >
-    <button class="btn st-ffe01040" @click="applyCoupon()" >اعمال</button>
-    <span class="st-39654bf1" x-show="couponMsg" x-text="couponMsg" ></span>
+  {% if user %}
+  <div class="glass st-a611c9c1">
+    <b>موجودی اعتبار شما:</b> <span class="st-ef7ba8ad">{{ user_balance }} اعتبار</span>
+    • <a class="st-6aa99fbc link-tap" href="/credits">خرید اعتبار</a>
+  </div>
+  {% endif %}
+
+  <div class="glass st-ad292c1c">
+    <input class="input st-1f9c58e5" x-model="coupon" @input="couponMsg=''" placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr">
+    <button class="btn st-ffe01040" @click="applyCoupon()">اعمال</button>
+    <span class="st-39654bf1" x-show="couponMsg" x-text="couponMsg"></span>
   </div>
 
-  <div class="st-8f9ba925" >
-
-    {% for p in report_plans %}
-    <div class="glass" style="flex:1;min-width:260px;max-width:320px;padding:26px 22px;border-radius:20px;position:relative;display:flex;flex-direction:column;{% if p.key == 'full' %}border:2px solid var(--gold);{% endif %}">
-      {% if p.key == 'full' %}<div class="st-8596a042" >پیشنهاد ما</div>{% endif %}
-      <h2 class="st-b98bffce" >{{ p.name_fa }}</h2>
-      <p class="st-75a458ba" >{{ p.subtitle_fa }}</p>
-      <div class="st-95fed6f6" >
-        {{ "{:,}".format(p.price_toman) }} <span class="st-77abc5c7" >تومان</span>
+  <!-- ★ جدول واحد اعتباری — هر ردیف: چه میگیری / چند اعتبار / باز کردن -->
+  <h2 class="st-0a50819b">گزارشها — با اعتبار باز کن</h2>
+  <p class="st-80877d75">هر ردیف یک محصول است؛ روی «باز کردن» بزن، اگر اعتبار کافی داشت بلافاصله قفلش باز میشود. اعتبارها هرگز منقضی نمیشوند.</p>
+  <div class="st-8f9ba925">
+    {% for p in credit_products %}
+    <div class="glass" style="flex:1;min-width:260px;max-width:340px;padding:24px 20px;border-radius:20px;display:flex;flex-direction:column;{% if p.action_key == 'report_full' %}border:2px solid var(--gold);{% endif %}">
+      {% if p.action_key == 'report_full' %}<div class="st-8596a042">پیشنهاد ما</div>{% endif %}
+      <h2 class="st-b98bffce">{{ p.title_fa }}</h2>
+      <div class="st-95fed6f6">
+        <span class="st-ef7ba8ad">{{ p.credits }} اعتبار</span>
       </div>
-      <div class="st-c9f42765" >{{ audience.get(p.key, '') }}</div>
-      <ul class="st-8d0b247b" >
-        {% for f in p.features %}
-        <li class="st-4428f346" >
-          <svg class="st-3b513b2f" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
-        </li>
-        {% endfor %}
-      </ul>
-      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected"
-              style="width:100%;{% if p.key == 'full' %}background:linear-gradient(135deg,#f5c518,#e08e0b);{% endif %}">
-        خرید {{ p.name_fa }}
-      </button>
-      <button x-show="walletLoaded && balance !== null && balance >= {{ p.price_rial }}"
-              @click="buy('{{ p.key }}', true)"
-              class="btn st-02f80eba"
-              >
-        <svg class="st-ab26a349" aria-hidden="true"><use href="#icon-wallet"/></svg>
-        پرداخت با موجودی کیف پول
+      <div class="st-c9f42765">
+        {% if p.action_key == 'report_basic' %}پنج بخش اصلی؛ برای آشنایی سریع با چارتت.
+        {% elif p.action_key == 'report_full' %}هر ۱۳ بخش با شواهد نجومی؛ عمیقترین گزارش.
+        {% elif p.action_key == 'report_gold' %}گزارش کامل + چت ۳۰روزه + گذرهای ۱۲ ماهه.
+        {% elif p.action_key == 'synastry_full' %}سازگاری دو چارت در ۴ حوزه + ۲۵ ارتباط سیارهای.
+        {% elif p.action_key == 'transit_3m' %}تحلیل گذرهای ۳ ماه آینده روی چارتت.
+        {% elif p.action_key == 'transit_12m' %}تحلیل گذرهای ۱۲ ماه آینده؛ مهمترینها بالای لیست.
+        {% elif p.action_key == 'chat_pack_20' %}۲۰ پیام گفتوگوی شخصی با هوش مصنوعی (۳۰ روزه).
+        {% elif p.action_key == 'report_audio' %}نسخهٔ صوتی همان گزارش برای گوش دادن.
+        {% else %}{{ p.title_fa }}.{% endif %}
+      </div>
+      <button class="btn btn-lg btn-accent" @click="buyCredit('{{ p.action_key }}')" data-track="pack_selected"
+              style="width:100%;margin-top:auto;">
+        باز کردن با {{ p.credits }} اعتبار
       </button>
     </div>
     {% endfor %}
-
   </div>
 
-  <div class="glass st-62240463" >
-    <h2 class="st-fccfd422" >
-      <svg class="st-a1ddd4d1" aria-hidden="true"><use href="#icon-heart"/></svg>
-      تحلیل سازگاری دو چارت (سیناستری)
-    </h2>
-    <p class="st-075ea2e7" >سنجش هم‌راستایی سیارات شما و شریک زندگی‌تان: ۴ حوزه (عشق، ذهن، کار، معنا) + ۲۵+ ارتباط سیاره‌ای + تفسیر اختصاصی. محصولی مستقل — بدون نیاز به گزارش کامل.</p>
-    <div class="st-15825bd6" >
-      ۴۹۹,۰۰۰ <span class="st-77abc5c7" >تومان</span>
-    </div>
-    <a class="btn btn-lg st-0466783d" href="/synastry" >شروع سیناستری (نمرهٔ کلی رایگان)</a>
-    <p class="muted st-c5b59991" >اول نمره و خلاصه را رایگان ببین؛ تحلیل کامل پس از پرداخت.</p>
-  </div>
-
+  <!-- بستههای اعتبار — تنها جایی که تومان دیده میشود -->
   {% if credit_packs %}
-  <h2 class="st-0a50819b" >پک اعتبار کاوش</h2>
-  <p class="st-80877d75" >
-    هر کاوش در «خودت را کشف کن» ۱ اعتبار می‌خواهد. اعتبارت <b class="st-ef7ba8ad" >هرگز منقضی نمی‌شود</b> — هرچه بخواهی نگهش می‌داری.
-  </p>
-  <div class="st-8f9ba925" >
+  <h2 class="st-0a50819b">پک اعتبار <span class="st-77abc5c7">(با تومان)</span></h2>
+  <div class="st-8f9ba925">
     {% for p in credit_packs %}
-    <div class="glass st-d28a5047" >
-      <div class="st-7e3e28e0" >{{ p.credits_grant }}<span class="st-ac546e71" > اعتبار</span></div>
-      <div class="st-88bea0ed" >
-        {{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7" >تومان</span>
-      </div>
-      <ul class="st-c695199b" >
-        {% for f in p.features %}
-        <li class="st-a68febc0" >
-          <svg class="st-b802c325" aria-hidden="true"><use href="#icon-check"/></svg><span>{{ f }}</span>
-        </li>
-        {% endfor %}
-      </ul>
-      <button class="btn btn-lg btn-accent" @click="buy('{{ p.key }}')" data-track="pack_selected" >
+    <div class="glass st-d28a5047">
+      <div class="st-7e3e28e0">{{ p.credits_grant }}<span class="st-ac546e71"> اعتبار</span></div>
+      <div class="st-88bea0ed">{{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7">تومان</span></div>
+      <button class="btn btn-lg btn-accent" @click="buy('{{ p.key }}')" data-track="pack_selected">
         خرید پک {{ p.credits_grant }}تایی
       </button>
     </div>
@@ -100,75 +77,75 @@
   </div>
   {% endif %}
 
-  <p class="st-54402d71" >
-    پرداخت امن از طریق درگاه زرین‌پال — بلافاصله پس از پرداخت، گزارش شما تولید می‌شود.
+  <!-- اشتراک ماهانه/سالانه — محصول متفاوت، جدا و واضح -->
+  {% if subs %}
+  <h2 class="st-0a50819b">اشتراک (تأمل هفتگی و آسمانِ هفته)</h2>
+  <div class="st-8f9ba925">
+    {% for p in subs %}
+    <div class="glass st-d28a5047">
+      <h3 class="st-b98bffce">{{ p.name_fa }}</h3>
+      <div class="st-88bea0ed">{{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7">تومان</span></div>
+      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected">خرید اشتراک</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <p class="st-54402d71">
+    پرداخت امن از طریق درگاه زرینپال — بلافاصله پس از پرداخت، گزارش شما تولید میشود.
   </p>
 
-  <div class="st-8420aeac" >
-    <h2 class="st-ad331caf" >سؤالات پرتکرار درباره پلن‌ها</h2>
-    <div class="glass st-83980512" >
-      <b class="st-b9f81216" >فرق پلن کامل و طلایی چیست؟</b>
-      <p class="st-74e1d4ce" >پلن کامل همان گزارش ۱۳ بخشی با شواهد نجومی است. پلن طلایی همه‌ی آن را دارد، به‌علاوه‌ی گفت‌وگوی شخصی با هوش مصنوعی درباره‌ی چارتت (۵ سوال در روز)، فصل فرهنگی-اسلامی و نقشه‌ی گذرهای ۴ ماه آینده.</p>
+  <div class="st-8420aeac">
+    <h2 class="st-ad331caf">سؤالات پرتکرار درباره پلنها</h2>
+    <div class="glass st-83980512">
+      <b class="st-b9f81216">فرق گزارش کامل و طلایی چیست؟</b>
+      <p class="st-74e1d4ce">هر دو همان ۱۳ بخش گزارش کامل با شواهد نجومی هستند. گزارش طلایی بهعلاوهٔ گفتوگوی شخصی با هوش مصنوعی دربارهٔ چارتت (۳۰ روزه) و نقشهٔ گذرهای ۱۲ ماهه را هم میدهد.</p>
     </div>
-    <div class="glass st-83980512" >
-      <b class="st-b9f81216" >سیناستری جداگانه است؟</b>
-      <p class="st-74e1d4ce" >بله. سیناستری (سنجش سازگاری دو چارت) یک محصول مستقل است و نیازی به خرید گزارش کامل ندارد. اول می‌توانی نمره‌ی کلی را رایگان ببینی.</p>
+    <div class="glass st-83980512">
+      <b class="st-b9f81216">اعتبار چطور کار میکند؟</b>
+      <p class="st-74e1d4ce">اعتبار یک واحد داخلی است؛ با پکهای تومانی میخری و برای باز کردن هر محصول (گزارش، گذر، چت، سیناستری) خرج میکنی. هرگز منقضی نمیشود.</p>
     </div>
-    <div class="glass st-bb1d98a1" >
-      <b class="st-b9f81216" >اگر پلن پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
-      <p class="st-74e1d4ce" >چارت و گزارش‌هایت ذخیره می‌مانند. کافیست پلن بالاتر را بخری؛ گزارش کامل‌تر روی همان چارت تولید می‌شود.</p>
+    <div class="glass st-83980512">
+      <b class="st-b9f81216">اگر گزارش پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
+      <p class="st-74e1d4ce">چارت و گزارشهایت ذخیره میمانند. کافیست گزارش بالاتر را هم با اعتبار باز کنی؛ کاملتر روی همان چارت تولید میشود.</p>
     </div>
-    <div class="glass st-20feeded" >
-      <b class="st-0e08cf41" >کد تخفیف شروع: LANCH20</b>
-      <p class="st-74e1d4ce" >۲۰٪ تخفیف روی اولین گزارش عمیق (پایه، کامل یا طلایی). در مرحله‌ی پرداخت کد را وارد کن — فقط یک بار، برای اولین گزارشت.</p>
+    <div class="glass st-20feeded">
+      <b class="st-0e08cf41">کد تخفیف شروع: LANCH20</b>
+      <p class="st-74e1d4ce">۲۰٪ تخفیف روی اولین خرید. در مرحلهٔ پرداخت کد را وارد کن — فقط یک بار.</p>
     </div>
-    <div class="glass st-df1a6875" >
-      <b class="st-b9f81216" >تولید گزارش چقدر طول می‌کشد؟</b>
-      <p class="st-74e1d4ce" >معمولاً ۳ تا ۵ دقیقه. می‌توانی صفحه را ببندی؛ به‌محض آماده شدن، گزارش در «حساب من» و (اگر اشتراک اعلان دادی) با نوتیفیکیشن در دسترس است.</p>
+    <div class="glass st-df1a6875">
+      <b class="st-b9f81216">تولید گزارش چقدر طول میکشد؟</b>
+      <p class="st-74e1d4ce">معمولاً ۳ تا ۵ دقیقه. صفحه را ببند؛ بهمحض آماده شدن، گزارش در «حساب من» و با نوتیفیکیشن در دسترس است.</p>
     </div>
-    <div class="glass st-df1a6875" >
-      <b class="st-b9f81216" >اگر از نتیجه راضی نبودم؟</b>
-      <p class="st-74e1d4ce" >تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده می‌شود. کافیست از صفحهٔ <a class="st-6aa99fbc link-tap" href="/refund" >شرایط بازگشت وجه</a> درخواست ثبت کنی.</p>
+    <div class="glass st-df1a6875">
+      <b class="st-b9f81216">اگر از نتیجه راضی نبودم؟</b>
+      <p class="st-74e1d4ce">تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده میشود. از صفحهٔ <a class="st-6aa99fbc link-tap" href="/refund">شرایط بازگشت وجه</a> درخواست بده.</p>
     </div>
-    <div class="glass st-df1a6875" >
-      <b class="st-b9f81216" >داده‌های تولدم چه می‌شود؟</b>
-      <p class="st-74e1d4ce" >فقط برای محاسبهٔ چارت و تولید گزارش استفاده می‌شود؛ به هیچ‌کس فروخته یا اشتراک داده نمی‌شود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy" >حریم خصوصی</a>.</p>
+    <div class="glass st-df1a6875">
+      <b class="st-b9f81216">دادههای تولدم چه میشود؟</b>
+      <p class="st-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا اشتراک داده نمیشود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
     </div>
   </div>
 </div>
 
 <div x-data="purchase()" x-cloak>
-  <div class="st-f265ab7f" x-show="busy" >
-    <div class="glass st-8f0163b3" >
+  <div class="st-f265ab7f" x-show="busy">
+    <div class="glass st-8f0163b3">
       <svg class="st-392787e9" aria-hidden="true"><use href="#icon-refresh"/></svg>
-      <div class="st-e3ec02ac" >در حال اتصال به درگاه پرداخت...</div>
+      <div class="st-e3ec02ac">در حال پردازش...</div>
     </div>
   </div>
 </div>
 
-<style>
-@keyframes spin{to{transform:rotate(360deg);}}
-</style>
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
 
 <script>
 function purchase() {
   return {
     busy: false,
-    balance: null,
-    walletLoaded: false,
     coupon: '',
     couponMsg: '',
     couponPercent: 0,
-    async init() {
-      try {
-        const r = await fetch('/api/wallet');
-        if (r.ok) {
-          const j = await r.json();
-          this.balance = j.balance_rial;
-        }
-      } catch (e) { /* anonymous visitor — no wallet */ }
-      this.walletLoaded = true;
-    },
     async applyCoupon() {
       const code = this.coupon.trim().toUpperCase();
       if (!code) { this.couponMsg = ''; return; }
@@ -178,13 +155,34 @@ function purchase() {
         if (r.ok) {
           this.couponPercent = j.percent || 0;
           this.couponMsg = 'کد معتبر است: ' + j.percent + '٪ تخفیف' + (j.scope ? ' (' + j.scope + ')' : '');
-        } else {
-          this.couponPercent = 0;
-          this.couponMsg = j.detail || 'کد نامعتبر است';
-        }
+        } else { this.couponPercent = 0; this.couponMsg = j.detail || 'کد نامعتبر است'; }
       } catch (e) { this.couponMsg = 'خطا در بررسی کد'; }
     },
-    async buy(planKey, useBalance) {
+    // R.10 / P1-2: unified credit purchase — POST /api/purchase, exactly like credit_cta.
+    async buyCredit(actionKey) {
+      const chartId = new URLSearchParams(location.search).get('chart') || '';
+      if (!chartId) {
+        location.href = '/birth-form?redirect=' + encodeURIComponent('/plans');
+        return;
+      }
+      window.track && window.track('checkout_started', {plan: actionKey});
+      this.busy = true;
+      try {
+        const r = await fetch('/api/purchase', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({action_key: actionKey, chart_id: chartId})
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.ok) { showToast('باز شد! در حال بارگذاری…', true); location.href = '/account'; }
+        else if (j.login_required) { location.href = '/account/login?next=/plans'; }
+        else if (r.status === 402) { showToast('اعتبار کافی نیست — از پک اعتبار بخر', false); location.href = '/credits'; }
+        else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; }
+      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
+    },
+    // credit packs + subscription still go through /api/orders (toman gateway).
+    async buy(planKey) {
       const isPack = planKey.startsWith('credit');
       const chartId = isPack ? '' : (new URLSearchParams(location.search).get('chart') || '');
       if (!chartId && !isPack) {
@@ -198,18 +196,10 @@ function purchase() {
         fd.append('plan_key', planKey);
         fd.append('chart_id', chartId);
         if (this.coupon.trim()) fd.append('coupon', this.coupon.trim().toUpperCase());
-        const r = await fetch('/api/orders', {
-          method: 'POST',
-          body: fd,
-          headers: useBalance ? { 'x-pay-with-balance': '1' } : {},
-        });
+        const r = await fetch('/api/orders', { method: 'POST', body: fd });
         const j = await r.json();
         if (!r.ok) { showToast(j.detail || 'خطا در ایجاد سفارش', false); this.busy = false; return; }
-        if (j.paid_by_balance) {
-          showToast('خرید با موجودی کیف پول انجام شد ✅ گزارش در حال تولید است.', true);
-          location.href = '/account';
-          return;
-        }
+        if (j.paid_by_balance) { showToast('خرید انجام شد ✅', true); location.href = '/account'; return; }
         window.location.href = j.payment_url;
       } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
     }

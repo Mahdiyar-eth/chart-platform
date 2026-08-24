@@ -868,9 +868,31 @@ def api_report_pdf(report_id: str, request: Request,
 
 @app.get("/plans", response_class=HTMLResponse)
 def plans_page(request: Request, session: Session = Depends(get_session)):
+    """R.10 / P1-2 (A4 de-narrowing): sell the UNIFIED credit model, not parallel toman plans.
+
+    The engine behind the scenes is credit-based (POST /api/purchase → grant_from_credits),
+    but plans.html still called the old /api/orders (toman) path — so the main sales page
+    sold report_basic/full/gold as toman plans while the whole back-end is credit. This is
+    the "two parallel money systems" the F1 audit flagged. Now:
+      - the primary table lists credit PRODUCTS from `credit_prices` (what you get / N credits),
+        each "باز کردن با N اعتبار" button → /api/purchase
+      - credit packs stay (the only place toman appears) → /api/orders
+      - the monthly/yearly subscription is a distinct product, shown separately
+    """
+    from app.models import CreditPrice
     plans = session.exec(select(Plan).where(Plan.active).order_by(Plan.sort)).all()
+    # Only the ACTIVE credit products worth selling in the main table (skip free/inactive).
+    products = [
+        {"action_key": r.action_key, "title_fa": r.title_fa, "credits": r.credits}
+        for r in session.exec(select(CreditPrice).where(CreditPrice.active)).all()
+        if r.action_key not in ("rectify", "explore_card")  # rectify is free; explore is in-product
+    ]
+    products.sort(key=lambda x: x["credits"])  # cheapest first
+    user = get_current_user(request)
+    user_balance = (balance(session, user.id) if user else 0)
     return templates.TemplateResponse(request, "plans.html", {
-        "title": "تعرفهها", "plans": plans,
+        "title": "تعرفه‌ها", "plans": plans,
+        "credit_products": products, "user_balance": user_balance,
     })
 
 

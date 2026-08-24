@@ -1,0 +1,326 @@
+[
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "content changed"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "DEAD",
+    "detail": "click: no observable change"
+  }
+]

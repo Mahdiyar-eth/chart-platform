@@ -196,6 +196,12 @@ def grant_from_order(session: Session, order: Order) -> Entitlement | None:
 
 def _kind_for_action(action_key: str) -> str:
     """Map a credit action_key to an entitlement kind."""
+    # R.10 / P3-2: report_audio is an ADD-ON (kind "audio"), NOT a report. The
+    # `report_` prefix below would otherwise collapse it to "report" — a buyer of
+    # the audio add-on got report access instead (catalog↔delivery mismatch the
+    # gate caught). Check the more-specific key first.
+    if action_key == "report_audio":
+        return "audio"
     if action_key.startswith("report_"):
         return "report"
     if action_key.startswith("transit_"):
