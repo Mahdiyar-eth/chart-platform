@@ -13,7 +13,7 @@
         <div class="muted st-f63147b2" >تاریخ</div>
         <div class="st-e3ec02ac" x-text="status?.today_label"></div>
       </div>
-      <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="load()" >
+      <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="onChartChange()" >
         <template x-for="ch in charts" :key="ch.id">
           <option :value="ch.id" x-text="ch.label"></option>
         </template>
@@ -87,6 +87,60 @@
       <div class="st-ef8b9018" >🌱 اقدام کوچک امروز</div>
       <p class="st-08fa3ec5" x-text="status?.action"></p>
     </div>
+
+    <!-- MASTER W5 (N1): the five reflective daily cards — «امروزِ تو» -->
+    <div class="glass st-ed375c82" x-show="daily.loaded" x-cloak>
+      <div class="st-ea49063c">
+        <div class="st-710280f4">🪐 امروزِ تو — پنج کارت از گذرهای واقعی چارتت</div>
+        <span class="chip" x-show="daily.fresh">● تازه</span>
+      </div>
+
+      <template x-if="daily.sky_today">
+        <div style="margin-top:12px;">
+          <b>✨ آسمانِ امروزِ تو</b>
+          <p class="st-08fa3ec5" x-text="daily.sky_today.meaning"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.reflection_line">
+        <div style="margin-top:12px;">
+          <b>🪞 یک جملهٔ تأمل</b>
+          <p class="st-08fa3ec5" x-text="daily.reflection_line.line"></p>
+          <p class="muted st-ae75db1b" x-text="'پرسش برای خودت: ' + daily.reflection_line.question"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.inner_weather">
+        <div style="margin-top:12px;">
+          <b>🌙 حال‌وهوای درونی</b>
+          <p class="st-08fa3ec5" x-text="daily.inner_weather.text"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.active_area">
+        <div style="margin-top:12px;">
+          <b>🎯 حوزهٔ فعال امروز</b>
+          <p class="st-08fa3ec5"><span x-text="daily.active_area.title"></span> — <span x-text="daily.active_area.why"></span></p>
+        </div>
+      </template>
+
+      <template x-if="daily.relationship_today">
+        <div style="margin-top:12px;">
+          <b>💞 الگوی رابطه‌ای امروز</b>
+          <p class="st-08fa3ec5" x-text="daily.relationship_today.text"></p>
+        </div>
+      </template>
+
+      <!-- one LLM sentence, cached per (chart, date) -->
+      <template x-if="daily.insight">
+        <div style="margin-top:12px;" class="glass st-ad292c1c">
+          <b>💡 نگاه امروز</b>
+          <p class="st-08fa3ec5" x-text="daily.insight"></p>
+        </div>
+      </template>
+
+      <p class="muted st-ae75db1b" style="margin-top:10px;">این کارت‌ها هر شب با گذرهای تازهٔ همان روز بازنویسی می‌شوند — نه امتیاز، نه شانس، فقط آینهٔ آسمان روی چارت خودت.</p>
+    </div>
   </div>
 </div>
 
@@ -99,9 +153,11 @@ function todayApp() {
     answer: "",
     busy: false,
     err: "",
+    daily: { loaded: false, fresh: false, sky_today: null, reflection_line: null,
+             inner_weather: null, active_area: null, relationship_today: null, insight: null },
     init() {
       if (!this.chartId) { this.chartId = this.charts.length ? this.charts[0].id : ""; }
-      if (this.chartId) this.load();
+      if (this.chartId) { this.load(); this.loadDaily(); }
     },
     load() {
       const self = this;
@@ -109,6 +165,26 @@ function todayApp() {
         .then(r => r.json())
         .then(d => { if (d && typeof d === "object") { self.status = { ...d, factsLoaded: true }; } else { self.status = { ...(self.status||{}), facts: self.status?.facts || [], factsLoaded: true }; } })
         .catch(() => { self.status = { ...self.status, facts: [] }; });
+    },
+    loadDaily() {
+      if (!this.chartId) return;
+      const self = this;
+      fetch("/api/today/daily?chart_id=" + encodeURIComponent(this.chartId))
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (!d) return;
+          self.daily = { loaded: true, fresh: !d.cached,
+            sky_today: d.sky_today || null, reflection_line: d.reflection_line || null,
+            inner_weather: d.inner_weather || null, active_area: d.active_area || null,
+            relationship_today: d.relationship_today || null, insight: d.insight || null };
+        })
+        .catch(() => { /* the free layer must never break the page */ });
+    },
+    // chart switcher reloads both layers
+    onChartChange() {
+      this.daily = { loaded: false, fresh: false, sky_today: null, reflection_line: null,
+                     inner_weather: null, active_area: null, relationship_today: null, insight: null };
+      this.load(); this.loadDaily();
     },
     submit() {
       if (!this.answer.trim()) return;

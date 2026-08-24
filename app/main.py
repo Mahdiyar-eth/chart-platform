@@ -3468,6 +3468,23 @@ def page_today(request: Request, chart: str = "", session: Session = Depends(get
     })
 
 
+@app.get("/api/today/daily")
+async def api_today_daily(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """MASTER W5 (N1) — the five reflective daily cards for /today.
+
+    4 deterministic cards (zero cost) + 1 cheap LLM insight cached per
+    (chart_id, date) in Redis (`today:{cid}:{date}`, 48h TTL). Free product —
+    the return hook (plan §5)."""
+    from app.today.daily import get_daily_layer
+    from app.today.service import _chart_tz
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    tz_name = _chart_tz(session, chart)
+    payload = await get_daily_layer(session, chart, tz_name)
+    return payload
+
+
 @app.get("/api/today")
 def api_today(chart_id: str, request: Request, session: Session = Depends(get_session)):
     """E2 — status for the today page: facts, question, streak, done-flag."""
