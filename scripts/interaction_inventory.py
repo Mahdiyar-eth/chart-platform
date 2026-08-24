@@ -13,6 +13,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
+os.environ["DBUS_SESSION_BUS_ADDRESS"] = "/dev/null"  # headless: no session bus
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
