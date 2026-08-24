@@ -35,6 +35,7 @@ from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
 from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
 from app.credits import balance, get_price, UnknownAction
+from app.credits import InsufficientCredits
 from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
                         User, WeeklyReflection, WithdrawalRequest,
@@ -3466,6 +3467,85 @@ def page_today(request: Request, chart: str = "", session: Session = Depends(get
         "status_json": _safe_json(status) if status else "null",
         "access": access,
     })
+
+
+# ───────────────────── MASTER W6 — چارت سالیانه (N2) ─────────────────────
+@app.get("/solar/{chart_id}", response_class=HTMLResponse)
+def solar_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """Solar-return page: free teaser (moment + precision) + paid full report."""
+    from app.astrology.engine import compute_from_fields  # noqa: F401
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    has_ent = bool(user and ent_has(session, user.id, "solar", chart_id=chart_id))
+    return templates.TemplateResponse(request, "solar.html", {
+        "title": "چارت سالیانه", "chart": chart,
+        "has_access": has_ent, "access_token": chart.access_token or "",
+        "city_fa": (prof.city_fa if prof else "") or "",
+    })
+
+
+@app.post("/api/solar/purchase")
+def api_solar_purchase(request: Request, chart_id: str = Form(...),
+                       session: Session = Depends(get_session)):
+    """Buy the solar-year report with credits → entitlement kind 'solar'."""
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True,
+                                                      "next": f"/solar/{chart_id}"})
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    try:
+        ent = ent_grant_credits(session, user.id, "solar_return",
+                                idempotency_key=f"purchase:{user.id}:solar_return:{chart_id}",
+                                chart_id=chart_id)
+    except InsufficientCredits as e:
+        return JSONResponse(status_code=402, content={
+            "needed": e.needed, "have": e.have,
+            "message": "اعتبار کافی نیست — از پک اعتبار بخر"})
+    except UnknownAction:
+        return JSONResponse(status_code=400, content={"error": "unknown_action"})
+    return {"ok": True, "entitlement_id": ent.id}
+
+
+@app.get("/api/solar/{chart_id}")
+async def api_solar_report(chart_id: str, request: Request,
+                           session: Session = Depends(get_session)):
+    """Full solar-year product: gate 9 credits → engine + narrative."""
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    if not user or not ent_has(session, user.id, "solar", chart_id=chart_id):
+        raise HTTPException(402, "[ZAY-CRD-001] چارت سالیانه با ۹ اعتبار باز می‌شود")
+    from app.report.solar_service import build_solar_product
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    lat, lon = (prof.lat, prof.lon) if prof else (35.6889, 51.3897)
+    tz_name = (prof.tz_name if prof else None) or "Asia/Tehran"
+    sec = await build_solar_product(session, user.id, chart.chart_json,
+                                    float(lat), float(lon), tz_name,
+                                    zodiac=(prof.zodiac if prof else "tropical") or "tropical")
+    return sec
+
+
+@app.get("/api/solar/{chart_id}/teaser")
+def api_solar_teaser(chart_id: str, request: Request,
+                     session: Session = Depends(get_session)):
+    """Free teaser: exact SR moment + precision proof (AC-4 evidence)."""
+    from app.report.solar import solar_return_for
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    sr = solar_return_for(chart.chart_json,
+                          float(prof.lat) if prof else 35.6889,
+                          float(prof.lon) if prof else 51.3897,
+                          (prof.tz_name if prof else None) or "Asia/Tehran")
+    return {"moment_utc": sr.moment_utc.strftime("%Y-%m-%d %H:%M"),
+            "precision_arcmin": sr.error_arcmin}
 
 
 @app.get("/api/today/daily")

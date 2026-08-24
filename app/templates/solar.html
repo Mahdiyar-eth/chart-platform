@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}چارت سالیانه — زایچه{% endblock %}
+{% block description %}سال تولدت تا تولد بعدی: تم اصلی، خانهٔ برجسته و ۵ گذر کلیدی با تاریخ دقیق.{% endblock %}
+
+{% block content %}
+<div class="wrap st-c24b5a41" x-data="solarApp()" x-init="init()">
+  <h1 class="st-69822621">چارت سالیانه — سالِ تو از تولد تا تولد بعدی</h1>
+  <p class="muted st-ee31f211">
+    هر سال، خورشید به همان نقطهٔ دقیق لحظهٔ تولدت برمی‌گردد؛ چارت آن لحظه نقشهٔ سال پیشِ روست —
+    محاسبه‌شده برای محل زندگی فعلی تو{% if city_fa %} ({{ city_fa }}){% endif %}.
+  </p>
+
+  <!-- free teaser: the exact return moment + precision proof -->
+  <div class="glass st-ed375c82">
+    <div class="st-ea49063c"><div class="st-710280f4">☀️ لحظهٔ بازگشت خورشید</div></div>
+    <p class="st-08fa3ec5" x-show="teaser.moment_utc" x-cloak>
+      <span x-text="teaser.moment_utc"></span> UTC
+      — دقت محاسبه: <b x-text="teaser.precision_arcmin"></b> دقیقهٔ قوسی (&lt; ۱ دقیقه)
+    </p>
+    <div x-show="!teaser.moment_utc" class="skeleton sk-line" aria-hidden="true"></div>
+  </div>
+
+  {% if has_access %}
+  <!-- paid full content -->
+  <template x-if="loaded">
+    <div>
+      <div class="glass st-ed375c82">
+        <div class="st-710280f4">🧭 تم اصلی سال شما</div>
+        <p class="st-08fa3ec5" x-text="sec.theme"></p>
+        <p class="muted st-ae75db1b" x-text="'حال‌وهوا: ' + sec.mood"></p>
+      </div>
+
+      <div class="glass st-ed375c82">
+        <div class="st-710280f4">🗓️ ۵ گذر کلیدی سال — با تاریخ</div>
+        <template x-for="(t, i) in sec.transits" :key="'t' + i">
+          <div class="st-38697191">
+            <span class="st-3a38b258" aria-hidden="true"></span>
+            <p class="st-362151c5"><b x-text="t.date"></b> — <span x-text="t.headline"></span></p>
+          </div>
+        </template>
+      </div>
+
+      <template x-if="sec.narrative">
+        <div class="glass st-ad292c1c">
+          <div class="st-710280f4">📖 روایت سال</div>
+          <p style="white-space:pre-line; line-height:2;" x-text="sec.narrative"></p>
+        </div>
+      </template>
+
+      <div class="glass st-ed375c82">
+        <div class="st-710280f4">🪞 پرسش فصلی سال</div>
+        <p class="st-08fa3ec5" x-text="sec.seasonal_question"></p>
+      </div>
+    </div>
+  </template>
+  <div x-show="!loaded" class="skeleton sk-line" aria-hidden="true"></div>
+  {% else %}
+  <div class="glass glow st-56ef63c4">
+    <h2>چارت سالیانه را باز کن — ۹ اعتبار</h2>
+    <p class="muted st-8a77e5a3">تم اصلی سال · خانهٔ برجسته · ۵ گذر کلیدی با تاریخ · پرسش فصلی · روایت کامل</p>
+    <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۹ اعتبار</button>
+    <p class="muted st-ae75db1b">تنها محصولی که هر سال دوباره معنا پیدا می‌کند — سالِ بعد، چارتِ سالِ بعد.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function solarApp() {
+  return {
+    teaser: { moment_utc: '', precision_arcmin: null },
+    sec: null, loaded: false, err: '',
+    init() {
+      fetch('/api/solar/{{ chart.id }}/teaser?t={{ access_token }}')
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) this.teaser = d; })
+        .catch(() => {});
+      {% if has_access %} this.load(); {% endif %}
+    },
+    load() {
+      const self = this;
+      fetch('/api/solar/{{ chart.id }}?t={{ access_token }}')
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (ok) { self.sec = d; self.loaded = true; }
+          else { self.err = d.detail || 'خطا'; }
+        })
+        .catch(() => { this.err = 'ارتباط با سرور برقرار نشد'; });
+    },
+    buy() {
+      window.track && window.track('checkout_started', { plan: 'solar_return' });
+      const fd = new FormData();
+      fd.append('chart_id', '{{ chart.id }}');
+      fetch('/api/solar/purchase', { method: 'POST', body: fd })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (ok && d.ok) location.reload();
+          else if (d.login_required) location.href = '/account/login?next=/solar/{{ chart.id }}';
+          else if (r.status === 402) location.href = '/credits';
+          else showToast(d.message || 'خطا؛ دوباره تلاش کن', false);
+        })
+        .catch(() => showToast('ارتباط با سرور برقرار نشد', false));
+    },
+  };
+}
+</script>
+{% endblock %}

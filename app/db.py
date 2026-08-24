@@ -133,6 +133,10 @@ def seed_credit_prices() -> None:
         dict(action_key="rectify",       title_fa="ساعت تولدم را نمی‌دانم",                       credits=2, active=False),  # Z8: free (Y15), keep row inactive for correct admin financial report
         dict(action_key="chat_pack_20",  title_fa="از چارتت بپرس — ۲۰ پیام (۳۰ روزه)",             credits=2),
         dict(action_key="report_audio",  title_fa="گزارشت را گوش کن (نسخهٔ صوتی)",                 credits=1),
+        dict(action_key="solar_return",  title_fa="چارت سالیانه — سال تولد تا تولد بعدی",          credits=9),
+        dict(action_key="relocation",    title_fa="چارت مهاجرت — کدام شهر برای چه بخشی از زندگی‌ات", credits=6),
+        dict(action_key="synastry_love", title_fa="سازگاری عاطفی — الگوی رابطهٔ شما دو نفر",        credits=8),
+        dict(action_key="synastry_work", title_fa="سازگاری کاری — هم‌تیمی/هم‌شرکت چطورید؟",         credits=8),
     ]
     with Session(engine) as s:
         for item in catalog:

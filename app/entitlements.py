@@ -214,6 +214,12 @@ def _kind_for_action(action_key: str) -> str:
         return "rectify"
     if action_key.startswith("explore"):
         return "explore"
+    # MASTER W6/W7/W8 — the three new products get their OWN kinds so each
+    # purchase unlocks exactly what its title promises (catalog↔delivery).
+    if action_key in ("solar_return",):
+        return "solar"
+    if action_key == "relocation":
+        return "relocation"
     return "credit"  # generic
 
 
