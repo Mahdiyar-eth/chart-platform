@@ -1,326 +1,182 @@
 [
   {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/birth-form",
-    "control": "؟",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/plans",
-    "control": "اعمال",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/account/login",
+    "page": "/account",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "content changed"
+    "detail": "DOM changed"
   },
   {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/synastry",
-    "control": "محاسبه سازگاری",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/rectify",
-    "control": "✕",
-    "result": "DEAD",
-    "detail": "click: no observable change"
-  },
-  {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/today",
-    "control": "زایچه",
+    "page": "/orders",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/glossary",
-    "control": "زایچه",
+    "page": "/credits",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/faq",
-    "control": "زایچه",
+    "page": "/dashboard",
+    "control": "ارسال کد",
     "result": "OK",
-    "detail": "nav→http://127.0.0.1:8899/"
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   },
   {
-    "page": "/explore",
-    "control": "شروع (۱ اعتبار)",
-    "result": "DEAD",
-    "detail": "click: no observable change"
+    "page": "/account/export",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "DOM changed"
   }
 ]

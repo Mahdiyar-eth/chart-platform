@@ -69,16 +69,27 @@ def _collect_controls(page, path):
 
 
 def _click_outcome(page, el):
-    """Click and observe. Return (class, detail)."""
+    """R10/R1 — click and observe the WHOLE page + network, not a 300-char slice.
+
+    The reviewer caught the old version only comparing the first 300 chars of
+    <body>, so any toast / late-DOM change / bottom-of-page update read as DEAD.
+    Now we compare the full body HTML + watch network requests + URL + toast nodes.
+    """
     errors_before = []
+    requests = []
     page.on("pageerror", lambda e: errors_before.append(str(e)))
+    page.on("request", lambda r: requests.append(r.url) if "api" in r.url else None)
     try:
         before_url = page.url
-        before_text = (page.inner_text("body") or "")[:300]
+        before_html = (page.inner_html("body") or "")
+        before_text_len = len(page.inner_text("body") or "")
+        before_toasts = page.locator(".toast, [role=alert], [role=dialog]").count()
         el.click(timeout=2500)
-        page.wait_for_timeout(450)
+        page.wait_for_timeout(500)
         after_url = page.url
-        after_text = (page.inner_text("body") or "")[:300]
+        after_html = (page.inner_html("body") or "")
+        after_text_len = len(page.inner_text("body") or "")
+        after_toasts = page.locator(".toast, [role=alert], [role=dialog]").count()
         errors = errors_before
         # navigation happened?
         if after_url != before_url:
@@ -86,9 +97,17 @@ def _click_outcome(page, el):
             if resp in (500, 404):
                 return ("BROKEN", f"nav→{resp} {after_url}")
             return ("OK", f"nav→{after_url}")
-        # content changed?
-        if after_text != before_text:
-            return ("OK", "content changed")
+        # ANY DOM change (full body HTML, not a slice) → the click did something.
+        if after_html != before_html:
+            return ("OK", "DOM changed")
+        # network activity that isn't the initial page-load path → live action
+        if requests:
+            return ("OK", "network: " + requests[-1][:80])
+        # a toast/alert/dialog node APPEARED (compare before/after count)?
+        if after_toasts > before_toasts:
+            return ("OK", "toast/dialog appeared")
+        if after_text_len != before_text_len:
+            return ("OK", "text length changed")
         if errors:
             return ("BROKEN", "; ".join(errors[:2]))
         return ("DEAD", "click: no observable change")
@@ -114,10 +133,16 @@ def main():
     findings = []
     covered = 0
     os.environ["DBUS_SESSION_BUS_ADDRESS"] = "/dev/null"  # headless: no session bus
+    # R.10/R2: support a LOGGED-IN sweep via cookie injection (auth-gated pages that
+    # the guest sweep cannot reach). Pass a user cookie JSON via SWEEP_COOKIE env.
+    import os as _os
+    cookie_val = _os.getenv("SWEEP_USER_COOKIE", "")
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"])
         for path in SWEEP:
             page = browser.new_page(viewport={"width": 390, "height": 800})
+            if cookie_val:
+                page.context.add_cookies([{"name": "chart_user", "value": cookie_val, "domain": "127.0.0.1", "path": "/"}])
             try:
                 page.goto(BASE + path, wait_until="networkidle", timeout=15000)
             except Exception as e:

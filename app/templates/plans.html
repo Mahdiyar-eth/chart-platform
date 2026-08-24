@@ -148,7 +148,7 @@ function purchase() {
     couponPercent: 0,
     async applyCoupon() {
       const code = this.coupon.trim().toUpperCase();
-      if (!code) { this.couponMsg = ''; return; }
+      if (!code) { this.couponMsg = 'کد تخفیف را وارد کن'; return; }
       try {
         const r = await fetch('/api/coupons/check?code=' + encodeURIComponent(code));
         const j = await r.json();

@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <form class="st-86de7ac6" id="synForm" >
+  <form class="st-86de7ac6" id="synForm" novalidate>
     <div class="glass st-8e11ed66" >
       <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="#icon-user"/></svg> نفر اول</h2>
       <input name="name_a" placeholder="نام (اختیاری)" class="input st-a4a5b808" >
@@ -103,6 +103,10 @@ citySearch(document.querySelector('input[name=city_b]'), document.querySelector(
 
 document.getElementById('synForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  // R.10/R4: novalidate is on the form, so we validate in JS for a consistent
+  // Persian message (native bubbles are invisible/browser-dependent).
+  const f0 = new FormData(e.target);
+  if (!f0.get('city_a') || !f0.get('city_b')) { showToast('شهرها را از لیست انتخاب کن', false); return; }
   if (!cityA || !cityB) { showToast('شهرها را از لیست انتخاب کن', false); return; }
   const f = new FormData(e.target);
   f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
