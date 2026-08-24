@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-{# R.10 / P1-2 (A4 de-narrowing): UNIFIED credit table instead of parallel toman plans.
-   The back-end is credit-based (POST /api/purchase), but this page still sold
-   basic/full/gold as toman plans via /api/orders — "two parallel money systems".
-   Now: the main table lists credit PRODUCTS from credit_prices; each row buys via
-   /api/purchase. Credit packs (the ONLY place toman appears) stay; the monthly/
-   yearly subscription is a distinct product shown separately. #}
+{# R.10 / P1-2 (A4) + MASTER W3 (§3.1): the ONLY currency on this page is
+   CREDIT. The monthly/yearly subscription was removed from /plans (owner
+   decision §12-1) — it competed with credits and confused the money story.
+   Credit packs remain the ONLY place toman appears. #}
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
-{% set subs = plans | selectattr('key', 'in', ['monthly','yearly']) | list %}
 <div class="st-8c4cf147" x-data="purchase()">
   <h1 class="st-64374dd7">پلنها و گزارش چارت تولد</h1>
   <p class="st-7e8899c5">
@@ -77,19 +74,8 @@
   </div>
   {% endif %}
 
-  <!-- اشتراک ماهانه/سالانه — محصول متفاوت، جدا و واضح -->
-  {% if subs %}
-  <h2 class="st-0a50819b">اشتراک (تأمل هفتگی و آسمانِ هفته)</h2>
-  <div class="st-8f9ba925">
-    {% for p in subs %}
-    <div class="glass st-d28a5047">
-      <h3 class="st-b98bffce">{{ p.name_fa }}</h3>
-      <div class="st-88bea0ed">{{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7">تومان</span></div>
-      <button class="btn btn-lg" @click="buy('{{ p.key }}')" data-track="pack_selected">خرید اشتراک</button>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+  <!-- MASTER W3: subscription section REMOVED from /plans (owner §12-1).
+     The only currency here is credit; toman appears only in credit packs. -->
 
   <p class="st-54402d71">
     پرداخت امن از طریق درگاه زرینپال — بلافاصله پس از پرداخت، گزارش شما تولید میشود.
@@ -123,7 +109,7 @@
     </div>
     <div class="glass st-df1a6875">
       <b class="st-b9f81216">دادههای تولدم چه میشود؟</b>
-      <p class="st-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا اشتراک داده نمیشود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
+      <p class="st-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا واگذار نمیشود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
     </div>
   </div>
 </div>
@@ -181,10 +167,11 @@ function purchase() {
         else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; }
       } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
     },
-    // credit packs + subscription still go through /api/orders (toman gateway).
+    // credit packs go through /api/orders (toman gateway). MASTER W3: the
+    // subscription branch is gone — /plans sells credits only.
     async buy(planKey) {
       const isPack = planKey.startsWith('credit');
-      const chartId = isPack ? '' : (new URLSearchParams(location.search).get('chart') || '');
+      const chartId = '';
       if (!chartId && !isPack) {
         location.href = '/birth-form?redirect=' + encodeURIComponent('/plans') + '&plan=' + planKey;
         return;
