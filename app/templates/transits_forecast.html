@@ -180,6 +180,7 @@ function transitsApp() {
     events: {{ events|tojson }},
     topEvents: {{ top_events|tojson }},     // R.5/V9: server-computed global top-5
     openMonths: {{ open_months|tojson }},   // R.5/V10: expanded month-groups (YYYY-MM)
+    monthLabels: {{ month_labels|tojson }}, // R.6/U2: YYYY-MM -> Persian label (year-aware)
     narratives: {{ analysis|tojson }},
     sampleNarrative: {{ sample_narrative|tojson }},
     busy: false,
@@ -206,7 +207,9 @@ function transitsApp() {
         const m = String(e.window_start || "").slice(0, 7);
         if (!m) continue;
         const key = m; const mm = m.slice(5,7);
-        const label = FA[mm] ? FA[mm] : m;
+        // R.6/U2: prefer the server-computed, year-aware label (avoids showing a
+        // bare month name twice across two Persian years); fall back to FA or raw.
+        const label = (this.monthLabels && this.monthLabels[m]) ? this.monthLabels[m] : (FA[mm] ? FA[mm] : m);
         if (!byMonth[key]) byMonth[key] = { month: key, label, events: [] };
         byMonth[key].events.push(e);
       }

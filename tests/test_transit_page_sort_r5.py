@@ -5,7 +5,7 @@
 `open_month_keys` returns the month-groups to leave expanded (current + next 2).
 Both are pure + deterministic, so the ordering is unit-testable without a browser.
 """
-from app.astrology.transit_forecast import open_month_keys, top_by_weight
+from app.astrology.transit_forecast import month_label_map, open_month_keys, top_by_weight
 
 
 def _ev(weight, start, name=None):
@@ -65,3 +65,60 @@ def test_open_month_keys_empty_on_no_events():
 
 def test_open_month_keys_handles_missing_window_start():
     assert open_month_keys([_ev(1, "")], 3) == []
+
+
+# ─── R.6 / U1 (structural AC-4) and U2 (year-aware month labels) ───────────
+
+def test_structural_ac4_at_most_3_groups_open():
+    """R.6/U1 — AC-4 must be STRUCTURAL, not pixel/data-dependent.
+
+    The pixel goal «height < 3000px» breaks on a chart that happens to have many
+    events in its first 3 open months. The durable invariant is: no matter how
+    many months/events the window holds, AT MOST 3 month-groups are left expanded
+    and the rest are collapsed into `<details>`. This is independent of chart data.
+    """
+    # A wide window spanning several years and many events.
+    wide = [
+        _ev(w, f"202{_y}-{_m:02d}-01", f"e{i}")
+        for i, (w, _y, _m) in enumerate([
+            (1, 6, 8), (2, 6, 9), (3, 6, 10), (4, 6, 11), (5, 6, 12),
+            (6, 7, 1), (7, 7, 2), (8, 7, 3), (9, 7, 6), (5, 7, 9),
+        ])
+    ]
+    # distinct months: 2026-08..2026-12, 2027-01..2027-03, 2027-06, 2027-09
+    open_months = open_month_keys(wide, 3)
+    assert len(open_months) == 3, open_months
+    # every group is either in the open set or not — and only ≤3 are open
+    all_months = sorted({str(e["window_start"])[:7] for e in wide})
+    assert len(open_months) == 3
+    assert all(m in all_months for m in open_months)
+    # the invariant the browser check needs: open set is small and bounded
+    assert len(open_month_keys(wide, 3)) <= 3
+
+
+def test_open_months_bounded_even_for_single_month_flood():
+    """R.6/U1 — a flood of events in ONE month must not blow the open set."""
+    flood = [_ev(9, "2026-08-01", f"f{i}") for i in range(50)]
+    assert open_month_keys(flood, 3) == ["2026-08"]
+
+
+def test_month_labels_same_year_keep_bare_name():
+    """R.6/U2 — a single-year window keeps the clean bare month name."""
+    ev = [_ev(1, "2026-08-01"), _ev(1, "2026-09-01")]
+    labels = month_label_map(ev)
+    assert labels["2026-08"] == "آبان"
+    assert labels["2026-09"] == "آذر"
+
+
+def test_month_labels_two_years_get_year_suffix():
+    """R.6/U2 — spanning two Persian years disambiguates the duplicate month name."""
+    # 2026-08 & 2027-08 both map to Persian «آبان», across two Persian years (1405/1406).
+    ev = [_ev(1, "2026-08-01"), _ev(1, "2027-08-01")]
+    labels = month_label_map(ev)
+    assert labels["2026-08"] == "آبان ۱۴۰۵", labels
+    assert labels["2027-08"] == "آبان ۱۴۰۶", labels
+    assert labels["2026-08"] != labels["2027-08"]
+
+
+def test_month_labels_missing_window_start_ignored():
+    assert month_label_map([_ev(1, "")]) == {}

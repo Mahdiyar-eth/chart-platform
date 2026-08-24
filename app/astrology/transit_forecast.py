@@ -285,3 +285,47 @@ def open_month_keys(events: list[dict], open_count: int = 3) -> list[str]:
     """
     months = sorted({str(e.get("window_start") or "")[:7] for e in events if e.get("window_start")})
     return months[:open_count]
+
+
+# Gregorian month number -> Persian month name (pre-existing label mapping; keep).
+FA_MONTH = {"01": "فروردین", "02": "اردیبهشت", "03": "خرداد", "04": "تیر", "05": "مرداد",
+            "06": "شهریور", "07": "مهر", "08": "آبان", "09": "آذر", "10": "دی",
+            "11": "بهمن", "12": "اسفند"}
+
+_FA_INT = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+
+
+def _fa_digits(n: int) -> str:
+    """Convert an integer to Persian (Extended Arabic-Indic) digits for display."""
+    return str(n).translate(_FA_INT)
+
+
+def month_label_map(events: list[dict]) -> dict[str, str]:
+    """R.6 / U2 — map 'YYYY-MM' → a disambiguated month label (with Persian year).
+
+    A 12-month window that spans two Persian years can show the same month name
+    twice (e.g. «آبان ۱۴۰۵» and «آبان ۱۴۰۶») with no way to tell them apart. This
+    returns 'آبان ۱۴۰۵' / 'آبان ۱۴۰۶' when the set covers more than one year, and
+    the bare name (آبان) when it doesn't — so short ranges stay clean and long
+    ranges never duplicate ambiguously. Pure + deterministic → unit-testable.
+    """
+    import jdatetime
+
+    keys = sorted({str(e.get("window_start") or "")[:7] for e in events if e.get("window_start")})
+    years = sorted({k[:4] for k in keys})
+    spans_two_years = len(years) > 1
+    out: dict[str, str] = {}
+    for k in keys:
+        mm = k[5:7]
+        base = FA_MONTH.get(mm, k)
+        if not spans_two_years:
+            out[k] = base
+            continue
+        # Use the 15th of the month to avoid Nowruz/edge ambiguity when converting.
+        try:
+            gy, gm = int(k[:4]), int(mm)
+            jy = jdatetime.date.fromgregorian(year=gy, month=gm, day=15).year
+            out[k] = f"{base} {_fa_digits(jy)}"
+        except Exception:  # noqa: BLE001 — if conversion fails, keep the bare name
+            out[k] = base
+    return out
