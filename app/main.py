@@ -3548,6 +3548,78 @@ def api_solar_teaser(chart_id: str, request: Request,
             "precision_arcmin": sr.error_arcmin}
 
 
+# ───────────────────── MASTER W7 — چارت مهاجرت (N3) ─────────────────────
+@app.get("/relocation/{chart_id}", response_class=HTMLResponse)
+def relocation_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """Relocation page: city picker (1-3) + gated comparison report."""
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    has_ent = bool(user and ent_has(session, user.id, "relocation", chart_id=chart_id))
+    return templates.TemplateResponse(request, "relocation.html", {
+        "title": "چارت مهاجرت", "chart": chart,
+        "has_access": has_ent, "access_token": chart.access_token or "",
+    })
+
+
+class RelocationPayload(BaseModel):
+    cities: list[dict]  # [{name_fa, lat, lon}]
+
+
+@app.get("/api/relocation/{chart_id}")
+def api_relocation_report(chart_id: str, request: Request,
+                          session: Session = Depends(get_session),
+                          cities_json: str = ""):
+    """AC-5 — compare up to 3 destination cities side-by-side. Gate: 6 credits."""
+    import json as _json
+    from app.report.relocation import compare_cities
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    if not user or not ent_has(session, user.id, "relocation", chart_id=chart_id):
+        raise HTTPException(402, "[ZAY-CRD-001] چارت مهاجرت با ۶ اعتبار باز می‌شود")
+    try:
+        raw = json.loads(cities_json) if cities_json else []
+    except Exception:
+        raise HTTPException(400, "شهرهای نامعتبر")
+    clean = []
+    for c in raw[:3]:
+        try:
+            clean.append({"name_fa": str(c.get("name_fa", ""))[:60],
+                          "lat": float(c["lat"]), "lon": float(c["lon"])})
+        except Exception:  # noqa: BLE001
+            continue
+    if not clean:
+        raise HTTPException(400, "حداقل یک شهر مقصد لازم است")
+    return compare_cities(chart.chart_json, clean)
+
+
+@app.post("/api/relocation/purchase")
+def api_relocation_purchase(request: Request, chart_id: str = Form(...),
+                            session: Session = Depends(get_session)):
+    """Buy the relocation comparison with credits → kind 'relocation'."""
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True,
+                                                      "next": f"/relocation/{chart_id}"})
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    try:
+        ent = ent_grant_credits(session, user.id, "relocation",
+                                idempotency_key=f"purchase:{user.id}:relocation:{chart_id}",
+                                chart_id=chart_id)
+    except InsufficientCredits as e:
+        return JSONResponse(status_code=402, content={
+            "needed": e.needed, "have": e.have,
+            "message": "اعتبار کافی نیست — از پک اعتبار بخر"})
+    except UnknownAction:
+        return JSONResponse(status_code=400, content={"error": "unknown_action"})
+    return {"ok": True, "entitlement_id": ent.id}
+
+
 @app.get("/api/today/daily")
 async def api_today_daily(chart_id: str, request: Request, session: Session = Depends(get_session)):
     """MASTER W5 (N1) — the five reflective daily cards for /today.
