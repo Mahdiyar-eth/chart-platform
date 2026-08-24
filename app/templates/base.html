@@ -18,7 +18,7 @@
   <meta name="theme-color" content="#0d1430">
   <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
   <link rel="canonical" href="{% block canonical %}{{ request.url.scheme }}://{{ request.url.netloc }}{{ request.url.path }}{% endblock %}">
-  <script async src="https://analytics.negar.io/script.js" data-website-id="e8f58dc5-fee9-455d-8ee6-18e26ea23791" data-domains="chart.negar.io"></script>
+  {% if umami_site_id %}<script async src="{{ umami_src }}" data-website-id="{{ umami_site_id }}" data-domains="{{ umami_domains }}"></script>{% endif %}
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <meta name="apple-mobile-web-app-capable" content="yes">

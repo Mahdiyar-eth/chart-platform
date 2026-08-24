@@ -101,6 +101,7 @@
 | `GET /guide` | Public | — |
 | `GET /about` | Public | — |
 | `GET /faq` | Public | — |
+| `GET /glossary` | Public | R.7/T2 — واژه‌نامهٔ ۶۰+ اصطلاح (F3) |
 | `GET /learn` | Public | — |
 | `GET /learn/{slug}` | Public | — |
 | `GET /signs/{slug}` | Public | — |

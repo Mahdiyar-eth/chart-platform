@@ -66,6 +66,21 @@ def _asset_version():
 templates.env.globals["asset_version"] = _asset_version()
 
 
+def _from_env(name: str, default: str = "") -> str:
+    """Read a value from os.environ (config-aware); used for site-level vars that
+    must not be hardcoded in templates (R.7 / T3 Umami)."""
+    import os as _os
+    return _os.getenv(name, default).strip()
+
+
+# R.7 / T3 (N2): Umami analytics was hardcoded in base.html, which would send data
+# to the same website-id from ANY host (staging/new domain). Read from env so a
+# different site/domain gets its own id. Empty id => telemetry disabled in template.
+templates.env.globals["umami_src"] = _from_env("UMAMI_SRC", "https://analytics.negar.io/script.js")
+templates.env.globals["umami_site_id"] = _from_env("UMAMI_SITE_ID")
+templates.env.globals["umami_domains"] = _from_env("UMAMI_DOMAINS", "chart.negar.io")
+
+
 # D2 (plan §7): single-source navigation, state-aware per request
 from app.nav import nav_for as _nav_for
 
@@ -2512,8 +2527,12 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
     store_transit_analysis(session, chart_id, months, {"narratives": narratives})
     session.commit()  # persist the credit spend + stored analysis (get_session does not autoc...[truncated]
     # X3/R3 policy (documented 2026-08-23): partial QA failure refunds the FAILED
-    # share only: ceil(price * failed/total). Full refund iff ALL events fail.
-    total_ev = len(events) or 1
+    # share only: ceil(price * failed/narrated). Full refund iff ALL narrated fail.
+    # R.7 / T1 (P1): the denominator MUST be the number of events actually narrated
+    # (m["events"] == len(top) == n), NOT len(events) — otherwise a chart with 30
+    # events that narrates 12 and fails all 12 returns ceil(price*12/30)=2 instead
+    # of a full 5 (the reviewer caught this running the real money funnel).
+    total_ev = int(m.get("events") or 0) or 1
     if failed_n["n"]:
         from app.credits import get_price as _gp
         import math as _math

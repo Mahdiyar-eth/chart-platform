@@ -90,7 +90,7 @@ def sitemap_xml():
     base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
             "/terms", "/refund", "/disclaimer", "/contact",
-            "/guide", "/about", "/faq", "/articles",
+            "/guide", "/about", "/faq", "/articles", "/glossary",
             "/deep-report", "/self-discovery", "/sky-today"]
     try:
         from app.seo.content import GUIDES, PLANETS, HOUSES, SIGNS
@@ -204,6 +204,21 @@ def page_faq(request: Request):
     return templates.TemplateResponse(request, "faq.html", {
         "title": data["title"], "meta": data.get("meta", ""),
         "categories": cats,
+    })
+
+
+@router.get("/glossary", response_class=HTMLResponse)
+def glossary_page(request: Request):
+    """R.7 / T2 (F3): linkable glossary of 60+ astrology terms.
+
+    Previously /glossary returned 404 (the plan's F3 workstream was never built).
+    Each term has a #anchor and many deep-link to the /learn or /signs pages that
+    already exist, so the glossary cross-links without duplicating content.
+    """
+    from app.seo.glossary import build_glossary
+    return templates.TemplateResponse(request, "glossary.html", {
+        "title": "واژه‌نامهٔ نجوم و چارت تولد",
+        "glossary": build_glossary(),
     })
 
 
