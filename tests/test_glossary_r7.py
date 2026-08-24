@@ -9,6 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from app.seo.glossary import link_glossary_terms
+
 import os
 
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:5432/chart_platform_test")
@@ -66,3 +68,26 @@ def test_glossary_in_sitemap():
     r = c.get("/sitemap.xml")
     assert r.status_code == 200
     assert "/glossary" in r.text
+
+
+def test_link_glossary_terms_deep_links_first_occurrence():
+    """R.8 / S3 — the first occurrence of a glossary term becomes a /glossary#term link."""
+    body = [{"p": "مقارنه و تربیع در چارت نشانه‌های مهمی‌اند؛ مقارنه نزدیک‌ترین پیوند است."}]
+    out = link_glossary_terms(body, max_linked=2)
+    assert '<a href="/glossary#مقارنه">مقارنه</a>' in out[0]["p"]
+    # second mention of مقارنه should NOT be wrapped again (only first occurrence)
+    assert out[0]["p"].count('<a href="/glossary#مقارنه">') == 1
+    # تربیع also linked
+    assert '<a href="/glossary#تربیع">' in out[0]["p"]
+
+
+def test_link_glossary_terms_respects_max_and_no_anchor_inside_link():
+    """R.8 / S3 — cap the number of links; never wrap a term already inside an <a>."""
+    body = [{"p": "خورشید و ماه و عطارد و ناهید و مریخ و مشتری و زحل همه نمادهای مهمی‌اند."}]
+    out = link_glossary_terms(body, max_linked=3)
+    assert out[0]["p"].count('<a href="/glossary#') == 3
+    # pre-existing anchor (e.g. already an <a>) is not double-wrapped
+    body2 = [{"p": '<a href="/learn/sun">خورشید</a> و ماه و عطارد'}]
+    out2 = link_glossary_terms(body2, max_linked=6)
+    assert '<a href="/glossary#خورشید">خورشید</a>' not in out2[0]["p"]  # already linked
+

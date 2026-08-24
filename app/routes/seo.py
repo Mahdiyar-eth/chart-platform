@@ -328,6 +328,20 @@ def page_article(slug: str, request: Request):
     if len(others) < 3:  # category too thin → pad with other topics (still relevant by order)
         others += [a for a in arts if a["slug"] != slug and a.get("category") != _cat]
     others = others[:6]
+    # R.8 / S3: deep-link the first occurrence of glossary terms in the body so a
+    # reader can jump to the definition (plan F3: «هر اصطلاح در اولین ظهور شرح داشته باشد»).
+    # The body is admin-authored (trusted, CMS) and link_glossary_terms only wraps a
+    # fixed term string in a safe `<a href="/glossary#…">`. We mark the RESULTing
+    # paragraphs as Markup (after linking, since string slicing would drop Markup),
+    # so Jinja doesn't autoescape the anchor tags.
+    from markupsafe import Markup
+    from app.seo.glossary import link_glossary_terms
+    body = link_glossary_terms(art.get("body") or [])
+    body = [
+        ({**b, "p": Markup(b["p"])} if ("p" in b and isinstance(b["p"], str)) else b)
+        for b in body
+    ]
+    art = {**art, "body": body}
     return templates.TemplateResponse(request, "article.html", {
         "title": art["title"], "meta": art.get("meta", ""), "art": art,
         "banner_svg": article_banner_svg(art.get("category", ""), art["title"]),

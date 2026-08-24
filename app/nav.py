@@ -35,6 +35,7 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("learn", "آموزش نجوم", "/learn", icon="icon-book", group="یادگیری"),
     NavItem("guide", "راهنما", "/guide", icon="icon-help", group="یادگیری"),
     NavItem("faq", "سؤالات پرتکرار", "/faq", icon="icon-help", group="یادگیری"),
+    NavItem("glossary", "واژه‌نامه", "/glossary", icon="icon-book", group="یادگیری"),
     
     NavItem("account", "حساب من", "/account", icon="icon-user", group="حساب"),
     NavItem("credits", "اعتبار من", "/credits", icon="icon-sparkles", group="حساب"),
