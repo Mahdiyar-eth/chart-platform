@@ -14,7 +14,22 @@
 
 /* ===== Surfaces ===== */
 .card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5); }
-.glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r-lg); backdrop-filter:var(--blur-glass); -webkit-backdrop-filter:var(--blur-glass); }
+.glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r-lg);
+  backdrop-filter:var(--blur-glass) saturate(160%); -webkit-backdrop-filter:var(--blur-glass) saturate(160%);
+  box-shadow:0 8px 32px rgba(2,6,23,.25), inset 0 1px 0 rgba(255,255,255,.06), inset -1px -1px 1px rgba(255,255,255,.03);
+  position:relative; }
+/* MASTER W12 — liquid glass depth: layered edge reflection + slow drift.
+   The ::after adds a top-edge light refraction so surfaces feel physical. */
+.glass::before{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(160deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.02) 28%, transparent 55%);
+  opacity:.9; }
+.glass > *{ position:relative; }
+@keyframes lg-drift{ 0%,100%{ transform:translate3d(0,0,0);} 50%{ transform:translate3d(0,-4px,0);} }
+.glass.glow{ animation:lg-drift 9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce){
+  .glass.glow{ animation:none !important; }
+  .glass::before{ display:none; }
+}
 .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:var(--sp-4); }
 .field > label{ margin:0; }
 .badge{ display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:var(--r-full);

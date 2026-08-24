@@ -6,3 +6,6 @@ app/templates/birth_chart_city.html:11
 app/content/articles.json:45
 app/content/articles.json:46
 app/chat/retrieval.py:61
+app/templates/index.html:74
+app/report/preview.py:188
+app/report/solar_service.py:81
