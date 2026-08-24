@@ -78,7 +78,7 @@ def test_w8_full_endpoint_gated_per_variant():
     r0 = c.post("/api/synastry/full", data={"chart_a": ca_id, "chart_b": cb_id})
     assert r0.status_code == 403, r0.text
 
-    # buy the LOVE product → love works; work stays gated (per-product split)
+    # buy the LOVE product → love works; work STAYS gated (R12/P1-5 split).
     grant_from_credits(Session(engine), uid, "synastry_love",
                        idempotency_key="w8_" + uuid.uuid4().hex, chart_id=ca_id)
     r1 = c.post("/api/synastry/full", data={"chart_a": ca_id, "chart_b": cb_id,
@@ -86,6 +86,11 @@ def test_w8_full_endpoint_gated_per_variant():
     assert r1.status_code == 200, r1.text
     d1 = r1.json()
     assert d1["variant"] == "love" and d1["action_key"] == "synastry_love"
+
+    # R12/P1-5: the OTHER variant must now be gated (per-product split)
+    r2b = c.post("/api/synastry/full", data={"chart_a": ca_id, "chart_b": cb_id,
+                                             "variant": "work"})
+    assert r2b.status_code == 403, f"work must stay gated after love purchase: {r2b.status_code}"
 
     # invalid variant → 400
     r2 = c.post("/api/synastry/full", data={"chart_a": ca_id, "chart_b": cb_id,

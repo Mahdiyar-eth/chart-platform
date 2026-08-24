@@ -144,8 +144,12 @@ def seed_credit_prices() -> None:
                 CreditPrice.action_key == item["action_key"])).first()
             if existing:
                 existing.title_fa = item["title_fa"]
-                existing.credits = item["credits"]
-                existing.active = item.get("active", True)  # Z8: honor inactive (rectify)
+                # R12/P1-7: NEVER overwrite `credits` — an admin price edit
+                # (A7 panel) must survive app restarts. Only NEW rows get the
+                # seed price; existing rows keep their runtime value.
+                if not item.get("active", True) and not existing.active:
+                    pass  # keep inactive rows (rectify) as they are
+                existing.active = item.get("active", True)
                 s.add(existing)
             else:
                 s.add(CreditPrice(**item))

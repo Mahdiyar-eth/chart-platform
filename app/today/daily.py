@@ -29,6 +29,20 @@ from app.report.qa import FORBIDDEN_PATTERNS
 _TARGET_FA = {"Sun": "خورشیدت", "Moon": "ماهت", "ASC": "طالع‌ت",
               "Venus": "زهره‌ات", "Mars": "مریخت", "Mercury": "عطاردت"}
 
+
+def _max_tokens(product: str, default: int) -> int:
+    """R12/P1-6 — read the admin token cap (token_cap_{product} secret)."""
+    try:
+        from app.secret_store import get_secret
+        raw = get_secret(f"token_cap_{product}", "", "")
+        if raw:
+            v = int(raw)
+            if 50 <= v <= 8192:
+                return v
+    except Exception:  # noqa: BLE001
+        pass
+    return default
+
 # transit aspect → short reflective meaning seed (deterministic, honest tone)
 _MEANING_SEED = {
     "هم‌نشینی": "یک انرژی با بخشی از وجودت هم‌راستا می‌شود؛ چیزی که معمولاً پخش است امروز متمرکز دیده می‌شود.",
@@ -252,9 +266,10 @@ async def daily_insight_async(cards: dict) -> str | None:
              f"با {sky.get('target_fa', sky.get('target', ''))} (اورب {sky.get('orb')})")
     prompt = INSIGHT_TEMPLATE.format(transit_block=block)
     try:
-        from app.core import llm as _llm
-        router = _llm.build_chat_router()
-        res = await router.complete(prompt, max_tokens=160, temperature=0.7)
+        from app.core.llm import build_chat_router
+        router = build_chat_router()
+        res = await router.complete(prompt, max_tokens=_max_tokens("daily_insight", 160),
+                                    temperature=0.7)
         if not res.ok:
             return None
         text = (res.text or "").strip().strip('"')

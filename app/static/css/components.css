@@ -25,7 +25,14 @@
   opacity:.9; }
 .glass > *{ position:relative; }
 @keyframes lg-drift{ 0%,100%{ transform:translate3d(0,0,0);} 50%{ transform:translate3d(0,-4px,0);} }
-.glass.glow{ animation:lg-drift 9s ease-in-out infinite; }
+/* R12/P1-9: drifting the whole card makes inner CTAs unclickable for
+   automated QA (Playwright refuses to click a moving target). The drift now
+   lives on a ::after sheen INSIDE the card — visible motion, static hitbox. */
+.glass.glow{ will-change:contents; }
+.glass.glow::after{ content:''; position:absolute; inset:-40% -10%; pointer-events:none;
+  background:radial-gradient(closest-side, rgba(255,255,255,.05), transparent 70%);
+  animation:lg-sheen 9s ease-in-out infinite; }
+@keyframes lg-sheen{ 0%,100%{ opacity:.35; transform:translateY(-2%);} 50%{ opacity:.8; transform:translateY(2%);} }
 @media (prefers-reduced-motion: reduce){
   .glass.glow{ animation:none !important; }
   .glass::before{ display:none; }

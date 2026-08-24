@@ -129,14 +129,18 @@ def test_w15_e2e_synastry_love_and_work():
     assert r1.status_code == 200, r1.text
     assert r1.json()["variant"] == "love"
 
-    # work needs its own product → still gated? No: kind 'synastry' is shared.
-    # The catalogue sells them separately but the entitlement kind is shared;
-    # this is the documented v1 behaviour (one purchase unlocks both lenses
-    # for that pair). Assert it works so the behaviour is pinned:
+    # R12/P1-5: work needs its OWN product now (per-variant split)
     r2 = c.post("/api/synastry/full", data={"chart_a": cid_a, "chart_b": cid_b,
                                             "variant": "work"})
-    assert r2.status_code == 200
-    assert r2.json()["variant_title_fa"] == "سازگاری کاری"
+    assert r2.status_code == 403, "work variant must be gated separately"
+    # buying work unlocks it
+    grant_from_credits(Session(engine), uid, "synastry_work",
+                       idempotency_key="w15b_" + uuid.uuid4().hex, chart_id=cid_a)
+    assert _balance(uid) == 34  # 42 - 8
+    r3 = c.post("/api/synastry/full", data={"chart_a": cid_a, "chart_b": cid_b,
+                                            "variant": "work"})
+    assert r3.status_code == 200
+    assert r3.json()["variant_title_fa"] == "سازگاری کاری"
 
 
 def test_w15_ledger_never_goes_negative():

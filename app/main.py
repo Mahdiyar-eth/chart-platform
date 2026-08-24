@@ -786,7 +786,16 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
         cached["cached"] = True
         return cached
     if os.getenv("ENRICH_INSIGHTS", "1") == "0":
-        return insights  # enrichment disabled (tests / config)
+        # enrichment disabled — still build profile_meta so P0-3 echo works
+        profile_meta: dict = {}
+        if chart.profile_id:
+            prof = session.get(BirthProfile, chart.profile_id)
+            if prof:
+                profile_meta = {"personal_question": prof.personal_question or "",
+                                "focus_areas": list(prof.focus_areas or [])}
+        insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+        insights["focus_areas"] = list(profile_meta.get("focus_areas") or [])
+        return insights
 
     profile_meta: dict = {}
     if chart.profile_id:
@@ -795,17 +804,32 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
             profile_meta = {"personal_question": prof.personal_question or "",
                             "focus_areas": list(prof.focus_areas or [])}
     profile_meta["_patterns"] = insights.get("patterns", [])
+    # R12/P0-3: the question and the chosen focus areas belong to the USER —
+    # echo them in EVERY response (deterministic path included, no LLM needed).
+    insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+    insights["focus_areas"] = list(profile_meta.get("focus_areas") or [])
+    if os.getenv("ENRICH_INSIGHTS", "1") == "0":
+        return insights  # enrichment disabled (tests / config) — but echo already done
     try:
         enriched = await enrich_free_preview_async(chart.chart_json, profile_meta)
         if enriched:
             insights.update(enriched)
             insights["enriched"] = True
             insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
-            await _cache_set(insights)
+            await _cache_set(insights)  # SUCCESS → permanent cache (one call per chart, ever)
             return insights
     except Exception:
         pass
-    await _cache_set(insights)  # deterministic result also cached (no retry spend)
+    # R12/P0-2: a FAILED enrichment must NOT poison the permanent cache —
+    # otherwise one transient LLM outage on first visit means that chart never
+    # gets its answer (cache has no TTL). Short TTL only: retry in 15 min.
+    insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()  # P0-3: echo even without LLM
+    try:
+        r = redis_async.from_url(_REDIS_URL, decode_responses=True)
+        await r.set(cache_key, json.dumps(insights, ensure_ascii=False), ex=900)
+        await r.aclose()
+    except Exception:
+        pass
     return insights
 
 
@@ -978,7 +1002,11 @@ def api_purchase(payload: "PurchasePayload", request: Request,
         })
     # X5/R5: chart-scoped actions MUST carry chart_id — an unscoped report/
     # transit/rectify entitlement would unlock every chart of the user.
-    _CHART_SCOPED_PREFIXES = ("report", "transit", "rectify", "synastry")
+    # R12/P0-1: solar_return + relocation are chart-scoped too — buying them
+    # without chart_id used to mint a DEAD entitlement (money taken, nothing
+    # delivered). Same guard as every other chart-scoped product.
+    _CHART_SCOPED_PREFIXES = ("report", "transit", "rectify", "synastry",
+                              "solar_return", "relocation")
     if payload.action_key.startswith(_CHART_SCOPED_PREFIXES) and not payload.chart_id:
         return JSONResponse(status_code=400, content={
             "error": "chart_id_required",
@@ -1531,6 +1559,7 @@ def api_synastry_full(request: Request, session: Session = Depends(get_session),
     """Full synastry — MASTER W8: variant='love'|'work' selects the lens.
     Requires OWNING both charts AND a paid/credited synastry product (audit r4 A4)."""
     from app.astrology.synastry import synastry
+    user = get_current_user(request)
     if variant not in ("love", "work"):
         raise HTTPException(400, "variant باید love یا work باشد")
     ca = session.get(Chart, chart_a)
@@ -1539,17 +1568,21 @@ def api_synastry_full(request: Request, session: Session = Depends(get_session),
         raise HTTPException(404, "chart not found")
     if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
         raise HTTPException(403, "not authorized")
-    user = get_current_user(request)
+    # R12/P1-5: each variant accepts ONLY its own product kind (plus the
+    # legacy paid order / legacy bundle for old customers).
+    needed_kind = "synastry_love" if variant == "love" else "synastry_work"
     action_key = "synastry_love" if variant == "love" else "synastry_work"
-    credited = bool(user and ent_has(session, user.id, "synastry",
+    credited = bool(user and ent_has(session, user.id, needed_kind,
                                      chart_id=chart_a))
+    legacy_bundle = bool(user and ent_has(session, user.id, "synastry_full",
+                                          chart_id=chart_a))
     paid_legacy = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
             Order.chart_id == chart_a, Order.secondary_chart_id == chart_b,
         )
     ).first()
-    if not credited and not paid_legacy:
+    if not credited and not legacy_bundle and not paid_legacy:
         raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا این سازگاری را خریداری کنید")
     result = synastry(ca.chart_json, cb.chart_json, variant=variant)
     return {**result, "action_key": action_key}

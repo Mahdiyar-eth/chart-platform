@@ -51,7 +51,13 @@ def _expected_kinds(action_key: str, title_fa: str) -> set[str]:
     if ("گذر" in title_fa or "ماه آینده" in title_fa) and not action_key.startswith(("solar", "relocation")):
         kinds.add("transit")
     if "سیناستری" in title_fa or "به هم می‌خوریم" in title_fa or "سازگاری" in title_fa:
-        kinds.add("synastry")
+        # R12/P1-5: three separate SKUs — each delivers its OWN kind now.
+        if action_key == "synastry_love" or "عاطفی" in title_fa:
+            kinds.add("synastry_love")
+        elif action_key == "synastry_work" or "کاری" in title_fa:
+            kinds.add("synastry_work")
+        else:
+            kinds.add("synastry_full")
     if "کاوش" in title_fa or "سؤال" in title_fa:
         kinds.add("explore")
     if "گزارش" in title_fa or "آشنایی" in title_fa or "شناخت" in title_fa:

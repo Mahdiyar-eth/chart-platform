@@ -101,15 +101,24 @@
       {% endif %}
     </ul>
     {% endif %}
-    <!-- the user's own question, answered (LLM, cached forever per chart) -->
-    <template x-if="preview.question_answer">
+    <!-- the user's own question + chosen focus areas, echoed always (R12/P0-3) -->
+    <template x-if="preview.question_answer || preview.personal_question">
       <div class="glass st-ad292c1c" style="margin-top:12px;">
         <b>سؤالی که موقع ساخت چارت پرسیدی:</b>
         <p class="muted st-ae75db1b" x-text="preview.personal_question"></p>
-        <p style="margin:8px 0 0;" x-text="preview.question_answer"></p>
+        <p style="margin:8px 0 0;" x-show="preview.question_answer" x-text="preview.question_answer"></p>
+        <p class="muted st-ae75db1b" x-show="preview.question_answer">پاسخ کامل‌تر با یک تحلیل LLM در گزارش کامل می‌آید.</p>
       </div>
     </template>
-    <!-- 3 dominant patterns with astrological evidence -->
+    <template x-if="preview.focus_areas && preview.focus_areas.length">
+      <div class="st-c03e3f84" style="margin-top:10px;">
+        <span class="chip">حوزه‌های انتخابی تو:</span>
+        <template x-for="(fa, i) in preview.focus_areas" :key="'fa' + i">
+          <span class="chip" x-text="fa"></span>
+        </template>
+      </div>
+    </template>
+    <!-- 3 dominant patterns with astrological evidence (deduped — R12/P1-4) -->
     <template x-for="pat in preview.patterns" :key="pat.evidence + pat.title">
       <div style="margin-top:10px;">
         <b x-text="(pat.title || pat.domain_title) + ': '"></b>
@@ -117,10 +126,12 @@
         <div class="muted st-ae75db1b" x-text="'شاهد: ' + (pat.evidence || '')"></div>
       </div>
     </template>
-    <template x-for="ins in preview.insights" :key="'i' + ins.domain">
+    <!-- LLM-written patterns render ONLY here; deterministic `insights` loop removed (was double-rendering, R12/P1-4) -->
+    <template x-for="pat in preview.llm_patterns" :key="'llm' + pat.evidence + pat.title">
       <div style="margin-top:10px;">
-        <b x-text="ins.domain_title + ': '"></b>
-        <span x-text="ins.insight"></span>
+        <b x-text="(pat.title || 'الگو') + ': '"></b>
+        <span x-text="pat.text"></span>
+        <div class="muted st-ae75db1b" x-text="'شاهد: ' + (pat.evidence || '')"></div>
       </div>
     </template>
     <!-- one upcoming transit with date -->
@@ -199,7 +210,7 @@
 function reportState(){
   return {
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
-    preview: { patterns: [], insights: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
+    preview: { patterns: [], llm_patterns: [], focus_areas: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
       if(this.audioStatus === 'generating' || !this.repId) return;
@@ -238,7 +249,8 @@ function reportState(){
         this.insights = (pd.insights || []).slice(0, 5);
         this.preview = {
           patterns: pd.patterns || [],
-          insights: pd.insights || [],
+          llm_patterns: pd.llm_patterns || [],  // R12/P1-4: LLM patterns get their own block
+          focus_areas: pd.focus_areas || [],
           question_answer: pd.question_answer || '',
           personal_question: pd.personal_question || '',
           next_transit: pd.next_transit || null,

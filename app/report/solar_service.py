@@ -6,8 +6,21 @@ the SR chart of a given year never changes.
 """
 from __future__ import annotations
 
-
 from app.report.solar import solar_return_for, sr_sections
+
+
+def _max_tokens(product: str, default: int) -> int:
+    """R12/P1-6 — read the admin token cap (token_cap_{product} secret)."""
+    try:
+        from app.secret_store import get_secret
+        raw = get_secret(f"token_cap_{product}", "", "")
+        if raw:
+            v = int(raw)
+            if 50 <= v <= 8192:
+                return v
+    except Exception:  # noqa: BLE001
+        pass
+    return default
 
 
 async def build_solar_product(session, user_id: str, natal_chart: dict,
@@ -37,7 +50,8 @@ async def build_solar_product(session, user_id: str, natal_chart: dict,
         from app.core.llm import build_chat_router
         router = build_chat_router()
         prompt = _narrative_prompt(sec)
-        res = await router.complete(prompt, max_tokens=420, temperature=0.6)
+        res = await router.complete(prompt, max_tokens=_max_tokens("solar_narrative", 420),
+                                    temperature=0.6)
         if res.ok:
             text = (res.text or "").strip()
             if text and not _has_forbidden(text):

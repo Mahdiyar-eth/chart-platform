@@ -168,6 +168,21 @@ def _next_transit(chart: dict) -> dict | None:
 
 # ────────────────────────── LLM answer layer ──────────────────────────
 
+def _max_tokens(product: str, default: int) -> int:
+    """R12/P1-6 — the admin-panel token cap must actually bind. Read the
+    DB-backed secret (token_cap_{product}); fall back to the default."""
+    try:
+        from app.secret_store import get_secret
+        raw = get_secret(f"token_cap_{product}", "", "")
+        if raw:
+            v = int(raw)
+            if 50 <= v <= 8192:
+                return v
+    except Exception:  # noqa: BLE001
+        pass
+    return default
+
+
 ANSWER_TEMPLATE = """تو مشاور خودشناسی هستی که بر پایهٔ چارت تولد واقعی کاربر حرف می‌زند.
 
 کاربر هنگام ساختن چارتش این سؤال شخصی نوشته است:
@@ -246,8 +261,8 @@ async def enrich_free_preview_async(chart: dict, profile: dict) -> dict | None:
     )
     from app.core.llm import build_router
     router = build_router("preview")
-    res = await router.complete(prompt, max_tokens=900, temperature=0.5,
-                                json_mode=True)
+    res = await router.complete(prompt, max_tokens=_max_tokens("free_preview", 900),
+                                temperature=0.5, json_mode=True)
     if not res.ok:
         return None
     import json as _json

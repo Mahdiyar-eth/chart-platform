@@ -208,18 +208,28 @@ def _kind_for_action(action_key: str) -> str:
         return "transit"
     if action_key.startswith("chat_"):
         return "chat"
-    if action_key.startswith("synastry_"):
-        return "synastry"
+    # R12/P1-5: synastry variants are handled BELOW (before this wildcard) —
+    # the old startswith("synastry_") collapsed all three SKUs into one kind.
     if action_key == "rectify":
         return "rectify"
     if action_key.startswith("explore"):
         return "explore"
-    # MASTER W6/W7/W8 — the three new products get their OWN kinds so each
+    # MASTER W6/W7/W8 — the new products get their OWN kinds so each
     # purchase unlocks exactly what its title promises (catalog↔delivery).
     if action_key in ("solar_return",):
         return "solar"
     if action_key == "relocation":
         return "relocation"
+    # R12/P1-5: three synastry SKUs must NOT share one kind. love/work are
+    # per-variant products (8cr each); the legacy 10-cr bundle retires to
+    # kind "synastry_full" so it can no longer unlock the cheaper variants'
+    # gate, and the variants' gates accept only their own kind.
+    if action_key == "synastry_love":
+        return "synastry_love"
+    if action_key == "synastry_work":
+        return "synastry_work"
+    if action_key.startswith("synastry_"):
+        return "synastry_full"  # legacy bundle (retired from sale)
     return "credit"  # generic
 
 
@@ -233,8 +243,8 @@ def _kind_for_plan(plan_key: str) -> str | None:
         "report_full": "report",
         "report_gold": "report",
         "report_audio": "audio",
-        "synastry": "synastry",
-        "synastry_full": "synastry",
+        "synastry": "synastry_full",   # R12/P1-5: legacy bundle → its own kind
+        "synastry_full": "synastry_full",
         "transit_12m": "transit",
         "transit_3m": "transit",
         "chat_pack_20": "chat",
