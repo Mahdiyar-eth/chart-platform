@@ -40,7 +40,8 @@ def test_plans_page_renders_credit_products():
     # The unified table labels each row with an action_key and a /api/purchase handler.
     assert "باز کردن با" in html          # credit-buy button text
     assert "/api/purchase" in html        # the credit path is wired in
-    assert "گزارش طلایی" in html or "گزارش کامل" in html
+    # MASTER W4: new result-oriented titles — «شناخت کامل» / «شناخت + همراهی»
+    assert "شناخت کامل" in html or "گزارش کامل" in html or "شناخت + همراهی" in html
 
 
 def test_plans_page_wires_api_purchase_not_only_orders():

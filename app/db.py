@@ -121,16 +121,18 @@ def seed_credit_prices() -> None:
     from app.models import CreditPrice
 
     catalog: list[dict] = [
-        dict(action_key="explore_card",  title_fa="کاوش تک‌کارت",                               credits=1),
-        dict(action_key="report_basic",  title_fa="گزارش پایه (۵ بخش)",                          credits=3),
-        dict(action_key="report_full",   title_fa="گزارش کامل (۱۳ بخش)",                         credits=7),
-        dict(action_key="report_gold",   title_fa="گزارش طلایی (۱۳ بخش + چت ۳۰ روزه + گذر ۱۲ماهه)", credits=14),
-        dict(action_key="synastry_full", title_fa="سیناستری کامل",                               credits=10),
-        dict(action_key="transit_3m",    title_fa="تحلیل گذرهای ۳ ماه آینده",                    credits=2),
-        dict(action_key="transit_12m",   title_fa="تحلیل گذرهای ۱۲ ماه آینده",                   credits=5),
-        dict(action_key="rectify",       title_fa="بازبینی ساعت تولد",                           credits=2, active=False),  # Z8: free (Y15), keep row inactive for correct admin financial report
-        dict(action_key="chat_pack_20",  title_fa="بستهٔ ۲۰ پیام چت (اعتبار ۳۰ روزه)",            credits=2),
-        dict(action_key="report_audio",  title_fa="نسخهٔ صوتی گزارش",                            credits=1),
+        # MASTER W4 (§6): result-oriented names — the product is named by the
+        # sentence in the user's head, not by astrological jargon.
+        dict(action_key="explore_card",  title_fa="یک سؤال، یک جواب",                            credits=1),
+        dict(action_key="report_basic",  title_fa="آشنایی (۵ بخش) — شروعِ سریع",                  credits=3),
+        dict(action_key="report_full",   title_fa="شناخت کامل (۱۳ بخش)",                          credits=7),
+        dict(action_key="report_gold",   title_fa="شناخت + همراهی (۱۳بخش + چت ۳۰روزه + ۱۲ماهه)",   credits=14),
+        dict(action_key="synastry_full", title_fa="سازگاری دو نفر — ما به هم می‌خوریم؟",           credits=10),
+        dict(action_key="transit_3m",    title_fa="۳ ماه آیندهٔ من",                              credits=2),
+        dict(action_key="transit_12m",   title_fa="۱۲ ماه آیندهٔ من",                             credits=5),
+        dict(action_key="rectify",       title_fa="ساعت تولدم را نمی‌دانم",                       credits=2, active=False),  # Z8: free (Y15), keep row inactive for correct admin financial report
+        dict(action_key="chat_pack_20",  title_fa="از چارتت بپرس — ۲۰ پیام (۳۰ روزه)",             credits=2),
+        dict(action_key="report_audio",  title_fa="گزارشت را گوش کن (نسخهٔ صوتی)",                 credits=1),
     ]
     with Session(engine) as s:
         for item in catalog:

@@ -40,15 +40,19 @@
         <span class="st-ef7ba8ad">{{ p.credits }} اعتبار</span>
       </div>
       <div class="st-c9f42765">
-        {% if p.action_key == 'report_basic' %}پنج بخش اصلی؛ برای آشنایی سریع با چارتت.
-        {% elif p.action_key == 'report_full' %}هر ۱۳ بخش با شواهد نجومی؛ عمیقترین گزارش.
-        {% elif p.action_key == 'report_gold' %}گزارش کامل + چت ۳۰روزه + گذرهای ۱۲ ماهه.
-        {% elif p.action_key == 'synastry_full' %}سازگاری دو چارت در ۴ حوزه + ۲۵ ارتباط سیارهای.
-        {% elif p.action_key == 'transit_3m' %}تحلیل گذرهای ۳ ماه آینده روی چارتت.
-        {% elif p.action_key == 'transit_12m' %}تحلیل گذرهای ۱۲ ماه آینده؛ مهمترینها بالای لیست.
-        {% elif p.action_key == 'chat_pack_20' %}۲۰ پیام گفتوگوی شخصی با هوش مصنوعی (۳۰ روزه).
-        {% elif p.action_key == 'report_audio' %}نسخهٔ صوتی همان گزارش برای گوش دادن.
-        {% else %}{{ p.title_fa }}.{% endif %}
+        {% if p.action_key == 'report_basic' %}پاسخ کوتاه به ۵ پرسش اصلی: شخصیت، احساسات، روابط، کار، توانمندی‌ها — هر جمله با شاهد چارت خودت.
+        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «ماه در عقرب و خانهٔ ۸ — نیاز عمیق به امنیت عاطفی داری؛ وقتی اعتماد کنی، وفادارترین آدم رابطه‌ای.»</div>
+        {% elif p.action_key == 'report_full' %}هر ۱۳ حوزهٔ زندگی، جداگانه؛ برای هر حوزه تحلیل عمیق + نقاط قوت/چالش + یک پیشنهاد عملی. PDF ۲۵+ صفحه.
+        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه (حوزهٔ شغل): «مشتری در خانهٔ ۱۰ — رشد تو از راه یادگیری مداوم می‌گذرد؛ مسیرهایی که مهارت تازه می‌خواهند جواب بهتری می‌دهند.»</div>
+        {% elif p.action_key == 'report_gold' %}همهٔ «شناخت کامل» + ۳۰ روز گفت‌وگوی شخصی با چارتت + نقشهٔ ۱۲ ماه آینده.
+        {% elif p.action_key == 'synastry_full' %}نمرهٔ سازگاری در ۴ حوزه + ۲۵ ارتباط سیاره‌ای میان دو چارت + تفسیر عمیق رابطه.
+        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «زهرهٔ او سه‌گانه با ماهِ تو — سلیقه‌ها و نیازهای عاطفی‌تان بی‌آنکه توضیح بدهید هم‌جهت است.»</div>
+        {% elif p.action_key == 'transit_3m' %}مهم‌ترین گذرهای ۳ ماه پیش‌رو روی چارتت — با تاریخ دقیق شروع.
+        {% elif p.action_key == 'transit_12m' %}ماه‌به‌ماه: کدام سیاره کِی به کجای چارتت می‌رسد و چه چیزی را پررنگ می‌کند.
+        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «از ۱۴ آبان: زحل سه‌گانه با خورشیدت — دوره‌ای که ساخت‌دادن راحت‌تر از همیشه است.»</div>
+        {% elif p.action_key == 'chat_pack_20' %}هر سؤالی دربارهٔ خودت بپرس؛ جواب از روی همان چارت با شاهد نجومی.
+        {% elif p.action_key == 'report_audio' %}همان گزارش کامل را صوتی گوش کن — برای روزهای شلوغ.
+        {% else %}{{ p.title_fa }}{% endif %}
       </div>
       <button class="btn btn-lg btn-accent" @click="buyCredit('{{ p.action_key }}')" data-track="pack_selected"
               style="width:100%;margin-top:auto;">

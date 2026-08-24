@@ -32,21 +32,24 @@ def _mk_user(credits=100):
 
 # The advertised promise per action_key: which entitlement kind(s) it MUST grant.
 # Derive from the title (title_fa) — this is the catalogue contract.
+# MASTER W4 (§6): titles are now result-oriented («یک سؤال، یک جواب»,
+# «۱۲ ماه آیندهٔ من», «ما به هم می‌خوریم؟») so keyword matching also reads
+# the new phrasing. action_key prefix remains the hard contract.
 def _expected_kinds(action_key: str, title_fa: str) -> set[str]:
     kinds = set()
-    # report_audio is an ADD-ON (kind "audio") — the title is «نسخهٔ صوتی گزارش».
+    # report_audio is an ADD-ON (kind "audio") — the title mentions صوتی.
     if "صوتی" in title_fa or "نسخهٔ صوتی" in title_fa:
         return {"audio"}
     if "چت" in title_fa or action_key.startswith("chat_pack"):
         kinds.add("chat")
         return kinds  # chat packs are the chat product
-    if "گذر" in title_fa:
+    if "گذر" in title_fa or "ماه آینده" in title_fa:
         kinds.add("transit")
-    if "سیناستری" in title_fa:
+    if "سیناستری" in title_fa or "به هم می‌خوریم" in title_fa or "سازگاری" in title_fa:
         kinds.add("synastry")
-    if "کاوش" in title_fa:
+    if "کاوش" in title_fa or "سؤال" in title_fa:
         kinds.add("explore")
-    if "گزارش" in title_fa:
+    if "گزارش" in title_fa or "آشنایی" in title_fa or "شناخت" in title_fa:
         kinds.add("report")
     return kinds or {"credit"}  # generic fallback
 
