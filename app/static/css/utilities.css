@@ -671,3 +671,5 @@
 .u-glossary-list dt span{ font-size:.74rem; margin-start:6px; }
 /* W3 perf: below-the-fold sections skip rendering until near-viewport */
 .u-lazy{ content-visibility:auto; contain-intrinsic-size: auto 600px; }
+/* W4.3: long reference lists render lazily below the fold */
+.u-glossary-list{ content-visibility:auto; contain-intrinsic-size: auto 7400px; }
