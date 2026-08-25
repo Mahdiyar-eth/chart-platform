@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="st-566e7247" x-data="chat()" x-init="init()">
-  <div class="st-8f42c5fc" >
-    <h1 class="st-8670f915" >گفت‌وگو با چارت تولد</h1>
-    <a class="btn btn-ghost st-a1e45ea4" href="/chart/{{ chart_id }}" >← چارت</a>
+<div class="u-566e7247" x-data="chat()" x-init="init()">
+  <div class="u-8f42c5fc" >
+    <h1 class="u-8670f915" >گفت‌وگو با چارت تولد</h1>
+    <a class="btn btn-ghost u-a1e45ea4" href="/chart/{{ chart_id }}" >← چارت</a>
   </div>
-  <p class="muted st-09329ac0" >
+  <p class="muted u-09329ac0" >
     از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده... پاسخ بر اساس محاسبه‌ی دقیق چارت و گزارش اختصاصی توست.
   </p>
-  <p class="st-18685c79" x-show="!locked" >
+  <p class="u-18685c79" x-show="!locked" >
     سهمیه امروز: <b x-text="remaining"></b> سوال از <b x-text="limit"></b> باقی مانده
   </p>
 
-  <div class="st-ac1e817f" x-show="!locked && msgs.length === 0" >
+  <div class="u-ac1e817f" x-show="!locked && msgs.length === 0" >
     {% for p in presets %}
-    <button class="btn btn-ghost st-02c44d08" type="button" x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
+    <button class="btn btn-ghost u-02c44d08" type="button" x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
     {% endfor %}
   </div>
 
-  <div class="st-ac7cd697" id="msgs" x-show="!locked" x-ref="box">
+  <div class="u-ac7cd697" id="msgs" x-show="!locked" x-ref="box">
     <template x-for="m in msgs" :key="m.id">
-      <div class="st-34b6e1f7 st-933b315d" :>
+      <div class="u-34b6e1f7 u-933b315d" :>
         <span x-text="m.text" :class="m.streaming ? 'streaming-cursor' : ''"></span>
       </div>
     </template>
@@ -31,22 +31,22 @@
   @keyframes blink{50%{opacity:0;}}
   </style>
 
-  <form class="st-ab6fd1c0" @submit.prevent="send()" x-show="!locked" >
-    <input class="input st-97445a8d" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
+  <form class="u-ab6fd1c0" @submit.prevent="send()" x-show="!locked" >
+    <input class="input u-97445a8d" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
            :disabled="busy || remaining <= 0" >
-    <button class="btn btn-lg st-0d768e62" :disabled="busy || remaining <= 0" >ارسال</button>
+    <button class="btn btn-lg u-0d768e62" :disabled="busy || remaining <= 0" >ارسال</button>
   </form>
 
   <template x-if="locked">
-    <div class="st-8b8f12a8" >
-      <div class="st-20bb8944" >
-        <svg class="st-8fd988a7" aria-hidden="true"><use href="/static/icons.svg#icon-lock"/></svg>
+    <div class="u-8b8f12a8" >
+      <div class="u-20bb8944" >
+        <svg class="u-8fd988a7" aria-hidden="true"><use href="/static/icons.svg#icon-lock"/></svg>
       </div>
-      <p class="st-5f7269c9" >گفت‌وگو با چارت تولد</p>
-      <p class="st-b93f88bd" >
+      <p class="u-5f7269c9" >گفت‌وگو با چارت تولد</p>
+      <p class="u-b93f88bd" >
         این قابلیت بخشی از پلن‌های <b>طلایی</b> و <b>ماهانه</b> است. با فعال‌سازی، از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده...
       </p>
-      <a class="btn btn-lg st-5e4603b4" href="/plans?chart={{ chart_id }}" >
+      <a class="btn btn-lg u-5e4603b4" href="/plans?chart={{ chart_id }}" >
         <svg class="u-icon-18" aria-hidden="true"><use href="/static/icons.svg#icon-tag"/></svg> خرید و فعال‌سازی
       </a>
 

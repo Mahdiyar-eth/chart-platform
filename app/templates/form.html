@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="st-4f250d9e" >
+<div class="u-4f250d9e" >
   <a href="/" class="muted back-link" >→ بازگشت</a>
   <h1 class="u-mt-2b" >فرم تولد</h1>
-  <p class="muted st-7953b730" >
+  <p class="muted u-7953b730" >
     این اطلاعات فقط برای محاسبهٔ دقیق چارت تولدت استفاده می‌شود: موقعیت سیارات در لحظه و مکان تولدت.
     تاریخ، ساعت و شهر تولدت ذخیره می‌شود تا چارتت همیشه در دسترس باشد؛ هیچ‌کدام به اشتراک گذاشته یا فروخته نمی‌شود.
   </p>
-  <p class="muted st-13f79ba6" >
+  <p class="muted u-13f79ba6" >
     اگر ساعت دقیق را نمی‌دانی، «نه / تقریبی» را انتخاب کن — چارت با طلوع خورشید محاسبه می‌شود (خانه‌ها تقریبی خواهند بود).
   </p>
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
-  <form id="birthForm" class="glass glow st-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
+  <form id="birthForm" class="glass glow u-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
     <div class="steps">
       <template x-for="(s, i) in 5" :key="i">
         <div class="step-dot" :class="{'on': i < step}"><i></i></div>
@@ -30,7 +30,7 @@
         <button type="button" class="chip" :class="{'sel': zodiac === 'tropical'}" @click="zodiac = 'tropical'">تروپیکال (پیش‌فرض)</button>
         <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
       </div>
-      <div class="st-2d89ff3a" >
+      <div class="u-2d89ff3a" >
         <div><label>سال</label><input class="input" type="number" x-model.number="year" aria-label="سال تولد" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
         <div><label>ماه</label><input class="input" type="number" x-model.number="month" aria-label="ماه تولد" min="1" max="12"></div>
         <div><label>روز</label><input class="input" type="number" x-model.number="day" aria-label="روز تولد" min="1" max="31"></div>
@@ -45,12 +45,12 @@
         <button type="button" class="chip" :class="{'sel': !timeKnown}" @click="timeKnown = false">نه / تقریبی</button>
       </div>
       <template x-if="timeKnown">
-        <div class="st-c119740e" >
+        <div class="u-c119740e" >
           <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" aria-label="ساعت تولد" min="0" max="23"></div>
           <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" aria-label="دقیقهٔ تولد" min="0" max="59"></div>
         </div>
       </template>
-      <p class="muted st-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
+      <p class="muted u-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
     </div>
 
     <!-- STEP 3: city -->
@@ -78,15 +78,15 @@
     <div x-show="step === 5" x-transition>
       <label for="birth-question">سؤال شخصی (اختیاری)</label>
       <input id="birth-question" class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟" aria-label="سؤال شخصی">
-      <p class="muted st-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
+      <p class="muted u-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
     </div>
 
-    <div class="st-82b7dc59" >
-      <button type="button" class="btn btn-ghost st-97445a8d" x-show="step > 1" @click="step--" >قبلی</button>
-      <button type="button" class="btn st-4b3de78f" x-show="step < 5" @click="next()" >ادامه</button>
-      <button type="submit" class="btn st-4b3de78f" x-show="step === 5" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
+    <div class="u-82b7dc59" >
+      <button type="button" class="btn btn-ghost u-97445a8d" x-show="step > 1" @click="step--" >قبلی</button>
+      <button type="button" class="btn u-4b3de78f" x-show="step < 5" @click="next()" >ادامه</button>
+      <button type="submit" class="btn u-4b3de78f" x-show="step === 5" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
     </div>
-    <p class="st-4060f471" x-show="error" x-text="error" ></p>
+    <p class="u-4060f471" x-show="error" x-text="error" ></p>
   </form>
 </div>
 

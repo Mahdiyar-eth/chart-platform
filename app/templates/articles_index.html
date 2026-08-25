@@ -4,27 +4,27 @@
 {% block content %}
 {# R13/P2: server-side category filter + pagination. Headings are semantic:
    one h1 (page), h2 per card title (was a plain div). #}
-<div class="wrap st-9c227a85" >
-  <h1 class="st-44c1f7ac" >مقالات نجوم و چارت تولد</h1>
-  <p class="muted st-aa80ddc5" style="margin-top:-6px;">{{ total }} مقاله — به زبان ساده، با مثال‌های روزمره</p>
-  <div class="st-600f44c9" ></div>
+<div class="wrap u-9c227a85" >
+  <h1 class="u-44c1f7ac" >مقالات نجوم و چارت تولد</h1>
+  <p class="muted u-aa80ddc5" style="margin-top:-6px;">{{ total }} مقاله — به زبان ساده، با مثال‌های روزمره</p>
+  <div class="u-600f44c9" ></div>
 
   {% if articles %}
-  <div class="st-45ca303e" role="tablist" aria-label="دسته‌بندی مقالات">
+  <div class="u-45ca303e" role="tablist" aria-label="دسته‌بندی مقالات">
     <a class="cat-chip {% if not active_cat %}cat-chip-active{% endif %}" href="/articles">همه</a>
     {% for c in categories %}
     <a class="cat-chip {% if active_cat == c %}cat-chip-active{% endif %}" href="/articles?cat={{ c|urlencode }}">{{ c }}</a>
     {% endfor %}
   </div>
 
-  <div class="st-70fb7da9" >
+  <div class="u-70fb7da9" >
     {% for a in articles %}
-    <a class="st-2b6e758b" href="/articles/{{ a.slug }}">
-      {% if a.image %}<img class="st-dbc8ee96" src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" >{% endif %}
-      <div class="st-8ebc4372" >
-        <div class="st-48eddc88" >{{ a.category }}</div>
-        <h2 class="st-eb16482b" >{{ a.title }}</h2>
-        <div class="st-137199ee" >{{ a.excerpt }}</div>
+    <a class="u-2b6e758b" href="/articles/{{ a.slug }}">
+      {% if a.image %}<img class="u-dbc8ee96" src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" >{% endif %}
+      <div class="u-8ebc4372" >
+        <div class="u-48eddc88" >{{ a.category }}</div>
+        <h2 class="u-eb16482b" >{{ a.title }}</h2>
+        <div class="u-137199ee" >{{ a.excerpt }}</div>
       </div>
     </a>
     {% endfor %}
@@ -42,12 +42,12 @@
   </nav>
   {% endif %}
   {% else %}
-  <p class="st-aa80ddc5" >مقالات به‌زودی منتشر می‌شوند.</p>
+  <p class="u-aa80ddc5" >مقالات به‌زودی منتشر می‌شوند.</p>
   {% endif %}
 </div>
 
 <div style="padding:0 16px 24px">
-  <a class="st-2b6e758b" href="/glossary" >معنی اصطلاح‌های نجومی را در واژه‌نامه ببین ←</a>
+  <a class="u-2b6e758b" href="/glossary" >معنی اصطلاح‌های نجومی را در واژه‌نامه ببین ←</a>
 </div>
 
 <style>
@@ -63,6 +63,6 @@
   .pager-btn:hover{ background:rgba(245,197,24,.1); }
   .pager-info{ color:var(--muted-3,#cfc6e0); font-size:.85rem; }
   /* card titles are now real headings — inherit card style but keep semantics */
-  .st-70fb7da9 .st-eb16482b{ margin:0; font-weight:800; }
+  .u-70fb7da9 .u-eb16482b{ margin:0; font-weight:800; }
 </style>
 {% endblock %}

@@ -3,9 +3,9 @@
 {% block description %}در کدام شهر کدام بخش زندگی‌ات پررنگ می‌شود؟ مقایسهٔ ۱ تا ۳ شهر مقصد روی چارت خودت.{% endblock %}
 
 {% block content %}
-<div class="wrap st-c24b5a41" x-data="relocApp()" x-init="init()">
-  <h1 class="st-69822621">چارت مهاجرت — کدام شهر برای کدام بخشِ زندگی‌ات؟</h1>
-  <p class="muted st-ee31f211">
+<div class="wrap u-c24b5a41" x-data="relocApp()" x-init="init()">
+  <h1 class="u-69822621">چارت مهاجرت — کدام شهر برای کدام بخشِ زندگی‌ات؟</h1>
+  <p class="muted u-ee31f211">
     زمان تولد ثابت می‌ماند؛ مکان عوض می‌شود. با جابه‌جایی مختصات، خانه‌های چارتت دوباره چیده می‌شوند —
     ببین در هر شهر، کدام حوزهٔ زندگی زیر نور می‌رود.
   </p>
@@ -61,9 +61,9 @@
           <p class="u-body" x-text="'حوزهٔ پررنگ این شهر: ' + c.focus_area"></p>
           <p class="muted u-note" x-show="c.h10_planets.length"
              x-text="'روی مسیر شغلی: ' + c.h10_planets.join('، ')"></p>
-          <ul class="st-95982eda" style="margin-top:6px;">
+          <ul class="u-95982eda" style="margin-top:6px;">
             <template x-for="(mv, j) in c.moves" :key="'m' + i + j">
-              <li class="st-4dce153e" x-text="mv"></li>
+              <li class="u-4dce153e" x-text="mv"></li>
             </template>
           </ul>
         </div>

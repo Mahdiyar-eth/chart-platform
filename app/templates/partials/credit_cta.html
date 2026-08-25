@@ -6,21 +6,21 @@
 {% set action_name_fa = action_name_fa | default('این بخش') %}
 {% set action_key = action_key | default('') %}
 {% set chart_id = chart_id | default('') %}
-<div class="glass st-302eccda" x-data="creditBuy()" >
-  <svg class="st-724cb239" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
-  <h3 class="st-50a8adba" >{{ action_name_fa }} اعتبار می‌خواهد</h3>
-  <p class="st-84342225" >
+<div class="glass u-302eccda" x-data="creditBuy()" >
+  <svg class="u-724cb239" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
+  <h3 class="u-50a8adba" >{{ action_name_fa }} اعتبار می‌خواهد</h3>
+  <p class="u-84342225" >
     برای استفاده {{ needed }} اعتبار لازم است. موجودی شما: <b x-text="have">{{ have }}</b> اعتبار.
-    <span x-show="!enough" class="st-f18be2a6" >پک اعتبار بخر — هرگز منقضی نمی‌شود.</span>
+    <span x-show="!enough" class="u-f18be2a6" >پک اعتبار بخر — هرگز منقضی نمی‌شود.</span>
   </p>
-  <div class="st-3efa89b9" >
+  <div class="u-3efa89b9" >
     {% if action_key and chart_id %}
     <button type="button" class="btn btn-accent" @click="buy('{{ action_key }}', '{{ chart_id }}')"
             :disabled="busy || enough"
             x-text="msg ? msg : (enough ? 'در حال بازکردن…' : 'باز کردن با ' + '{{ needed }}' + ' اعتبار')"></button>
     {% endif %}
-    <a href="/plans" class="btn st-a17b2f9a" >خرید پک اعتبار</a>
-    {% if next %}<a class="st-589cae48" href="{{ next }}" >بازگشت</a>{% endif %}
+    <a href="/plans" class="btn u-a17b2f9a" >خرید پک اعتبار</a>
+    {% if next %}<a class="u-589cae48" href="{{ next }}" >بازگشت</a>{% endif %}
   </div>
 </div>
 <script>

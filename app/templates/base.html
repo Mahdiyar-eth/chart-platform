@@ -80,10 +80,10 @@
         <nav class="appnav" aria-label="ناوبری اصلی">
           {% for it in request.state.nav.top %}<a href="{{ it.url }}" class="nav-item{% if it.primary %} nav-primary{% endif %}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>{% endfor %}
         </nav>
-        <a href="/account" class="credits-chip st-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
-          <svg class="st-2535720e" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
-          <span class="st-b90e7f87" x-text="balance" ></span>
-          <span class="st-93056532" >اعتبار</span>
+        <a href="/account" class="credits-chip u-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
+          <svg class="u-2535720e" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
+          <span class="u-b90e7f87" x-text="balance" ></span>
+          <span class="u-93056532" >اعتبار</span>
         </a>
       </div>
     </header>
@@ -153,7 +153,7 @@
     {% endif %}{% endfor %}
   </nav>
   <div id="degradedBar" class="degraded-bar hidden" role="alert">
-    <svg class="st-f4bfdb9b" aria-hidden="true" ><use href="/static/icons.svg#icon-help"/></svg>
+    <svg class="u-f4bfdb9b" aria-hidden="true" ><use href="/static/icons.svg#icon-help"/></svg>
     <span></span>
   </div>
   <script>
@@ -197,7 +197,7 @@
     <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
       <div class="d-title" id="dlgTitle"></div>
       <div class="d-msg" id="dlgMsg"></div>
-      <input class="st-6b99de8b" id="dlgInput" aria-label="ورودی گفتگو" />
+      <input class="u-6b99de8b" id="dlgInput" aria-label="ورودی گفتگو" />
       <div class="dialog-btns">
         <button id="dlgCancel" class="d-cancel" type="button">انصراف</button>
         <button id="dlgOk" class="d-ok" type="button">تأیید</button>

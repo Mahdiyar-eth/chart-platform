@@ -4,173 +4,173 @@
 {% block description %}حساب کاربری چارت تولد: گزارش‌های خود، سفارش‌ها، اشتراک و دانلودها در یک جا{% endblock %}
 
 {% block content %}
-<div class="st-eef5d7d4" >
+<div class="u-eef5d7d4" >
   <h1>حساب کاربری</h1>
   <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
 
-  <div x-data="dashSearch()" x-init="init()" class="glass st-f98c0465" >
-    <input x-model="q" class="input st-0466783d" placeholder="جستجو در چارت‌ها، گزارش‌ها و سفارش‌ها…"
+  <div x-data="dashSearch()" x-init="init()" class="glass u-f98c0465" >
+    <input x-model="q" class="input u-0466783d" placeholder="جستجو در چارت‌ها، گزارش‌ها و سفارش‌ها…"
            :disabled="!items.length">
     <div class="u-mt-2b" x-show="q.length > 0" >
       <template x-if="results().length === 0">
-        <p class="muted st-c8995649" >نتیجه‌ای پیدا نشد.</p>
+        <p class="muted u-c8995649" >نتیجه‌ای پیدا نشد.</p>
       </template>
       <template x-for="it in results()" :key="it.k + it.id">
-        <a class="st-35b730dd" :href="it.url" >
-          <span><span class="chip st-9cfd082a" x-text="it.k"></span><span x-text="it.label"></span></span>
-          <svg class="st-43c008d9" aria-hidden="true"><use href="/static/icons.svg#icon-arrow"/></svg>
+        <a class="u-35b730dd" :href="it.url" >
+          <span><span class="chip u-9cfd082a" x-text="it.k"></span><span x-text="it.label"></span></span>
+          <svg class="u-43c008d9" aria-hidden="true"><use href="/static/icons.svg#icon-arrow"/></svg>
         </a>
       </template>
     </div>
   </div>
 
   {% if not profiles %}
-  <div class="glass st-e43a70cf" >
+  <div class="glass u-e43a70cf" >
     <p>هنوز چارتی نساخته‌ای.</p>
-    <a class="btn st-8bb9d55e" href="/birth-form" >ساخت چارت رایگان</a>
+    <a class="btn u-8bb9d55e" href="/birth-form" >ساخت چارت رایگان</a>
   </div>
   {% else %}
-  <section class="glass st-55521a73" >
+  <section class="glass u-55521a73" >
     <h2 class="u-text-lg" >پروفایل‌های تولد ({{ profiles|length }})</h2>
     {% for p in profiles %}
-    <div class="st-c949ffc2" >
+    <div class="u-c949ffc2" >
       <div>
         <b>{{ p.name or 'بدون نام' }}</b>
-        <span class="muted st-498344f5" >{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
+        <span class="muted u-498344f5" >{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
       </div>
       <span class="chip u-text-2xs" >{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
     </div>
     {% endfor %}
   </section>
 
-  <section class="glass st-a596fc6b" >
+  <section class="glass u-a596fc6b" >
     <h2 class="u-text-lg" >گزارش‌ها</h2>
     {% for r in reports %}
-    <div class="st-4dee1ce3" >
-      <div class="st-279b1349" >
+    <div class="u-4dee1ce3" >
+      <div class="u-279b1349" >
         <div>
           <b>گزارش #{{ r.id[:8] }}</b>
-          <span class="muted st-498344f5" >{{ r.status }}</span>
+          <span class="muted u-498344f5" >{{ r.status }}</span>
         </div>
         {% if r.status == 'done' %}
-        <a class="btn st-9a3cf707" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
+        <a class="btn u-9a3cf707" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>
         {% endif %}
       </div>
     </div>
     {% else %}
-    <p class="muted st-54dca8b5" >گزارشی وجود ندارد — بعد از خرید گزارش کامل، اینجا می‌بینی.</p>
+    <p class="muted u-54dca8b5" >گزارشی وجود ندارد — بعد از خرید گزارش کامل، اینجا می‌بینی.</p>
     {% endfor %}
   </section>
 
   {% if weekly %}
-  <section class="glass st-a596fc6b" >
+  <section class="glass u-a596fc6b" >
     <h2 class="u-text-lg" >نگاهی به آسمان هفته</h2>
     {% for chart_id, w in weekly.items() %}
-    <div class="st-4dee1ce3" >
+    <div class="u-4dee1ce3" >
       <!-- F-08 (opus-audit verified): LLM text was rendered with |safe — a
          prompt-injected model output could inject HTML/script. Escaped now;
          line breaks kept via white-space:pre-line. -->
-      <p class="st-5b875cdc" >{{ w.text|e }}</p>
+      <p class="u-5b875cdc" >{{ w.text|e }}</p>
     </div>
     {% endfor %}
   </section>
   {% endif %}
 
-  <section class="glass st-91da6b54" >
+  <section class="glass u-91da6b54" >
     <h2 class="u-text-lg" >
-      <svg class="st-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
+      <svg class="u-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
       اعلان مرورگر
     </h2>
-    <p class="muted st-afc26706" >وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
-    <button id="pushBtn" class="btn st-6764383a" >فعال‌سازی اعلان</button>
+    <p class="muted u-afc26706" >وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
+    <button id="pushBtn" class="btn u-6764383a" >فعال‌سازی اعلان</button>
   </section>
 
-  <section class="glass st-a596fc6b" >
+  <section class="glass u-a596fc6b" >
     <h2 class="u-text-lg" >
-      <svg class="st-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
+      <svg class="u-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
       تنظیمات اعلان
     </h2>
-    <div class="st-e8c5c074" x-data="notifPrefs()" x-init="init()" >
-      <label class="st-699ab5d1" >
+    <div class="u-e8c5c074" x-data="notifPrefs()" x-init="init()" >
+      <label class="u-699ab5d1" >
         <input class="u-icon-18" type="checkbox" x-model="f.daily_insight" > بینش روزانه
       </label>
-      <label class="st-699ab5d1" >
+      <label class="u-699ab5d1" >
         <input class="u-icon-18" type="checkbox" x-model="f.weekly_reflection" > تأمل هفتگی
       </label>
-      <label class="st-699ab5d1" >
+      <label class="u-699ab5d1" >
         <input class="u-icon-18" type="checkbox" x-model="f.report_ready" > آماده‌شدن گزارش
       </label>
-      <div class="st-bc73a818" >
-        <span class="muted st-1fe86672" >ساعت‌های سکوت (اعلان ارسال نشود):</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input st-ade0e943" title="شروع">
+      <div class="u-bc73a818" >
+        <span class="muted u-1fe86672" >ساعت‌های سکوت (اعلان ارسال نشود):</span>
+        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input u-ade0e943" title="شروع">
         <span class="muted">تا</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input st-ade0e943" title="پایان">
+        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input u-ade0e943" title="پایان">
       </div>
-      <button class="btn btn-ghost st-126cde5c" x-on:click="save()">ذخیره تنظیمات</button>
-      <span class="st-d873955b" x-text="saved" ></span>
+      <button class="btn btn-ghost u-126cde5c" x-on:click="save()">ذخیره تنظیمات</button>
+      <span class="u-d873955b" x-text="saved" ></span>
     </div>
   </section>
 
-  <section class="glass st-a596fc6b" >
+  <section class="glass u-a596fc6b" >
     <h2 class="u-text-lg" >سفارش‌ها</h2>
     {% for o in orders %}
-    <div class="st-279db7b7" >
+    <div class="u-279db7b7" >
       <span>{{ o.plan_key }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
       <span class="chip u-text-2xs" >{{ o.status }}</span>
     </div>
     {% else %}
-    <p class="muted st-54dca8b5" >سفارشی ثبت نشده.</p>
+    <p class="muted u-54dca8b5" >سفارشی ثبت نشده.</p>
     {% endfor %}
   </section>
   {% endif %}
 
-  <section class="glass st-91da6b54" >
+  <section class="glass u-91da6b54" >
     <h2 class="u-text-lg" >کیف پول من</h2>
     <div x-data="wallet()" x-init="init()" x-cloak>
-      <p class="muted st-5691c99e" >اعتبار حاصل از دعوت دوستان</p>
-      <div class="st-8f85853e" x-text="fmt(balance)"></div>
-      <p class="muted st-cfd8b750" >کد دعوت تو: <b class="st-f74a7c57" x-text="code"></b></p>
-      <button class="btn st-c0a00e55" x-show="balance > 0" @click="askWithdraw()" >
+      <p class="muted u-5691c99e" >اعتبار حاصل از دعوت دوستان</p>
+      <div class="u-8f85853e" x-text="fmt(balance)"></div>
+      <p class="muted u-cfd8b750" >کد دعوت تو: <b class="u-f74a7c57" x-text="code"></b></p>
+      <button class="btn u-c0a00e55" x-show="balance > 0" @click="askWithdraw()" >
         درخواست تسویه
       </button>
     </div>
   </section>
 
-  <section class="glass st-91da6b54" x-data="subs()" x-init="init()" x-cloak>
+  <section class="glass u-91da6b54" x-data="subs()" x-init="init()" x-cloak>
     <h2 class="u-text-lg" >اشتراک همراه «آسمان امروز»</h2>
-    <p class="muted st-afc26706" >Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
+    <p class="muted u-afc26706" >Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
     <template x-for="s in items" :key="s.id">
-      <div class="st-2e7c8e8a" :data-sub="s.id">
-        <div class="st-24ce67f3" >
-          <div class="st-54c2afb7" >
-            <b class="st-ef7ba8ad" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
-            <span class="chip st-bceed3d2" x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
-            <div class="muted st-41a52463" x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
+      <div class="u-2e7c8e8a" :data-sub="s.id">
+        <div class="u-24ce67f3" >
+          <div class="u-54c2afb7" >
+            <b class="u-ef7ba8ad" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
+            <span class="chip u-bceed3d2" x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
+            <div class="muted u-41a52463" x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
           </div>
-          <div class="st-a76d597a" >
-            <a class="btn st-3fd7213e" href="/plans">تمدید</a>
-            <button class="btn btn-ghost st-fb376871" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
-            <button class="btn st-e69017e5" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
+          <div class="u-a76d597a" >
+            <a class="btn u-3fd7213e" href="/plans">تمدید</a>
+            <button class="btn btn-ghost u-fb376871" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
+            <button class="btn u-e69017e5" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
           </div>
         </div>
       </div>
     </template>
-    <div x-show="!items.length" class="muted st-ea93c4be" >
+    <div x-show="!items.length" class="muted u-ea93c4be" >
       اشتراک فعالی نداری — محصولات فعلی با اعتبار باز می‌شوند: <a class="u-link-gold" href="/plans" >مشاهده محصولها</a>
     </div>
   </section>
 
-  <section class="glass st-91da6b54" >
+  <section class="glass u-91da6b54" >
     <h2 class="u-text-lg" >اعتبار کاوش من</h2>
-    <div class="st-8f85853e" >{{ user.credits }} <span class="st-8ae7f242" >اعتبار</span></div>
-    <p class="muted st-cfd8b750" >هر کاوش در «خودت را کشف کن» ۱ اعتبار مصرف می‌کند. اعتبارت منقضی نمی‌شود.</p>
-    <a class="btn st-15da6d34" href="/plans" >خرید پک اعتبار</a>
+    <div class="u-8f85853e" >{{ user.credits }} <span class="u-8ae7f242" >اعتبار</span></div>
+    <p class="muted u-cfd8b750" >هر کاوش در «خودت را کشف کن» ۱ اعتبار مصرف می‌کند. اعتبارت منقضی نمی‌شود.</p>
+    <a class="btn u-15da6d34" href="/plans" >خرید پک اعتبار</a>
     {% if ledger %}
-    <div class="st-6f8669bd" >
-      <div class="muted st-97f1bfbb" >آخرین تراکنش‌ها</div>
+    <div class="u-6f8669bd" >
+      <div class="muted u-97f1bfbb" >آخرین تراکنش‌ها</div>
       {% for t in ledger %}
-      <div class="st-e3b17106" >
-        <span class="st-ef7ba8ad" >
+      <div class="u-e3b17106" >
+        <span class="u-ef7ba8ad" >
           {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% elif t.reason == 'subscription' %}اعتبار ماهانه اشتراک{% elif t.reason == 'referral_bonus' %}هدیه معرفی{% else %}{{ t.reason }}{% endif %}
         </span>
         <span style="font-weight:700;{% if t.amount >= 0 %}color:#7ee2a8;{% else %}color:#ff9d9d;{% endif %}">
@@ -182,38 +182,38 @@
     {% endif %}
   </section>
 
-  <div class="glass glow st-432e9cb9" >
+  <div class="glass glow u-432e9cb9" >
     <h2 class="u-text-lg" >دعوت از دوستان</h2>
-    <p class="muted st-9bcd21d2" >نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش ثبت می‌کنی و او ۱ اعتبار کاوش هدیه می‌گیرد.</p>
-    <div class="st-17017195" >
-      <input class="st-67bf3cb4" id="refLink" readonly value="{{ ref_url }}" >
-      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn st-99443573" >کپی</button>
+    <p class="muted u-9bcd21d2" >نفر جدید با لینک تو ۱۰٪ تخفیف می‌گیرد؛ تو ۱۰٪ پاداش ثبت می‌کنی و او ۱ اعتبار کاوش هدیه می‌گیرد.</p>
+    <div class="u-17017195" >
+      <input class="u-67bf3cb4" id="refLink" readonly value="{{ ref_url }}" >
+      <button onclick="navigator.clipboard.writeText(document.getElementById('refLink').value)" class="btn u-99443573" >کپی</button>
     </div>
   </div>
 
-  <div class="st-b508653a" >
-    <a class="btn btn-ghost st-516bc368" href="/plans" >مشاهده پلن‌ها</a>
-    <a class="btn btn-ghost st-516bc368" href="/birth-form" >چارت جدید</a>
+  <div class="u-b508653a" >
+    <a class="btn btn-ghost u-516bc368" href="/plans" >مشاهده پلن‌ها</a>
+    <a class="btn btn-ghost u-516bc368" href="/birth-form" >چارت جدید</a>
   </div>
   <!-- F-29 (runtime audit): confirm() replaced with an Alpine modal — native
        confirm() is invisible/unreliable on mobile and banned by design rules -->
   <div class="u-mt-2b" x-data="{ open: false }" >
-    <a href="/account/export" class="btn btn-ghost st-306269ce" >خروجی داده‌ها (JSON)</a>
-    <button @click="open = true" class="btn btn-ghost st-57a14acc" >حذف کامل حساب و داده‌ها</button>
-    <div x-cloak x-show="open" class="modal-backdrop st-0751ea05" @click.self="open = false">
-      <div class="glass st-99c3d369" >
-        <div class="st-e0cf0e75" >⚠️</div>
-        <h3 class="st-761d3add" >حذف کامل حساب</h3>
-        <p class="muted st-22bf9de2" >همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
-        <form class="st-d6f2af6e" method="post" action="/account/delete" >
+    <a href="/account/export" class="btn btn-ghost u-306269ce" >خروجی داده‌ها (JSON)</a>
+    <button @click="open = true" class="btn btn-ghost u-57a14acc" >حذف کامل حساب و داده‌ها</button>
+    <div x-cloak x-show="open" class="modal-backdrop u-0751ea05" @click.self="open = false">
+      <div class="glass u-99c3d369" >
+        <div class="u-e0cf0e75" >⚠️</div>
+        <h3 class="u-761d3add" >حذف کامل حساب</h3>
+        <p class="muted u-22bf9de2" >همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
+        <form class="u-d6f2af6e" method="post" action="/account/delete" >
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn st-f9c4962a" >بله، حذف کن</button>
-          <button type="button" @click="open = false" class="btn btn-ghost st-0466783d" >انصراف</button>
+          <button type="submit" class="btn u-f9c4962a" >بله، حذف کن</button>
+          <button type="button" @click="open = false" class="btn btn-ghost u-0466783d" >انصراف</button>
         </form>
       </div>
     </div>
   </div>
-  <a class="muted st-49e845e7" href="/privacy" >حریم خصوصی</a>
+  <a class="muted u-49e845e7" href="/privacy" >حریم خصوصی</a>
 </div>
 <script>
 /* G10 (§90) — dashboard search over profiles/reports/orders */

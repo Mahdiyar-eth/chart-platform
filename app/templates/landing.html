@@ -17,20 +17,20 @@
 <div class="l-hero">
   <h1>{{ h1 }}</h1>
   <p>{{ sub }}</p>
-  <div class="st-bf0d4370" >
+  <div class="u-bf0d4370" >
     <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
     <a class="btn btn-ghost" href="/plans">مشاهده پلن‌ها</a>
   </div>
-  {% if cta_note %}<p class="muted st-92bf8576" >{{ cta_note }}</p>{% endif %}
+  {% if cta_note %}<p class="muted u-92bf8576" >{{ cta_note }}</p>{% endif %}
 </div>
 
 <div class="l-row u-mt-2b" >
   {% for chip in chips %}<span class="l-chip">{{ chip }}</span>{% endfor %}
 </div>
 
-<div class="l-row st-2517a51b" >
+<div class="l-row u-2517a51b" >
   {% for card in cards %}
-  <div class="l-card st-2b0f11a4" >
+  <div class="l-card u-2b0f11a4" >
     {% if card.icon %}<svg class="l-svg" aria-hidden="true"><use href="/static/icons.svg#icon-{{ card.icon }}"/></svg>{% endif %}
     <b>{{ card.title }}</b>
     <p>{{ card.body }}</p>
@@ -38,14 +38,14 @@
   {% endfor %}
 </div>
 
-<div class="st-21a1dc51" x-data="{open:false}">
-  <div class="glass st-22bedf1a" >
-    <b class="st-28dd932f" >پاسخ صادقانه به یک سؤال رایج</b>
-    <p class="st-2794475f" >{{ faq }}</p>
+<div class="u-21a1dc51" x-data="{open:false}">
+  <div class="glass u-22bedf1a" >
+    <b class="u-28dd932f" >پاسخ صادقانه به یک سؤال رایج</b>
+    <p class="u-2794475f" >{{ faq }}</p>
   </div>
 </div>
 
-<div class="st-6ca9fc10" >
+<div class="u-6ca9fc10" >
   <a class="btn btn-lg" href="{{ cta_href }}">{{ cta }}</a>
 </div>
 {% endblock %}

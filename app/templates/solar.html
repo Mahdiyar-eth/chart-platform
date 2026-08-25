@@ -3,16 +3,16 @@
 {% block description %}سال تولدت تا تولد بعدی: تم اصلی، خانهٔ برجسته و ۵ گذر کلیدی با تاریخ دقیق.{% endblock %}
 
 {% block content %}
-<div class="wrap st-c24b5a41" x-data="solarApp()" x-init="init()">
-  <h1 class="st-69822621">چارت سالیانه — سالِ تو از تولد تا تولد بعدی</h1>
-  <p class="muted st-ee31f211">
+<div class="wrap u-c24b5a41" x-data="solarApp()" x-init="init()">
+  <h1 class="u-69822621">چارت سالیانه — سالِ تو از تولد تا تولد بعدی</h1>
+  <p class="muted u-ee31f211">
     هر سال، خورشید به همان نقطهٔ دقیق لحظهٔ تولدت برمی‌گردد؛ چارت آن لحظه نقشهٔ سال پیشِ روست —
     محاسبه‌شده برای محل زندگی فعلی تو{% if city_fa %} ({{ city_fa }}){% endif %}.
   </p>
 
   <!-- free teaser: the exact return moment + precision proof -->
   <div class="glass u-panel">
-    <div class="st-ea49063c"><div class="u-strong-sm">☀️ لحظهٔ بازگشت خورشید</div></div>
+    <div class="u-ea49063c"><div class="u-strong-sm">☀️ لحظهٔ بازگشت خورشید</div></div>
     <p class="u-body" x-show="teaser.moment_utc" x-cloak>
       <span x-text="teaser.moment_utc"></span> UTC
       — دقت محاسبه: <b x-text="teaser.precision_arcmin"></b> دقیقهٔ قوسی (&lt; ۱ دقیقه)
@@ -33,9 +33,9 @@
       <div class="glass u-panel">
         <div class="u-strong-sm">🗓️ ۵ گذر کلیدی سال — با تاریخ</div>
         <template x-for="(t, i) in sec.transits" :key="'t' + i">
-          <div class="st-38697191">
-            <span class="st-3a38b258" aria-hidden="true"></span>
-            <p class="st-362151c5"><b x-text="t.date"></b> — <span x-text="t.headline"></span></p>
+          <div class="u-38697191">
+            <span class="u-3a38b258" aria-hidden="true"></span>
+            <p class="u-362151c5"><b x-text="t.date"></b> — <span x-text="t.headline"></span></p>
           </div>
         </template>
       </div>
@@ -55,7 +55,7 @@
   </template>
   <div x-show="!loaded" class="skeleton sk-line" aria-hidden="true"></div>
   {% else %}
-  <div class="glass glow st-56ef63c4">
+  <div class="glass glow u-56ef63c4">
     <h2>چارت سالیانه را باز کن — ۹ اعتبار</h2>
     <p class="muted u-note-gold">تم اصلی سال · خانهٔ برجسته · ۵ گذر کلیدی با تاریخ · پرسش فصلی · روایت کامل</p>
     <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۹ اعتبار</button>

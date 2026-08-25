@@ -8,28 +8,28 @@
 
   <h2 class="u-block-mt" >راهنماهای اصلی</h2>
   {% for slug, g in guides.items() %}
-    <a href="/learn/{{ slug }}" class="glass st-59b6150e" >
+    <a href="/learn/{{ slug }}" class="glass u-59b6150e" >
       <b>{{ g.title }}</b>
-      <div class="muted st-87f0fcbc" >{{ g.text[:90] }}…</div>
+      <div class="muted u-87f0fcbc" >{{ g.text[:90] }}…</div>
     </a>
   {% endfor %}
 
   <h2 class="u-block-mt" >معنی سیارات</h2>
-  <div class="st-935d2fc2" >
+  <div class="u-935d2fc2" >
     {% for slug, p in planets.items() %}
       <a href="/learn/{{ slug }}" class="glass u-tile" >{{ p.title }}</a>
     {% endfor %}
   </div>
 
   <h2 class="u-block-mt" >خانه‌های دوازده‌گانه</h2>
-  <div class="st-935d2fc2" >
+  <div class="u-935d2fc2" >
     {% for n, h in houses.items() %}
       <a href="/learn/{{ n }}" class="glass u-tile" >{{ h.title }}</a>
     {% endfor %}
   </div>
 
   <h2 class="u-block-mt" >برج‌های دوازده‌گانه</h2>
-  <div class="st-ae7fe0d1" >
+  <div class="u-ae7fe0d1" >
     <a href="/signs/hamal" class="glass u-tile" >♈ برج حمل</a>
     <a href="/signs/sowr" class="glass u-tile" >♉ برج ثور</a>
     <a href="/signs/jowza" class="glass u-tile" >♊ برج جوزا</a>
@@ -44,7 +44,7 @@
     <a href="/signs/hout" class="glass u-tile" >♓ برج حوت</a>
   </div>
 
-  <div class="glass glow st-4a1415fb" >
+  <div class="glass glow u-4a1415fb" >
     <b>چارت تولد خودت را همین حالا بساز</b>
     <div class="u-mt-2b" ><a href="/birth-form" class="btn">ساخت چارت رایگان</a></div>
     <div class="u-mt-2b" ><a href="/glossary" class="btn btn-ghost">معنی اصطلاح‌های نجومی</a></div>

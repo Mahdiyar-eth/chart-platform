@@ -5,45 +5,45 @@
    decision §12-1) — it competed with credits and confused the money story.
    Credit packs remain the ONLY place toman appears. #}
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
-<div class="st-8c4cf147" x-data="purchase()">
-  <h1 class="st-64374dd7">پلنها و گزارش چارت تولد</h1>
-  <p class="st-7e8899c5">
+<div class="u-8c4cf147" x-data="purchase()">
+  <h1 class="u-64374dd7">پلنها و گزارش چارت تولد</h1>
+  <p class="u-7e8899c5">
     همهٔ گزارشها از روی همان چارتِ رایگانِ خودت تولید میشوند. اول چارت رایگان بساز و پیشنمایش را ببین، بعد با اعتبار باز کن.
   </p>
 
-  <div class="st-63b0a75d">
+  <div class="u-63b0a75d">
     <a href="/birth-form" class="btn btn-lg"><svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> چارت رایگان بساز</a>
   </div>
 
   {% if user %}
-  <div class="glass st-a611c9c1">
-    <b>موجودی اعتبار شما:</b> <span class="st-ef7ba8ad">{{ user_balance }} اعتبار</span>
-    • <a class="st-6aa99fbc link-tap" href="/credits">خرید اعتبار</a>
+  <div class="glass u-balance-box">
+    <b>موجودی اعتبار شما:</b> <span class="u-ef7ba8ad">{{ user_balance }} اعتبار</span>
+    • <a class="u-6aa99fbc link-tap" href="/credits">خرید اعتبار</a>
   </div>
   {% endif %}
 
   <div class="glass u-card-inset">
-    <input class="input st-1f9c58e5" x-model="coupon" @input="couponMsg=''" placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr">
-    <button class="btn st-ffe01040" @click="applyCoupon()">اعمال</button>
+    <input class="input u-1f9c58e5" x-model="coupon" @input="couponMsg=''" placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr">
+    <button class="btn u-ffe01040" @click="applyCoupon()">اعمال</button>
     <span class="u-warn-sm" x-show="couponMsg" x-text="couponMsg"></span>
   </div>
 
   <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار)،
        نرخ تومانی شفاف بالای جدول، کارت‌های فشرده قابل مقایسه (<3000px) -->
-  <h2 class="st-0a50819b">محصولها — با اعتبار باز کن</h2>
-  <p class="st-80877d75">
+  <h2 class="u-0a50819b">محصولها — با اعتبار باز کن</h2>
+  <p class="u-80877d75">
     نرخ مرجع: هر اعتبار ۵۰٬۰۰۰ تومان (پک‌های بالاتر ارزان‌تر میشوند).
     روی «باز کردن» بزن، اگر اعتبار کافی داشت بلافاصله قفلش باز میشود. اعتبارها هرگز منقضی نمیشوند.
   </p>
-  <div class="st-8f9ba925 plans-grid" >
+  <div class="u-8f9ba925 plans-grid" >
     {% for p in credit_products %}
     <div class="glass plan-card" style="{% if p.action_key == 'report_full' %}border:2px solid var(--gold);{% endif %}">
-      {% if p.action_key == 'report_full' %}<div class="st-8596a042">پیشنهاد ما</div>{% endif %}
+      {% if p.action_key == 'report_full' %}<div class="u-8596a042">پیشنهاد ما</div>{% endif %}
       <h2 class="plan-name">{{ p.title_fa }}</h2>
       <div class="plan-price"><span class="plan-credits">{{ p.credits }}</span> اعتبار
         <span class="plan-toman">≈ {{ "{:,}".format(p.credits * 50000) }} تومان</span>
       </div>
-      <div class="st-c9f42765">
+      <div class="u-c9f42765">
         {% if p.action_key == 'report_basic' %}پاسخ کوتاه به ۵ پرسش اصلی: شخصیت، احساسات، روابط، کار، توانمندی‌ها — هر جمله با شاهد چارت خودت.
         <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «ماه در عقرب و خانهٔ ۸ — نیاز عمیق به امنیت عاطفی داری؛ وقتی اعتماد کنی، وفادارترین آدم رابطه‌ای.»</div>
         {% elif p.action_key == 'report_full' %}هر ۱۳ حوزهٔ زندگی، جداگانه؛ برای هر حوزه تحلیل عمیق + نقاط قوت/چالش + یک پیشنهاد عملی. PDF ۲۵+ صفحه.
@@ -68,12 +68,12 @@
 
   <!-- بستههای اعتبار — تنها جایی که تومان دیده میشود -->
   {% if credit_packs %}
-  <h2 class="st-0a50819b">پک اعتبار <span class="st-77abc5c7">(با تومان)</span></h2>
-  <div class="st-8f9ba925">
+  <h2 class="u-0a50819b">پک اعتبار <span class="u-77abc5c7">(با تومان)</span></h2>
+  <div class="u-8f9ba925">
     {% for p in credit_packs %}
-    <div class="glass st-d28a5047">
-      <div class="st-7e3e28e0">{{ p.credits_grant }}<span class="st-ac546e71"> اعتبار</span></div>
-      <div class="st-88bea0ed">{{ "{:,}".format(p.price_toman) }} <span class="st-333aaea7">تومان</span></div>
+    <div class="glass u-d28a5047">
+      <div class="u-7e3e28e0">{{ p.credits_grant }}<span class="u-ac546e71"> اعتبار</span></div>
+      <div class="u-88bea0ed">{{ "{:,}".format(p.price_toman) }} <span class="u-333aaea7">تومان</span></div>
       <button class="btn btn-lg btn-accent" @click="buy('{{ p.key }}')" data-track="pack_selected">
         خرید پک {{ p.credits_grant }}تایی
       </button>
@@ -85,48 +85,48 @@
   <!-- MASTER W3: subscription section REMOVED from /plans (owner §12-1).
      The only currency here is credit; toman appears only in credit packs. -->
 
-  <p class="st-54402d71">
+  <p class="u-54402d71">
     پرداخت امن از طریق درگاه زرینپال — بلافاصله پس از پرداخت، گزارش شما تولید میشود.
   </p>
 
-  <div class="st-8420aeac">
-    <h2 class="st-ad331caf">سؤالات پرتکرار درباره پلنها</h2>
-    <div class="glass st-83980512">
-      <b class="st-b9f81216">فرق گزارش کامل و طلایی چیست؟</b>
-      <p class="st-74e1d4ce">هر دو همان ۱۳ بخش گزارش کامل با شواهد نجومی هستند. گزارش طلایی بهعلاوهٔ گفتوگوی شخصی با هوش مصنوعی دربارهٔ چارتت (۳۰ روزه) و نقشهٔ گذرهای ۱۲ ماهه را هم میدهد.</p>
+  <div class="u-8420aeac">
+    <h2 class="u-ad331caf">سؤالات پرتکرار درباره پلنها</h2>
+    <div class="glass u-83980512">
+      <b class="u-b9f81216">فرق گزارش کامل و طلایی چیست؟</b>
+      <p class="u-74e1d4ce">هر دو همان ۱۳ بخش گزارش کامل با شواهد نجومی هستند. گزارش طلایی بهعلاوهٔ گفتوگوی شخصی با هوش مصنوعی دربارهٔ چارتت (۳۰ روزه) و نقشهٔ گذرهای ۱۲ ماهه را هم میدهد.</p>
     </div>
-    <div class="glass st-83980512">
-      <b class="st-b9f81216">اعتبار چطور کار میکند؟</b>
-      <p class="st-74e1d4ce">اعتبار یک واحد داخلی است؛ با پکهای تومانی میخری و برای باز کردن هر محصول (گزارش، گذر، چت، سیناستری) خرج میکنی. هرگز منقضی نمیشود.</p>
+    <div class="glass u-83980512">
+      <b class="u-b9f81216">اعتبار چطور کار میکند؟</b>
+      <p class="u-74e1d4ce">اعتبار یک واحد داخلی است؛ با پکهای تومانی میخری و برای باز کردن هر محصول (گزارش، گذر، چت، سیناستری) خرج میکنی. هرگز منقضی نمیشود.</p>
     </div>
-    <div class="glass st-83980512">
-      <b class="st-b9f81216">اگر گزارش پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
-      <p class="st-74e1d4ce">چارت و گزارشهایت ذخیره میمانند. کافیست گزارش بالاتر را هم با اعتبار باز کنی؛ کاملتر روی همان چارت تولید میشود.</p>
+    <div class="glass u-83980512">
+      <b class="u-b9f81216">اگر گزارش پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
+      <p class="u-74e1d4ce">چارت و گزارشهایت ذخیره میمانند. کافیست گزارش بالاتر را هم با اعتبار باز کنی؛ کاملتر روی همان چارت تولید میشود.</p>
     </div>
-    <div class="glass st-20feeded">
-      <b class="st-0e08cf41">کد تخفیف شروع: LANCH20</b>
-      <p class="st-74e1d4ce">۲۰٪ تخفیف روی اولین خرید. در مرحلهٔ پرداخت کد را وارد کن — فقط یک بار.</p>
+    <div class="glass u-20feeded">
+      <b class="u-0e08cf41">کد تخفیف شروع: LANCH20</b>
+      <p class="u-74e1d4ce">۲۰٪ تخفیف روی اولین خرید. در مرحلهٔ پرداخت کد را وارد کن — فقط یک بار.</p>
     </div>
-    <div class="glass st-df1a6875">
-      <b class="st-b9f81216">تولید گزارش چقدر طول میکشد؟</b>
-      <p class="st-74e1d4ce">معمولاً ۳ تا ۵ دقیقه. صفحه را ببند؛ بهمحض آماده شدن، گزارش در «حساب من» و با نوتیفیکیشن در دسترس است.</p>
+    <div class="glass u-df1a6875">
+      <b class="u-b9f81216">تولید گزارش چقدر طول میکشد؟</b>
+      <p class="u-74e1d4ce">معمولاً ۳ تا ۵ دقیقه. صفحه را ببند؛ بهمحض آماده شدن، گزارش در «حساب من» و با نوتیفیکیشن در دسترس است.</p>
     </div>
-    <div class="glass st-df1a6875">
-      <b class="st-b9f81216">اگر از نتیجه راضی نبودم؟</b>
-      <p class="st-74e1d4ce">تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده میشود. از صفحهٔ <a class="st-6aa99fbc link-tap" href="/refund">شرایط بازگشت وجه</a> درخواست بده.</p>
+    <div class="glass u-df1a6875">
+      <b class="u-b9f81216">اگر از نتیجه راضی نبودم؟</b>
+      <p class="u-74e1d4ce">تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده میشود. از صفحهٔ <a class="u-6aa99fbc link-tap" href="/refund">شرایط بازگشت وجه</a> درخواست بده.</p>
     </div>
-    <div class="glass st-df1a6875">
-      <b class="st-b9f81216">دادههای تولدم چه میشود؟</b>
-      <p class="st-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا واگذار نمیشود. جزئیات در <a class="st-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
+    <div class="glass u-df1a6875">
+      <b class="u-b9f81216">دادههای تولدم چه میشود؟</b>
+      <p class="u-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا واگذار نمیشود. جزئیات در <a class="u-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
     </div>
   </div>
 </div>
 
 <div x-data="purchase()" x-cloak>
-  <div class="st-f265ab7f" x-show="busy">
-    <div class="glass st-8f0163b3">
-      <svg class="st-392787e9" aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg>
-      <div class="st-e3ec02ac">در حال پردازش...</div>
+  <div class="u-f265ab7f" x-show="busy">
+    <div class="glass u-8f0163b3">
+      <svg class="u-392787e9" aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg>
+      <div class="u-e3ec02ac">در حال پردازش...</div>
     </div>
   </div>
 </div>

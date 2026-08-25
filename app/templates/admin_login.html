@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-37ad0d85" >
-  <div class="glass st-b1bf3412" >
-    <div class="st-44fc79c1" >🔐</div>
-    <h1 class="st-11409016" >ورود مدیریت</h1>
-    {% if error %}<p class="st-3eb1ebda" >{{ error }}</p>{% endif %}
+<div class="u-37ad0d85" >
+  <div class="glass u-b1bf3412" >
+    <div class="u-44fc79c1" >🔐</div>
+    <h1 class="u-11409016" >ورود مدیریت</h1>
+    {% if error %}<p class="u-3eb1ebda" >{{ error }}</p>{% endif %}
     <form method="post" action="/admin/login">
-      <input class="st-ff8f4f9c" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" required
+      <input class="u-ff8f4f9c" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" required
              placeholder="رمز ورود (فقط عدد)"
              >
-      <button type="submit" class="btn btn-lg st-0466783d" >ورود</button>
+      <button type="submit" class="btn btn-lg u-0466783d" >ورود</button>
     </form>
   </div>
 </div>

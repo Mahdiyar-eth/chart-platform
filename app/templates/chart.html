@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-49826953" x-data="reportState()" x-init="init()">
-  <a href="/birth-form" class="muted st-05eeadb6" >→ فرم جدید</a>
+<div class="u-49826953" x-data="reportState()" x-init="init()">
+  <a href="/birth-form" class="muted u-05eeadb6" >→ فرم جدید</a>
   <h1 class="u-note-gold" >چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
@@ -18,48 +18,48 @@
   {% endif %}
 
   <!-- funnel progress (F3): chart → explore → deep -->
-  <div class="st-5d1c1741" >
-    <span class="st-83c28af5" >۱ · چارت تو ✓</span>
-    <a class="st-39591448" href="/explore?chart={{ chart.id }}" >۲ · خودت را کشف کن</a>
-    <a class="st-39591448" href="/plans?chart={{ chart.id }}" >۳ · گزارش عمیق</a>
+  <div class="u-5d1c1741" >
+    <span class="u-83c28af5" >۱ · چارت تو ✓</span>
+    <a class="u-39591448" href="/explore?chart={{ chart.id }}" >۲ · خودت را کشف کن</a>
+    <a class="u-39591448" href="/plans?chart={{ chart.id }}" >۳ · گزارش عمیق</a>
   </div>
 
   <!-- chart wheel -->
-  <div class="glass glow st-49e93d7f" >
+  <div class="glass glow u-49e93d7f" >
     {{ svg | safe }}
   </div>
-  <p class="muted st-ab879090" >
+  <p class="muted u-ab879090" >
     💡 <b>این چرخ چه می‌گوید؟</b> این دایره، آسمان را در لحظه‌ی تولد تو ترسیم می‌کند: هر سیاره در کدام برج (نشانه) و کدام خانه (حوزه‌ی زندگی) بوده. خط افق <b>AC</b> شخصیتِ بیرونی‌ات و خط عمود <b>MC</b> مسیر شغلی‌ات را نشان می‌دهد.
   </p>
 
   <!-- Big Three -->
-  <section class="glass st-2e500338">
-    <h2>سه‌گانه‌ی اصلی <span class="muted st-d6e47aa9" >(Big Three)</span></h2>
-    <div class="st-13b5d8df" >
+  <section class="glass u-2e500338">
+    <h2>سه‌گانه‌ی اصلی <span class="muted u-d6e47aa9" >(Big Three)</span></h2>
+    <div class="u-13b5d8df" >
       {% for key, label in [('Sun','خورشید'), ('Moon','ماه')] + ([('ASC','طالع')] if 'ASC' in big_three else []) %}
       {% set bt = big_three[key] %}
       <div class="sign-card" style="border-top:4px solid {{ bt.color }};">
-        <div class="st-bea3ad6b" >{{ '☉' if key == 'Sun' else ('☽' if key == 'Moon' else '↑') }}</div>
+        <div class="u-bea3ad6b" >{{ '☉' if key == 'Sun' else ('☽' if key == 'Moon' else '↑') }}</div>
         <b>{{ bt.sign_fa }}</b>
         <span>{{ label }} — {{ bt.element }} {{ bt.modality }}</span>
         <span style="color:{{ bt.color }}; margin-top:6px;">{{ bt.tone }}</span>
       </div>
       {% endfor %}
     </div>
-    <p class="muted st-79b0ade9" >
+    <p class="muted u-79b0ade9" >
       💡 <b>خورشید، ماه و طالع یعنی چه؟</b> خورشید «هسته‌ی هویت» توست، ماه «دنیای احساسات و نیازهای درونی‌ات»، و طالع (AC) «نقاب و اولین برخورد دیگران با تو». این سه با هم ستون اصلی شناخت شخصیت‌اند.
     </p>
   </section>
 
   <!-- visual widgets (collapsed — decluttered, audit U-1) -->
-  <details class="glass st-fed69838" >
-    <summary class="st-97216832" >📊 نمودارهای بیشتر</summary>
-    <div class="st-140e60a7" >
+  <details class="glass u-fed69838" >
+    <summary class="u-97216832" >📊 نمودارهای بیشتر</summary>
+    <div class="u-140e60a7" >
       {% if aspect_grid %}<div>{{ aspect_grid | safe }}</div>{% endif %}
       {% if element_donut %}<div>{{ element_donut | safe }}</div>{% endif %}
       {% if house_bar %}<div>{{ house_bar | safe }}</div>{% endif %}
     </div>
-    <p class="muted st-123b0a05" >
+    <p class="muted u-123b0a05" >
       💡 <b>این نمودارها چه می‌گویند؟</b> جدول جنبه‌ها یعنی زاویه‌ی بین سیاره‌ها (هم‌کاری یا تنش درونی‌ات)؛ دونات عناصر نشان می‌دهد کدام عنصر (آتش/خاک/هوا/آب) در تو غالب است؛ و نمودار خانه‌ها یعنی انرژی‌ات بیشتر در کدام حوزه‌های زندگی متمرکز است.
     </p>
   </details>
@@ -84,19 +84,19 @@
   </section>
 
   <!-- free preview (MASTER W2): answer to YOUR question + 3 patterns + next transit -->
-  <section class="glass st-2e500338" >
+  <section class="glass u-2e500338" >
     <h2>پاسخ چارت به سؤال تو</h2>
     {% if big_three.get('Moon') %}
-    <ul class="st-95982eda" >
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
+    <ul class="u-95982eda" >
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
       </li>
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg></span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg></span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
       </li>
       {% if 'ASC' in big_three %}
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
       </li>
       {% endif %}
     </ul>
@@ -111,7 +111,7 @@
       </div>
     </template>
     <template x-if="preview.focus_areas && preview.focus_areas.length">
-      <div class="st-c03e3f84" style="margin-top:10px;">
+      <div class="u-c03e3f84" style="margin-top:10px;">
         <span class="chip">حوزه‌های انتخابی تو:</span>
         <template x-for="(fa, i) in preview.focus_areas" :key="'fa' + i">
           <span class="chip" x-text="fa"></span>
@@ -146,19 +146,19 @@
   </section>
 
   <!-- annual transit timeline (plan §9.3) -->
-  <section class="glass st-2e500338" >
+  <section class="glass u-2e500338" >
     <h2>گذرهای سال آینده</h2>
-    <p class="muted st-28c79581" >وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
-    <div class="st-c23902c1" >
-      <img class="st-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" >
+    <p class="muted u-28c79581" >وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
+    <div class="u-c23902c1" >
+      <img class="u-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" >
     </div>
   </section>
 
   <!-- CTA (decluttered funnel, audit U-1) -->
-  <section class="glass glow st-56ef63c4" >
+  <section class="glass glow u-56ef63c4" >
     <h2>شناخت کامل — ۲۵+ صفحه</h2>
     <p class="muted u-note-gold" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
-    <div class="st-c03e3f84" >
+    <div class="u-c03e3f84" >
       <span class="chip">آشنایی ۵ بخش — ۳ اعتبار</span>
       <span class="chip">شناخت کامل — ۷ اعتبار</span>
       <span class="chip">شناخت + همراهی — ۱۴ اعتبار</span>
@@ -175,14 +175,14 @@
       </div>
     </details>
     {% endif %}
-    <div class="st-1f205fde" >
-      <a class="st-57f9e31d" href="/chat/{{ chart.id }}" >💬 گفت‌وگو با چارت</a>
-      <a class="st-57f9e31d" href="/transit/{{ chart.id }}" >گذرهای کنونی</a>
-      <a class="st-57f9e31d" href="/solar/{{ chart.id }}" >چارت سالیانه</a>
-      <a class="st-57f9e31d" href="/relocation/{{ chart.id }}" >چارت مهاجرت</a>
-      <button class="st-9284abb5" @click="share()" >📤 اشتراک‌گذاری</button>
+    <div class="u-1f205fde" >
+      <a class="u-57f9e31d" href="/chat/{{ chart.id }}" >💬 گفت‌وگو با چارت</a>
+      <a class="u-57f9e31d" href="/transit/{{ chart.id }}" >گذرهای کنونی</a>
+      <a class="u-57f9e31d" href="/solar/{{ chart.id }}" >چارت سالیانه</a>
+      <a class="u-57f9e31d" href="/relocation/{{ chart.id }}" >چارت مهاجرت</a>
+      <button class="u-9284abb5" @click="share()" >📤 اشتراک‌گذاری</button>
     </div>
-    <div class="st-d6f2af6e" x-cloak>
+    <div class="u-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
         <div class="report-progress" role="status" aria-live="polite">
           <p class="muted" style="margin:0 0 8px;">⏳ در حال تولید گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد…</p>
@@ -190,19 +190,19 @@
         </div>
       </template>
       <template x-if="repStatus === 'done'">
-        <div class="st-64087613" >
-          <a class="btn btn-lg st-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
-          <button class="btn btn-lg st-3b6a3a65" @click.prevent="requestAudio()" x-show="audioStatus !== 'ready'"
+        <div class="u-64087613" >
+          <a class="btn btn-lg u-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
+          <button class="btn btn-lg u-3b6a3a65" @click.prevent="requestAudio()" x-show="audioStatus !== 'ready'"
                   x-text="audioStatus === 'generating' ? '⏳ در حال تولید صوت...' : '🔊 نسخه صوتی گزارش'" ></button>
-          <a class="btn btn-lg st-80d654f9" :href="audioUrl" x-show="audioStatus === 'ready'" >🔊 دانلود نسخه صوتی</a>
+          <a class="btn btn-lg u-80d654f9" :href="audioUrl" x-show="audioStatus === 'ready'" >🔊 دانلود نسخه صوتی</a>
         </div>
       </template>
       <template x-if="repStatus === 'degraded'">
-        <p class="muted st-fdf33f23" >⚠️ بخشی از گزارش به دلیل اختلال موقت، خلاصه تولید شده و به‌زودی خودکار تکمیل می‌شود.</p>
-        <a class="btn btn-lg st-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
+        <p class="muted u-fdf33f23" >⚠️ بخشی از گزارش به دلیل اختلال موقت، خلاصه تولید شده و به‌زودی خودکار تکمیل می‌شود.</p>
+        <a class="btn btn-lg u-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
       </template>
       <template x-if="repStatus === 'failed'">
-        <p class="st-0562fa46" >تولید گزارش با خطا مواجه شد.</p>
+        <p class="u-0562fa46" >تولید گزارش با خطا مواجه شد.</p>
         <button class="btn btn-lg" id="genBtn" @click.prevent="genReport($event)">تلاش دوباره</button>
       </template>
     </div>

@@ -2,18 +2,18 @@
 {% block title %}بینش نجومی | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-cf16c7f9" >
-  <svg class="st-328149fd" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
-  <div class="st-cb575911" >{{ date_fa }}</div>
+<div class="u-cf16c7f9" >
+  <svg class="u-328149fd" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
+  <div class="u-cb575911" >{{ date_fa }}</div>
   {% if kind == "transit" %}
-    <h1 class="st-37d5f733" >گذرهای امروز</h1>
+    <h1 class="u-37d5f733" >گذرهای امروز</h1>
   {% elif kind == "weekly" %}
-    <h1 class="st-37d5f733" >نگاهی به آسمان هفته</h1>
+    <h1 class="u-37d5f733" >نگاهی به آسمان هفته</h1>
   {% else %}
-    <h1 class="st-37d5f733" >امروز در آسمان</h1>
+    <h1 class="u-37d5f733" >امروز در آسمان</h1>
   {% endif %}
-  <div class="glass st-cf409341" >{{ headline }}</div>
-  <a class="btn btn-lg st-2517a51b" href="/birth-form">چارت تولد خودت را بساز</a>
-  <p class="st-ee3bacb5" >زایچه — محاسبه دقیق نجومی چارت تولد</p>
+  <div class="glass u-cf409341" >{{ headline }}</div>
+  <a class="btn btn-lg u-2517a51b" href="/birth-form">چارت تولد خودت را بساز</a>
+  <p class="u-ee3bacb5" >زایچه — محاسبه دقیق نجومی چارت تولد</p>
 </div>
 {% endblock %}

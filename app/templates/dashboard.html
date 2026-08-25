@@ -2,17 +2,17 @@
 {% block title %}داشبورد | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-c3ccaf1c" x-data="{ person: '' }">
+<div class="u-c3ccaf1c" x-data="{ person: '' }">
   <!-- MASTER W9 header: greeting + Jalali/Tehran date + multi-person switcher -->
-  <div class="glass st-5aa6e94e" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+  <div class="glass u-5aa6e94e" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
     <div>
-      <h1 class="st-aa57f901" style="margin:0;">سلام، {{ user.phone or "دوست من" }} 👋</h1>
-      <p class="muted st-bc2db4a1" style="margin:6px 0 0;" x-text="person || 'امروز در چارت تو چه خبر است؟'"></p>
-      {% if today_fa %}<p class="muted st-bc2db4a1" style="margin:2px 0 0;">📅 {{ today_fa }}</p>{% endif %}
+      <h1 class="u-aa57f901" style="margin:0;">سلام، {{ user.phone or "دوست من" }} 👋</h1>
+      <p class="muted u-bc2db4a1" style="margin:6px 0 0;" x-text="person || 'امروز در چارت تو چه خبر است؟'"></p>
+      {% if today_fa %}<p class="muted u-bc2db4a1" style="margin:2px 0 0;">📅 {{ today_fa }}</p>{% endif %}
     </div>
     <div style="min-width:200px;" x-show="people.length" x-cloak>
-      <label class="muted st-bc2db4a1" for="peopleSwitcher">چارت فعال</label>
-      <select id="peopleSwitcher" class="input st-8c0b5cf4" style="width:100%;"
+      <label class="muted u-bc2db4a1" for="peopleSwitcher">چارت فعال</label>
+      <select id="peopleSwitcher" class="input u-8c0b5cf4" style="width:100%;"
               x-data="peopleInit()" x-init="people = peopleList(); person = people.length ? people[0].label : ''"
               @change="goTo($event.target)">
         <template x-for="pp in people" :key="pp.id">
@@ -37,21 +37,21 @@
   </div>
 
   {% if not charts %}
-  <div class="glass glow st-768d6922" >
-    <p class="st-69dc3cc5" >هنوز چارتی نساخته‌ای. با ساخت چارت تولد (رایگان)، داشبورد برایت زنده می‌شود.</p>
-    <a href="/birth-form" class="btn btn-lg st-8bb9d55e" >ساخت چارت رایگان</a>
+  <div class="glass glow u-768d6922" >
+    <p class="u-69dc3cc5" >هنوز چارتی نساخته‌ای. با ساخت چارت تولد (رایگان)، داشبورد برایت زنده می‌شود.</p>
+    <a href="/birth-form" class="btn btn-lg u-8bb9d55e" >ساخت چارت رایگان</a>
   </div>
   {% else %}
 
   <!-- امروزِ تو teaser (free daily layer, W5) -->
   {% if daily and daily.headline %}
-  <a href="/today" class="glass glow st-8080a2b6" >
-    <div class="st-6ed8e93b" >
-      <svg class="st-d3038558" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
+  <a href="/today" class="glass glow u-8080a2b6" >
+    <div class="u-6ed8e93b" >
+      <svg class="u-d3038558" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
       <div>
-        <div class="st-0b5df111" >امروزِ تو{% if daily.date %} — {{ daily.date }}{% endif %}</div>
-        <div class="st-d69aeccd" >{{ daily.headline }}</div>
-        <div class="muted st-9bb4061a" >پنج کارت تأملی امروز ←</div>
+        <div class="u-0b5df111" >امروزِ تو{% if daily.date %} — {{ daily.date }}{% endif %}</div>
+        <div class="u-d69aeccd" >{{ daily.headline }}</div>
+        <div class="muted u-9bb4061a" >پنج کارت تأملی امروز ←</div>
       </div>
     </div>
   </a>
@@ -62,9 +62,9 @@
   <div class="dash-grid" >
     {% for c in deep_cards %}
     <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="st-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
-      <b class="st-551f5233" >{{ c.title }}</b>
-      <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
+      <svg class="u-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
+      <b class="u-551f5233" >{{ c.title }}</b>
+      <span class="muted u-6fcea0f4" >{{ c.desc }}</span>
     </a>
     {% endfor %}
   </div>
@@ -73,15 +73,15 @@
   <div class="dash-grid" >
     {% for c in periodic_cards %}
     <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="st-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
-      <b class="st-551f5233" >{{ c.title }}</b>
-      <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
+      <svg class="u-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
+      <b class="u-551f5233" >{{ c.title }}</b>
+      <span class="muted u-6fcea0f4" >{{ c.desc }}</span>
     </a>
     {% endfor %}
   </div>
 
-  <p class="muted st-0375b210" >
-    داده‌های تو خصوصی است؛ این داشبورد فقط برای توست. — <a class="st-88ed9512" href="/account" >حساب و تنظیمات</a>
+  <p class="muted u-0375b210" >
+    داده‌های تو خصوصی است؛ این داشبورد فقط برای توست. — <a class="u-88ed9512" href="/account" >حساب و تنظیمات</a>
   </p>
   {% endif %}
 </div>
