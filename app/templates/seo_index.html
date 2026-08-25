@@ -2,11 +2,11 @@
 {% block title %}آموزش چارت تولد — مقالات نجومی{% endblock %}
 {% block description %}آموزش رایگان چارت تولد به زبان ساده: معنی ۱۰ سیاره، ۱۲ خانه، ۱۲ برج و راهنماهای اصلی نجوم — برای خودشناسی و تأمل{% endblock %}
 {% block content %}
-<div class="st-fcff65ce" >
+<div class="u-page-narrow" >
   <h1>آموزش چارت تولد</h1>
   <p class="muted">هر چیزی که باید درباره چارت تولد، سیارات و خانه‌ها بدانید — به زبان ساده.</p>
 
-  <h2 class="st-24d308c0" >راهنماهای اصلی</h2>
+  <h2 class="u-block-mt" >راهنماهای اصلی</h2>
   {% for slug, g in guides.items() %}
     <a href="/learn/{{ slug }}" class="glass st-59b6150e" >
       <b>{{ g.title }}</b>
@@ -14,21 +14,21 @@
     </a>
   {% endfor %}
 
-  <h2 class="st-24d308c0" >معنی سیارات</h2>
+  <h2 class="u-block-mt" >معنی سیارات</h2>
   <div class="st-935d2fc2" >
     {% for slug, p in planets.items() %}
       <a href="/learn/{{ slug }}" class="glass u-tile" >{{ p.title }}</a>
     {% endfor %}
   </div>
 
-  <h2 class="st-24d308c0" >خانه‌های دوازده‌گانه</h2>
+  <h2 class="u-block-mt" >خانه‌های دوازده‌گانه</h2>
   <div class="st-935d2fc2" >
     {% for n, h in houses.items() %}
       <a href="/learn/{{ n }}" class="glass u-tile" >{{ h.title }}</a>
     {% endfor %}
   </div>
 
-  <h2 class="st-24d308c0" >برج‌های دوازده‌گانه</h2>
+  <h2 class="u-block-mt" >برج‌های دوازده‌گانه</h2>
   <div class="st-ae7fe0d1" >
     <a href="/signs/hamal" class="glass u-tile" >♈ برج حمل</a>
     <a href="/signs/sowr" class="glass u-tile" >♉ برج ثور</a>

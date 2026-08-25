@@ -22,10 +22,10 @@
   </div>
   {% endif %}
 
-  <div class="glass st-ad292c1c">
+  <div class="glass u-card-inset">
     <input class="input st-1f9c58e5" x-model="coupon" @input="couponMsg=''" placeholder="کد تخفیف (مثلاً LANCH20)" dir="ltr">
     <button class="btn st-ffe01040" @click="applyCoupon()">اعمال</button>
-    <span class="st-39654bf1" x-show="couponMsg" x-text="couponMsg"></span>
+    <span class="u-warn-sm" x-show="couponMsg" x-text="couponMsg"></span>
   </div>
 
   <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار)،
@@ -45,15 +45,15 @@
       </div>
       <div class="st-c9f42765">
         {% if p.action_key == 'report_basic' %}پاسخ کوتاه به ۵ پرسش اصلی: شخصیت، احساسات، روابط، کار، توانمندی‌ها — هر جمله با شاهد چارت خودت.
-        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «ماه در عقرب و خانهٔ ۸ — نیاز عمیق به امنیت عاطفی داری؛ وقتی اعتماد کنی، وفادارترین آدم رابطه‌ای.»</div>
+        <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «ماه در عقرب و خانهٔ ۸ — نیاز عمیق به امنیت عاطفی داری؛ وقتی اعتماد کنی، وفادارترین آدم رابطه‌ای.»</div>
         {% elif p.action_key == 'report_full' %}هر ۱۳ حوزهٔ زندگی، جداگانه؛ برای هر حوزه تحلیل عمیق + نقاط قوت/چالش + یک پیشنهاد عملی. PDF ۲۵+ صفحه.
-        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه (حوزهٔ شغل): «مشتری در خانهٔ ۱۰ — رشد تو از راه یادگیری مداوم می‌گذرد؛ مسیرهایی که مهارت تازه می‌خواهند جواب بهتری می‌دهند.»</div>
+        <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه (حوزهٔ شغل): «مشتری در خانهٔ ۱۰ — رشد تو از راه یادگیری مداوم می‌گذرد؛ مسیرهایی که مهارت تازه می‌خواهند جواب بهتری می‌دهند.»</div>
         {% elif p.action_key == 'report_gold' %}همهٔ «شناخت کامل» + ۳۰ روز گفت‌وگوی شخصی با چارتت + نقشهٔ ۱۲ ماه آینده.
         {% elif p.action_key == 'synastry_full' %}نمرهٔ سازگاری در ۴ حوزه + ۲۵ ارتباط سیاره‌ای میان دو چارت + تفسیر عمیق رابطه.
-        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «زهرهٔ او سه‌گانه با ماهِ تو — سلیقه‌ها و نیازهای عاطفی‌تان بی‌آنکه توضیح بدهید هم‌جهت است.»</div>
+        <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «زهرهٔ او سه‌گانه با ماهِ تو — سلیقه‌ها و نیازهای عاطفی‌تان بی‌آنکه توضیح بدهید هم‌جهت است.»</div>
         {% elif p.action_key == 'transit_3m' %}مهم‌ترین گذرهای ۳ ماه پیش‌رو روی چارتت — با تاریخ دقیق شروع.
         {% elif p.action_key == 'transit_12m' %}ماه‌به‌ماه: کدام سیاره کِی به کجای چارتت می‌رسد و چه چیزی را پررنگ می‌کند.
-        <div class="st-39654bf1" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «از ۱۴ آبان: زحل سه‌گانه با خورشیدت — دوره‌ای که ساخت‌دادن راحت‌تر از همیشه است.»</div>
+        <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «از ۱۴ آبان: زحل سه‌گانه با خورشیدت — دوره‌ای که ساخت‌دادن راحت‌تر از همیشه است.»</div>
         {% elif p.action_key == 'chat_pack_20' %}هر سؤالی دربارهٔ خودت بپرس؛ جواب از روی همان چارت با شاهد نجومی.
         {% elif p.action_key == 'report_audio' %}همان گزارش کامل را صوتی گوش کن — برای روزهای شلوغ.
         {% else %}{{ p.title_fa }}{% endif %}

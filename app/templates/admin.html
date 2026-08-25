@@ -211,7 +211,7 @@
         var drColor = (s.dropoff!==null && s.dropoff>0.5)?'var(--danger)':'var(--muted)';
         h += '<div class="st-0563da50" >'
           + '<span>'+(names[s.step]||s.step)+'</span>'
-          + '<span class="st-2b953210" >'+s.count+'</span>'
+          + '<span class="u-b800" >'+s.count+'</span>'
           + '<span class="u-link-gold" >'+pct+'</span>'
           + '<span class="st-d7a4f978" >'+dr+'</span>'
           + '</div>';
@@ -227,7 +227,7 @@
   <h2 class="u-h3" >هزینه AI — تفکیکی (H1.3)</h2>
   <div class="glass st-d1805458" >
     <div class="st-f0e9d3b4" id="llm-cost-panels" >
-      <p class="muted st-f63147b2" >در حال بارگذاری…</p>
+      <p class="muted u-text-xs" >در حال بارگذاری…</p>
     </div>
     <p class="muted st-5448b47c" >
       منبع: llm_runs (گزارش + گفتگو + گذر). به‌ازای هر مدل، کاربر (۵ هزینه‌برترین) و درصد خطا.
@@ -257,7 +257,7 @@
 
   <h2 class="u-h3" >پروایدر و مدل هوش مصنوعی</h2>
   <div class="glass st-287f770e" >
-    <p class="muted st-f63147b2" >برای هر بخش، پروایدر و مدل را انتخاب کن. «خودکار» یعنی اول OpenCode Go و در صورت خطا DeepSeek مستقیم (اگر کلیدش ست باشد). بعد از ذخیره، سرویس را ریاستارت کن.</p>
+    <p class="muted u-text-xs" >برای هر بخش، پروایدر و مدل را انتخاب کن. «خودکار» یعنی اول OpenCode Go و در صورت خطا DeepSeek مستقیم (اگر کلیدش ست باشد). بعد از ذخیره، سرویس را ریاستارت کن.</p>
     <div class="st-25ce36b2" >
       {% set parts = {'report':'گزارش کامل', 'chat':'گفتگو با چارت', 'preview':'پیش‌نمایش رایگان', 'section_model_default':'سکشن‌های گزارش'} %}
       {% for part, label in parts.items() %}
@@ -349,7 +349,7 @@
           <td>{{ u.status }}</td>
         </tr>
         {% endfor %}
-        {% if not users %}<tr><td class="st-1a9051ed" colspan="5" >کاربری ثبت نشده</td></tr>{% endif %}
+        {% if not users %}<tr><td class="u-center-muted" colspan="5" >کاربری ثبت نشده</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -368,7 +368,7 @@
           <td class="st-57f9e31d" >{{ a.details }}</td>
         </tr>
         {% endfor %}
-        {% if not audit %}<tr><td class="st-1a9051ed" colspan="5" >لاگی ثبت نشده</td></tr>{% endif %}
+        {% if not audit %}<tr><td class="u-center-muted" colspan="5" >لاگی ثبت نشده</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -415,7 +415,7 @@
           </td>
         </tr>
         {% endfor %}
-        {% if not orders %}<tr><td class="st-1a9051ed" colspan="6" >سفارشی ثبت نشده</td></tr>{% endif %}
+        {% if not orders %}<tr><td class="u-center-muted" colspan="6" >سفارشی ثبت نشده</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -445,7 +445,7 @@
           </td>
         </tr>
         {% endfor %}
-        {% if not withdrawals %}<tr><td class="st-1a9051ed" colspan="5" >درخواست تسویه‌ای نیست</td></tr>{% endif %}
+        {% if not withdrawals %}<tr><td class="u-center-muted" colspan="5" >درخواست تسویه‌ای نیست</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -460,10 +460,10 @@
           <td class="st-bfbc0522" >{{ r.created_at.strftime('%m-%d %H:%M') }}</td>
           <td style="color:{% if r.status == 'done' %}#2a9d8f{% elif r.status == 'failed' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">{{ r.status }}</td>
           <td>{{ r.sections|length if r.sections else 0 }}</td>
-          <td>{% if r.pdf_path %}<a class="st-dcc6ae22" href="/api/reports/{{ r.id }}/pdf" >دانلود</a>{% else %}—{% endif %}</td>
+          <td>{% if r.pdf_path %}<a class="u-gold" href="/api/reports/{{ r.id }}/pdf" >دانلود</a>{% else %}—{% endif %}</td>
         </tr>
         {% endfor %}
-        {% if not reports %}<tr><td class="st-1a9051ed" colspan="4" >گزارشی ثبت نشده</td></tr>{% endif %}
+        {% if not reports %}<tr><td class="u-center-muted" colspan="4" >گزارشی ثبت نشده</td></tr>{% endif %}
       </tbody>
     </table>
   </div>
@@ -509,7 +509,7 @@
           const users = (a.top_users || []).map(u => `<div class="st-0f727498" ><code>${u.user_id.slice(0,10)}</code> — ${u.cost_usd}$</div>`).join('');
           html += `<div class="st-2e8d0205" >
             <b class="st-58c0b232" >${lbl[k] || k}</b>
-            <div class="st-912a55f2" ><b>${a.cost_usd}$</b> <span class="muted st-0da13144" >${a.runs} درخواست · خطا ${Math.round((a.fail_rate||0)*100)}%</span></div>
+            <div class="st-912a55f2" ><b>${a.cost_usd}$</b> <span class="muted u-text-2xs" >${a.runs} درخواست · خطا ${Math.round((a.fail_rate||0)*100)}%</span></div>
             <div class="muted st-ecd5934a" >${kinds || ''}</div>
             ${models}
             ${users ? `<div class="muted st-594e163f" >هزینه‌برترین کاربران:</div>${users}` : ''}
@@ -518,7 +518,7 @@
         box.innerHTML = html;
       } catch (e) {
         document.getElementById('llm-cost-panels').innerHTML =
-          '<p class="muted st-f63147b2" >خطا در بارگذاری هزینه AI</p>';
+          '<p class="muted u-text-xs" >خطا در بارگذاری هزینه AI</p>';
       }
     })();
     async function savePart(part){

@@ -10,7 +10,7 @@
     <!-- chart picker -->
     <div class="glass st-5a5e59ed" >
       <div>
-        <div class="muted st-f63147b2" >تاریخ</div>
+        <div class="muted u-text-xs" >تاریخ</div>
         <div class="st-e3ec02ac" x-text="status?.today_label"></div>
       </div>
       <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="onChartChange()" >
@@ -50,9 +50,9 @@
         <div class="st-38697191" >
           <span class="st-3a38b258" aria-hidden="true"></span>
           <p class="st-362151c5" >
-            <span class="st-2b953210" x-text="f.planet_fa"></span>
+            <span class="u-b800" x-text="f.planet_fa"></span>
             امروز در <span class="st-39660e9f" x-text="f.sign_fa"></span> با
-            <span class="st-2b953210" x-text="f.target_fa"></span> تو در
+            <span class="u-b800" x-text="f.target_fa"></span> تو در
             <span class="st-e5be8c0d" x-text="f.aspect_fa"></span> است.
           </p>
         </div>
@@ -63,7 +63,7 @@
     <div class="glass u-panel" >
       <div class="st-24a83240" >🪞 سؤال امروز</div>
       <p class="u-body" x-text="status?.question"></p>
-      <div class="st-56f43562" x-show="status?.access === 'preview'" x-cloak >
+      <div class="u-mt-12" x-show="status?.access === 'preview'" x-cloak >
         <div class="glass st-21e3cb79" >
           <p class="muted st-9cec68b5" >ثبت تأمل روزانه و پیوستگی، بخشی از بستهٔ «شناخت + همراهی» است — با اعتبار باز می‌شود.</p>
           <a class="btn btn-lg st-80d654f9" href="/plans" >مشاهده محصولها</a>
@@ -73,7 +73,7 @@
         <div class="st-52e1e5cb" >✓ تأمل امروز ثبت شد</div>
         <p class="muted st-efc7d33a" x-text="'ساعت ' + status?.done_at"></p>
       </div>
-      <div class="st-56f43562" x-show="status?.access === 'full' && !status?.done" x-cloak >
+      <div class="u-mt-12" x-show="status?.access === 'full' && !status?.done" x-cloak >
         <textarea class="input st-dd0a679c" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" ></textarea>
         <button class="btn btn-lg st-9202fe4c" x-on:click="submit()" :disabled="busy">
           <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
@@ -133,7 +133,7 @@
 
       <!-- one LLM sentence, cached per (chart, date) -->
       <template x-if="daily.insight">
-        <div style="margin-top:12px;" class="glass st-ad292c1c">
+        <div style="margin-top:12px;" class="glass u-card-inset">
           <b>💡 نگاه امروز</b>
           <p class="u-body" x-text="daily.insight"></p>
         </div>

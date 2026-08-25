@@ -17,7 +17,7 @@
         <form @submit.prevent="verify()">
           <label>کد تأیید</label>
           <input class="input st-a04b6b13" type="tel" x-model="code" inputmode="numeric" placeholder="00000" dir="ltr" >
-          <p class="muted st-5e5f5be4" x-show="devCode">کد تست (dev): <b class="st-dcc6ae22" x-text="devCode" ></b></p>
+          <p class="muted st-5e5f5be4" x-show="devCode">کد تست (dev): <b class="u-gold" x-text="devCode" ></b></p>
           <button class="btn st-6dae102d" type="submit" :disabled="busy" x-text="busy ? 'در حال ورود…' : 'ورود'"></button>
           <button type="button" class="muted st-f1d4f2ad" @click="sent=false">تغییر شماره</button>
         </form>

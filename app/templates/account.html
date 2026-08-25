@@ -38,7 +38,7 @@
         <b>{{ p.name or 'بدون نام' }}</b>
         <span class="muted st-498344f5" >{{ p.raw_year }}/{{ p.raw_month }}/{{ p.raw_day }} — {{ p.city_fa or '—' }}</span>
       </div>
-      <span class="chip st-0da13144" >{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
+      <span class="chip u-text-2xs" >{{ 'ساعت دقیق' if p.time_known else 'بدون ساعت' }}</span>
     </div>
     {% endfor %}
   </section>
@@ -92,13 +92,13 @@
     </h2>
     <div class="st-e8c5c074" x-data="notifPrefs()" x-init="init()" >
       <label class="st-699ab5d1" >
-        <input class="st-5304332b" type="checkbox" x-model="f.daily_insight" > بینش روزانه
+        <input class="u-icon-18" type="checkbox" x-model="f.daily_insight" > بینش روزانه
       </label>
       <label class="st-699ab5d1" >
-        <input class="st-5304332b" type="checkbox" x-model="f.weekly_reflection" > تأمل هفتگی
+        <input class="u-icon-18" type="checkbox" x-model="f.weekly_reflection" > تأمل هفتگی
       </label>
       <label class="st-699ab5d1" >
-        <input class="st-5304332b" type="checkbox" x-model="f.report_ready" > آماده‌شدن گزارش
+        <input class="u-icon-18" type="checkbox" x-model="f.report_ready" > آماده‌شدن گزارش
       </label>
       <div class="st-bc73a818" >
         <span class="muted st-1fe86672" >ساعت‌های سکوت (اعلان ارسال نشود):</span>
@@ -116,7 +116,7 @@
     {% for o in orders %}
     <div class="st-279db7b7" >
       <span>{{ o.plan_key }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
-      <span class="chip st-0da13144" >{{ o.status }}</span>
+      <span class="chip u-text-2xs" >{{ o.status }}</span>
     </div>
     {% else %}
     <p class="muted st-54dca8b5" >سفارشی ثبت نشده.</p>

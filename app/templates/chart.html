@@ -3,7 +3,7 @@
 {% block content %}
 <div class="st-49826953" x-data="reportState()" x-init="init()">
   <a href="/birth-form" class="muted st-05eeadb6" >→ فرم جدید</a>
-  <h1 class="st-8a77e5a3" >چارت تولد تو</h1>
+  <h1 class="u-note-gold" >چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
   {% if is_guest %}
@@ -103,7 +103,7 @@
     {% endif %}
     <!-- the user's own question + chosen focus areas, echoed always (R12/P0-3) -->
     <template x-if="preview.question_answer || preview.personal_question">
-      <div class="glass st-ad292c1c" style="margin-top:12px;">
+      <div class="glass u-card-inset" style="margin-top:12px;">
         <b>سؤالی که موقع ساخت چارت پرسیدی:</b>
         <p class="muted u-note" x-text="preview.personal_question"></p>
         <p style="margin:8px 0 0;" x-show="preview.question_answer" x-text="preview.question_answer"></p>
@@ -157,7 +157,7 @@
   <!-- CTA (decluttered funnel, audit U-1) -->
   <section class="glass glow st-56ef63c4" >
     <h2>شناخت کامل — ۲۵+ صفحه</h2>
-    <p class="muted st-8a77e5a3" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
+    <p class="muted u-note-gold" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
     <div class="st-c03e3f84" >
       <span class="chip">آشنایی ۵ بخش — ۳ اعتبار</span>
       <span class="chip">شناخت کامل — ۷ اعتبار</span>

@@ -5,8 +5,8 @@
 {% block canonical %}{{ canonical }}{% endblock %}
 {% block content %}
 <div class="st-dea6d0cd">
-  <nav class="st-5f258b10">
-    <a class="st-ae3c1652" href="/moon">ماه در برج‌ها</a>
+  <nav class="u-sub-sm">
+    <a class="u-link-accent" href="/moon">ماه در برج‌ها</a>
     <span class="st-8f93fd3a">←</span><span>{{ page.title }}</span>
   </nav>
 
@@ -32,7 +32,7 @@
   <div class="st-6788b499">
     {% for label, body in sections %}
     {% if body %}
-    <div class="glass st-20495c40">
+    <div class="glass u-pad-18-20">
       <div class="st-8d446200">
         <span class="st-e04ca4b4"></span>
         <h2 class="st-51e7af29">{{ label }}</h2>
@@ -50,7 +50,7 @@
   </div>
 
   {% if neighbors %}
-  <nav class="glass st-20495c40" aria-label="برج‌های دیگر">
+  <nav class="glass u-pad-18-20" aria-label="برج‌های دیگر">
     <b>ماه در برج‌های دیگر:</b>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
       {% for n in neighbors %}<a href="/moon-in/{{ n.slug }}" class="btn-chip">{{ n.fa }}</a>{% endfor %}

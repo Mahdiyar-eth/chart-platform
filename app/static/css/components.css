@@ -15,7 +15,9 @@
 /* ===== Surfaces ===== */
 .card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5); }
 .glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r-lg);
-  backdrop-filter:var(--blur-glass) saturate(160%); -webkit-backdrop-filter:var(--blur-glass) saturate(160%);
+  /* W3 perf: NO backdrop-filter on the generic card — with 20+ cards per page
+     each one is a separate compositor layer that re-rasters every scroll frame.
+     The glass look = translucent bg + border + shadow (kept below). */
   box-shadow:0 8px 32px rgba(2,6,23,.25), inset 0 1px 0 rgba(255,255,255,.06), inset -1px -1px 1px rgba(255,255,255,.03);
   position:relative; }
 /* MASTER W12 — liquid glass depth: layered edge reflection + slow drift.

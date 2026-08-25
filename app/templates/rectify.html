@@ -20,9 +20,9 @@
     </p>
   </div>
 
-  <form class="st-86de7ac6" id="recForm" >
+  <form class="u-form-mt" id="recForm" >
     <input type="hidden" name="calendar" value="jalali">
-    <div class="glass st-8e11ed66" >
+    <div class="glass u-pad-18" >
       <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="/static/icons.svg#icon-calendar"/></svg> تاریخ تولد</h2>
       <div class="st-040c55ed" >
         <input name="year" type="number" placeholder="سال 1373" class="input" required>
@@ -119,10 +119,10 @@ document.getElementById('recForm').addEventListener('submit', async (e) => {
     box.style.display = 'block';
     box.innerHTML =
       '<div class="glass glow st-60a0726a" >' +
-      '<h2>محتمل‌ترین ساعت تولد: <span class="st-dcc6ae22" >' + esc(d.best_time) + '</span></h2>' +
+      '<h2>محتمل‌ترین ساعت تولد: <span class="u-gold" >' + esc(d.best_time) + '</span></h2>' +
       '<p class="muted st-d035d1e3" >بر اساس ' + d.events_used + ' رویداد — امتیاز هم‌راستایی: ' + d.score + '</p>' +
       '<div class="st-c8e8cde2" >' +
-      d.candidates.map(c => '<div class="glass st-59bdf7cb" ><b>' + esc(c.time) + '</b><div class="muted st-0da13144" >امتیاز ' + c.score + '</div></div>').join('') +
+      d.candidates.map(c => '<div class="glass st-59bdf7cb" ><b>' + esc(c.time) + '</b><div class="muted u-text-2xs" >امتیاز ' + c.score + '</div></div>').join('') +
       '</div>' +
       '<p class="muted st-1f682c99" >این تخمین جایگزین سند رسمی تولد نیست.</p>' +
       '<a href="/birth-form" class="btn st-c3be602e" >ساخت چارت با این ساعت</a></div>';

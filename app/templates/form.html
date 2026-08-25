@@ -25,7 +25,7 @@
         <button type="button" class="chip" :class="{'sel': cal === 'jalali'}" @click="cal = 'jalali'">شمسی</button>
         <button type="button" class="chip" :class="{'sel': cal === 'gregorian'}" @click="cal = 'gregorian'">میلادی</button>
       </div>
-      <label class="st-56f43562" >سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <label class="u-mt-12" >سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
       <div>
         <button type="button" class="chip" :class="{'sel': zodiac === 'tropical'}" @click="zodiac = 'tropical'">تروپیکال (پیش‌فرض)</button>
         <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
@@ -59,7 +59,7 @@
       <input id="birth-city" class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران" aria-label="شهر تولد">
       <div class="u-mt-2b" >
         <template x-for="c in cities" :key="c.city_fa + c.province_fa">
-          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted st-0da13144" x-text="' (' + c.province_fa + ')'"></span></button>
+          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted u-text-2xs" x-text="' (' + c.province_fa + ')'"></span></button>
         </template>
       </div>
     </div>
