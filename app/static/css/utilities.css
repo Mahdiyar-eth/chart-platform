@@ -52,9 +52,8 @@
 .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:60; }
 .credits-chip{ display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:var(--r-full); background:var(--nav-ink-a08, rgba(255,255,255,.08)); }
 /* city search dropdown (form/chat/synastry) — referenced by JS, had no CSS */
-.city-suggest-a,.city-suggest-b{ position:absolute; z-index:40; top:calc(100% + 4px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-md); box-shadow:0 12px 32px rgba(0,0,0,.18); }
-.city-suggest-a > div,.city-suggest-b > div{ padding:var(--sp-3) var(--sp-4); cursor:pointer; border-bottom:1px solid var(--stroke); }
-.city-suggest-a > div:hover,.city-suggest-b > div:hover{ background:var(--nav-ink-a08, rgba(255,255,255,.06)); }
+/* W1.2: legacy hashed-name selectors removed — the synastry page defines
+   its own .city-suggest styles inline. */
 
 /* ═══ W1.2 semantic utilities (replace st-hash one-for-one) ═══ */
 

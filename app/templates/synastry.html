@@ -38,7 +38,7 @@
            6px lands exactly under the field for BOTH people. -->
       <div class="city-field" style="position:relative;">
         <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input u-a4a5b808" required autocomplete="off">
-        <div class="city-suggest city-suggest-a" ></div>
+        <div class="city-suggest cs-a" ></div>
       </div>
       <select name="zodiac_a" class="input u-a4a5b808" title="سیستم نجومی">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
@@ -61,7 +61,7 @@
       <!-- R14-D6: same wrapper pattern as person A -->
       <div class="city-field" style="position:relative;">
         <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input u-a4a5b808" required autocomplete="off">
-        <div class="city-suggest city-suggest-b" ></div>
+        <div class="city-suggest cs-b" ></div>
       </div>
       <select name="zodiac_b" class="input u-a4a5b808" title="سیستم نجومی">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
@@ -130,9 +130,9 @@ async function citySearch(inp, box, sel) {
   document.addEventListener('click', e => { if (!box.contains(e.target) && e.target !== inp) box.innerHTML = ''; });
 }
 let cityA = null, cityB = null;
-citySearch(document.querySelector('input[name=city_a]'), document.querySelector('.city-suggest-a'),
+citySearch(document.querySelector('input[name=city_a]'), document.querySelector('.cs-a'),
            c => { cityA = c; });
-citySearch(document.querySelector('input[name=city_b]'), document.querySelector('.city-suggest-b'),
+citySearch(document.querySelector('input[name=city_b]'), document.querySelector('.cs-b'),
            c => { cityB = c; });
 
 document.getElementById('synForm').addEventListener('submit', async (e) => {
