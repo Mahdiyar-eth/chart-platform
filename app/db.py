@@ -46,20 +46,20 @@ def seed_plans() -> None:
         dict(key="basic", name_fa="پایه", subtitle_fa="آشنایی اولیه با چارت تولد — برای شروع شناخت", price_toman=149_000,
              features=["چارت تولد تعاملی + SVG اختصاصی", "سه‌گانه‌ی اصلی (خورشید، ماه، طالع) با تفسیر",
                        "۵ بخش اصلی گزارش (شخصیت، ذهن، احساسات، رابطه، مسیر)",
-                       "پیش‌نمایش رایگان قبل از خرید", "دانلود PDF"], sort=1),
+                       "پیش‌نمایش رایگان قبل از خرید", "دانلود PDF"], sort=1, active=False),  # R13/N3: legacy toman plan retired — credits only
         dict(key="full", name_fa="کامل", subtitle_fa="گزارش کامل ۱۳ بخشی با شواهد نجومی — پرفروش‌ترین", price_toman=349_000,
              features=["همه‌ی امکانات پلن پایه", "گزارش کامل هر ۱۳ حوزه‌ی زندگی (شخصیت، عشق، شغل، خانواده، مالی، سلامت و…)",
                        "تحلیل کامل جنبه‌ها و خانه‌ها", "هر بینش با شاهد نجومی (کدام سیاره، کدام خانه، کدام زاویه)",
-                       "دانلود PDF ۲۵+ صفحه + Word قابل ویرایش", "نمودارهای SVG اختصاصی"], sort=2),
+                       "دانلود PDF ۲۵+ صفحه + Word قابل ویرایش", "نمودارهای SVG اختصاصی"], sort=2, active=False),  # R13/N3: retired
         dict(key="gold", name_fa="طلایی", subtitle_fa="شناخت عمیق + گفت‌وگوی شخصی با هوش مصنوعی + ترانزیت", price_toman=699_000,
              features=["همه‌ی امکانات پلن کامل", "گفت‌وگو با هوش مصنوعی درباره‌ی چارت (۵ سوال در روز)",
                        "فصل فرهنگی-اسلامی", "نقشه‌ی گذرهای ۴ ماه آینده نسبت به چارت",
-                       "اولویت در صف تولید گزارش", "به‌روزرسانی‌های آینده رایگان"], sort=3),
+                       "اولویت در صف تولید گزارش", "به‌روزرسانی‌های آینده رایگان"], sort=3, active=False),  # R13/N3: retired
         dict(key="synastry", name_fa="سیناستری", subtitle_fa="سنجش سازگاری دو چارت — برای رابطه، ازدواج و شراکت", price_toman=499_000,
              features=["نمره‌ی سازگاری ۴ حوزه‌ای (عشق، ذهن، کار، معنا)",
                        "۲۵+ ارتباط سیاره‌ای میان دو چارت",
                        "تفسیر اختصاصی و عمیق رابطه", "پیش‌نمایش رایگان نمره‌ی کلی"],
-             sort=4),
+             sort=4, active=True),  # R13: kept orderable — the /synastry form's paid path (legacy customers)
         dict(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی", price_toman=180_000,
              credits_grant=3, features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا"],
              sort=5),
@@ -128,7 +128,8 @@ def seed_credit_prices() -> None:
         dict(action_key="report_basic",  title_fa="آشنایی (۵ بخش) — شروعِ سریع",                  credits=3),
         dict(action_key="report_full",   title_fa="شناخت کامل (۱۳ بخش)",                          credits=7),
         dict(action_key="report_gold",   title_fa="شناخت + همراهی (۱۳بخش + چت ۳۰روزه + ۱۲ماهه)",   credits=14),
-        dict(action_key="synastry_full", title_fa="سازگاری دو نفر — ما به هم می‌خوریم؟",           credits=10),
+        dict(action_key="synastry_full", title_fa="سازگاری دو نفر — ما به هم می‌خوریم؟",           credits=10,
+             active=False),  # R13/N2: retired — love/work are the products now
         dict(action_key="transit_3m",    title_fa="۳ ماه آیندهٔ من",                              credits=2),
         dict(action_key="transit_12m",   title_fa="۱۲ ماه آیندهٔ من",                             credits=5),
         dict(action_key="rectify",       title_fa="ساعت تولدم را نمی‌دانم",                       credits=2, active=False),  # Z8: free (Y15), keep row inactive for correct admin financial report

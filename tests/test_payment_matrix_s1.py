@@ -64,7 +64,7 @@ def reject_gateway(monkeypatch):
     yield RejectZarinpal
 
 
-def _order(status="pending", coupon=None, amount=1_490_000, plan_key="full"):
+def _order(status="pending", coupon=None, amount=1_490_000, plan_key="report_full"):
     auth = f"A{int(time.time() * 1000)}{'X' * 18}"
     with Session(engine) as s:
         ch = Chart(chart_json={"planets": {}, "engine_config": {"zodiac": "tropical"}})

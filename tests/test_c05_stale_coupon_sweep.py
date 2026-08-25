@@ -60,7 +60,7 @@ def test_stale_pending_order_releases_coupon(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         o = s.get(Order, oid)
@@ -88,7 +88,7 @@ def test_fresh_pending_order_not_swept(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         o = s.get(Order, oid)
@@ -108,7 +108,7 @@ def test_sweep_is_idempotent(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         s.get(Order, oid).created_at = utcnow() - timedelta(hours=2)

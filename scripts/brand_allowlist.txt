@@ -12,3 +12,5 @@ app/report/solar_service.py:81
 app/report/solar_service.py:80
 app/report/preview.py:203
 app/report/solar_service.py:95
+app/templates/index.html:36
+app/templates/index.html:75

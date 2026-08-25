@@ -90,7 +90,7 @@ def test_synastry_full_owned_but_unpaid_403():
 def test_order_foreign_chart_403():
     c = TestClient(app)
     cid, _ = _create_chart(c)
-    r = TestClient(app).post("/api/orders", data={"plan_key": "full", "chart_id": cid})
+    r = TestClient(app).post("/api/orders", data={"plan_key": "credit6", "chart_id": cid})
     assert r.status_code == 403
 
 
@@ -98,7 +98,7 @@ def test_order_foreign_secondary_chart_403():
     c = TestClient(app)
     cid, _ = _create_chart(c)
     # secondary chart owned by the caller, primary foreign → 403
-    r = c.post("/api/orders", data={"plan_key": "synastry", "chart_id": cid,
+    r = c.post("/api/orders", data={"plan_key": "credit12", "chart_id": cid,
                                     "secondary_chart_id": cid})
     assert r.status_code == 403
 
@@ -107,6 +107,6 @@ def test_order_owned_chart_reaches_payment():
     c = TestClient(app)
     cid, tok = _create_chart(c)
     c.cookies.update(_cap_cookie(cid, tok))
-    r = c.post("/api/orders", data={"plan_key": "full", "chart_id": cid})
+    r = c.post("/api/orders", data={"plan_key": "credit6", "chart_id": cid})
     assert r.status_code == 200, r.text
     assert "payment_url" in r.json()

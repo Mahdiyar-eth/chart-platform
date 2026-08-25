@@ -223,15 +223,29 @@ def glossary_page(request: Request):
 
 
 @router.get("/articles", response_class=HTMLResponse)
-def page_articles(request: Request):
+def page_articles(request: Request, page: int = 1, cat: str = ""):
+    """R13/P2: pagination + category filter — 12 per page instead of one
+    endless wall; `cat` filters server-side so links stay shareable."""
     from app.main import _load_articles
     arts = _load_articles()
     categories = sorted({a.get("category", "عمومی") for a in arts})
+    if cat:
+        arts = [a for a in arts if a.get("category", "عمومی") == cat]
+    PER_PAGE = 12
+    total = len(arts)
+    pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    page = min(max(1, page), pages)
+    chunk = arts[(page - 1) * PER_PAGE: page * PER_PAGE]
     return templates.TemplateResponse(request, "articles_index.html", {
         "title": "مقالات نجوم و چارت تولد",
         "meta": "مجموعه مقالات آموزشی نجوم، چارت تولد، سیارات، برج‌ها و تحلیل شخصیت — به زبان ساده",
-        "articles": arts,
+        "articles": chunk,
         "categories": categories,
+        "active_cat": cat,
+        "page": page,
+        "pages": pages,
+        "total": total,
+        "base_url": "/articles?cat=" + cat if cat else "/articles",
     })
 
 

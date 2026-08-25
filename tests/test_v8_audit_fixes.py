@@ -194,7 +194,7 @@ def test_wallet_insufficient_balance_creates_no_order():
         cpid, real_code = cp.id, cp.code
 
     r = c.post("/api/orders", data={
-        "plan_key": "basic", "chart_id": cid, "coupon": real_code,
+        "plan_key": "credit12", "chart_id": cid, "coupon": real_code,
     }, headers={"x-pay-with-balance": "1"})
     assert r.status_code == 400, r.text
     assert "موجودی" in r.json().get("detail", "")
@@ -223,8 +223,10 @@ def test_wallet_pays_discounted_amount_with_coupon(monkeypatch):
 
     phone = "98913" + str(9_000_000 + _uuid.uuid4().int % 1_000_000)
     with Session(engine) as s:
-        # 1.25M — covers the discounted 1.192M basic plan, NOT the full 1.49M
-        u = User(phone=phone, balance_rial=1_250_000)
+        # R13/N3: credit packs replaced report plans — balance 1.25M covers
+        # nothing discounted at 20% except... credit3 = 1.8M×0.8 = 1.44M > 1.25M,
+        # so top the wallet up to 1.6M (covers credit3, not credit12=6M).
+        u = User(phone=phone, balance_rial=1_600_000)
         s.add(u)
         s.commit()
         s.refresh(u)
@@ -240,7 +242,7 @@ def test_wallet_pays_discounted_amount_with_coupon(monkeypatch):
     cid = _mk_chart(c)
 
     r = c.post("/api/orders", data={
-        "plan_key": "basic", "chart_id": cid, "coupon": real_code,
+        "plan_key": "credit3", "chart_id": cid, "coupon": real_code,
     }, headers={"x-pay-with-balance": "1"})
     assert r.status_code == 200, r.text
     body = r.json()
@@ -248,6 +250,6 @@ def test_wallet_pays_discounted_amount_with_coupon(monkeypatch):
     with Session(engine) as s:
         o = s.exec(select(Order).order_by(Order.created_at.desc())).first()
         assert o.status == "paid"
-        assert o.amount_rial == 1_192_000  # 1.49M − 20%
-        assert s.get(User, uid).balance_rial == 58_000  # 1.25M − 1.192M
+        assert o.amount_rial == 1_440_000   # credit3 = 1.8M − 20% (R13/N3)
+        assert s.get(User, uid).balance_rial == 160_000  # 1.6M − 1.44M
         assert s.get(Coupon, cpid).used_count == 1

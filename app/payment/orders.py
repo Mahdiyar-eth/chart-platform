@@ -52,6 +52,11 @@ def create_order(
     from app.payment.zarinpal import ZarinpalClient, ZarinpalError
 
     plan = session.get(Plan, plan_key)
+    # R13/N3: retired toman plans (active=False) are no longer orderable —
+    # the credit economy (/api/purchase + credit packs) is the only path.
+    # DEEP_REPORT_ACTIONS (report_basic/full/gold) are NOT plans — they are
+    # credit actions and never reach create_order; the coupon pre-check above
+    # already validated them against the ledger.
     if not plan or not plan.active:
         raise LookupError("plan not found")
 
@@ -68,13 +73,16 @@ def create_order(
         # §13 — LANCH20: only on the user's FIRST deep report. Enforced before
         # the atomic slot reservation so the slot is never burned for nothing.
         if coupon_row.report_only:
-            from app.payment.orders import REPORT_PLANS
-            if plan_key not in REPORT_PLANS:
+            # R13/N3: "first deep report" now means the first credit purchase
+            # of a deep-report action (report_basic/full/gold), since toman
+            # report plans are retired.
+            from app.models import CreditTransaction as _CT
+            if plan_key not in CREDIT_PACKS and plan_key not in DEEP_REPORT_ACTIONS:
                 raise ValueError("این کد تخفیف فقط برای گزارش عمیق است")
-            prior = session.exec(select(Order).where(
-                Order.user_id == new_user_id,
-                Order.status == "paid",
-                Order.plan_key.in_(REPORT_PLANS),
+            prior = session.exec(select(_CT).where(
+                _CT.user_id == new_user_id,
+                _CT.amount < 0,
+                _CT.reason.in_(DEEP_REPORT_ACTIONS),
             )).first() if new_user_id else None
             if prior:
                 raise ValueError("این کد تخفیف فقط برای اولین گزارش عمیق است")
@@ -194,7 +202,13 @@ def activate_subscription(session: Session, order: Order) -> None:
     session.commit()  # H — caller runs inside a short-lived session
 
 
-REPORT_PLANS = {"basic", "full", "gold"}
+# R13/N3: legacy toman report plans are retired — the paid-report path is now
+# the credit economy (/api/purchase → grant_from_credits). Credit packs pay
+# toman and grant credits; reports are then unlocked per-chart with credits.
+REPORT_PLANS = set()  # no plan_key auto-enqueues a report anymore
+# LANCH20 scope: the coupon's "first deep report" rule now keys on the credit
+# actions that unlock deep reports (report_basic/full/gold), not toman plans.
+DEEP_REPORT_ACTIONS = {"report_basic", "report_full", "report_gold"}
 CREDIT_PACKS = {"credit3", "credit6", "credit12"}
 SUBSCRIPTION_PLANS = {"monthly", "yearly"}   # H — همراه ماهانه/سالانه
 SUBSCRIPTION_MONTHLY_CREDITS = 5             # H — 5 credits/month
@@ -518,7 +532,10 @@ def pay_order_with_balance(session: Session, order: Order, user: User | None) ->
             grant_subscription_credits(session, sub)  # first month granted on purchase
     if order.plan_key in CREDIT_PACKS:
         grant_credits(session, order)
-    if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
+    if order.plan_key in DEEP_REPORT_ACTIONS and order.chart_id and not order.report_id:
+        # R13/N3: deep-report actions bought via /api/purchase don't pass
+        # through here (they go through entitlements), but a legacy pending
+        # order with a deep-report plan_key still auto-enqueues its report.
         rep = Report(chart_id=order.chart_id, status="queued",
                      plan_key=order.plan_key)
         session.add(rep)

@@ -1193,7 +1193,7 @@ def api_coupon_check(code: str = Query(default=""), request: Request = None,
                      session: Session = Depends(get_session)):
     """§13 — validate a coupon WITHOUT consuming it; report_only coupons also
     check the caller's first-deep-report eligibility."""
-    from app.payment.orders import REPORT_PLANS
+    from app.payment.orders import DEEP_REPORT_ACTIONS
     from app.timeutil import ensure_utc, utcnow
     cp = session.exec(select(Coupon).where(Coupon.code == code.strip().upper())).first()
     if not cp or not cp.active:
@@ -1206,11 +1206,14 @@ def api_coupon_check(code: str = Query(default=""), request: Request = None,
     if cp.report_only:
         user = get_current_user(request)
         if user:
-            prior = session.exec(select(Order).where(
-                Order.user_id == user.id, Order.status == "paid",
-                Order.plan_key.in_(REPORT_PLANS))).first()
+            # R13/N3: the ledger is the source of truth — a prior deep-report
+            # CREDIT spend (not an old toman plan order) voids the coupon.
+            from app.models import CreditTransaction as _CT
+            prior = session.exec(select(_CT).where(
+                _CT.user_id == user.id, _CT.amount < 0,
+                _CT.reason.in_(DEEP_REPORT_ACTIONS))).first()
             if prior:
-                raise HTTPException(400, "این کد فقط برای اولین گزارش عمیق است")
+                raise HTTPException(404, "کد تخفیف نامعتبر است")
     return {"code": cp.code, "percent": cp.percent, "scope": scope}
 
 
@@ -1264,8 +1267,16 @@ def api_payment_verify(
             "UPDATE orders SET status = 'verifying' WHERE id = :oid AND status = 'pending' RETURNING id"
         ), params={"oid": order.id}).first()
         if not claimed:
-            # another request already claimed/paid this order → just redirect
+            # another request already claimed/paid this order → just redirect.
+            # R13 race fix: the atomic claim above must be COMMITTED before we
+            # call the gateway, otherwise every concurrent request still sees
+            # status='pending' in ITS OWN transaction snapshot and ALL of them
+            # claim successfully → gateway verified N times (money bug).
+            session.commit()
             return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
+        # R13 race fix: commit the 'verifying' claim NOW so losers see it and
+        # take the redirect branch instead of also calling verify().
+        session.commit()
         client = ZarinpalClient()
         try:
             v = client.verify(Authority, order.amount_rial)
@@ -1278,7 +1289,9 @@ def api_payment_verify(
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
-            from app.payment.orders import REPORT_PLANS, activate_subscription, CREDIT_PACKS, grant_credits, SUBSCRIPTION_PLANS, grant_subscription_credits
+            from app.payment.orders import (DEEP_REPORT_ACTIONS,
+                                            activate_subscription, CREDIT_PACKS, grant_credits,
+                                            SUBSCRIPTION_PLANS, grant_subscription_credits)
             if order.plan_key in SUBSCRIPTION_PLANS:
                 activate_subscription(session, order)
                 sub = session.exec(
@@ -1289,11 +1302,23 @@ def api_payment_verify(
                 ).first()
                 if sub:
                     grant_subscription_credits(session, sub)  # H — first month granted on purchase
-            # P6 — credit packs: grant credits atomically + ledger row
+            # P6 — credit packs: grant credits atomically + ledger row.
+            # R13 fix: a GUEST pack order (no user_id, anonymous chart) has no
+            # resolvable buyer — grant_credits raises and the whole verify
+            # rolled back to 'pending'. Credits belong to an ACCOUNT, so the
+            # honest behaviour is: payment succeeded (money moved), order paid,
+            # but the credits wait in escrow until the guest claims the chart.
             if order.plan_key in CREDIT_PACKS:
-                grant_credits(session, order)
-            # auto-generate report for report plans (basic/full/gold — NOT synastry/sub)
-            if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
+                try:
+                    grant_credits(session, order)
+                except ValueError as ve:
+                    session.rollback()
+                    order.status = "paid"  # money DID move at the gateway
+                    order.note = f"credits pending claim: {str(ve)[:120]}"
+                    session.add(order)
+            # auto-generate report for deep-report orders (R13/N3: legacy toman
+            # plans retired — the path now keys on DEEP_REPORT_ACTIONS)
+            if order.plan_key in DEEP_REPORT_ACTIONS and order.chart_id and not order.report_id:
                 rep = Report(chart_id=order.chart_id, status="queued",
                              plan_key=order.plan_key)
                 session.add(rep)
@@ -1515,6 +1540,11 @@ def api_synastry_order(request: Request, session: Session = Depends(get_session)
     session.commit(); session.refresh(chart_a); session.refresh(chart_b)
     user = get_current_user(request)
     try:
+        # R13/N2: the 10-credit toman synastry bundle is retired — the order
+        # path now sells the credit6-style pack? No: synastry is bought with
+        # CREDITS via /api/purchase(synastry_love|synastry_work). This legacy
+        # endpoint keeps working for the still-active "synastry" Plan row
+        # only if it exists; otherwise it fails with the standard message.
         order, pay_url = create_order(
             session, "synastry", chart_a.id, secondary_chart_id=chart_b.id,
             coupon=None, ref_code="", new_user_id=user.id if user else None,

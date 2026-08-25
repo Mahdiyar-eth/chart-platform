@@ -66,14 +66,14 @@ def test_last_slot_reserved_at_creation(monkeypatch):
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
     c.cookies.update(ck)
-    r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                 )
     assert r1.status_code == 200, r1.text
     # second user with the same coupon — slot already reserved → 400
     cid2, tok2 = _mk_chart(c)
     ck2 = {"chart_access": json.dumps({cid2: tok2})}
     c.cookies.update(ck2)
-    r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "gold", "coupon": code},
+    r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "credit12", "coupon": code},
                 )
     assert r2.status_code == 400
     assert "مصرف شده" in r2.json()["detail"]
@@ -90,7 +90,7 @@ def test_verify_failure_releases_slot(monkeypatch):
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
     c.cookies.update(ck)
-    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                )
     oid = r.json()["order_id"]
     with Session(engine) as s:
@@ -122,7 +122,7 @@ def test_gateway_down_at_creation_releases_slot(monkeypatch):
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
     c.cookies.update(ck)
-    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                )
     assert r.status_code == 502
     with Session(engine) as s:
@@ -144,7 +144,7 @@ def test_gateway_constructor_error_is_friendly_502(monkeypatch):
     c = TestClient(main_app)
     cid, tok = _mk_chart(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold"})
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12"})
     assert r.status_code == 502, r.status_code
     assert "درگاه" in r.text or "دوباره" in r.text  # friendly Persian message, not 500 detail
 
@@ -161,7 +161,7 @@ def test_refund_returns_slot(monkeypatch):
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
     c.cookies.update(ck)
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                  ).json()["order_id"]
     with Session(engine) as s:
         auth = s.get(Order, oid).authority

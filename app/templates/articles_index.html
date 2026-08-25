@@ -2,31 +2,45 @@
 {% block title %}{{ title }}{% endblock %}
 {% block description %}{{ meta }}{% endblock %}
 {% block content %}
-<div class="wrap st-9c227a85" x-data="{cat:'همه'}">
-  <h1 class="st-44c1f7ac" >{{ title }}</h1>
+{# R13/P2: server-side category filter + pagination. Headings are semantic:
+   one h1 (page), h2 per card title (was a plain div). #}
+<div class="wrap st-9c227a85" >
+  <h1 class="st-44c1f7ac" >مقالات نجوم و چارت تولد</h1>
+  <p class="muted st-aa80ddc5" style="margin-top:-6px;">{{ total }} مقاله — به زبان ساده، با مثال‌های روزمره</p>
   <div class="st-600f44c9" ></div>
 
   {% if articles %}
   <div class="st-45ca303e" role="tablist" aria-label="دسته‌بندی مقالات">
-    <button type="button" class="cat-chip" :class="cat==='همه'?'cat-chip-active':''" @click="cat='همه'">همه</button>
+    <a class="cat-chip {% if not active_cat %}cat-chip-active{% endif %}" href="/articles">همه</a>
     {% for c in categories %}
-    <button type="button" class="cat-chip" :class="cat==='{{ c }}'?'cat-chip-active':''" @click="cat='{{ c }}'">{{ c }}</button>
+    <a class="cat-chip {% if active_cat == c %}cat-chip-active{% endif %}" href="/articles?cat={{ c|urlencode }}">{{ c }}</a>
     {% endfor %}
   </div>
 
   <div class="st-70fb7da9" >
     {% for a in articles %}
-    <a class="st-2b6e758b" href="/articles/{{ a.slug }}" x-show="cat==='همه' || cat==='{{ a.category }}'"
-       >
+    <a class="st-2b6e758b" href="/articles/{{ a.slug }}">
       {% if a.image %}<img class="st-dbc8ee96" src="{{ a.image }}" alt="{{ a.title }}" loading="lazy" >{% endif %}
       <div class="st-8ebc4372" >
         <div class="st-48eddc88" >{{ a.category }}</div>
-        <div class="st-eb16482b" >{{ a.title }}</div>
+        <h2 class="st-eb16482b" >{{ a.title }}</h2>
         <div class="st-137199ee" >{{ a.excerpt }}</div>
       </div>
     </a>
     {% endfor %}
   </div>
+
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="صفحه‌بندی مقالات">
+    {% if page > 1 %}
+      <a class="pager-btn" href="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}page={{ page - 1 }}">→ قبلی</a>
+    {% endif %}
+    <span class="pager-info">صفحهٔ {{ page }} از {{ pages }}</span>
+    {% if page < pages %}
+      <a class="pager-btn" href="{{ base_url }}{% if '?' in base_url %}&{% else %}?{% endif %}page={{ page + 1 }}">بعدی ←</a>
+    {% endif %}
+  </nav>
+  {% endif %}
   {% else %}
   <p class="st-aa80ddc5" >مقالات به‌زودی منتشر می‌شوند.</p>
   {% endif %}
@@ -38,9 +52,17 @@
 
 <style>
   .cat-chip{ min-height:40px; background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:var(--muted-3,#cfc6e0);
-    border-radius:999px;padding:7px 16px;font-size:.82rem;cursor:pointer;transition:all .15s;font-family:inherit;}
+    border-radius:999px;padding:7px 16px;font-size:.82rem;cursor:pointer;transition:all .15s;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;}
   .cat-chip:hover{border-color:var(--gold-deep,#d4af37);color:var(--txt,#f2edfa);}
   .cat-chip-active{background:linear-gradient(135deg,#d4af37,#b8912a);color:#17131f;border-color:transparent;font-weight:700;}
   .cat-chip-active:hover{color:#17131f;}
+  /* R13 pagination */
+  .pager{ display:flex; align-items:center; justify-content:center; gap:14px; margin:26px 0 10px; }
+  .pager-btn{ min-height:42px; display:inline-flex; align-items:center; padding:0 18px; border-radius:12px;
+    border:1px solid rgba(245,197,24,.35); color:var(--gold-text,#F0C75E); text-decoration:none; font-size:.88rem; font-weight:700; }
+  .pager-btn:hover{ background:rgba(245,197,24,.1); }
+  .pager-info{ color:var(--muted-3,#cfc6e0); font-size:.85rem; }
+  /* card titles are now real headings — inherit card style but keep semantics */
+  .st-70fb7da9 .st-eb16482b{ margin:0; font-weight:800; }
 </style>
 {% endblock %}

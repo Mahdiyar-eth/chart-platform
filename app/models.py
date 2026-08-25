@@ -257,7 +257,9 @@ class Order(SQLModel, table=True):
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
     user_id: str | None = Field(default=None, foreign_key="users.id", index=True)  # P6: pack orders without chart
-    plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
+    # R13/N3: FK dropped to a plain indexed column — credit-action orders
+    # (report_full etc.) don't reference plans.key. Legacy rows keep working.
+    plan_key: str = Field(default=None, index=True)
     amount_rial: int
     status: str = Field(default="pending")  # pending | paid | failed | expired
     coupon_id: str | None = Field(default=None, foreign_key="coupons.id")

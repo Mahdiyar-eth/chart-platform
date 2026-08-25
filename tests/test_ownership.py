@@ -175,5 +175,7 @@ def test_create_order_inherits_profile_id(monkeypatch):
         s.commit()
         s.refresh(c)
 
-        order, _url = create_order(s, "full", c.id)
+        # R13/N3: legacy toman plans are retired (active=False) — this test now
+        # uses the credit3 pack plan which is still orderable via /api/orders.
+        order, _url = create_order(s, "credit6", c.id)
         assert order.profile_id == p.id  # ← was None before the fix

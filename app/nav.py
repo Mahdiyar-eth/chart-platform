@@ -24,12 +24,14 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("chart", "چارت رایگان", "/birth-form", icon="icon-compass", primary=True),
     NavItem("mychart", "چارت من", "/dashboard", icon="icon-grid", needs_chart=True),
     NavItem("explore", "کاوش", "/explore", icon="icon-star", needs_chart=True),
-    NavItem("synastry", "سیناستری", "/synastry", icon="icon-heart"),
+    # R13: «سیناستری» واژهٔ تخصصی است — کاربر «سازگاری» می‌فهمد
+    NavItem("synastry", "سازگاری", "/synastry", icon="icon-heart"),
     NavItem("rectify", "بازبینی ساعت", "/rectify", icon="icon-clock"),
     # R16: /sky = public "today's sky" page — label must say that; the PERSONAL
     # transit timeline lives on the chart page (/transits/{chart_id}) + dashboard.
     NavItem("transits", "آسمان امروز", "/sky", icon="icon-sun"),
-    NavItem("plans", "پلن‌ها", "/plans", icon="icon-tag"),
+    # R13: label «پلن‌ها» گمراه‌کننده بود — صفحه فقط محصولات اعتباری می‌فروشد
+    NavItem("plans", "محصولات", "/plans", icon="icon-tag"),
     # drawer-only groups:
     NavItem("articles", "مقالات", "/articles", icon="icon-book-open", group="یادگیری"),
     NavItem("learn", "آموزش نجوم", "/learn", icon="icon-book", group="یادگیری"),

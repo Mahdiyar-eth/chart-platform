@@ -156,19 +156,19 @@
 
   <!-- CTA (decluttered funnel, audit U-1) -->
   <section class="glass glow st-56ef63c4" >
-    <h2>گزارش کامل — ۲۵+ صفحه</h2>
+    <h2>شناخت کامل — ۲۵+ صفحه</h2>
     <p class="muted st-8a77e5a3" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
     <div class="st-c03e3f84" >
-      <span class="chip">پایه ۱۴۹ هزار</span>
-      <span class="chip">استاندارد ۳۴۹ هزار</span>
-      <span class="chip">پرمیوم ۶۹۹ هزار</span>
+      <span class="chip">آشنایی ۵ بخش — ۳ اعتبار</span>
+      <span class="chip">شناخت کامل — ۷ اعتبار</span>
+      <span class="chip">شناخت + همراهی — ۱۴ اعتبار</span>
     </div>
-    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">خرید گزارش کامل</a>
+    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">باز کردن با اعتبار</a>
     {% if user %}
     <details class="mt-3">
-      <summary class="text-sm opacity-70 cursor-pointer">یا با اعتبار باز کن</summary>
+      <summary class="text-sm opacity-70 cursor-pointer">یا همین‌جا با اعتبار باز کن</summary>
       <div class="mt-3">
-        {% with action_key="report_basic", action_name_fa="گزارش پایه", needed=7,
+        {% with action_key="report_basic", action_name_fa="آشنایی (۵ بخش)", needed=3,
                 have=user.credits|default(0), chart_id=chart.id, next="/chart/" ~ chart.id %}
           {% include "partials/credit_cta.html" %}
         {% endwith %}

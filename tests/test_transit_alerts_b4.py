@@ -15,8 +15,12 @@ from app.models import (BirthProfile, Chart, NotificationPrefs, Subscription,
 from app.report.transit_alerts import pick_alert_event, run_transit_alerts
 
 
-def _ev(w, days_ahead, tp="Saturn", tgt="Sun"):
-    d = (datetime.now(timezone.utc) + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
+def _ev(w, days_ahead, tp="Saturn", tgt="Sun", *, today=None):
+    """R13 fix: the date must be relative to the `today` passed to
+    pick_alert_event — datetime.now() made this test time-bomb (it passed in
+    August, fails any day the offset crosses a month boundary)."""
+    base = today or datetime.now(timezone.utc)
+    d = (base + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
     return {"transit_planet": tp, "transit_planet_fa": "زحل", "aspect": "conjunction",
             "aspect_fa": "هم‌نشینی", "natal_target": tgt, "natal_target_fa": "خورشید",
             "weight": w, "exact_dates": [d], "retro_passes": 1}
@@ -24,7 +28,8 @@ def _ev(w, days_ahead, tp="Saturn", tgt="Sun"):
 
 def test_1_picks_highest_weight_in_7day_window():
     today = datetime(2026, 8, 22, tzinfo=timezone.utc)
-    evs = [_ev(10, 2), _ev(25, 5, tp="Jupiter"), _ev(30, 9)]   # 3rd is day+9 → outside window
+    evs = [_ev(10, 2, today=today), _ev(25, 5, tp="Jupiter", today=today),
+           _ev(30, 9, today=today)]   # 3rd is day+9 → outside window
     got = pick_alert_event(evs, today=today)
     assert got and got["weight"] == 25 and got["transit_planet"] == "Jupiter"
 

@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from app.db import engine
 from app.main import app as main_app
-from app.models import Coupon, Order, Report
+from app.models import Coupon, Order, Report, User
 from sqlmodel import Session, select
 
 
@@ -67,7 +67,7 @@ def test_user_full_flow(monkeypatch):
     plans = c.get("/api/plans")
     assert plans.status_code == 200 and plans.json()
     keys = [p["key"] for p in plans.json()]
-    assert "gold" in keys and "basic" in keys, "real purchasable plans must exist"
+    assert "credit6" in keys and "credit3" in keys, "real purchasable plans must exist"
 
     # 3. create chart (anonymous ok — chart_access cookie set)
     cid, tok = _mk_chart(c)
@@ -83,14 +83,16 @@ def test_user_full_flow(monkeypatch):
     assert c.get(f"/api/charts/{cid}/preview").status_code == 200
     assert c.get(f"/api/charts/{cid}/transit-year.svg").status_code == 200
 
-    # 6. buy a report plan (mock zarinpal)
-    o = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold"}).json()
+    # 6. buy a credit pack (mock zarinpal) — R13/N3: packs, not report plans.
+    # The pack grants credits; the user then unlocks the report via credits
+    # (/api/purchase → POST /api/charts/{cid}/report).
+    o = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12"}).json()
     oid = o["order_id"]
     assert oid, "order must be created"
     o_get = c.get(f"/api/orders/{oid}").json()
     assert o_get["status"] == "pending"
 
-    # 7. verify payment → report queued, order paid
+    # 7. verify payment → order paid + 12 credits granted
     from app.db import engine as _eng
     with Session(_eng) as s:
         auth = s.get(Order, oid).authority
@@ -99,14 +101,24 @@ def test_user_full_flow(monkeypatch):
     with Session(_eng) as s:
         o_db = s.get(Order, oid)
         assert o_db.status == "paid"
+        me_user = c.get("/api/auth/me").json().get("user")
+        uid_db = me_user["id"]
+        u_db = s.get(User, uid_db)
+        assert u_db.credits >= 12, f"pack must grant credits, got {u_db.credits}"
+    # unlock the full report with credits (the credit-economy path)
+    pu = c.post("/api/purchase", json={"action_key": "report_full", "chart_id": cid})
+    assert pu.status_code == 200, pu.text
+    rep_q = c.post(f"/api/charts/{cid}/report")
+    assert rep_q.status_code == 200 and rep_q.json().get("queued"), rep_q.text
+    with Session(_eng) as s:
         rep = s.exec(select(Report).where(Report.chart_id == cid)).first()
-        assert rep is not None, "report must be created for paid order"
+        assert rep is not None, "report must be created for credit-unlocked order"
         rid = rep.id
 
     # 8. report state + endpoints
     assert c.get(f"/api/charts/{cid}/report").status_code == 200
     assert c.get(f"/api/reports/{rid}/pdf").status_code in (200, 404)  # pdf may need artifact
-    assert c.get(f"/api/reports/{rid}/audio-status").status_code in (200, 404)  # audio needs TTS/artifact
+    assert c.get(f"/api/reports/{rid}/audio-status").status_code in (200, 403, 404)  # audio needs its own entitlement/artifact
 
     # 9. subscriptions
     assert c.get("/api/subscriptions").status_code == 200
@@ -315,7 +327,7 @@ def test_admin_extra_flows(monkeypatch):
     phone = "0912" + str(uuid.uuid4().int)[:7]
     _login_user(user, phone)
     ucid, utok = _mk_chart(user)
-    o = user.post("/api/orders", data={"chart_id": ucid, "plan_key": "full"}).json()
+    o = user.post("/api/orders", data={"chart_id": ucid, "plan_key": "credit6"}).json()
     oid = o["order_id"]
     with Session(engine) as s:
         auth = s.get(Order, oid).authority

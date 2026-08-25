@@ -81,50 +81,53 @@
   --star-1:rgba(255,255,255,.53); --star-2:rgba(255,255,255,.98); --star-3:rgba(255,255,255,.40); --star-4:rgba(255,255,255,.33); --star-5:rgba(255,255,255,.27);
 }
 
-/* C4: light theme (opt-in via data-theme="light") */
+/* C4: light theme (opt-in via data-theme="light")
+   R13/P1-10: the old light palette washed out — glass surfaces were almost
+   invisible on the near-white bg and gold text failed contrast. New values:
+   warmer paper bg, stronger surface borders, darker muted text (AA+). */
 [data-theme="light"]{
-  --bg:#f4f5fb; --bg2:#eceef8; --surface:#ffffff; --surface-2:#eef0fa; --surface-3:#f7f8fd;
-  --glass:rgba(20,25,60,.05); --stroke:rgba(20,25,60,.14); --border:rgba(20,25,60,.10);
-  --txt:#1a2040; --muted:#545d85; --muted-2:#68719a; --muted-3:#3d4670; --white:#1a2040;
+  --bg:#eef0f8; --bg2:#e4e7f3; --surface:#ffffff; --surface-2:#f2f4fb; --surface-3:#f8f9fd;
+  --glass:rgba(255,255,255,.72); --stroke:rgba(28,34,70,.22); --border:rgba(28,34,70,.16);
+  --txt:#181d38; --muted:#3f4769; --muted-2:#525b82; --muted-3:#2c3355; --white:#181d38;
   /* X19: --gold stays the BRAND fill (gradient) in both themes; text-on-light uses
      --gold-text (deep). The credits chip overrides its own color to --gold-text. */
-  --gold:#f5c518; --gold-deep:#b57a06; --gold-soft:rgba(224,142,11,.16); --gold-ink:#1a1400;
-  --gold-text:#755404; --warn-txt:#5f3c0c;
-  --accent-soft:#5a4bc4; --bg-glow:#dfe3f7;
+  --gold:#e0a900; --gold-deep:#a06a00; --gold-soft:rgba(180,122,6,.14); --gold-ink:#241a00;
+  --gold-text:#5f4300; --warn-txt:#4d320a;
+  --accent-soft:#4438bd; --bg-glow:#dcdff2;
   --star-1:rgba(30,40,90,.35); --star-2:rgba(30,40,90,.75); --star-3:rgba(30,40,90,.28); --star-4:rgba(30,40,90,.24); --star-5:rgba(30,40,90,.18);
 
-  --ink-strong:#243055; --ink-soft:#4a5580; --ink-sky:#3b5bd7;
-  --gold-line:#a97e10; --danger-bright:#c92a2a; --violet:#6d28d9; --violet-soft:#7c3aed;
-  --green-ok:#15803d; --slate-mute:#64748b; --paper:#39415f;
-  --glass-a3:rgba(20,25,60,.02); --glass-a6:rgba(20,25,60,.04);
-  --glass-a7:rgba(20,25,60,.05); --glass-a8:rgba(20,25,60,.06);
+  --ink-strong:#202a4e; --ink-soft:#454f78; --ink-sky:#2f4fc4;
+  --gold-line:#8f6800; --danger-bright:#c92a2a; --violet:#6d28d9; --violet-soft:#7c3aed;
+  --green-ok:#15803d; --slate-mute:#57637a; --paper:#333b58;
+  --glass-a3:rgba(28,34,70,.03); --glass-a6:rgba(28,34,70,.06);
+  --glass-a7:rgba(28,34,70,.08); --glass-a8:rgba(28,34,70,.10);
 
-  --tint-paper-a85:rgba(26,32,64,.8); --gold-line-a40:rgba(185,126,6,.4);
-  --stroke-a15:rgba(20,25,60,.16); --glass-a20:rgba(20,25,60,.06);
+  --tint-paper-a85:rgba(26,32,64,.8); --gold-line-a40:rgba(160,106,0,.45);
+  --stroke-a15:rgba(28,34,70,.18); --glass-a20:rgba(28,34,70,.09);
   --danger-a20:rgba(224,42,42,.12); --danger-a40:rgba(201,42,42,.45);
-  --warn-line-a35:rgba(185,126,6,.35); --danger-hot:#c92a2a;
-  --x-ra245-197-24-d14:rgba(185,126,6,.14);
-  --x-ra255-255-255-d03:rgba(20,25,60,.03);
-  --x-ra255-255-255-d08:rgba(20,25,60,.08);
-  --x-ra255-255-255-d06:rgba(20,25,60,.06);
-  --x-ra255-255-255-d07:rgba(20,25,60,.07);
-  --x-ra255-255-255-d05:rgba(20,25,60,.05);
-  --x-ra255-107-107-d5:rgba(20,25,60,.5);
-  --x-ra255-213-66-d12:rgba(20,25,60,.12);
-  --x-ra255-213-66-d35:rgba(20,25,60,.35);
-  --x-ra245-197-24-d10:rgba(185,126,6,.10);
-  --x-ra255-255-255-d02:rgba(20,25,60,.02);
-  --x-ra245-197-24-d28:rgba(185,126,6,.28);
-  --x-ra255-213-66-d4:rgba(20,25,60,.4);
-  --x-ra245-197-24-d07:rgba(185,126,6,.07);
-  --x-ra255-255-255-d1:rgba(20,25,60,.1);
-  --x-ra245-197-24-d22:rgba(185,126,6,.22);
-  --x-ra245-197-24-d06:rgba(185,126,6,.06);
+  --warn-line-a35:rgba(160,106,0,.4); --danger-hot:#c92a2a;
+  --x-ra245-197-24-d14:rgba(160,106,0,.16);
+  --x-ra255-255-255-d03:rgba(28,34,70,.03);
+  --x-ra255-255-255-d08:rgba(28,34,70,.08);
+  --x-ra255-255-255-d06:rgba(28,34,70,.06);
+  --x-ra255-255-255-d07:rgba(28,34,70,.07);
+  --x-ra255-255-255-d05:rgba(28,34,70,.05);
+  --x-ra255-107-107-d5:rgba(28,34,70,.5);
+  --x-ra255-213-66-d12:rgba(28,34,70,.12);
+  --x-ra255-213-66-d35:rgba(28,34,70,.35);
+  --x-ra245-197-24-d10:rgba(160,106,0,.12);
+  --x-ra255-255-255-d02:rgba(28,34,70,.02);
+  --x-ra245-197-24-d28:rgba(160,106,0,.3);
+  --x-ra255-213-66-d4:rgba(28,34,70,.4);
+  --x-ra245-197-24-d07:rgba(160,106,0,.08);
+  --x-ra255-255-255-d1:rgba(28,34,70,.1);
+  --x-ra245-197-24-d22:rgba(160,106,0,.24);
+  --x-ra245-197-24-d06:rgba(160,106,0,.06);
 
-  --nav-ink-a82:rgba(26,32,64,.82); --nav-ink-a6:rgba(26,32,64,.6);
-  --nav-ink-a7:rgba(26,32,64,.7); --nav-ink-a8:rgba(26,32,64,.8);
-  --nav-ink-a85:rgba(26,32,64,.85); --nav-ink-a9:rgba(26,32,64,.9);
-  --nav-ink-a65:rgba(26,32,64,.65); --nav-ink-a75:rgba(26,32,64,.75);
-  --w-d04:rgba(26,32,64,0.04); --w-d05:rgba(26,32,64,0.05); --w-d06:rgba(26,32,64,0.06); --w-d07:rgba(26,32,64,0.07); --w-d08:rgba(26,32,64,0.08); --w-d09:rgba(26,32,64,0.09); --w-d1:rgba(26,32,64,1); --w-d10:rgba(26,32,64,0.10); --w-d12:rgba(26,32,64,0.12); --w-d14:rgba(26,32,64,0.14); --w-d16:rgba(26,32,64,0.16); --w-d22:rgba(26,32,64,0.22); --w-d64:rgba(26,32,64,0.64); --w-d82:rgba(26,32,64,0.82); --w-d85:rgba(26,32,64,0.85);
+  --nav-ink-a82:rgba(24,29,56,.82); --nav-ink-a6:rgba(24,29,56,.6);
+  --nav-ink-a7:rgba(24,29,56,.7); --nav-ink-a8:rgba(24,29,56,.8);
+  --nav-ink-a85:rgba(24,29,56,.85); --nav-ink-a9:rgba(24,29,56,.9);
+  --nav-ink-a65:rgba(24,29,56,.65); --nav-ink-a75:rgba(24,29,56,.75);
+  --w-d04:rgba(24,29,56,0.04); --w-d05:rgba(24,29,56,0.05); --w-d06:rgba(24,29,56,0.06); --w-d07:rgba(24,29,56,0.07); --w-d08:rgba(24,29,56,0.09); --w-d09:rgba(24,29,56,0.11); --w-d1:rgba(24,29,56,1); --w-d10:rgba(24,29,56,0.12); --w-d12:rgba(24,29,56,0.15); --w-d14:rgba(24,29,56,0.18); --w-d16:rgba(24,29,56,0.20); --w-d22:rgba(24,29,56,0.26); --w-d64:rgba(24,29,56,0.68); --w-d82:rgba(24,29,56,0.84); --w-d85:rgba(24,29,56,0.86);
   --green-ink:#0b6b3a;
 }
