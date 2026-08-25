@@ -2,14 +2,12 @@
 {% block body_attrs %}data-page="landing"{% endblock %}
 {% block content %}
 <style>
-  .mode-btn{padding:9px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--muted);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
-  .mode-btn.mode-on{background:linear-gradient(135deg,#F0C75E,#C8901E);color:#1a1626;border-color:transparent;}
   .feat{position:relative;display:block;padding:20px;text-decoration:none;color:inherit;border-radius:18px;}
   .feat .ic{width:30px;height:30px;color:var(--gold);}
   .feat b{display:block;margin-top:12px;font-size:1rem;}
   .feat p{margin-top:7px;font-size:.86rem;line-height:1.75;color:var(--muted);}
   .feat .more{display:inline-flex;align-items:center;gap:5px;margin-top:11px;font-size:.8rem;font-weight:700;color:var(--gold-text,var(--gold));}
-  .feat.flag{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(232,142,11,.05));border-color:rgba(245,197,24,.35);}
+  .feat.flag{background:rgba(245,197,24,.07);border-color:rgba(245,197,24,.28);}
   .sample .tag{display:inline-block;font-size:.7rem;font-weight:800;color:var(--gold-text,var(--gold));background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;}
 </style>
 
@@ -24,9 +22,6 @@
     <a class="btn btn-lg" href="/birth-form"><svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> چارت رایگان من</a>
     <a class="btn btn-ghost" href="/plans">محصولها</a>
   </div>
-
-  <!-- R13: the ساده/تخصصی toggle is gone — one honest, human text for everyone -->
-  <div class="u-9ad9b858" style="display:none;"></div>
 
   <div class="glass u-cee30795" >
     <p class="u-4bbb9420" >
@@ -64,7 +59,7 @@
   </div>
 </section>
 
-<section class="u-2fbbbcd4" >
+<section class="u-2fbbbcd4 u-lazy" >
   <h2 class="u-f5af4736" >همه‌ی امکانات زایچه</h2>
   <p class="muted u-04e790e9" >از چارت رایگان تا گزارش کامل و ابزارهای تخصصی — همه در یک‌جا</p>
   <div class="u-104ff8a2" >
@@ -140,7 +135,7 @@
   </div>
 </section>
 
-<section class="u-c2f8546b" >
+<section class="u-c2f8546b u-lazy" >
   <h2 class="u-f5af4736" >یک تکه از گزارش واقعی — بخوان و قضاوت کن</h2>
   <p class="muted u-04e790e9" >این دقیقاً همان لحن و همان عمقی است که در گزارشت می‌خوانی؛ هر ادعا با شاهد نجومی‌اش.</p>
   <div class="u-fb424857" >

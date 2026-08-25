@@ -669,3 +669,5 @@
 .u-glossary-list dd{ margin:2px 0 0; font-size:.86rem; line-height:1.6; }
 .u-glossary-list dt a{ margin-start:8px; font-size:.78rem; }
 .u-glossary-list dt span{ font-size:.74rem; margin-start:6px; }
+/* W3 perf: below-the-fold sections skip rendering until near-viewport */
+.u-lazy{ content-visibility:auto; contain-intrinsic-size: auto 600px; }
