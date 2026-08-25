@@ -13,7 +13,7 @@
         <div class="muted u-text-xs" >تاریخ</div>
         <div class="u-e3ec02ac" x-text="status?.today_label"></div>
       </div>
-      <select class="input u-8c0b5cf4" x-model="chartId" x-on:change="onChartChange()" >
+      <select class="input u-8c0b5cf4" aria-label="انتخاب چارت برای امروز" x-model="chartId" x-on:change="onChartChange()" >
         <template x-for="ch in charts" :key="ch.id">
           <option :value="ch.id" x-text="ch.label"></option>
         </template>

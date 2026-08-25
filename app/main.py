@@ -1100,6 +1100,14 @@ def api_create_order(
         raise HTTPException(403, "not authorized")
     if not chart and plan_key not in CREDIT_PACKS:
         raise HTTPException(400, "[ZAY-PAY-001] برای این پلن ابتدا چارت بسازید")
+    # R14-D2 (owner decision, option A): credit packs REQUIRE login. The old
+    # guest path minted "escrow" orders whose credits could never be delivered
+    # (no buyer to grant them to) — money taken, product undeliverable.
+    if plan_key in CREDIT_PACKS and not user:
+        return JSONResponse(status_code=401, content={
+            "login_required": True,
+            "next": "/account/login?next=/plans",
+            "message": "برای خرید اعتبار، اول با شماره موبایل وارد شو"})
     if secondary_chart_id:
         sec = session.get(Chart, secondary_chart_id)
         if not sec or not _owns_chart(sec, session, request):

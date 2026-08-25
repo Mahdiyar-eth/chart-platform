@@ -104,8 +104,9 @@ def test_w5_llm_insight_cached_per_day(monkeypatch):
         import redis as _r
         for db in ("0", "1"):
             try:
-                _r.Redis.from_url(f"redis://127.0.0.1:6379/{db}").delete(
-                    f"today:{FakeChart.id}:{DAY1.date().isoformat()}")
+                r = _r.Redis.from_url(f"redis://127.0.0.1:6379/{db}")
+                for k in r.keys(f"today:{FakeChart.id}:*"):
+                    r.delete(k)
             except Exception:  # noqa: BLE001
                 pass
         p1 = await get_daily_layer(None, FakeChart(), "Asia/Tehran")

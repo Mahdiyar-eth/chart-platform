@@ -10,12 +10,12 @@
   <div class="u-600f44c9" ></div>
 
   {% if articles %}
-  <div class="u-45ca303e" role="tablist" aria-label="دسته‌بندی مقالات">
+  <nav class="u-45ca303e" aria-label="دسته‌بندی مقالات">
     <a class="cat-chip {% if not active_cat %}cat-chip-active{% endif %}" href="/articles">همه</a>
     {% for c in categories %}
     <a class="cat-chip {% if active_cat == c %}cat-chip-active{% endif %}" href="/articles?cat={{ c|urlencode }}">{{ c }}</a>
     {% endfor %}
-  </div>
+  </nav>
 
   <div class="u-70fb7da9" >
     {% for a in articles %}

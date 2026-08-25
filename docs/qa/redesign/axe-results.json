@@ -1,0 +1,102 @@
+[
+ {
+  "page": "/",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/plans",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/birth-form",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/synastry",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/today",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/dashboard",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/articles",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/faq",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/glossary",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/credits",
+  "theme": "dark",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/plans",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/birth-form",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/synastry",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/today",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/dashboard",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/articles",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/faq",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/glossary",
+  "theme": "light",
+  "critical_or_serious": []
+ },
+ {
+  "page": "/credits",
+  "theme": "light",
+  "critical_or_serious": []
+ }
+]
