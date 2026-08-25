@@ -52,16 +52,19 @@ BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def _asset_version():
-    """Cache-busting version from the css dir hash (design tokens/base/components)."""
+    """Cache-busting version from the static assets hash (css + icons + sw)."""
     import hashlib
-    d = BASE_DIR / "static" / "css"
-    if not d.is_dir():
-        return "0"
     h = hashlib.sha256()
-    for f in sorted(d.iterdir()):
-        if f.suffix == ".css":
-            h.update(f.name.encode())
-            h.update(f.read_bytes())
+    d = BASE_DIR / "static" / "css"
+    if d.is_dir():
+        for f in sorted(d.iterdir()):
+            if f.suffix == ".css":
+                h.update(f.name.encode())
+                h.update(f.read_bytes())
+    # R14-B4: the sprite is cache-busted too — an icon change must reach users.
+    ic = BASE_DIR / "static" / "icons.svg"
+    if ic.is_file():
+        h.update(ic.read_bytes())
     return h.hexdigest()[:10]
 
 templates.env.globals["asset_version"] = _asset_version()

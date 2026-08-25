@@ -68,7 +68,7 @@
 <body {% block body_attrs %}{% endblock %}>
   <!-- W3: sprite is an EXTERNAL cached file (was 35KB inline in every page).
        <use> with external href works in all evergreen browsers. -->
-  <svg aria-hidden="true" style="display:none" data-sprite-ext><use href="/static/icons.svg#icon-sun"/></svg>
+  <svg aria-hidden="true" style="display:none" data-sprite-ext><use href="/static/icons.svg?v={{ asset_version }}#icon-sun"/></svg>
   <div class="aurora"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
   <div class="starfield"></div>
   <div class="wrap">

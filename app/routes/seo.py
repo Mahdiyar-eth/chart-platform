@@ -91,7 +91,9 @@ def sitemap_xml():
     urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
             "/terms", "/refund", "/disclaimer", "/contact",
             "/guide", "/about", "/faq", "/articles", "/glossary",
-            "/deep-report", "/self-discovery", "/sky-today"]
+            "/deep-report", "/self-discovery", "/sky-today",
+            # R14-B5: the new product entry pages are indexable marketing surfaces
+            "/solar-guide", "/relocation-guide"]
     try:
         from app.seo.content import GUIDES, PLANETS, HOUSES, SIGNS
         urls += [f"/learn/{k}" for k in GUIDES]
@@ -260,6 +262,48 @@ def page_sky(request: Request):
 
 
 # ── P9 — landing pages (plan v2.0 §14: Landing 2/3/4) ───────────────────────
+@router.get("/solar-guide", response_class=HTMLResponse)
+def landing_solar(request: Request):
+    """R14-B5 — marketing entry page for the solar-year product."""
+    return templates.TemplateResponse(request, "landing.html", {
+        "h1": "سالِ تو از تولد تا تولد بعدی، در یک نقشه.",
+        "sub": "چارت سالیانه لحظه‌ی دقیق بازگشت خورشید به جای تولدت را حساب می‌کند و تم سال، خانه‌ی برجسته و ۵ گذر کلیدی را نشان می‌دهد — با شاهد نجومی، نه پیشگویی.",
+        "cta": "چارت سالیانه من", "cta_href": "/birth-form?redirect=/plans",
+        "cta_note": "اول چارت رایگان بساز؛ بعد با ۹ اعتبار باز کن",
+        "chips": ["۹ اعتبار", "۵ گذر کلیدی با تاریخ", "پرسش فصلی", "محل زندگی فعلی"],
+        "cards": [
+            {"icon": "sun", "title": "تم اصلی سال تو",
+             "body": "خورشید سال در کدام خانه نشسته و چه چیزی را پررنگ می‌کند — یک روایت صادقانه برای یک سال."}, 
+            {"icon": "moon", "title": "۵ گذر کلیدی با تاریخ",
+             "body": "مهم‌ترین گذرهای سال روی چارت خودت با تاریخ دقیق شروع؛ برای برنامه‌ریزی، نه پیش‌گویی."},
+            {"icon": "sparkles", "title": "پرسش تأمل فصلی",
+             "body": "برای هر فصل یک پرسش کوچک که نگاهت را به زندگی روزمره برمی‌گرداند."},
+        ],
+        "faq": "چرا محل زندگی فعلی مهم است؟ چون چارت سالیانه روی آسمانِ جایی که الآن زندگی می‌کنی محاسبه می‌شود، نه محل تولد.",
+    })
+
+
+@router.get("/relocation-guide", response_class=HTMLResponse)
+def landing_relocation(request: Request):
+    """R14-B5 — marketing entry page for the relocation product."""
+    return templates.TemplateResponse(request, "landing.html", {
+        "h1": "در کدام شهر، کدام بخش زندگیات روشن‌تر می‌شود؟",
+        "sub": "زمان تولد ثابت می‌ماند؛ فقط مکان عوض می‌شود. خانه‌ها بازمحاسبه می‌شوند تا ببینی هر شهر روی کدام حوزه‌های زندگیات بیشتر اثر می‌گذارد — ۱ تا ۳ شهر کنار هم.",
+        "cta": "مقایسه شهرها را شروع کن", "cta_href": "/birth-form?redirect=/plans",
+        "cta_note": "اول چارت رایگان بساز؛ بعد با ۶ اعتبار باز کن",
+        "chips": ["۶ اعتبار", "مقایسه ۳ شهر", "بدون پیشگویی", "نقشه تمرکز"],
+        "cards": [
+            {"icon": "compass", "title": "خانه‌ها عوض می‌شوند، سیاره‌ها نه",
+             "body": "هر شهر آسمان متفاوتی دارد؛ همین باعث می‌شود کار، رابطه یا رشد شخصی در جایی متفاوت پررنگ شود."},
+            {"icon": "heart", "title": "مقایسه کنار هم",
+             "body": "به‌جای حدس، جدول مقایسه‌ای روشن از اینکه در هر شهر چه چیزی تقویت می‌شود."},
+            {"icon": "help", "title": "سلب مسئولیت صریح",
+             "body": "این نقشه تمرکز است، نه توصیه مهاجرت — تصمیم نهایی همیشه با خودت است."},
+        ],
+        "faq": "آیا این ابزار می‌گوید کجا زندگی کنم؟ نه. فقط نشان می‌دهد هر شهر روی کدام حوزه‌های چارتت بیشتر نور می‌اندازد؛ انتخاب با خودت است.",
+    })
+
+
 @router.get("/deep-report", response_class=HTMLResponse)
 def landing_deep_report(request: Request):
     return templates.TemplateResponse(request, "landing.html", {
