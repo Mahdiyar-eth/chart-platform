@@ -11,8 +11,8 @@
   </p>
 
   <!-- city picker -->
-  <div class="glass st-ed375c82">
-    <div class="st-710280f4">🏙️ شهرهای مقصد (تا ۳ شهر)</div>
+  <div class="glass u-panel">
+    <div class="u-strong-sm">🏙️ شهرهای مقصد (تا ۳ شهر)</div>
     <template x-for="(c, i) in cities" :key="'c' + i">
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
         <input class="input" style="flex:2;" x-model="c.name" placeholder="نام شهر (مثلاً تورنتو)">
@@ -29,14 +29,14 @@
       <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۶ اعتبار</button>
       {% endif %}
     </div>
-    <p class="muted st-ae75db1b" x-show="err" x-text="err" x-cloak></p>
+    <p class="muted u-note" x-show="err" x-text="err" x-cloak></p>
   </div>
 
   <!-- comparison result -->
   <template x-if="result">
     <div>
-      <div class="glass st-ed375c82">
-        <div class="st-710280f4">📊 مقایسهٔ کنار هم</div>
+      <div class="glass u-panel">
+        <div class="u-strong-sm">📊 مقایسهٔ کنار هم</div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;text-align:center;">
             <thead><tr>
@@ -56,10 +56,10 @@
         </div>
       </div>
       <template x-for="(c, i) in result.cities" :key="'d' + i">
-        <div class="glass st-ed375c82" style="margin-top:12px;">
+        <div class="glass u-panel" style="margin-top:12px;">
           <b>📍 <span x-text="c.city"></span></b>
-          <p class="st-08fa3ec5" x-text="'حوزهٔ پررنگ این شهر: ' + c.focus_area"></p>
-          <p class="muted st-ae75db1b" x-show="c.h10_planets.length"
+          <p class="u-body" x-text="'حوزهٔ پررنگ این شهر: ' + c.focus_area"></p>
+          <p class="muted u-note" x-show="c.h10_planets.length"
              x-text="'روی مسیر شغلی: ' + c.h10_planets.join('، ')"></p>
           <ul class="st-95982eda" style="margin-top:6px;">
             <template x-for="(mv, j) in c.moves" :key="'m' + i + j">
@@ -69,7 +69,7 @@
         </div>
       </template>
       <div class="glass st-ad292c1c" style="margin-top:12px;">
-        <p class="muted st-ae75db1b">⚠️ <span x-text="result.disclaimer"></span></p>
+        <p class="muted u-note">⚠️ <span x-text="result.disclaimer"></span></p>
       </div>
     </div>
   </template>

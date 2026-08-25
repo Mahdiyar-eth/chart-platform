@@ -105,9 +105,9 @@
     <template x-if="preview.question_answer || preview.personal_question">
       <div class="glass st-ad292c1c" style="margin-top:12px;">
         <b>سؤالی که موقع ساخت چارت پرسیدی:</b>
-        <p class="muted st-ae75db1b" x-text="preview.personal_question"></p>
+        <p class="muted u-note" x-text="preview.personal_question"></p>
         <p style="margin:8px 0 0;" x-show="preview.question_answer" x-text="preview.question_answer"></p>
-        <p class="muted st-ae75db1b" x-show="preview.question_answer">پاسخ کامل‌تر با یک تحلیل LLM در گزارش کامل می‌آید.</p>
+        <p class="muted u-note" x-show="preview.question_answer">پاسخ کامل‌تر با یک تحلیل LLM در گزارش کامل می‌آید.</p>
       </div>
     </template>
     <template x-if="preview.focus_areas && preview.focus_areas.length">
@@ -123,7 +123,7 @@
       <div style="margin-top:10px;">
         <b x-text="(pat.title || pat.domain_title) + ': '"></b>
         <span x-text="pat.text || pat.insight"></span>
-        <div class="muted st-ae75db1b" x-text="'شاهد: ' + (pat.evidence || '')"></div>
+        <div class="muted u-note" x-text="'شاهد: ' + (pat.evidence || '')"></div>
       </div>
     </template>
     <!-- LLM-written patterns render ONLY here; deterministic `insights` loop removed (was double-rendering, R12/P1-4) -->
@@ -131,18 +131,18 @@
       <div style="margin-top:10px;">
         <b x-text="(pat.title || 'الگو') + ': '"></b>
         <span x-text="pat.text"></span>
-        <div class="muted st-ae75db1b" x-text="'شاهد: ' + (pat.evidence || '')"></div>
+        <div class="muted u-note" x-text="'شاهد: ' + (pat.evidence || '')"></div>
       </div>
     </template>
     <!-- one upcoming transit with date -->
     <template x-if="preview.next_transit">
-      <p class="muted st-ae75db1b" style="margin-top:12px;" x-text="'⏳ ' + preview.next_transit.headline"></p>
+      <p class="muted u-note" style="margin-top:12px;" x-text="'⏳ ' + preview.next_transit.headline"></p>
     </template>
     <!-- element distribution in one honest line -->
     <template x-if="preview.element_summary && preview.element_summary.line">
-      <p class="muted st-ae75db1b" x-text="'⚖️ ' + preview.element_summary.line"></p>
+      <p class="muted u-note" x-text="'⚖️ ' + preview.element_summary.line"></p>
     </template>
-    <p class="muted st-ae75db1b" style="margin-top:12px;">این فقط نگاه اول است. گزارش کامل هر ۱۳ حوزه را جداگانه با شواهد نجومی و پیشنهاد عملی باز می‌کند.</p>
+    <p class="muted u-note" style="margin-top:12px;">این فقط نگاه اول است. گزارش کامل هر ۱۳ حوزه را جداگانه با شواهد نجومی و پیشنهاد عملی باز می‌کند.</p>
   </section>
 
   <!-- annual transit timeline (plan §9.3) -->

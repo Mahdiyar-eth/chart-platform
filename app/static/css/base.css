@@ -32,7 +32,8 @@ a:hover{ color:var(--gold-text,var(--gold)); }
     .appbar-inner{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:8px 8px 8px 14px; border-radius:20px; overflow:hidden;
       background:var(--nav-ink-a09, var(--w-d09, rgba(255,255,255,.09))); border:1px solid var(--nav-ink-a22, var(--w-d22, rgba(255,255,255,.22)));
-      backdrop-filter:blur(26px) saturate(170%); -webkit-backdrop-filter:blur(26px) saturate(170%);
+      /* W3 perf: appbar is sticky+always-visible → flat surface, no per-scroll re-raster.
+         The glass look comes from the translucent bg + border + shadow. */
       box-shadow:0 12px 44px rgba(0,0,0,.5), inset 0 1px 0 var(--nav-ink-a22, var(--w-d22, rgba(255,255,255,.22))); }
     .appbar-inner::after{ content:''; position:absolute; inset:-40%; pointer-events:none;
       background:linear-gradient(115deg, transparent 42%, var(--nav-ink-a16, var(--w-d16, rgba(255,255,255,.16))) 50%, transparent 58%);
@@ -66,8 +67,8 @@ a:hover{ color:var(--gold-text,var(--gold)); }
       .bottomnav{ position:fixed; bottom:calc(10px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%); z-index:80;
         display:flex; align-items:center; justify-content:space-between; gap:0; padding:7px 6px 9px; border-radius:22px;
         width:calc(100% - 20px); max-width:420px;
-        background:rgba(20,26,58,.84); border:1px solid var(--nav-ink-a14, var(--w-d14, rgba(255,255,255,.14)));
-        backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%);
+        background:rgba(20,26,58,.92); border:1px solid var(--nav-ink-a14, var(--w-d14, rgba(255,255,255,.14)));
+        /* W3 perf: fixed bottom bar — flat surface (no backdrop re-raster) */
         box-shadow:0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 var(--nav-ink-a14, var(--w-d14, rgba(255,255,255,.14)));
         animation:bnIn .5s var(--ease) both; }
       @keyframes bnIn{ from{ opacity:0; transform:translate(-50%,14px); } to{ opacity:1; transform:translate(-50%,0); } }

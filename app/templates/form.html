@@ -2,7 +2,7 @@
 {% block content %}
 <div class="st-4f250d9e" >
   <a href="/" class="muted back-link" >→ بازگشت</a>
-  <h1 class="st-d2c171b1" >فرم تولد</h1>
+  <h1 class="u-mt-2b" >فرم تولد</h1>
   <p class="muted st-7953b730" >
     این اطلاعات فقط برای محاسبهٔ دقیق چارت تولدت استفاده می‌شود: موقعیت سیارات در لحظه و مکان تولدت.
     تاریخ، ساعت و شهر تولدت ذخیره می‌شود تا چارتت همیشه در دسترس باشد؛ هیچ‌کدام به اشتراک گذاشته یا فروخته نمی‌شود.
@@ -57,7 +57,7 @@
     <div x-show="step === 3" x-transition>
       <label for="birth-city">شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
       <input id="birth-city" class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران" aria-label="شهر تولد">
-      <div class="st-d2c171b1" >
+      <div class="u-mt-2b" >
         <template x-for="c in cities" :key="c.city_fa + c.province_fa">
           <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted st-0da13144" x-text="' (' + c.province_fa + ')'"></span></button>
         </template>

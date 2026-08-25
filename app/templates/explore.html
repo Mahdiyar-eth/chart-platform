@@ -28,7 +28,7 @@
     <div class="st-a650e6f1" >
       <template x-for="(card, i) in cards" :key="card.key">
         <div class="glass st-1cb5fed3" x-show="i < showLimit || showAll">
-          <div class="st-710280f4" x-text="card.title_fa"></div>
+          <div class="u-strong-sm" x-text="card.title_fa"></div>
           <p class="muted st-5c5bba0a" x-text="card.benefit_fa"></p>
           <button class="btn st-03c4bb6f" x-on:click="run(card)" :disabled="busy" data-track="explore_card_click" >
             <span x-text="busyKey === card.key ? 'در حال تحلیل…' : (freeAvailable ? 'اولین کاوش — رایگان' : 'شروع (۱ اعتبار)')"></span>

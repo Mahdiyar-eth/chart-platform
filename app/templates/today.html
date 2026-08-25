@@ -33,9 +33,9 @@
     </div>
 
     <!-- sky facts -->
-    <div class="glass st-ed375c82" >
+    <div class="glass u-panel" >
       <div class="st-ea49063c" >
-        <div class="st-710280f4" >✨ امروز در آسمان</div>
+        <div class="u-strong-sm" >✨ امروز در آسمان</div>
         <button class="st-4ebb4d1b btn-chip" type="button" x-show="status?.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
       </div>
       <template x-if="status && status.factsLoaded && !status.facts.length">
@@ -60,9 +60,9 @@
     </div>
 
     <!-- question -->
-    <div class="glass st-ed375c82" >
+    <div class="glass u-panel" >
       <div class="st-24a83240" >🪞 سؤال امروز</div>
-      <p class="st-08fa3ec5" x-text="status?.question"></p>
+      <p class="u-body" x-text="status?.question"></p>
       <div class="st-56f43562" x-show="status?.access === 'preview'" x-cloak >
         <div class="glass st-21e3cb79" >
           <p class="muted st-9cec68b5" >ثبت تأمل روزانه و پیوستگی، بخشی از بستهٔ «شناخت + همراهی» است — با اعتبار باز می‌شود.</p>
@@ -83,51 +83,51 @@
     </div>
 
     <!-- action -->
-    <div class="glass st-ed375c82" >
+    <div class="glass u-panel" >
       <div class="st-ef8b9018" >🌱 اقدام کوچک امروز</div>
-      <p class="st-08fa3ec5" x-text="status?.action"></p>
+      <p class="u-body" x-text="status?.action"></p>
     </div>
 
     <!-- MASTER W5 (N1): the five reflective daily cards — «امروزِ تو» -->
-    <div class="glass st-ed375c82" x-show="daily.loaded" x-cloak>
+    <div class="glass u-panel" x-show="daily.loaded" x-cloak>
       <div class="st-ea49063c">
-        <div class="st-710280f4">🪐 امروزِ تو — پنج کارت از گذرهای واقعی چارتت</div>
+        <div class="u-strong-sm">🪐 امروزِ تو — پنج کارت از گذرهای واقعی چارتت</div>
         <span class="chip" x-show="daily.fresh">● تازه</span>
       </div>
 
       <template x-if="daily.sky_today">
         <div style="margin-top:12px;">
           <b>✨ آسمانِ امروزِ تو</b>
-          <p class="st-08fa3ec5" x-text="daily.sky_today.meaning"></p>
+          <p class="u-body" x-text="daily.sky_today.meaning"></p>
         </div>
       </template>
 
       <template x-if="daily.reflection_line">
         <div style="margin-top:12px;">
           <b>🪞 یک جملهٔ تأمل</b>
-          <p class="st-08fa3ec5" x-text="daily.reflection_line.line"></p>
-          <p class="muted st-ae75db1b" x-text="'پرسش برای خودت: ' + daily.reflection_line.question"></p>
+          <p class="u-body" x-text="daily.reflection_line.line"></p>
+          <p class="muted u-note" x-text="'پرسش برای خودت: ' + daily.reflection_line.question"></p>
         </div>
       </template>
 
       <template x-if="daily.inner_weather">
         <div style="margin-top:12px;">
           <b>🌙 حال‌وهوای درونی</b>
-          <p class="st-08fa3ec5" x-text="daily.inner_weather.text"></p>
+          <p class="u-body" x-text="daily.inner_weather.text"></p>
         </div>
       </template>
 
       <template x-if="daily.active_area">
         <div style="margin-top:12px;">
           <b>🎯 حوزهٔ فعال امروز</b>
-          <p class="st-08fa3ec5"><span x-text="daily.active_area.title"></span> — <span x-text="daily.active_area.why"></span></p>
+          <p class="u-body"><span x-text="daily.active_area.title"></span> — <span x-text="daily.active_area.why"></span></p>
         </div>
       </template>
 
       <template x-if="daily.relationship_today">
         <div style="margin-top:12px;">
           <b>💞 الگوی رابطه‌ای امروز</b>
-          <p class="st-08fa3ec5" x-text="daily.relationship_today.text"></p>
+          <p class="u-body" x-text="daily.relationship_today.text"></p>
         </div>
       </template>
 
@@ -135,11 +135,11 @@
       <template x-if="daily.insight">
         <div style="margin-top:12px;" class="glass st-ad292c1c">
           <b>💡 نگاه امروز</b>
-          <p class="st-08fa3ec5" x-text="daily.insight"></p>
+          <p class="u-body" x-text="daily.insight"></p>
         </div>
       </template>
 
-      <p class="muted st-ae75db1b" style="margin-top:10px;">این کارت‌ها هر شب با گذرهای تازهٔ همان روز بازنویسی می‌شوند — نه امتیاز، نه شانس، فقط آینهٔ آسمان روی چارت خودت.</p>
+      <p class="muted u-note" style="margin-top:10px;">این کارت‌ها هر شب با گذرهای تازهٔ همان روز بازنویسی می‌شوند — نه امتیاز، نه شانس، فقط آینهٔ آسمان روی چارت خودت.</p>
     </div>
   </div>
 </div>

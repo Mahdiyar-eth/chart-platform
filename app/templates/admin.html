@@ -15,7 +15,7 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
-  <h2 class="st-cd368e94" >🩺 Production Health (P0-3)</h2>
+  <h2 class="u-h3" >🩺 Production Health (P0-3)</h2>
   <div id="health-body" class="muted st-e1263d29" ></div>
   <script>
   (async () => {
@@ -39,7 +39,7 @@
     } catch (e) { document.getElementById('health-body').textContent = 'err ' + e; }
   })();
   </script>
-  <h2 class="st-cd368e94" >📝 محتوا (CMS — P0-4)</h2>
+  <h2 class="u-h3" >📝 محتوا (CMS — P0-4)</h2>
   <div class="glass st-40712cd7" >
     <div class="st-bad162e2" >
       <button class="st-a68d430f" onclick="cmsList()" >مقالات</button>
@@ -182,14 +182,14 @@
     } catch(e) { document.getElementById('cms-upload-res').textContent = 'خطا: ' + e.message; }
   }
   </script>
-  <h2 class="st-cd368e94" >KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
+  <h2 class="u-h3" >KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
   <div class="glass st-40712cd7" >
     <div class="st-b3373900" id="kpi-matrix" >
       <i class="st-57f9e31d" >در حال بارگذاری…</i>
     </div>
     <p class="st-96d3b742" >منبع: کوئری‌های زندهٔ DB (app/kpi.py) — پنجره‌ها: ۲۴ ساعت / ۷ روز / ۳۰ روز / مادام‌العمر</p>
   </div>
-  <h2 class="st-cd368e94" >📊 Funnel (G1) — نرخ تبدیل قیف</h2>
+  <h2 class="u-h3" >📊 Funnel (G1) — نرخ تبدیل قیف</h2>
   <div class="glass st-40712cd7" >
     <div class="st-14b4b58a" id="funnel-table" >
       <i class="st-57f9e31d" >در حال بارگذاری…</i>
@@ -212,7 +212,7 @@
         h += '<div class="st-0563da50" >'
           + '<span>'+(names[s.step]||s.step)+'</span>'
           + '<span class="st-2b953210" >'+s.count+'</span>'
-          + '<span class="st-e39ebac6" >'+pct+'</span>'
+          + '<span class="u-link-gold" >'+pct+'</span>'
           + '<span class="st-d7a4f978" >'+dr+'</span>'
           + '</div>';
       });
@@ -224,7 +224,7 @@
 
 
 
-  <h2 class="st-cd368e94" >هزینه AI — تفکیکی (H1.3)</h2>
+  <h2 class="u-h3" >هزینه AI — تفکیکی (H1.3)</h2>
   <div class="glass st-d1805458" >
     <div class="st-f0e9d3b4" id="llm-cost-panels" >
       <p class="muted st-f63147b2" >در حال بارگذاری…</p>
@@ -234,7 +234,7 @@
     </p>
   </div>
 
-  <h2 class="st-cd368e94" >وضعیت هوش مصنوعی</h2>
+  <h2 class="u-h3" >وضعیت هوش مصنوعی</h2>
   <div class="glass st-d1805458" >
     <div class="st-2b607f43" >
       {% for part, model in ai_status.items() %}
@@ -255,7 +255,7 @@
     </p>
   </div>
 
-  <h2 class="st-cd368e94" >پروایدر و مدل هوش مصنوعی</h2>
+  <h2 class="u-h3" >پروایدر و مدل هوش مصنوعی</h2>
   <div class="glass st-287f770e" >
     <p class="muted st-f63147b2" >برای هر بخش، پروایدر و مدل را انتخاب کن. «خودکار» یعنی اول OpenCode Go و در صورت خطا DeepSeek مستقیم (اگر کلیدش ست باشد). بعد از ذخیره، سرویس را ریاستارت کن.</p>
     <div class="st-25ce36b2" >
@@ -285,7 +285,7 @@
     </div>
   </div>
 
-  <h2 class="st-cd368e94" >کلیدها و رازها</h2>
+  <h2 class="u-h3" >کلیدها و رازها</h2>
   <p class="muted st-01c6fff3" >
     برای استقرار روی سرور جدید، کد/کلید هر بخش را اینجا وارد و ذخیره کنید؛ مقدار به‌صورت رمزنگاری‌شده در دیتابیس ذخیره می‌شود و دیگر نیازی به فایل env نیست. بعد از ذخیره، <b>سرویس را ریاستارت کنید</b> تا اعمال شود. اگر خالی بگذارید، به مقدار متغیر محیطی برمی‌گردد.
   </p>
@@ -317,7 +317,7 @@
     {% endfor %}
   </div>
 
-  <h2 class="st-cd368e94" >پلن‌ها</h2>
+  <h2 class="u-h3" >پلن‌ها</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-67556394" >
       <thead><tr class="st-ef1949bd" ><th class="st-862e5583" >کلید</th><th>نام</th><th>قیمت (تومان)</th><th>فعال</th><th>ذخیره</th></tr></thead>
@@ -335,7 +335,7 @@
     </table>
   </div>
 
-  <h2 class="st-cd368e94" >کاربران (آخرین ۵۰)</h2>
+  <h2 class="u-h3" >کاربران (آخرین ۵۰)</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-67556394" >
       <thead><tr class="st-ef1949bd" ><th class="st-862e5583" >تاریخ</th><th>موبایل</th><th>نام</th><th>نقش</th><th>وضعیت</th></tr></thead>
@@ -354,7 +354,7 @@
     </table>
   </div>
 
-  <h2 class="st-cd368e94" >لاگ ممیزی (آخرین ۳۰)</h2>
+  <h2 class="u-h3" >لاگ ممیزی (آخرین ۳۰)</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-4bb70c82" >
       <thead><tr class="st-ef1949bd" ><th class="st-862e5583" >زمان</th><th>ادمین</th><th>عملیات</th><th>موجودیت</th><th>جزئیات</th></tr></thead>
@@ -373,7 +373,7 @@
     </table>
   </div>
 
-  <h2 class="st-cd368e94" >پرامپت‌ها (اورراید نسخه‌بندی‌شده)</h2>
+  <h2 class="u-h3" >پرامپت‌ها (اورراید نسخه‌بندی‌شده)</h2>
   <p class="muted st-01c6fff3" >متن جایگزین پرامپت در تولید گزارش‌های بعدی — نسخه‌ی جدید، نسخه‌ی قبلی را غیرفعال می‌کند.</p>
   <div class="st-a542cbe6" >
     {% for k in prompt_keys %}
@@ -389,7 +389,7 @@
     {% endfor %}
   </div>
 
-  <h2 class="st-cd368e94" >سفارش‌ها (آخرین ۱۰۰)</h2>
+  <h2 class="u-h3" >سفارش‌ها (آخرین ۱۰۰)</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-ef475966" >
       <thead>
@@ -420,7 +420,7 @@
     </table>
   </div>
 
-  <h2 class="st-cd368e94" >تسویه کیف پول (D3)</h2>
+  <h2 class="u-h3" >تسویه کیف پول (D3)</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-fe75108e" >
       <thead><tr class="st-ef1949bd" ><th class="st-862e5583" >تاریخ</th><th>کاربر</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>عملیات</th></tr></thead>
@@ -450,7 +450,7 @@
     </table>
   </div>
 
-  <h2 class="st-cd368e94" >گزارش‌ها (آخرین ۲۰)</h2>
+  <h2 class="u-h3" >گزارش‌ها (آخرین ۲۰)</h2>
   <div class="glass st-d2cdd2b3" >
     <table class="st-ef475966" >
       <thead><tr class="st-ef1949bd" ><th class="st-862e5583" >تاریخ</th><th>وضعیت</th><th>بخش‌ها</th><th>PDF</th></tr></thead>
@@ -608,7 +608,7 @@
   </script>
 </div>
 
-  <h2 class="st-cd368e94" >اقتصاد اعتبار (A7) — قیمتها · گزارش فروش/خرج · اعطای دستی</h2>
+  <h2 class="u-h3" >اقتصاد اعتبار (A7) — قیمتها · گزارش فروش/خرج · اعطای دستی</h2>
   <div class="st-edbe0071" id="credit-panel" >
     <div class="credit-report"></div>
     <div class="credit-prices"></div>
@@ -658,7 +658,7 @@
     }
     document.addEventListener('DOMContentLoaded', ()=>{ loadCreditReport(); loadCreditPrices(); });
   </script>
-  <div class="credit-grant st-d2c171b1" >
+  <div class="credit-grant u-mt-2b" >
     <h3 class="st-3e277817" >اعطای دستی اعتبار</h3>
     <div class="st-3de8f987" >
       <input class="st-870266e1" id="grant-uid" placeholder="user_id" dir="ltr" />
