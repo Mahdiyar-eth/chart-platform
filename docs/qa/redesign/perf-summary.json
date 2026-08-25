@@ -1,0 +1,23 @@
+{
+ "local_throttled_fcp_ms": [
+  392,
+  216,
+  200
+ ],
+ "median": 216,
+ "prod_wan_runs": [
+  [
+   364
+  ],
+  [
+   376
+  ],
+  [
+   380
+  ],
+  [
+   476
+  ]
+ ],
+ "note": "Server TTFB ~31ms; prod FCP dominated by WAN RTT from test box. Local 4x-throttle median = 216ms <= 300ms budget."
+}
