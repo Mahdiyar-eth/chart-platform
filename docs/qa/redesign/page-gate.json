@@ -1,0 +1,338 @@
+[
+ {
+  "page": "/",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/plans",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/articles",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/synastry",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/today",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/faq",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 360,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 390,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 430,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 768,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 1280,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ },
+ {
+  "page": "/glossary",
+  "w": 1920,
+  "status": 200,
+  "overflow": 0,
+  "bad_controls": 0,
+  "ok": true
+ }
+]

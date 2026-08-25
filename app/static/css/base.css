@@ -95,10 +95,13 @@ a:hover{ color:var(--gold-text,var(--gold)); }
     .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
       z-index:89; opacity:0; pointer-events:none; transition:opacity .25s var(--ease); }
     .drawer-backdrop.show{ opacity:1; pointer-events:auto; }
-    .drawer{ position:fixed; top:0; bottom:0; inset-inline-start:auto; inset-inline-end:0; width:min(82vw,320px); z-index:90;
+    /* R14 gate: the closed drawer must be fully hidden — off-canvas transform
+       alone leaves children with live rects. display:none when shut, flex
+       when open (restored by .drawer.open below). */
+    .drawer{ display:none; }
+    .drawer.open{ display:flex; position:fixed; top:0; bottom:0; inset-inline-start:auto; inset-inline-end:0; width:min(82vw,320px); z-index:90;
       background:rgba(17,22,49,.97); border-inline-start:1px solid var(--nav-ink-a12, var(--w-d12, rgba(255,255,255,.12)));
-      backdrop-filter:blur(26px); -webkit-backdrop-filter:blur(26px);
-      transform:translateX(-105%); transition:transform .32s var(--ease);
+      transform:translateX(-105%); transition:transform .32s var(--ease), visibility 0s linear .32s;
       padding:18px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; box-shadow:-20px 0 60px rgba(0,0,0,.5); }
     .drawer.open{ transform:translateX(0); }
     .drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:4px 6px 14px;
