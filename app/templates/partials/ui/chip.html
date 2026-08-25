@@ -1,0 +1,4 @@
+{# W1.3 component: chip / pill — small label.
+   vars: text, tone(default|gold|muted) #}
+{% set _t = tone | default('default') %}
+<span class="chip ui-chip-{{ _t }}">{{ text }}</span>

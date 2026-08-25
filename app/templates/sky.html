@@ -56,7 +56,7 @@
 
 <div class="sky" x-data="{spec:false}">
   <header>
-    <div class="hd-icon"><svg class="st-d7326515" aria-hidden="true"><use href="#icon-moon"/></svg></div>
+    <div class="hd-icon"><svg class="st-d7326515" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></div>
     <h1>آسمان امروز</h1>
     <p class="sub">{{ sky.date_fa }}</p>
   </header>
@@ -68,7 +68,7 @@
 
   <!-- 1) moon phase -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-moon"/></svg><h2>فاز ماه</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg><h2>فاز ماه</h2></div>
     <div class="moon-hero">
       <div class="phase-name">{{ sky.moon_phase }}</div>
       <div class="illum">
@@ -84,7 +84,7 @@
 
   <!-- 2) planetary positions -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-sparkles"/></svg><h2>موقعیت سیارات امروز</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg><h2>موقعیت سیارات امروز</h2></div>
     <div class="planet-grid">
       {% for p in sky.planets %}
       <div class="planet-card">
@@ -101,7 +101,7 @@
 
   <!-- 3) retrogrades -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
     {% if sky.retrogrades %}
     <p class="mean st-d6e47aa9" >حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
     <div class="retro-list st-56f43562" >
@@ -119,7 +119,7 @@
 
   <!-- 4) today's aspects -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-link"/></svg><h2>جنبه‌های امروز</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-link"/></svg><h2>جنبه‌های امروز</h2></div>
     {% if sky.aspects %}
     <div class="aspect-list">
       {% for a in sky.aspects %}
@@ -140,11 +140,11 @@
 
   <!-- 5) upcoming moon events -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-calendar"/></svg><h2>رویدادهای آسمانی پیش رو</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-calendar"/></svg><h2>رویدادهای آسمانی پیش رو</h2></div>
     <div class="event-list">
       {% for e in sky.moon_events %}
       <div class="event-row">
-        <svg aria-hidden="true"><use href="#icon-moon"/></svg>
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg>
         <span class="lbl">{{ e.label }}</span>
         <span class="dt">{{ e.date_fa }}<br><span class="st-57f9e31d" >{{ e.sign_fa }}</span></span>
       </div>
@@ -154,7 +154,7 @@
 
   <!-- 6) weekly reflection -->
   <section class="glass st-91a87015" >
-    <div class="sec-head st-03c4bb6f" ><svg aria-hidden="true"><use href="#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
+    <div class="sec-head st-03c4bb6f" ><svg aria-hidden="true"><use href="/static/icons.svg#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
     <p class="reflect">«{{ sky.reflection }}»</p>
     <p class="note st-56f43562" >چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
   </section>

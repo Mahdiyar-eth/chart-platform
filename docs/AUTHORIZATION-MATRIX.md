@@ -58,6 +58,7 @@
 | `POST /api/synastry/full` | Capability | `_owns_chart` |
 | `POST /api/synastry/charts` | Public | rate-limit only — saves charts, no gate (R13) |
 | `GET /api/synastry/access` | Paid/Capability | access check |
+| `GET /design-system` | Dev/QA | 404 in prod (W1.4 styleguide) |
 | `GET /api/notifications/prefs` | User | session cookie (G8) |
 | `POST /api/notifications/prefs` | User | CSRF + validated ranges (G8) |
 | `GET /api/consent` | User | session cookie, owner-only (G9) |

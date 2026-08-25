@@ -63,7 +63,9 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body {% block body_attrs %}{% endblock %}>
-  {% include "partials/icon_sprite.html" %}
+  <!-- W3: sprite is an EXTERNAL cached file (was 35KB inline in every page).
+       <use> with external href works in all evergreen browsers. -->
+  <svg aria-hidden="true" style="display:none" data-sprite-ext><use href="/static/icons.svg#icon-sun"/></svg>
   <div class="aurora"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
   <div class="starfield"></div>
   <div class="wrap">
@@ -73,13 +75,13 @@
           <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="zg-brand" gradientUnits="userSpaceOnUse" x1="17" y1="17" x2="47" y2="47"><stop offset="0" stop-color="#F0C75E"/><stop offset="1" stop-color="#C8901E"/></linearGradient></defs><circle cx="32" cy="32" r="28" fill="none" stroke="url(#zg-brand)" stroke-width="3.5"/><circle cx="32" cy="32" r="20.5" fill="none" stroke="url(#zg-brand)" stroke-width="1" opacity="0.5"/><g stroke="url(#zg-brand)" stroke-width="2.2" stroke-linecap="round"><line x1="32" y1="7" x2="32" y2="12" transform="rotate(0 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(30 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(60 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(90 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(120 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(150 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(180 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(210 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(240 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(270 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(300 32 32)"/><line x1="32" y1="7" x2="32" y2="12" transform="rotate(330 32 32)"/></g><path d="M32 17 L35.8 28.2 L47 32 L35.8 35.8 L32 47 L28.2 35.8 L17 32 L28.2 28.2 Z" fill="url(#zg-brand)"/></svg>
           <span>زایچه</span>
         </a>
-        <button id="themeToggle" class="hamburger theme-toggle" aria-label="تغییر حالت روشن/تاریک" title="حالت روشن/تاریک" onclick="(function(b){var d=document.documentElement,t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('zayche-theme',t==='light'?'light':'dark')}catch(e){}})(this)"><svg aria-hidden="true"><use href="#icon-moon"/></svg></button>
-        <button class="hamburger" aria-label="باز کردن منو" onclick="toggleDrawer(true)"><svg aria-hidden="true"><use href="#icon-menu"/></svg></button>
+        <button id="themeToggle" class="hamburger theme-toggle" aria-label="تغییر حالت روشن/تاریک" title="حالت روشن/تاریک" onclick="(function(b){var d=document.documentElement,t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('zayche-theme',t==='light'?'light':'dark')}catch(e){}})(this)"><svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></button>
+        <button class="hamburger" aria-label="باز کردن منو" onclick="toggleDrawer(true)"><svg aria-hidden="true"><use href="/static/icons.svg#icon-menu"/></svg></button>
         <nav class="appnav" aria-label="ناوبری اصلی">
           {% for it in request.state.nav.top %}<a href="{{ it.url }}" class="nav-item{% if it.primary %} nav-primary{% endif %}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>{% endfor %}
         </nav>
         <a href="/account" class="credits-chip st-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
-          <svg class="st-2535720e" aria-hidden="true" ><use href="#icon-sparkles"/></svg>
+          <svg class="st-2535720e" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
           <span class="st-b90e7f87" x-text="balance" ></span>
           <span class="st-93056532" >اعتبار</span>
         </a>
@@ -129,7 +131,7 @@
   <aside class="drawer" id="drawer" aria-label="منوی کامل">
     <div class="drawer-head">
       <span>منو</span>
-      <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="بستن منو"><svg aria-hidden="true"><use href="#icon-close"/></svg></button>
+      <button class="drawer-close" onclick="toggleDrawer(false)" aria-label="بستن منو"><svg aria-hidden="true"><use href="/static/icons.svg#icon-close"/></svg></button>
     </div>
     {% for gname, items in request.state.nav.drawer %}
     <div class="drawer-group">
@@ -151,7 +153,7 @@
     {% endif %}{% endfor %}
   </nav>
   <div id="degradedBar" class="degraded-bar hidden" role="alert">
-    <svg class="st-f4bfdb9b" aria-hidden="true" ><use href="#icon-help"/></svg>
+    <svg class="st-f4bfdb9b" aria-hidden="true" ><use href="/static/icons.svg#icon-help"/></svg>
     <span></span>
   </div>
   <script>

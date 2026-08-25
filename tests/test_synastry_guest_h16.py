@@ -8,7 +8,7 @@ import json
 import uuid
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.db import engine
 from app.main import app

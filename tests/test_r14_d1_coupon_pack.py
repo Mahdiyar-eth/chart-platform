@@ -14,7 +14,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:***@127.0.0.1:543
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
 
 import pytest
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.db import engine, seed_plans, seed_credit_prices
 from app.models import Coupon, User

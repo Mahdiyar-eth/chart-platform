@@ -47,7 +47,7 @@
   {% if daily and daily.headline %}
   <a href="/today" class="glass glow st-8080a2b6" >
     <div class="st-6ed8e93b" >
-      <svg class="st-d3038558" aria-hidden="true"><use href="#icon-sun"/></svg>
+      <svg class="st-d3038558" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
       <div>
         <div class="st-0b5df111" >امروزِ تو{% if daily.date %} — {{ daily.date }}{% endif %}</div>
         <div class="st-d69aeccd" >{{ daily.headline }}</div>
@@ -62,7 +62,7 @@
   <div class="dash-grid" >
     {% for c in deep_cards %}
     <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="st-4a808a1f" aria-hidden="true"><use href="#icon-{{ c.icon }}"/></svg>
+      <svg class="st-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
       <b class="st-551f5233" >{{ c.title }}</b>
       <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
     </a>
@@ -73,7 +73,7 @@
   <div class="dash-grid" >
     {% for c in periodic_cards %}
     <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="st-4a808a1f" aria-hidden="true"><use href="#icon-{{ c.icon }}"/></svg>
+      <svg class="st-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
       <b class="st-551f5233" >{{ c.title }}</b>
       <span class="muted st-6fcea0f4" >{{ c.desc }}</span>
     </a>

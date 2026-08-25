@@ -1,0 +1,7 @@
+{# W1.3 component: <button> / <a> — semantic, token-driven.
+   vars: label, href(optional), variant(primary|ghost|accent), size(sm|md|lg), extra_class #}
+{% set _v = variant | default('primary') %}
+{% set _sz = size | default('md') %}
+{% if href %}<a href="{{ href }}" class="btn btn-{{ 'accent' if _v == 'primary' else _v }} btn-{{ _sz }} {{ extra_class or '' }}">{% else %}<button type="button" class="btn btn-{{ 'accent' if _v == 'primary' else _v }} btn-{{ _sz }} {{ extra_class or '' }}">{% endif %}
+{{ label }}
+{% if href %}</a>{% else %}</button>{% endif %}

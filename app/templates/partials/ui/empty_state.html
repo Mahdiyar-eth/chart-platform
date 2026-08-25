@@ -1,0 +1,8 @@
+{# W1.3 component: empty state.
+   vars: title, body, cta_label(optional), cta_href(optional) #}
+<div class="empty-state">
+  <svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg>
+  <b>{{ title }}</b>
+  {% if body %}<p>{{ body }}</p>{% endif %}
+  {% if cta_href %}<a class="btn btn-md" href="{{ cta_href }}">{{ cta_label or 'ادامه' }}</a>{% endif %}
+</div>

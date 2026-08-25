@@ -5,7 +5,6 @@ the FAB was slot 2 of 5. Fix: FAB is slot 3. This test proves geometry, not
 markup — measures getBoundingClientRect centers at three widths.
 """
 import os
-from pathlib import Path
 
 from app.nav import nav_for
 
@@ -25,7 +24,6 @@ def test_fab_center_geometry_at_three_widths():
     except ImportError:
         import pytest
         pytest.skip("playwright missing")
-    base = Path(__file__).resolve().parent.parent
     server = os.environ.get("QA_BASE_URL")
     if not server:
         import pytest

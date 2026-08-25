@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}دیزاین‌سیستم{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block content %}
+{# W1.4 — living styleguide: every token + component, both themes, one page. #}
+<div class="wrap" style="padding-top:var(--space-6);">
+  <h1>دیزاین‌سیستم زایچه</h1>
+  <p class="muted">مرجع بصری و ابزار رگرسیون — همهٔ توکن‌ها و کامپوننت‌ها در هر دو تم.</p>
+
+  <section class="glass" style="padding:var(--space-5); margin:var(--space-5) 0;">
+    <h2>رنگ‌های معنایی</h2>
+    <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-3);">
+      {% for name in ['bg','surface','surface-raised','text','text-muted','text-subtle','brand','danger','success'] %}
+      <div style="text-align:center;">
+        <div style="width:64px;height:40px;border-radius:var(--radius-sm);background:var(--{{ name }});border:1px solid var(--border);"></div>
+        <small style="font-size:var(--font-size-xs);color:var(--text-subtle);">{{ name }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="glass" style="padding:var(--space-5);margin:var(--space-5) 0;">
+    <h2>مقیاس تایپوگرافی</h2>
+    {% for size in ['xs','sm','base','lg','xl','2xl','3xl'] %}
+    <p style="font-size:var(--font-size-{{ size }});line-height:var(--line-normal);">اندازهٔ {{ size }} — متن فارسی نمونه</p>
+    {% endfor %}
+  </section>
+
+  <section class="glass" style="padding:var(--space-5);margin:var(--space-5) 0;">
+    <h2>دکمه‌ها</h2>
+    <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-3);">
+      <button class="btn btn-accent btn-md">اصلی</button>
+      <button class="btn btn-ghost btn-md">ثانویه</button>
+      <button class="btn btn-primary btn-lg">بزرگ</button>
+      <button class="btn btn-sm btn-ghost">کوچک</button>
+    </div>
+  </section>
+
+  <section class="glass" style="padding:var(--space-5);margin:var(--space-5) 0;">
+    <h2>فرم</h2>
+    {% include "partials/ui/field.html" with context %}
+    {% set name = 'demo' %}{% set label = 'برچسب فیلد' %}{% set placeholder = 'راهنما' %}
+    {% include "partials/ui/field.html" %}
+  </section>
+
+  <section class="glass" style="padding:var(--space-5);margin:var(--space-5) 0;">
+    <h2>حالت خالی</h2>
+    {% set title = 'هنوز چیزی اینجا نیست' %}
+    {% set body = 'وقتی داده‌ای داشته باشی، همین‌جا نشان داده می‌شود.' %}
+    {% include "partials/ui/empty_state.html" %}
+  </section>
+
+  <section class="glass" style="padding:var(--space-5);margin:var(--space-5) 0;">
+    <h2>فاصله‌ها (۴px base)</h2>
+    {% for i in range(1, 13) %}
+    <div style="height:var(--space-{{ i }});background:linear-gradient(90deg,var(--brand),transparent);opacity:.35;margin-bottom:var(--space-1);"></div>
+    {% endfor %}
+  </section>
+</div>
+<style>
+.ui-card-title{ font-size:var(--font-size-xl); margin-bottom:var(--space-3); }
+.ui-section-head h2{ font-size:var(--font-size-xl); }
+</style>
+{% endblock %}

@@ -1,0 +1,7 @@
+{# W1.3 component: glass card — the ONE card primitive.
+   vars: content (inner html), title(optional), pad(none|sm|md|lg) #}
+{% set _pad = pad | default('md') %}
+<div class="glass ui-card ui-card-{{ _pad }} {{ extra_class or '' }}">
+  {% if title %}<h2 class="ui-card-title">{{ title }}</h2>{% endif %}
+  {{ content | safe }}
+</div>

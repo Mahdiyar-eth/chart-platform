@@ -31,7 +31,7 @@
 <div class="l-row st-2517a51b" >
   {% for card in cards %}
   <div class="l-card st-2b0f11a4" >
-    {% if card.icon %}<svg class="l-svg" aria-hidden="true"><use href="#icon-{{ card.icon }}"/></svg>{% endif %}
+    {% if card.icon %}<svg class="l-svg" aria-hidden="true"><use href="/static/icons.svg#icon-{{ card.icon }}"/></svg>{% endif %}
     <b>{{ card.title }}</b>
     <p>{{ card.body }}</p>
   </div>

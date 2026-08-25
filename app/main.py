@@ -197,6 +197,17 @@ def sw_file():
                         headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
 
+@app.get("/design-system", response_class=HTMLResponse)
+def design_system_page(request: Request):
+    """REDESIGN-MASTER W1.4 — living styleguide. Dev/QA only: prod returns 404
+    so the component library never ships as a public marketing surface."""
+    if os.getenv("APP_ENV", "development") in ("prod", "production"):
+        raise HTTPException(404, "not found")
+    return templates.TemplateResponse(request, "design_system.html", {
+        "title": "دیزاین‌سیستم — زایچه",
+    })
+
+
 @app.get("/liveness")
 def liveness():
     """C5 (audit r4): pure process heartbeat — no dependencies. A running
