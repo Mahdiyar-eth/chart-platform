@@ -33,9 +33,13 @@
         <input name="hour_a" type="number" placeholder="ساعت 06" class="input" required>
         <input name="minute_a" type="number" placeholder="دقیقه 10" class="input" required>
       </div>
-      <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off"
-             style="position:relative; z-index:41;">
-      <div class="city-suggest city-suggest-a" ></div>
+      <!-- R14-D6: the wrapper (not the input) is the anchor — .city-suggest
+           is a SIBLING of the input inside this relative div, so top:100%+
+           6px lands exactly under the field for BOTH people. -->
+      <div class="city-field" style="position:relative;">
+        <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off">
+        <div class="city-suggest city-suggest-a" ></div>
+      </div>
       <select name="zodiac_a" class="input st-a4a5b808" title="سیستم نجومی">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
         <option value="sidereal">سایدریال لاهیری (ودیک)</option>
@@ -54,9 +58,11 @@
         <input name="hour_b" type="number" placeholder="ساعت 14" class="input" required>
         <input name="minute_b" type="number" placeholder="دقیقه 30" class="input" required>
       </div>
-      <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off"
-             style="position:relative; z-index:41;">
-      <div class="city-suggest city-suggest-b" ></div>
+      <!-- R14-D6: same wrapper pattern as person A -->
+      <div class="city-field" style="position:relative;">
+        <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off">
+        <div class="city-suggest city-suggest-b" ></div>
+      </div>
       <select name="zodiac_b" class="input st-a4a5b808" title="سیستم نجومی">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
         <option value="sidereal">سایدریال لاهیری (ودیک)</option>

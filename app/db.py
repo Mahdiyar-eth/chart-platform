@@ -59,7 +59,7 @@ def seed_plans() -> None:
              features=["نمره‌ی سازگاری ۴ حوزه‌ای (عشق، ذهن، کار، معنا)",
                        "۲۵+ ارتباط سیاره‌ای میان دو چارت",
                        "تفسیر اختصاصی و عمیق رابطه", "پیش‌نمایش رایگان نمره‌ی کلی"],
-             sort=4, active=True),  # R13: kept orderable — the /synastry form's paid path (legacy customers)
+             sort=4, active=False),  # R14-D3: toman currency retired — synastry is credit-only (love/work, 8cr)
         dict(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی", price_toman=180_000,
              credits_grant=3, features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا"],
              sort=5),

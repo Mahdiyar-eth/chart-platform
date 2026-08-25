@@ -1537,78 +1537,18 @@ def api_synastry_charts(request: Request, session: Session = Depends(get_session
         guest=True)
     session.add(chart_a); session.add(chart_b)
     session.commit(); session.refresh(chart_a); session.refresh(chart_b)
-    return {"chart_a": chart_a.id, "chart_b": chart_b.id}
+    # B's capability token must reach the buyer so the paid full report can
+    # be unlocked without person B having an account (H1.6 semantics).
+    return {"chart_a": chart_a.id, "chart_b": chart_b.id,
+            "token_b": chart_b.access_token}
 
 
 @app.post("/api/synastry/order")
-def api_synastry_order(request: Request, session: Session = Depends(get_session),
-                       name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
-                       day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
-                       city_a: str = Form(None), calendar_a: str = Form("jalali"),
-                       zodiac_a: str = Form("tropical"),
-                       name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
-                       day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
-                       city_b: str = Form(None), calendar_b: str = Form("jalali"),
-                       zodiac_b: str = Form("tropical")):
-    """Save both charts + create the paid synastry order (plan §8, ~499k toman).
-
-    H1.6: Person B is a GUEST profile (user_id=NULL, no account required) —
-    only the buyer's chart A lands in their account; B's birth data is stored
-    as an anonymous profile reachable solely via its capability token."""
-    from app.payment.orders import create_order
-    chart_a, profile_a = _compute_and_save_chart(
-        session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
-        time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
-        province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
-    chart_b, profile_b = _compute_and_save_chart(
-        session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
-        time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
-        province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
-        guest=True)  # H1.6: guest — anonymous BirthProfile + capability token
-    session.add(chart_a); session.add(chart_b)
-    session.commit(); session.refresh(chart_a); session.refresh(chart_b)
-    user = get_current_user(request)
-    try:
-        # R13/N2: the 10-credit toman synastry bundle is retired — the order
-        # path now sells the credit6-style pack? No: synastry is bought with
-        # CREDITS via /api/purchase(synastry_love|synastry_work). This legacy
-        # endpoint keeps working for the still-active "synastry" Plan row
-        # only if it exists; otherwise it fails with the standard message.
-        order, pay_url = create_order(
-            session, "synastry", chart_a.id, secondary_chart_id=chart_b.id,
-            coupon=None, ref_code="", new_user_id=user.id if user else None,
-        )
-    except (LookupError, ValueError, RuntimeError) as e:
-        # F-19 (audit v8 P1): failure compensation — the payment order could
-        # not be created, so the JUST-CREATED charts/profiles (including the
-        # anonymous Person B, which has NO user owner and therefore NO other
-        # deletion path) must not be left orphaned in the DB.
-        try:
-            session.rollback()  # drop the uncommitted order first (it holds an FK to chart A)
-            session.delete(chart_a)
-            session.delete(chart_b)
-            session.flush()
-            session.delete(profile_a)
-            session.delete(profile_b)
-            session.commit()
-        except Exception as _e:  # noqa: BLE001
-            # F-19 residual (audit v9 P1): cleanup MUST be fail-closed — if
-            # the compensation itself fails, the guest Person B data may be
-            # orphaned with NO deletion path. Surface a 5xx (NOT the original
-            # 400) so the operator sees the incomplete state instead of the
-            # user silently walking away with leftover private data.
-            try:
-                session.rollback()
-                from app.security import audit
-                audit(session.bind, "system", "synastry.cleanup_failed",
-                      chart_a.id, f"compensation failed: {_e!r} — charts/profiles may be orphaned")
-            except Exception:
-                pass
-            raise HTTPException(502, "خطای داخلی: دادههای سیناستری پاک نشد — با پشتیبانی تماس بگیرید")
-        raise HTTPException(400, str(e))
-    return {"order_id": order.id, "payment_url": pay_url,
-            "chart_a": chart_a.id, "chart_b": chart_b.id,
-            "token_b": chart_b.access_token}  # H1.6: guest capability token
+def api_synastry_order(request: Request, session: Session = Depends(get_session)):
+    """R14-D3: RETIRED — the toman synastry plan is gone. Synastry is bought
+    with CREDITS (synastry_love / synastry_work, 8cr each) via /api/synastry/charts
+    + /api/purchase. Old clients get a clear 410, not a 500."""
+    raise HTTPException(410, "خرید سیناستری با تومان حذف شد — سازگاری عاطفی/کاری را با اعتبار باز کن")
 
 
 @app.post("/api/synastry/full")

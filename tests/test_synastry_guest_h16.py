@@ -1,43 +1,27 @@
-"""H1.6 (HARDENING): synastry Person B is a GUEST — no account required.
+"""H1.6 rewritten for R14-D3 — the toman synastry order is retired.
 
-- /api/synastry/order stores chart B with an anonymous BirthProfile
-  (user_id=NULL) and returns its capability token.
-- The token in the chart_access cookie unlocks /api/synastry/full for B
-  exactly like an owned chart — after a paid synastry order.
+Guest-person semantics now live on /api/synastry/charts (saves both charts,
+B as guest, returns B's capability token) + /api/purchase(synastry_love|
+synastry_work). The old /api/synastry/order must 410.
 """
-from __future__ import annotations
-
-import os
+import json
 import uuid
 
-os.environ["APP_ENV"] = "development"
-os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
-os.environ.setdefault("RATE_LIMIT_BACKEND", "memory")
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
 
-import json  # noqa: E402
-
-from fastapi.testclient import TestClient  # noqa: E402
-from sqlmodel import Session, select  # noqa: E402
-
-from app.db import engine  # noqa: E402
-from app.main import app  # noqa: E402
-from app.models import BirthProfile, Chart, Order  # noqa: E402
-
-SUF = uuid.uuid4().hex[:8]
+from app.db import engine
+from app.main import app
+from app.models import BirthProfile, Chart, User
 
 
-def _mk_user_cookie(c) -> str:
-    # create a User directly + sign the session cookie (no SMS in tests)
-    from app.auth import _user_cookie_value
-    from app.models import User
-    phone = f"+98h16{uuid.uuid4().hex[:8]}"
+def _mk_user_cookie(c: TestClient) -> str:
+    uid = "u" + uuid.uuid4().hex[:10]
     with Session(engine) as s:
-        u = User(phone=phone)
-        s.add(u)
-        s.commit()
-        uid = u.id
+        s.add(User(id=uid, phone=uid + "@h16", credits=20)); s.commit()
+    from app.auth import _user_cookie_value
     c.cookies.set("chart_user", _user_cookie_value(uid))
-    return _user_cookie_value(uid)
+    return uid
 
 
 def _syn_form() -> dict:
@@ -49,13 +33,17 @@ def _syn_form() -> dict:
     }
 
 
-def test_synastry_order_makes_person_b_guest():
-    """B's profile must be anonymous (user_id NULL) and a capability token
-    returned so the buyer can unlock the full report later."""
+def test_old_toman_order_endpoint_is_410():
     c = TestClient(app)
-    sid = _mk_user_cookie(c)
-    assert sid, "registration should set a session cookie"
+    _mk_user_cookie(c)
     r = c.post("/api/synastry/order", data=_syn_form())
+    assert r.status_code == 410, r.text
+
+
+def test_charts_endpoint_saves_person_b_as_guest_with_token():
+    c = TestClient(app)
+    _mk_user_cookie(c)
+    r = c.post("/api/synastry/charts", data=_syn_form())
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["token_b"] and len(d["token_b"]) >= 20
@@ -67,43 +55,18 @@ def test_synastry_order_makes_person_b_guest():
         assert ca.profile_id and s.get(BirthProfile, ca.profile_id).user_id is not None
 
 
-def test_synastry_full_unlocks_via_guest_token_after_paid():
-    """Full report works for B via cookie token even though B has no account."""
+def test_credit_purchase_then_full_variant_works_with_guest_token():
+    """The full R14 path: charts → purchase love → full(love) 200."""
     c = TestClient(app)
-    _mk_user_cookie(c)
-    r = c.post("/api/synastry/order", data=_syn_form())
-    d = r.json()
-    cid_b, tok_b = d["chart_b"], d["token_b"]
-    # simulate the client storing B's token in chart_access (A is owned via
-    # the logged-in user, so it needs no token entry)
-    ck = {"chart_access": json.dumps({cid_b: tok_b})}
+    _mk_user_cookie(c)  # credits=20 — enough for an 8cr variant
+    d = c.post("/api/synastry/charts", data=_syn_form()).json()
+    ck = {"chart_access": json.dumps({d["chart_b"]: d["token_b"]})}
     c.cookies.update(ck)
-    # mark the order paid
-    with Session(engine) as s:
-        o = s.exec(select(Order).where(Order.id == d["order_id"])).first()
-        o.status = "paid"
-        s.add(o)
-        s.commit()
-    r = c.post("/api/synastry/full", data={"chart_a": d["chart_a"], "chart_b": cid_b})
-    assert r.status_code == 200, r.text
-    j = r.json()
-    assert "overall" in j and "domains" in j
-
-
-def test_synastry_full_guest_without_token_still_403():
-    """No token for B → 403 (guest data is NOT publicly readable)."""
-    c = TestClient(app)
-    _mk_user_cookie(c)
-    r = c.post("/api/synastry/order", data=_syn_form())
-    d = r.json()
-    cid_b = d["chart_b"]
-    # only A is in the cookie (wrong/absent token for B) → B must stay locked
-    ck = {"chart_access": json.dumps({d["chart_a"]: "x", cid_b: "wrong-token"})}
-    c.cookies.update(ck)
-    with Session(engine) as s:
-        o = s.exec(select(Order).where(Order.id == d["order_id"])).first()
-        o.status = "paid"
-        s.add(o)
-        s.commit()
-    r = c.post("/api/synastry/full", data={"chart_a": d["chart_a"], "chart_b": d["chart_b"]})
-    assert r.status_code == 403
+    pr = c.post("/api/purchase", json={"action_key": "synastry_love",
+                                       "chart_id": d["chart_a"]})
+    assert pr.status_code == 200, pr.text
+    fr = c.post("/api/synastry/full", data={"chart_a": d["chart_a"],
+                                            "chart_b": d["chart_b"], "variant": "love"})
+    assert fr.status_code == 200, fr.text
+    j = fr.json()
+    assert j["variant"] == "love" and "overall" in j

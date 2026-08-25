@@ -73,12 +73,17 @@ def create_order(
         # §13 — LANCH20: only on the user's FIRST deep report. Enforced before
         # the atomic slot reservation so the slot is never burned for nothing.
         if coupon_row.report_only:
-            # R13/N3: "first deep report" now means the first credit purchase
-            # of a deep-report action (report_basic/full/gold), since toman
-            # report plans are retired.
-            from app.models import CreditTransaction as _CT
-            if plan_key not in CREDIT_PACKS and plan_key not in DEEP_REPORT_ACTIONS:
+            # §13/R14-D1: report_only means DEEP REPORT ONLY — credit PACKS are
+            # never eligible (the pack buys credits, not a report). The old
+            # guard allowed packs through because CREDIT_PACKS was whitelisted
+            # here: a live money bug — 20% off every pack with LANCH20.
+            if plan_key in CREDIT_PACKS:
                 raise ValueError("این کد تخفیف فقط برای گزارش عمیق است")
+            if plan_key not in DEEP_REPORT_ACTIONS:
+                raise ValueError("این کد تخفیف فقط برای گزارش عمیق است")
+            # "first deep report" = no prior deep-report CREDIT spend (toman
+            # report plans are retired; the ledger is the source of truth).
+            from app.models import CreditTransaction as _CT
             prior = session.exec(select(_CT).where(
                 _CT.user_id == new_user_id,
                 _CT.amount < 0,

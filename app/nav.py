@@ -50,8 +50,8 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("refund", "استرداد وجه", "/refund", icon="icon-refresh", group="دربارهٔ ما"),
 ]
 
-_BOTTOM_NO_CHART = ["home", "chart", "synastry", "plans", "account"]
-_BOTTOM_WITH_CHART = ["home", "mychart", "explore", "synastry", "account"]
+_BOTTOM_NO_CHART = ["home", "synastry", "chart", "plans", "account"]  # R14-D5: FAB is the MIDDLE slot (3rd of 5)
+_BOTTOM_WITH_CHART = ["home", "explore", "mychart", "synastry", "account"]  # R14-D5: dashboard FAB centered too
 _TOP_BASE = ["home", "synastry", "rectify", "transits", "plans"]
 
 
@@ -71,6 +71,14 @@ def nav_for(*, has_chart: bool) -> dict:
         if has_chart and k == "chart":
             continue
         bottom.append(it)
+    # R14-D5: with-chart users get the dashboard FAB as the centered action.
+    if has_chart:
+        for i, it in enumerate(bottom):
+            if it.key == "mychart":
+                it = NavItem(it.key, it.label_fa, it.url, icon=it.icon,
+                             group=it.group, needs_chart=it.needs_chart, primary=True)
+                bottom[i] = it
+                break
 
     top = [by_key[k] for k in _TOP_BASE if _visible(by_key[k], has_chart)]
     if has_chart and by_key["mychart"] not in top:
