@@ -6,12 +6,15 @@
    Credit packs remain the ONLY place toman appears. #}
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
 <div class="u-8c4cf147" x-data="purchase()">
-  <h1 class="u-64374dd7">پلنها و گزارش چارت تولد</h1>
-  <p class="u-7e8899c5">
-    همهٔ گزارشها از روی همان چارتِ رایگانِ خودت تولید میشوند. اول چارت رایگان بساز و پیشنمایش را ببین، بعد با اعتبار باز کن.
-  </p>
+  <div class="plans-hero">
+    <span class="eyebrow">کاتالوگ زایچه</span>
+    <h1 class="u-64374dd7">برای سؤالت، یک مسیر هست</h1>
+    <p class="u-7e8899c5">
+      همهٔ گزارش‌ها از روی چارتِ رایگانِ خودت ساخته می‌شوند. اول چارتت را بساز، بعد فقط همان خدمتی را باز کن که الآن به کارت می‌آید — با اعتبار.
+    </p>
+  </div>
 
-  <div class="u-63b0a75d">
+  <div class="cta-row">
     <a href="/birth-form" class="btn btn-lg"><svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> چارت رایگان بساز</a>
   </div>
 
@@ -28,12 +31,11 @@
     <span class="u-warn-sm" x-show="couponMsg" x-text="couponMsg"></span>
   </div>
 
-  <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار)،
-       نرخ تومانی شفاف بالای جدول، کارت‌های فشرده قابل مقایسه (<3000px) -->
+  <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار) -->
   <div class="plans-intro">
     <span class="eyebrow">کاتالوگ زایچه</span>
     <h2 class="u-0a50819b">برای سؤال تو، یک مسیر هست</h2>
-    <p class="u-80877d75">همهٔ محصول‌ها با اعتبار کار می‌کنند. اول چارتت را رایگان بساز، بعد فقط همان خدمتی را باز کن که الآن به کارت می‌آید. نرخ مرجع هر اعتبار ۵۰٬۰۰۰ تومان است و اعتبارها منقضی نمی‌شوند.</p>
+    <p class="u-80877d75">همهٔ محصول‌ها با اعتبار کار می‌کنند؛ نرخ مرجع هر اعتبار ۵۰٬۰۰۰ تومان و منقضی نمی‌شود. جزئیات هر کارت داخلش باز می‌شود.</p>
     <div class="choice-row" aria-label="راهنمای انتخاب محصول">
       <a href="#self-products"><b>خودم را بهتر بفهمم</b><span>شخصیت، شغل و گفت‌وگو</span></a>
       <a href="#relationship-products"><b>رابطه‌مان را بفهمم</b><span>عاطفی یا کاری</span></a>
@@ -178,6 +180,9 @@
 .plan-credits{font-size:1rem;font-weight:800;color:var(--gold-text,var(--gold));}
 .plan-toman{font-size:.78em;opacity:.7;}
 .plan-card .u-c9f42765{font-size:.8rem;line-height:1.85;color:var(--muted);}
+.plans-hero{margin:6px 0 4px;}
+.plans-hero .u-64374dd7{margin:2px 0 6px;font-size:1.5rem;line-height:1.45;}
+.cta-row{display:flex;gap:10px;margin:14px 0 18px;}
 .choice-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px;}
 .choice-row a{display:flex;flex-direction:column;gap:3px;padding:11px 10px;border:1px solid var(--stroke);border-radius:14px;background:var(--surface-2);color:var(--txt);text-decoration:none;transition:border-color .15s,transform .15s;}
 .choice-row a:hover{border-color:var(--gold);transform:translateY(-1px);}
