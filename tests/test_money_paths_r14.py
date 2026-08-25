@@ -14,7 +14,6 @@ import uuid
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.auth import _user_cookie_value
 from app.db import engine
 from app.main import app as main_app
 from app.models import CreditTransaction, User
