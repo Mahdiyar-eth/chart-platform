@@ -54,11 +54,14 @@
   <link rel="stylesheet" href="/static/css/utilities.css?v={{ asset_version }}">
   
   <script>
-    // C4 light mode — apply saved theme BEFORE paint to avoid flash
-    (function(){ try{
-      var th=localStorage.getItem('zayche-theme');
+    // W2.4 — theme: system preference is the DEFAULT; manual choice rides on top.
+    // Applied BEFORE paint to avoid flash. 'auto' (or no saved value) follows
+    // prefers-color-scheme live, including OS-level changes.
+    (function(){
+      var th; try{ th=localStorage.getItem('zayche-theme'); }catch(e){}
+      if(!th || th==='auto'){ th=(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'; }
       if(th==='light') document.documentElement.setAttribute('data-theme','light');
-    }catch(e){} })();
+    })();
   </script>
   {% block head_extra %}{% endblock %}
 </head>

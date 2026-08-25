@@ -13,15 +13,14 @@ a:hover{ color:var(--gold-text,var(--gold)); }
     
     html,body{ background:radial-gradient(1200px 800px at 70% -10%, var(--bg-glow) 0%, var(--bg) 55%), var(--bg); color:var(--txt); font-family:Vazirmatn, Tahoma, sans-serif; min-height:100vh; overflow-x:hidden; }
     body{ padding-bottom:32px; }
-    /* animated aurora field — clean violet/indigo/gold (no olive/teal) */
+    /* W2.1: aurora blobs are STATIC now — three 19–22s infinite animations of
+       72px-blurred full-screen layers were a constant GPU/compositor tax on
+       every device for zero information. The deep-sky look stays; motion goes. */
     .aurora{ position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
-    .aurora i{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.5; will-change:transform; }
-    .a1{ width:320px; height:320px; background:var(--accent); top:-70px; right:-70px; animation:drift1 19s var(--ease) infinite; }
-    .a2{ width:260px; height:260px; background:var(--indigo); bottom:8%; left:-80px; animation:drift2 15s var(--ease) infinite; }
-    .a3{ width:200px; height:200px; background:var(--gold); top:38%; left:18%; opacity:.10; animation:drift3 22s var(--ease) infinite; }
-    @keyframes drift1{ 0%,100%{ transform:translate(0,0) scale(1); } 33%{ transform:translate(-40px,26px) scale(1.1); } 66%{ transform:translate(24px,-18px) scale(.94); } }
-    @keyframes drift2{ 0%,100%{ transform:translate(0,0) scale(1); } 40%{ transform:translate(36px,-30px) scale(1.12); } 75%{ transform:translate(-28px,16px) scale(.92); } }
-    @keyframes drift3{ 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(40px,34px) scale(1.15); } }
+    .aurora i{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.5; }
+    .a1{ width:320px; height:320px; background:var(--accent); top:-70px; right:-70px; }
+    .a2{ width:260px; height:260px; background:var(--indigo); bottom:8%; left:-80px; }
+    .a3{ width:200px; height:200px; background:var(--gold); top:38%; left:18%; opacity:.10; }
     .starfield{ position:fixed; inset:0; pointer-events:none; opacity:.5; z-index:0;
       background-image:radial-gradient(1.5px 1.5px at 20% 30%, var(--star-1), transparent), radial-gradient(1px 1px at 80% 20%, var(--star-2), transparent),
       radial-gradient(1.2px 1.2px at 40% 70%, var(--star-3), transparent), radial-gradient(1px 1px at 60% 85%, var(--star-4), transparent),
@@ -37,8 +36,9 @@ a:hover{ color:var(--gold-text,var(--gold)); }
       box-shadow:0 12px 44px rgba(0,0,0,.5), inset 0 1px 0 var(--nav-ink-a22, var(--w-d22, rgba(255,255,255,.22))); }
     .appbar-inner::after{ content:''; position:absolute; inset:-40%; pointer-events:none;
       background:linear-gradient(115deg, transparent 42%, var(--nav-ink-a16, var(--w-d16, rgba(255,255,255,.16))) 50%, transparent 58%);
-      transform:translateX(-130%) skewX(-14deg); animation:shine 7.5s ease-in-out infinite; }
-    @keyframes shine{ 0%, 58%{ transform:translateX(-130%) skewX(-14deg); } 68%, 100%{ transform:translateX(130%) skewX(-14deg); } }
+      transform:translateX(-130%) skewX(-14deg); }
+    /* W2.3: the infinite shine sweep is gone — decorative motion with zero
+       information, running forever on every page (R14 §5.3). */
     @keyframes appbarIn{ from{ opacity:0; transform:translateY(-16px); } to{ opacity:1; transform:none; } }
     .brand{ display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 10px; white-space:nowrap;
       font-weight:800; font-size:1.05rem; color:var(--txt); text-decoration:none; }
