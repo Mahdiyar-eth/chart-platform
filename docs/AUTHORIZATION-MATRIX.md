@@ -56,6 +56,7 @@
 | `GET /s/{token}` | Public | HMAC verify, rate limit (G7) |
 | `POST /api/synastry/order` | Capability | `_owns_chart` |
 | `POST /api/synastry/full` | Capability | `_owns_chart` |
+| `POST /api/synastry/charts` | Public | rate-limit only — saves charts, no gate (R13) |
 | `GET /api/synastry/access` | Paid/Capability | access check |
 | `GET /api/notifications/prefs` | User | session cookie (G8) |
 | `POST /api/notifications/prefs` | User | CSRF + validated ranges (G8) |

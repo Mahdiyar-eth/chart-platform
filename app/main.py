@@ -1511,6 +1511,35 @@ def synastry_share_page(request: Request, token: str, p: str = Query("")):
     })
 
 
+@app.post("/api/synastry/charts")
+def api_synastry_charts(request: Request, session: Session = Depends(get_session),
+                        name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
+                        day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
+                        city_a: str = Form(None), calendar_a: str = Form("jalali"),
+                        zodiac_a: str = Form("tropical"),
+                        name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
+                        day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
+                        city_b: str = Form(None), calendar_b: str = Form("jalali"),
+                        zodiac_b: str = Form("tropical")):
+    """R13 — save both synastry charts WITHOUT creating a payment order.
+    Returns chart ids so the credit path (/api/purchase) can scope the
+    entitlement. Person B stays a guest profile (H1.6)."""
+    if not _rate_limit(f"synch:{_rl_client(request)}", 10, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    chart_a, _pa = _compute_and_save_chart(
+        session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
+        time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
+        province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
+    chart_b, _pb = _compute_and_save_chart(
+        session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
+        time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
+        province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
+        guest=True)
+    session.add(chart_a); session.add(chart_b)
+    session.commit(); session.refresh(chart_a); session.refresh(chart_b)
+    return {"chart_a": chart_a.id, "chart_b": chart_b.id}
+
+
 @app.post("/api/synastry/order")
 def api_synastry_order(request: Request, session: Session = Depends(get_session),
                        name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
