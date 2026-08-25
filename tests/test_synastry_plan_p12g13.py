@@ -13,7 +13,8 @@ def test_plans_page_has_synastry_product():
     c = TestClient(app)
     r = c.get("/plans")
     assert r.status_code == 200
-    # synastry is a credit product now, not a toman card
-    assert "سیناستری" in r.text
+    # R14: the user-facing catalog uses «سازگاری عاطفی/کاری», not the
+    # technical word «سیناستری».
+    assert "سازگاری عاطفی" in r.text and "سازگاری کاری" in r.text
     assert "باز کردن با" in r.text            # unified credit-buy button
     assert "۴۹۹,۰۰۰" not in r.text            # no parallel toman price

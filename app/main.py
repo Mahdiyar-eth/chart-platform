@@ -941,7 +941,15 @@ def plans_page(request: Request, session: Session = Depends(get_session)):
         for r in session.exec(select(CreditPrice).where(CreditPrice.active)).all()
         if r.action_key not in ("rectify", "explore_card")  # rectify is free; explore is in-product
     ]
-    products.sort(key=lambda x: x["credits"])  # cheapest first
+    products.sort(key=lambda x: ([
+        "report_basic", "report_full", "report_gold", "chat_pack_20",
+        "synastry_love", "synastry_work", "transit_3m", "transit_12m",
+        "solar_return", "relocation", "report_audio",
+    ].index(x["action_key"]) if x["action_key"] in [
+        "report_basic", "report_full", "report_gold", "chat_pack_20",
+        "synastry_love", "synastry_work", "transit_3m", "transit_12m",
+        "solar_return", "relocation", "report_audio",
+    ] else 99))
     user = get_current_user(request)
     user_balance = (balance(session, user.id) if user else 0)
     return templates.TemplateResponse(request, "plans.html", {

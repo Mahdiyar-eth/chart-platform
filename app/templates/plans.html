@@ -30,20 +30,30 @@
 
   <!-- ★ جدول واحد اعتباری — MASTER W10: نام محصول بزرگ‌تر از قیمت (اعتبار)،
        نرخ تومانی شفاف بالای جدول، کارت‌های فشرده قابل مقایسه (<3000px) -->
-  <h2 class="u-0a50819b">محصولها — با اعتبار باز کن</h2>
-  <p class="u-80877d75">
-    نرخ مرجع: هر اعتبار ۵۰٬۰۰۰ تومان (پک‌های بالاتر ارزان‌تر میشوند).
-    روی «باز کردن» بزن، اگر اعتبار کافی داشت بلافاصله قفلش باز میشود. اعتبارها هرگز منقضی نمیشوند.
-  </p>
-  <div class="u-8f9ba925 plans-grid" >
-    {% for p in credit_products %}
+  <div class="plans-intro">
+    <span class="eyebrow">کاتالوگ زایچه</span>
+    <h2 class="u-0a50819b">برای سؤال تو، یک مسیر هست</h2>
+    <p class="u-80877d75">همهٔ محصول‌ها با اعتبار کار می‌کنند. اول چارتت را رایگان بساز، بعد فقط همان خدمتی را باز کن که الآن به کارت می‌آید. نرخ مرجع هر اعتبار ۵۰٬۰۰۰ تومان است و اعتبارها منقضی نمی‌شوند.</p>
+    <div class="choice-row" aria-label="راهنمای انتخاب محصول">
+      <a href="#self-products"><b>خودم را بهتر بفهمم</b><span>شخصیت، شغل و گفت‌وگو</span></a>
+      <a href="#relationship-products"><b>رابطه‌مان را بفهمم</b><span>عاطفی یا کاری</span></a>
+      <a href="#time-products"><b>ریتم زمان را ببینم</b><span>امروز، سال یا شهر</span></a>
+    </div>
+  </div>
+  <div class="product-groups">
+    <section class="product-group" id="self-products">
+      <div class="group-heading"><span class="group-icon">◎</span><div><h3>شناخت خودت</h3><p>از یک سؤال کوتاه تا تصویری کامل از الگوهای زندگی‌ات</p></div></div>
+      <div class="u-8f9ba925 plans-grid" >
+    {% for p in credit_products if p.action_key in ['report_basic','report_full','report_gold','chat_pack_20'] %}
     <div class="glass plan-card" style="{% if p.action_key == 'report_full' %}border:2px solid var(--gold);{% endif %}">
       {% if p.action_key == 'report_full' %}<div class="u-8596a042">پیشنهاد ما</div>{% endif %}
       <h2 class="plan-name">{{ p.title_fa }}</h2>
       <div class="plan-price"><span class="plan-credits">{{ p.credits }}</span> اعتبار
         <span class="plan-toman">≈ {{ "{:,}".format(p.credits * 50000) }} تومان</span>
       </div>
-      <div class="u-c9f42765">
+      <details class="product-details">
+        <summary>جزئیات این محصول و نمونه خروجی</summary>
+        <div class="u-c9f42765">
         {% if p.action_key == 'report_basic' %}پاسخ کوتاه به ۵ پرسش اصلی: شخصیت، احساسات، روابط، کار، توانمندی‌ها — هر جمله با شاهد چارت خودت.
         <div class="u-warn-sm" style="margin-top:8px;font-size:.85em;line-height:1.9;">نمونه: «ماه در عقرب و خانهٔ ۸ — نیاز عمیق به امنیت عاطفی داری؛ وقتی اعتماد کنی، وفادارترین آدم رابطه‌ای.»</div>
         {% elif p.action_key == 'report_full' %}هر ۱۳ حوزهٔ زندگی، جداگانه؛ برای هر حوزه تحلیل عمیق + نقاط قوت/چالش + یک پیشنهاد عملی. PDF ۲۵+ صفحه.
@@ -58,12 +68,51 @@
         {% elif p.action_key == 'report_audio' %}همان گزارش کامل را صوتی گوش کن — برای روزهای شلوغ.
         {% else %}{{ p.title_fa }}{% endif %}
       </div>
+      </details>
       <button class="btn btn-lg btn-accent" @click="buyCredit('{{ p.action_key }}')" data-track="pack_selected"
               style="width:100%;margin-top:auto;">
         باز کردن با {{ p.credits }} اعتبار
       </button>
     </div>
     {% endfor %}
+      </div>
+    </section>
+
+    <section class="product-group">
+      <div class="group-heading"><span class="group-icon">✦</span><div><h3>رابطه و زمان</h3><p>دو نفر را بهتر بفهم؛ یا ریتم سال و شهرهای پیش‌رو را ببین</p></div></div>
+      <div class="u-8f9ba925 plans-grid">
+        {% for p in credit_products if p.action_key in ['solar_return','relocation','transit_3m','transit_12m','synastry_love','synastry_work'] %}
+        {% if p.action_key == 'synastry_love' %}<div class="group-divider" id="relationship-products"><b>رابطه</b><span>سازگاری عاطفی یا کاری، با شاهد از هر دو چارت</span></div>{% endif %}
+        {% if p.action_key == 'solar_return' %}<div class="group-divider" id="time-products"><b>زمان</b><span>امروز، سال و شهر — برای تصمیم‌گیری آگاهانه‌تر</span></div>{% endif %}
+        <div class="glass plan-card" style="{% if p.action_key == 'solar_return' %}border:2px solid var(--gold);{% endif %}">
+          <h2 class="plan-name">{{ p.title_fa }}</h2>
+          <div class="plan-price"><span class="plan-credits">{{ p.credits }}</span> اعتبار <span class="plan-toman">≈ {{ "{:,}".format(p.credits * 50000) }} تومان</span></div>
+          <details class="product-details decision-details">
+            <summary>چه می‌گیری؟</summary>
+            <div class="plan-benefit">
+              {% if p.action_key == 'solar_return' %}<b>چارت سالیانهٔ شخصی تو</b><span>از تولد امسال تا تولد بعدی: تم سال، خانهٔ برجسته، ۵ گذر کلیدی و یک پرسش فصلی.</span>
+            {% elif p.action_key == 'relocation' %}<b>مقایسهٔ شهرهای مقصد</b><span>۱ تا ۳ شهر را کنار هم ببین؛ کدام حوزهٔ زندگی در هر شهر بیشتر برجسته می‌شود.</span>
+            {% elif p.action_key == 'transit_3m' %}<b>سه ماه پیش‌رو</b><span>گذرهای مهم روی چارت خودت، با تاریخ شروع و توضیح قابل فهم.</span>
+            {% elif p.action_key == 'transit_12m' %}<b>۱۲ ماه آیندهٔ من</b><span>تقویم گذرهای مهم سال؛ برای برنامه‌ریزی و تأمل، نه پیش‌گویی.</span>
+            {% elif p.action_key == 'synastry_love' %}<b>الگوی رابطهٔ شما</b><span>سازگاری عاطفی با تمرکز روی زهره، ماه و مریخ؛ قوت‌ها و جاهایی که گفت‌وگو کمک می‌کند.</span>
+            {% elif p.action_key == 'synastry_work' %}<b>هم‌تیمی چطورید؟</b><span>سازگاری کاری با تمرکز روی خورشید، مریخ و زحل؛ سبک همکاری و اصطکاک‌های قابل مدیریت.</span>
+            {% endif %}
+          </div>
+          </details>
+          <button class="btn btn-md btn-accent" @click="buyCredit('{{ p.action_key }}')">باز کردن با {{ p.credits }} اعتبار</button>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="product-group product-addons">
+      <div class="group-heading"><span class="group-icon">＋</span><div><h3>افزونه‌ها</h3><p>گزارشت را هرطور برایت راحت‌تر است استفاده کن</p></div></div>
+      <div class="addons-grid">
+        {% for p in credit_products if p.action_key in ['report_audio'] %}
+        <div class="glass plan-card addon-card"><h2 class="plan-name">{{ p.title_fa }}</h2><p>همان گزارش خودت را صوتی گوش کن؛ مناسب مسیر، ورزش و روزهای شلوغ.</p><button class="btn btn-md btn-accent" @click="buyCredit('{{ p.action_key }}')">افزودن با {{ p.credits }} اعتبار</button></div>
+        {% endfor %}
+      </div>
+    </section>
   </div>
 
   <!-- بستههای اعتبار — تنها جایی که تومان دیده میشود -->
@@ -89,37 +138,19 @@
     پرداخت امن از طریق درگاه زرینپال — بلافاصله پس از پرداخت، گزارش شما تولید میشود.
   </p>
 
-  <div class="u-8420aeac">
-    <h2 class="u-ad331caf">سؤالات پرتکرار درباره پلنها</h2>
-    <div class="glass u-83980512">
-      <b class="u-b9f81216">فرق گزارش کامل و طلایی چیست؟</b>
-      <p class="u-74e1d4ce">هر دو همان ۱۳ بخش گزارش کامل با شواهد نجومی هستند. گزارش طلایی بهعلاوهٔ گفتوگوی شخصی با هوش مصنوعی دربارهٔ چارتت (۳۰ روزه) و نقشهٔ گذرهای ۱۲ ماهه را هم میدهد.</p>
+  <section class="faq-section">
+    <div class="section-kicker">قبل از انتخاب</div>
+    <h2 class="u-ad331caf">سؤال‌های رایج</h2>
+    <div class="faq-list">
+      <details class="faq-item" open><summary>از کجا شروع کنم؟</summary><p>اول چارت تولدت را رایگان بساز و پیش‌نمایش را ببین. اگر یک جواب مشخص می‌خواهی، «یک سؤال، یک جواب» مناسب‌تر است؛ اگر تصویر کامل‌تری می‌خواهی، «شناخت کامل» را انتخاب کن.</p></details>
+      <details class="faq-item"><summary>فرق آشنایی، شناخت کامل و شناخت + همراهی چیست؟</summary><p>آشنایی ۵ بخش اصلی را پوشش می‌دهد. شناخت کامل هر ۱۳ حوزهٔ زندگی را با تحلیل عمیق، شاهد نجومی و پیشنهاد عملی باز می‌کند. شناخت + همراهی همان گزارش کامل را به‌اضافهٔ ۳۰ روز گفت‌وگو با چارت و نقشهٔ ۱۲ ماه آینده می‌دهد.</p></details>
+      <details class="faq-item"><summary>اعتبار چطور کار می‌کند؟</summary><p>اعتبار ارز داخلی زایچه است. با پک اعتباری می‌خری و برای همان محصولی که انتخاب کرده‌ای خرج می‌کنی؛ اعتبارها منقضی نمی‌شوند. نرخ مرجع هر اعتبار ۵۰٬۰۰۰ تومان است.</p></details>
+      <details class="faq-item"><summary>آیا گفت‌وگو با هوش مصنوعی جداگانه پول می‌خواهد؟</summary><p>گفت‌وگو با چارت در بستهٔ «شناخت + همراهی» با ۱۴ اعتبار قرار دارد. بعد از بازکردن، ۳۰ روز می‌توانی دربارهٔ همان چارت سؤال بپرسی و پاسخ‌ها بر اساس داده‌های چارت خودت نوشته می‌شوند.</p></details>
+      <details class="faq-item"><summary>چارت سالیانه و چارت مهاجرت چه می‌دهند؟</summary><p>چارت سالیانه تمِ سال تولد تا تولد بعدی، خانهٔ برجسته، ۵ گذر کلیدی و پرسش فصلی را نشان می‌دهد. چارت مهاجرت، ۱ تا ۳ شهر را از نظر تغییر تمرکز خانه‌ها کنار هم مقایسه می‌کند؛ این نقشه توصیهٔ مهاجرت نیست.</p></details>
+      <details class="faq-item"><summary>اگر از گزارش راضی نبودم چه؟</summary><p>اگر گزارش به دلیل خطای فنی تولید نشود، طبق شرایط بازگشت وجه بررسی و جبران می‌شود. جزئیات را در صفحهٔ شرایط استرداد بخوان.</p></details>
+      <details class="faq-item"><summary>دادهٔ تولدم امن می‌ماند؟</summary><p>دادهٔ تولد برای محاسبهٔ چارت و تولید خروجی خودت استفاده می‌شود و به دیگران فروخته یا واگذار نمی‌شود. جزئیات در صفحهٔ حریم خصوصی آمده است.</p></details>
     </div>
-    <div class="glass u-83980512">
-      <b class="u-b9f81216">اعتبار چطور کار میکند؟</b>
-      <p class="u-74e1d4ce">اعتبار یک واحد داخلی است؛ با پکهای تومانی میخری و برای باز کردن هر محصول (گزارش، گذر، چت، سیناستری) خرج میکنی. هرگز منقضی نمیشود.</p>
-    </div>
-    <div class="glass u-83980512">
-      <b class="u-b9f81216">اگر گزارش پایه بخرم، بعداً ارتقا بدهم چطور؟</b>
-      <p class="u-74e1d4ce">چارت و گزارشهایت ذخیره میمانند. کافیست گزارش بالاتر را هم با اعتبار باز کنی؛ کاملتر روی همان چارت تولید میشود.</p>
-    </div>
-    <div class="glass u-20feeded">
-      <b class="u-0e08cf41">کد تخفیف شروع: LANCH20</b>
-      <p class="u-74e1d4ce">۲۰٪ تخفیف روی اولین خرید. در مرحلهٔ پرداخت کد را وارد کن — فقط یک بار.</p>
-    </div>
-    <div class="glass u-df1a6875">
-      <b class="u-b9f81216">تولید گزارش چقدر طول میکشد؟</b>
-      <p class="u-74e1d4ce">معمولاً ۳ تا ۵ دقیقه. صفحه را ببند؛ بهمحض آماده شدن، گزارش در «حساب من» و با نوتیفیکیشن در دسترس است.</p>
-    </div>
-    <div class="glass u-df1a6875">
-      <b class="u-b9f81216">اگر از نتیجه راضی نبودم؟</b>
-      <p class="u-74e1d4ce">تا ۷ روز پس از خرید، اگر گزارش به هر دلیلی تولید نشد یا خطا داشت، کل مبلغ برگشت داده میشود. از صفحهٔ <a class="u-6aa99fbc link-tap" href="/refund">شرایط بازگشت وجه</a> درخواست بده.</p>
-    </div>
-    <div class="glass u-df1a6875">
-      <b class="u-b9f81216">دادههای تولدم چه میشود؟</b>
-      <p class="u-74e1d4ce">فقط برای محاسبهٔ چارت و تولید گزارش استفاده میشود؛ به هیچکس فروخته یا واگذار نمیشود. جزئیات در <a class="u-6aa99fbc link-tap" href="/privacy">حریم خصوصی</a>.</p>
-    </div>
-  </div>
+  </section>
 </div>
 
 <div x-data="purchase()" x-cloak>
@@ -134,13 +165,53 @@
 <style>@keyframes spin{to{transform:rotate(360deg);}}</style>
 <style>
 /* MASTER W10 — compact comparable product grid */
-.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
-.plan-card{padding:22px 18px;border-radius:20px;display:flex;flex-direction:column;}
-/* the NAME is visually dominant; the credit price is secondary (AC-6) */
-.plan-name{font-size:1.35rem;font-weight:800;line-height:1.6;margin:0 0 4px;}
-.plan-price{margin:2px 0 10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
-.plan-credits{font-size:1rem;font-weight:700;color:var(--gold,#d4af37);}
-.plan-toman{font-size:.78em;opacity:.65;}
+.plans-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.plan-card{padding:18px 16px;border-radius:18px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.product-groups{display:grid;gap:24px;margin-top:24px;}
+.product-group{min-width:0;}
+.group-heading{display:flex;align-items:center;gap:10px;margin:0 0 10px;}
+.group-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--gold-soft);color:var(--gold-text,var(--gold));font-size:1.35rem;flex:none;}
+.group-heading h3{margin:0;font-size:1.12rem;color:var(--txt);}
+.group-heading p{margin:3px 0 0;color:var(--muted);font-size:.78rem;line-height:1.6;}
+.plan-name{font-size:1.08rem;font-weight:800;line-height:1.55;margin:0;color:var(--txt);}
+.plan-price{margin:0;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);}
+.plan-credits{font-size:1rem;font-weight:800;color:var(--gold-text,var(--gold));}
+.plan-toman{font-size:.78em;opacity:.7;}
+.plan-card .u-c9f42765{font-size:.8rem;line-height:1.85;color:var(--muted);}
+.choice-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px;}
+.choice-row a{display:flex;flex-direction:column;gap:3px;padding:11px 10px;border:1px solid var(--stroke);border-radius:14px;background:var(--surface-2);color:var(--txt);text-decoration:none;transition:border-color .15s,transform .15s;}
+.choice-row a:hover{border-color:var(--gold);transform:translateY(-1px);}
+.choice-row b{font-size:.78rem;line-height:1.5;}
+.choice-row span{font-size:.68rem;color:var(--muted);line-height:1.5;}
+.group-divider{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;padding:8px 2px 2px;border-bottom:1px solid var(--stroke);}
+.group-divider b{font-size:.92rem;color:var(--txt);}
+.group-divider span{font-size:.72rem;color:var(--muted);}
+.product-details{margin:0;color:var(--muted);}
+.product-details summary{cursor:pointer;list-style:none;color:var(--gold-text,var(--gold));font-size:.74rem;font-weight:800;padding:5px 0;}
+.product-details summary::-webkit-details-marker{display:none;}
+.product-details summary::before{content:'＋';display:inline-block;margin-inline-end:4px;font-size:.9rem;}
+.product-details[open] summary::before{content:'−';}
+.product-details > div{padding-top:4px;}
+.plan-card .u-warn-sm{font-size:.78rem!important;line-height:1.75!important;color:var(--muted-2)!important;padding-top:5px;border-top:1px solid var(--stroke);}
+.plan-card .btn{margin-top:auto;min-height:46px;font-size:.82rem;white-space:normal;line-height:1.4;}
+.plan-benefit{display:flex;flex-direction:column;gap:4px;min-height:108px;font-size:.82rem;line-height:1.8;color:var(--muted);}
+.plan-benefit b{font-size:.9rem;color:var(--txt);}
+.addons-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+.addon-card{min-height:0;padding:14px 16px;}
+.product-group:nth-child(2) .plan-card{padding:13px 11px;gap:5px;}
+.product-group:nth-child(2) .plan-benefit{min-height:78px;font-size:.76rem;line-height:1.65;}
+.product-group:nth-child(2) .plan-benefit b{font-size:.84rem;}
+.product-group:nth-child(2) .plan-card .btn{min-height:40px;font-size:.74rem;padding-inline:6px;}
+.faq-section{margin-top:28px;}
+.section-kicker,.eyebrow{display:inline-flex;align-items:center;color:var(--gold-text,var(--gold));font-size:.76rem;font-weight:800;letter-spacing:.02em;margin-bottom:4px;}
+.faq-list{display:grid;gap:8px;}
+.faq-item{background:var(--surface-2);border:1px solid var(--stroke);border-radius:14px;padding:0 14px;}
+.faq-item summary{cursor:pointer;list-style:none;padding:14px 22px 14px 0;font-weight:800;font-size:.86rem;color:var(--txt);position:relative;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:'+';position:absolute;inset-inline-end:0;top:11px;color:var(--gold-text,var(--gold));font-size:1.15rem;}
+.faq-item[open] summary::after{content:'−';}
+.faq-item p{margin:0;padding:0 0 14px;color:var(--muted);font-size:.8rem;line-height:1.9;max-width:70ch;}
+@media (max-width:430px){.plans-grid{gap:8px;}.plan-card{padding:14px 11px;}.plan-name{font-size:.98rem;}.plan-card .btn{padding-inline:8px;font-size:.74rem;}.plan-benefit{min-height:122px;font-size:.76rem;}.group-heading h3{font-size:1rem;}.group-heading p{font-size:.72rem;}}
 @media (prefers-reduced-motion: reduce){.plans-grid,.plan-card{transition:none!important;animation:none!important;}}
 </style>
 

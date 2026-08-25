@@ -87,6 +87,7 @@
   background:var(--surface,#141a3a); border:1px solid var(--stroke,rgba(255,255,255,.14));
   border-radius:14px; box-shadow:0 16px 40px rgba(0,0,0,.35); overflow-x:hidden; }
 .city-suggest:empty{ display:none; }
+.city-suggest-up{top:auto!important;bottom:calc(100% + 6px);}
 .city-suggest > div{ padding:13px 16px; cursor:pointer; border-bottom:1px solid var(--stroke,rgba(255,255,255,.08));
   color:var(--txt,#e8ecff); font-size:.95rem; display:flex; justify-content:space-between; align-items:center; gap:8px; }
 .city-suggest > div:last-child{ border-bottom:none; }
@@ -103,6 +104,8 @@ async function citySearch(inp, box, sel) {
       const r = await fetch('/api/cities?q=' + encodeURIComponent(q));
       const d = await r.json();
       box.innerHTML = '';
+      const rect = inp.getBoundingClientRect();
+      box.classList.toggle('city-suggest-up', rect.bottom + 250 > innerHeight - 96);
       (d.results || []).slice(0, 6).forEach(c => {
         const div = document.createElement('div');
         const b = document.createElement('b');
