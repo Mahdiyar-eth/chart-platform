@@ -8,7 +8,14 @@
   .feat p{margin-top:7px;font-size:.86rem;line-height:1.75;color:var(--muted);}
   .feat .more{display:inline-flex;align-items:center;gap:5px;margin-top:11px;font-size:.8rem;font-weight:700;color:var(--gold-text,var(--gold));}
   .feat.flag{background:rgba(245,197,24,.07);border-color:rgba(245,197,24,.28);}
+  .report-sample .tag{display:inline-block;}
   .sample .tag{display:inline-block;font-size:.7rem;font-weight:800;color:var(--gold-text,var(--gold));background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;}
+.report-sample summary{cursor:pointer;list-style:none;}
+.report-sample summary::-webkit-details-marker{display:none;}
+.report-sample summary{display:flex;flex-direction:column;gap:6px;}
+.report-sample summary::after{content:'خواندن متن کامل ↓';color:var(--gold-text,var(--gold));font-size:.78rem;font-weight:800;margin-top:8px;}
+.report-sample[open] summary::after{content:'بستن ↑';}
+.report-sample[open] summary::before{content:'';}
 </style>
 
 <header class="u-470ff171" >
@@ -111,44 +118,49 @@
 <section class="u-c2f8546b u-lazy" >
   <h2 class="u-f5af4736" >یک تکه از گزارش واقعی — بخوان و قضاوت کن</h2>
   <p class="muted u-04e790e9" >این دقیقاً همان لحن و همان عمقی است که در گزارشت می‌خوانی؛ هر ادعا با شاهد نجومی‌اش.</p>
-  <div class="u-fb424857" >
+  <div class="u-fb424857">
 
-    <div class="glass sample u-769fed37" >
-      <span class="tag">شخصیت · از بخش «هویت»</span>
-      <b class="u-b2e36ad1" >خورشید در اسد، خانهٔ ۵ — ماه در حوت، خانهٔ ۱۲</b>
-      <p class="muted u-b571ae96" >«روی صحنه بودن برای تو انتخاب نیست، نیاز است. خورشید در اسدِ خانهٔ پنجم یعنی انرژی‌ات وقتی جاری می‌شود که دیده شوی — کلاس درس، صحنهٔ کار، حتی یک جمع دوستانه. اما ماه در حوتِ خانهٔ دوازدهم یک راز دیگر دارد: بعد از هر جمعی به تنهایی نیاز داری تا احساس‌هایت ته‌نشین شوند. خیلی‌ها این را «سردشدن» می‌فهمند؛ در واقع دارید باتری‌تان را دوباره پر می‌کنید. اگر این دو را نشناسید، مدام بین دیده‌شدن و گوشه‌گیری می‌پلنگید. اگر بشناسیدشان، اول صحنه می‌گیرید، بعد خلوت — و هیچ‌کدام‌تان را قربانی دیگری نمی‌کنید.»</p>
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="chip">شاهد: Sun در Leo، خانه ۵</span><span class="chip">شاهد: Moon در Pisces، خانه ۱۲</span>
+    <details class="glass sample u-769fed37 report-sample" open>
+      <summary><span class="tag">شخصیت · از بخش «هویت»</span><b class="u-b2e36ad1">خورشید در اسد، خانهٔ ۵ — ماه در حوت، خانهٔ ۱۲</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«روی صحنه بودن برای تو انتخاب نیست، نیاز است. خورشید در اسدِ خانهٔ پنجم یعنی انرژی‌ات وقتی جاری می‌شود که دیده شوی — کلاس درس، صحنهٔ کار، حتی یک جمع دوستانه. اما ماه در حوتِ خانهٔ دوازدهم یک راز دیگر دارد: بعد از هر جمعی به تنهایی نیاز داری تا احساس‌هایت ته‌نشین شوند. خیلی‌ها این را «سردشدن» می‌فهمند؛ در واقع دارید باتری‌تان را دوباره پر می‌کنید. اگر این دو را نشناسید، مدام بین دیده‌شدن و گوشه‌گیری می‌پلنگید. اگر بشناسیدشان، اول صحنه می‌گیرید، بعد خلوت — و هیچ‌کدام‌تان را قربانی دیگری نمی‌کنید.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Sun در Leo، خانه ۵</span><span class="chip">شاهد: Moon در Pisces، خانه ۱۲</span>
+        </div>
       </div>
-    </div>
+    </details>
 
-    <div class="glass sample u-769fed37" >
-      <span class="tag">عشق · از بخش «روابط»</span>
-      <b class="u-b2e36ad1" >زهره در میزان، خانهٔ هفتم — ماه مربعی زحل</b>
-      <p class="muted u-b571ae96" >«تو در رابطه دنبال تعادل واقعی هستی، نه نیمه‌کاری. زهره در ترازو و خانهٔ هفتم یعنی برایت مهم است طرف مقابل هم بدهد، هم بگیرد — رابطه‌ای که فقط تو در آن تلاش می‌کنی، زود خسته‌ات می‌کند. اما ماهِ تربیع‌شده با زحل یک الگوی قدیمی ساخته: وقتی رابطه جدی می‌شود، بی‌اختیار محتاط می‌شوی؛ انگار منتظری صدایی بگوید «هنوز نه». این بدبختی نیست — زحل همین‌جا دارد به تو یاد می‌دهد قبل از سپردن قلبت، عقلت را هم وارد مذاکره کنی. کسی که با حوصله این محافظه‌کاری را پاسخ دهد، امن‌ترین آدم زندگی‌ات خواهد بود.»</p>
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="chip">شاهد: Venus در Libra، خانه ۷</span><span class="chip">شاهد: Moon □ Saturn</span>
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">عشق · از بخش «روابط»</span><b class="u-b2e36ad1">زهره در میزان، خانهٔ هفتم — ماه مربعی زحل</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«تو در رابطه دنبال تعادل واقعی هستی، نه نیمه‌کاری. زهره در ترازو و خانهٔ هفتم یعنی برایت مهم است طرف مقابل هم بدهد، هم بگیرد — رابطه‌ای که فقط تو در آن تلاش می‌کنی، زود خسته‌ات می‌کند. اما ماهِ تربیع‌شده با زحل یک الگوی قدیمی ساخته: وقتی رابطه جدی می‌شود، بی‌اختیار محتاط می‌شوی؛ انگار منتظری صدایی بگوید «هنوز نه». این بدبختی نیست — زحل همین‌جا دارد به تو یاد می‌دهد قبل از سپردن قلبت، عقلت را هم وارد مذاکره کنی. کسی که با حوصله این محافظه‌کاری را پاسخ دهد، امن‌ترین آدم زندگی‌ات خواهد بود.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Venus در Libra، خانه ۷</span><span class="chip">شاهد: Moon □ Saturn</span>
+        </div>
       </div>
-    </div>
+    </details>
 
-    <div class="glass sample u-769fed37" >
-      <span class="tag">کار · از بخش «مسیر شغلی»</span>
-      <b class="u-b2e36ad1" >MC در قوس، مشتری خانهٔ ۱۰ — مریخ در جوزا</b>
-      <p class="muted u-b571ae96" >«مسیر شغلی‌ات خط مستقیم نیست و قرار هم نیست باشد. MC در قوس یعنی با هر سالِ زندگی، افق جدیدی برایت باز می‌شود — آموزش، سفر، یا حتی یک کتاب که نگرشت را عوض می‌کند. مشتری در دهُم این را تأیید می‌کند: بزرگ‌ترین رشد حرفه‌ای‌ات همیشه از جایی آمده که یاد گرفتی، نه از جایی که تکرار کردی. مریخ در جوزا ابزارت است: ذهنی سریع که سه پروژه را هم‌زمان جلو می‌برد. تنها خطرش؟ شروعِ زیاد، تمامِ کم. ساختاری که برایت کار می‌کند این است: یکی را «پروژهٔ اصلی» کن، بقیه آزمایشگاه.»</p>
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="chip">شاهد: MC در Sagittarius</span><span class="chip">شاهد: Jupiter خانه ۱۰</span>
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">کار · از بخش «مسیر شغلی»</span><b class="u-b2e36ad1">MC در قوس، مشتری خانهٔ ۱۰ — مریخ در جوزا</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«مسیر شغلی‌ات خط مستقیم نیست و قرار هم نیست باشد. MC در قوس یعنی با هر سالِ زندگی، افق جدیدی برایت باز می‌شود — آموزش، سفر، یا حتی یک کتاب که نگرشت را عوض می‌کند. مشتری در دهُم این را تأیید می‌کند: بزرگ‌ترین رشد حرفه‌ای‌ات همیشه از جایی آمده که یاد گرفتی، نه از جایی که تکرار کردی. مریخ در جوزا ابزارت است: ذهنی سریع که سه پروژه را هم‌زمان جلو می‌برد. تنها خطرش؟ شروعِ زیاد، تمامِ کم. ساختاری که برایت کار می‌کند این است: یکی را «پروژهٔ اصلی» کن، بقیه آزمایشگاه.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: MC در Sagittarius</span><span class="chip">شاهد: Jupiter خانه ۱۰</span>
+        </div>
       </div>
-    </div>
+    </details>
 
-    <div class="glass sample u-769fed37" >
-      <span class="tag">سازگاری عاطفی · نمونهٔ دو نفره</span>
-      <b class="u-b2e36ad1" >ماهِ او روی ماهِ تو — هم‌نشینی</b>
-      <p class="muted u-b571ae96" >«وقتی ماهِ شما دو نفر هم‌نشینی می‌سازد، یک زبان مشترک پنهان دارید: هر دو درست همان لحظه غذا می‌خورید که حالتان بد می‌شود، و هر دو سکوت را به بحث ترجیح می‌دهید. این پایهٔ خوبی است. اما به جزئیات نگاه کنید: مریخِ او مقابل زحلِ تو یعنی وقتی او سریع تصمیم می‌گیرد، تو با احتیاطت او را کند حس می‌کنی — و وقتی تو محک می‌زنی، او تو را بی‌انگیزه می‌بیند. نسخهٔ کامل این گزارش می‌گوید این اختلاف را کجای زندگی روزمره دامن می‌زند و قرار ساده‌ای که هر دو را راضی نگه می‌دارد چیست.»</p>
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="chip">شاهد: Moon ☌ Moon</span><span class="chip">شاهد: Mars ☍ Saturn</span>
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">سازگاری عاطفی · نمونهٔ دو نفره</span><b class="u-b2e36ad1">ماهِ او روی ماهِ تو — هم‌نشینی</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«وقتی ماهِ شما دو نفر هم‌نشینی می‌سازد، یک زبان مشترک پنهان دارید: هر دو درست همان لحظه غذا می‌خورید که حالتان بد می‌شود، و هر دو سکوت را به بحث ترجیح می‌دهید. این پایهٔ خوبی است. اما به جزئیات نگاه کنید: مریخِ او مقابل زحلِ تو یعنی وقتی او سریع تصمیم می‌گیرد، تو با احتیاطت او را کند حس می‌کنی — و وقتی تو محک می‌زنی، او تو را بی‌انگیزه می‌بیند. نسخهٔ کامل این گزارش می‌گوید این اختلاف را کجای زندگی روزمره دامن می‌زند و قرار ساده‌ای که هر دو را راضی نگه می‌دارد چیست.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Moon ☌ Moon</span><span class="chip">شاهد: Mars ☍ Saturn</span>
+        </div>
       </div>
-    </div>
+    </details>
 
+  </div>
 </section>
 
 <section class="u-c2f8546b u-lazy" >
