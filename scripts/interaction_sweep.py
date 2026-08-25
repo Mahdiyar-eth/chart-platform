@@ -105,9 +105,9 @@ def _click_outcome(page, el):
             return ("OK", "visible text changed")
         if after_text != before_text:
             return ("OK", "visible text changed")
-        # network activity (API call) — live action even without visible change yet
-        if requests:
-            return ("OK", "network: " + requests[-1][:80])
+        # R14/§9.3: network activity is NOT an OK criterion anymore — a
+        # background poll made dead buttons read OK. Only user-perceivable
+        # outcomes count: navigation, toast/dialog, visible text change.
         if errors:
             return ("BROKEN", "; ".join(errors[:2]))
         return ("DEAD", "click: no observable change")
@@ -150,7 +150,7 @@ def main():
                 continue
             tested = 0
             # Re-collect controls after EACH reload so handles are never stale.
-            while tested < 6:
+            while tested < 40:
                 controls = _collect_controls(page, path)
                 # Prefer real buttons (logic) over pure nav links (which just route).
                 ordered = sorted(controls, key=lambda c: (0 if c["el"].evaluate("e=>e.tagName.toLowerCase()") == "button" else 1))

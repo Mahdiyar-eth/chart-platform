@@ -1,116 +1,99 @@
-# 🤖 خروجی سوییپ تعاملی — INTERACTION-SWEEP (به‌روز در R.10/R1)
+# 🖱️ سوییپ تعاملی — INTERACTION-SWEEP
 
-> **ابزار قابلاتکا شد:** مقایسهٔ کل DOM + رصد شبکه + URL + توست/دیالوگ.
-> قبلاً فقط ۳۰۰ کاراکتر اول `<body>` مقایسه می‌شد ⇒ DEADهای کاذب. این باگ توسط بازبین R10 پیدا شد و رفع شد.
-
-## نتیجهٔ صادقانه (AC-2)
-
-| حالت | کلیک | صفحات | OK | DEAD | BROKEN | SILENT |
-|---|---|---|---|---|---|---|
-| مهمان | ۵۴ | ۹ | ۵۴ | ۰ | ۰ | ۰ |
-| لاگین (کوکی) | ۳۰ | ۵ | ۳۰ | ۰ | ۰ | ۰ |
-| **مجمول** | **۸۴** | **۱۴** | **۸۴** | **۰** | **۰** | **۰** |
-
-**مخرج:** ۸۴ کلیک از ۱۳۱۱ آیتم سیاهه (~۶.۴٪) — حداکثرِ قابل‌تست بدون کلید بیرونی.
-حالت‌های G/C/U/U+C/U+$ پوشش داده شد؛ U+P (محصول خریداری‌شده) و A (ادمین) به کلید/تولید نیاز دارند.
-
-## صفحات پوشش‌داده‌شده
-**مهمان:** `/` · `/birth-form` · `/plans` · `/explore` · `/synastry` · `/rectify` · `/today` · `/faq` · `/glossary`
-**لاگین:** `/account` · `/orders` · `/credits` · `/dashboard` · `/account/export`
-
-## یافته‌های واقعی (R4) که در این اجرا رفع شد
-1. **`/plans`** دکمهٔ «اعمال» کوپن با فیلد خالی بی‌صدا بود → پیام «کد تخفیف را وارد کن» اضافه شد.
-2. **`/synastry`** سابمیتِ فرمِ خالی فقط به native-validation متکی بود (توستِ ناسازگار) → `novalidate` + پیام فارسی JS.
-
-هر دو بعد از فیکس، در سوییپ `OK` شدند (نه DEAD).
-
-## جدول آیتم‌به‌آیتم — هر ۸۴ کلیک با verdict (S3)
+> پوشش: **90 کلیک واقعی** روی 9 صفحه (حالت مهمان).
+> نتیجه: {'OK': 90}
 
 | # | صفحه | کنترل | نتیجه | جزئیات |
-|---|---|---|---|---|
-| 1 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 2 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 3 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 4 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 5 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 6 | `/birth-form` | ؟ | **OK** | DOM changed |
-| 7 | `/plans` | اعمال | **OK** | DOM changed |
-| 8 | `/plans` | اعمال | **OK** | DOM changed |
-| 9 | `/plans` | اعمال | **OK** | DOM changed |
-| 10 | `/plans` | اعمال | **OK** | DOM changed |
-| 11 | `/plans` | اعمال | **OK** | DOM changed |
-| 12 | `/plans` | اعمال | **OK** | DOM changed |
-| 13 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 14 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 15 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 16 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 17 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 18 | `/account/login` | ارسال کد | **OK** | DOM changed |
-| 19 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 20 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 21 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 22 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 23 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 24 | `/synastry` | محاسبه سازگاری | **OK** | DOM changed |
-| 25 | `/rectify` | ✕ | **OK** | DOM changed |
-| 26 | `/rectify` | ✕ | **OK** | DOM changed |
-| 27 | `/rectify` | ✕ | **OK** | DOM changed |
-| 28 | `/rectify` | ✕ | **OK** | DOM changed |
-| 29 | `/rectify` | ✕ | **OK** | DOM changed |
-| 30 | `/rectify` | ✕ | **OK** | DOM changed |
-| 31 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 32 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 33 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 34 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 35 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 36 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 37 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 38 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 39 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 40 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 41 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 42 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 43 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 44 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 45 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 46 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 47 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 48 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
-| 49 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 50 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 51 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 52 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 53 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 54 | `/explore` | شروع (۱ اعتبار) | **OK** | DOM changed |
-| 55 | `/account` | ارسال کد | **OK** | DOM changed |
-| 56 | `/account` | ارسال کد | **OK** | DOM changed |
-| 57 | `/account` | ارسال کد | **OK** | DOM changed |
-| 58 | `/account` | ارسال کد | **OK** | DOM changed |
-| 59 | `/account` | ارسال کد | **OK** | DOM changed |
-| 60 | `/account` | ارسال کد | **OK** | DOM changed |
-| 61 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 62 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 63 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 64 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 65 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 66 | `/orders` | ارسال کد | **OK** | DOM changed |
-| 67 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 68 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 69 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 70 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 71 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 72 | `/credits` | ارسال کد | **OK** | DOM changed |
-| 73 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 74 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 75 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 76 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 77 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 78 | `/dashboard` | ارسال کد | **OK** | DOM changed |
-| 79 | `/account/export` | ارسال کد | **OK** | DOM changed |
-| 80 | `/account/export` | ارسال کد | **OK** | DOM changed |
-| 81 | `/account/export` | ارسال کد | **OK** | DOM changed |
-| 82 | `/account/export` | ارسال کد | **OK** | DOM changed |
-| 83 | `/account/export` | ارسال کد | **OK** | DOM changed |
-| 84 | `/account/export` | ارسال کد | **OK** | DOM changed |
+| 1 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 2 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 3 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 4 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 5 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 6 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 7 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 8 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 9 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 10 | `/birth-form` | ؟ | **OK** | visible text changed |
+| 11 | `/plans` | اعمال | **OK** | visible text changed |
+| 12 | `/plans` | اعمال | **OK** | visible text changed |
+| 13 | `/plans` | اعمال | **OK** | visible text changed |
+| 14 | `/plans` | اعمال | **OK** | visible text changed |
+| 15 | `/plans` | اعمال | **OK** | visible text changed |
+| 16 | `/plans` | اعمال | **OK** | visible text changed |
+| 17 | `/plans` | اعمال | **OK** | visible text changed |
+| 18 | `/plans` | اعمال | **OK** | visible text changed |
+| 19 | `/plans` | اعمال | **OK** | visible text changed |
+| 20 | `/plans` | اعمال | **OK** | visible text changed |
+| 21 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 22 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 23 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 24 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 25 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 26 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 27 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 28 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 29 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 30 | `/account/login` | ارسال کد | **OK** | visible text changed |
+| 31 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 32 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 33 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 34 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 35 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 36 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 37 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 38 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 39 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 40 | `/synastry` | محاسبه سازگاری | **OK** | toast/dialog appeared |
+| 41 | `/rectify` | ✕ | **OK** | visible text changed |
+| 42 | `/rectify` | ✕ | **OK** | visible text changed |
+| 43 | `/rectify` | ✕ | **OK** | visible text changed |
+| 44 | `/rectify` | ✕ | **OK** | visible text changed |
+| 45 | `/rectify` | ✕ | **OK** | visible text changed |
+| 46 | `/rectify` | ✕ | **OK** | visible text changed |
+| 47 | `/rectify` | ✕ | **OK** | visible text changed |
+| 48 | `/rectify` | ✕ | **OK** | visible text changed |
+| 49 | `/rectify` | ✕ | **OK** | visible text changed |
+| 50 | `/rectify` | ✕ | **OK** | visible text changed |
+| 51 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 52 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 53 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 54 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 55 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 56 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 57 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 58 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 59 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 60 | `/today` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 61 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 62 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 63 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 64 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 65 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 66 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 67 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 68 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 69 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 70 | `/glossary` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 71 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 72 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 73 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 74 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 75 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 76 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 77 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 78 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 79 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 80 | `/faq` | زایچه | **OK** | nav→http://127.0.0.1:8899/ |
+| 81 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 82 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 83 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 84 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 85 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 86 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 87 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 88 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 89 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
+| 90 | `/explore` | شروع (۱ اعتبار) | **OK** | toast/dialog appeared |
 
-جمع: {'OK': 84} — 84 ردیف، همهٔ صفحات: 14
+## یافتههای غیر OK
+> هیچ یافتهٔ غیر-OK در این پوشش (حالت مهمان، بدون کلید خارجی).

@@ -1,182 +1,542 @@
 [
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/birth-form",
+    "control": "؟",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/orders",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/credits",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
-    "control": "ارسال کد",
+    "page": "/plans",
+    "control": "اعمال",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/dashboard",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
   },
   {
-    "page": "/account/export",
+    "page": "/account/login",
     "control": "ارسال کد",
     "result": "OK",
-    "detail": "DOM changed"
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
   }
 ]
