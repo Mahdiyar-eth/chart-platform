@@ -1,0 +1,16 @@
+[
+  {
+    "page": "/",
+    "fcp_ms": 380,
+    "p95_frame_ms": 19,
+    "backdrop": 2,
+    "animated": 2
+  },
+  {
+    "page": "/plans",
+    "fcp_ms": 216,
+    "p95_frame_ms": 17,
+    "backdrop": 2,
+    "animated": 2
+  }
+]
