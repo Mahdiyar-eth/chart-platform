@@ -30,7 +30,7 @@ a:hover{ color:var(--gold-text,var(--gold)); }
     .appbar{ position:sticky; top:10px; z-index:60; margin:12px 0 22px; animation:appbarIn .55s var(--ease) both; }
     .appbar-inner{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:8px 8px 8px 14px; border-radius:20px; overflow:hidden;
-      background:var(--nav-ink-a09, var(--w-d09, rgba(255,255,255,.09))); border:1px solid var(--nav-ink-a22, var(--w-d22, rgba(255,255,255,.22)));
+      background:var(--chrome-bg); border:1px solid var(--chrome-border);
       /* W3 perf: appbar is sticky+always-visible → flat surface, no per-scroll re-raster.
          The glass look comes from the translucent bg + border + shadow. */
       box-shadow:0 12px 44px rgba(0,0,0,.5), inset 0 1px 0 var(--nav-ink-a22, var(--w-d22, rgba(255,255,255,.22))); }
@@ -67,22 +67,21 @@ a:hover{ color:var(--gold-text,var(--gold)); }
       .bottomnav{ position:fixed; bottom:calc(10px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%); z-index:80;
         display:flex; align-items:center; justify-content:space-between; gap:0; padding:7px 6px 9px; border-radius:22px;
         width:calc(100% - 20px); max-width:420px;
-        background:rgba(20,26,58,.92); border:1px solid var(--nav-ink-a14, var(--w-d14, rgba(255,255,255,.14)));
+        background:var(--chrome-bg); border:1px solid var(--chrome-border);
         /* W3 perf: fixed bottom bar — flat surface (no backdrop re-raster) */
         box-shadow:0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 var(--nav-ink-a14, var(--w-d14, rgba(255,255,255,.14)));
         animation:bnIn .5s var(--ease) both; }
       @keyframes bnIn{ from{ opacity:0; transform:translate(-50%,14px); } to{ opacity:1; transform:translate(-50%,0); } }
       .bn-item{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-        min-height:52px; padding:4px 2px; border-radius:13px; color:var(--nav-ink-a64, var(--w-d64, rgba(255,255,255,.64))); text-decoration:none;
+        min-height:52px; padding:4px 2px; border-radius:13px; color:var(--chrome-ink); text-decoration:none;
         font-size:.62rem; font-weight:600; white-space:nowrap; line-height:1.1; transition:color .2s var(--ease); }
     /* R15-fix: in LIGHT theme the bottom nav keeps a dark navy surface, but
        --w-d64 flips to dark ink → 1.04:1 contrast (invisible labels). Force
        light ink on the dark nav surface for both themes. */
-    [data-theme="light"] .bn-item{ color:rgba(255,255,255,.72); }
-    [data-theme="light"] .bn-item[aria-current="page"]{ color:var(--gold-text); background:var(--gold-soft); }
+    .bn-item[aria-current="page"]{ color:var(--chrome-ink-active); }
       .bn-item svg{ width:21px; height:21px; flex:none; }
       .bn-item:active{ transform:scale(.94); }
-      .bn-item.active{ color:var(--gold-text,var(--gold)); }
+      .bn-item.active{ color:var(--chrome-ink-active); }
       /* R13: the FAB must sit EXACTLY in the middle — every slot (including
          the fab) gets identical flex so 5 items = perfect symmetry. */
       .bn-fab{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
@@ -93,10 +92,7 @@ a:hover{ color:var(--gold-text,var(--gold)); }
         margin-top:-14px; }  /* raised center button */
       .bn-fab:active .fab-circle{ transform:scale(.93); }
       .bn-fab .fab-circle svg{ width:21px; height:21px; }
-      .bn-fab span{ font-size:.62rem; font-weight:800; color:var(--gold-text,var(--gold)); white-space:nowrap; line-height:1.1; }
-      /* R15-fix: fab label sits on the DARK nav surface in both themes —
-         light-theme dark gold-text on navy = 1.86:1, invisible. */
-      [data-theme="light"] .bn-fab span{ color:var(--gold); }
+      .bn-fab span{ font-size:.62rem; font-weight:800; color:var(--chrome-ink-active); white-space:nowrap; line-height:1.1; }
     }
     /* ── Mobile hamburger + slide-in drawer ── */
     .hamburger{ display:none; }
@@ -227,11 +223,12 @@ a:hover{ color:var(--gold-text,var(--gold)); }
        variables stayed dark → invisible labels/icons). Dark chrome + light
        page is also the design: gold brand reads best on navy. */
     [data-theme="light"] .appbar, [data-theme="light"] .bottomnav, [data-theme="light"] .drawer{
-      background:rgba(17,22,49,.92); border-color:rgba(255,255,255,.14); }
-    [data-theme="light"] .appbar-inner{ background:transparent; border-color:transparent; }
-    [data-theme="light"] .nav-item, [data-theme="light"] .brand{ color:var(--gold); }
-    [data-theme="light"] .hamburger, [data-theme="light"] .drawer-item{ color:var(--txt); }
-    [data-theme="light"] .credits-chip{ color:var(--gold); }
+      background:var(--chrome-bg); border-color:var(--chrome-border); }
+    [data-theme="light"] .appbar-inner{ background:var(--chrome-bg); border-color:var(--chrome-border); }
+    .brand, .nav-item{ color:var(--chrome-ink-active); }
+    .hamburger{ color:var(--chrome-ink); }
+    [data-theme="light"] .drawer-item{ color:var(--chrome-ink); }
+    .credits-chip{ color:var(--chrome-ink-active); }
 
     /* D2: grouped drawer */
     .drawer-group{ padding:10px 0; border-bottom:1px solid var(--border); }

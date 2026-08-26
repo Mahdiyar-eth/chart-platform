@@ -1,4 +1,10 @@
 :root{
+  /* UI-FIX: the app chrome (appbar / bottomnav / drawer) is DARK NAVY in BOTH
+     themes by design. Its ink must therefore come from chrome-scoped tokens
+     that never flip with the theme — otherwise light-theme tokens (deep gold
+     #5F4300, muted #2C3355) land on navy and go invisible. */
+  --chrome-bg:#141a3a; --chrome-border:rgba(255,255,255,.14);
+  --chrome-ink:rgba(255,255,255,.72); --chrome-ink-active:#F5C518;
   /* ===== color scale (single source of truth) ===== */
   --bg:#0d1430; --bg2:#111a3d; --surface:#241f33; --surface-2:#2a2f45; --surface-3:#1a1626;
   --glass:rgba(255,255,255,.085); --stroke:rgba(255,255,255,.18); --border:rgba(255,255,255,.12);
