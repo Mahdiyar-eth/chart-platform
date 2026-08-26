@@ -154,3 +154,7 @@
 .z-streak__best{margin-inline-start:auto;color:var(--muted);font-size:.75rem;}
 .z-action--ghost{background:transparent;border:1px solid var(--stroke);color:var(--txt);}
 @media(max-width:560px){.z-city-row{grid-template-columns:1fr;}.z-streak__best{margin-inline-start:0;}.z-page-header a.z-action{margin-top:12px;width:100%;text-align:center;}}
+
+/* 404/500 error page */
+.z-error-code{display:block;font-size:3.2rem;font-weight:900;color:var(--gold-text,var(--gold));letter-spacing:-.04em;line-height:1;margin-bottom:10px;}
+.z-locked h1{margin:0 0 8px;font-size:1.2rem;color:var(--txt);}
