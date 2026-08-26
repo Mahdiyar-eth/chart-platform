@@ -115,7 +115,7 @@
     <h2 class="u-text-lg" >سفارش‌ها</h2>
     {% for o in orders %}
     <div class="u-279db7b7" >
-      <span>{{ o.plan_key }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
+      <span>{{ fa_label(o.plan_key) }} — {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span>
       <span class="chip u-text-2xs" >{{ o.status }}</span>
     </div>
     {% else %}
@@ -137,6 +137,10 @@
   </section>
 
   <section class="glass u-91da6b54" x-data="subs()" x-init="init()" x-cloak>
+    <div class="glass" style="padding:var(--sp-4); margin-bottom:var(--sp-4); display:flex; gap:var(--sp-3); flex-wrap:wrap;">
+      <a class="btn btn-md btn-ghost" href="/reports" style="flex:1 1 140px;">گزارش‌های من</a>
+      <a class="btn btn-md btn-ghost" href="/chats" style="flex:1 1 140px;">گفت‌وگوهای من</a>
+    </div>
     <h2 class="u-text-lg" >اشتراک همراه «آسمان امروز»</h2>
     <p class="muted u-afc26706" >Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
     <template x-for="s in items" :key="s.id">
@@ -171,7 +175,7 @@
       {% for t in ledger %}
       <div class="u-e3b17106" >
         <span class="u-ef7ba8ad" >
-          {% if t.reason == 'purchase' %}خرید پک اعتبار{% elif t.reason == 'free_exploration' %}اولین کاوش رایگان{% elif t.reason == 'exploration' %}کاوش خودشناسی{% elif t.reason == 'refund' %}بازگشت اعتبار{% elif t.reason == 'subscription' %}اعتبار ماهانه اشتراک{% elif t.reason == 'referral_bonus' %}هدیه معرفی{% else %}{{ t.reason }}{% endif %}
+          {{ fa_label(t.reason) }}
         </span>
         <span style="font-weight:700;{% if t.amount >= 0 %}color:#7ee2a8;{% else %}color:#ff9d9d;{% endif %}">
           {% if t.amount >= 0 %}+{% endif %}{{ t.amount }}

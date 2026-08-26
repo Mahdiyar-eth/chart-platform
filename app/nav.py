@@ -27,6 +27,9 @@ NAV_ITEMS: list[NavItem] = [
     # R13: «سیناستری» واژهٔ تخصصی است — کاربر «سازگاری» می‌فهمد
     NavItem("synastry", "سازگاری", "/synastry", icon="icon-heart"),
     NavItem("rectify", "بازبینی ساعت", "/rectify", icon="icon-clock"),
+    # UX: ChatMessage rows and Report rows both existed with no page listing
+    # them — a user who paid for the 30-day conversation had no way back to it.
+    NavItem("chats", "گفت‌وگوهای من", "/chats", icon="icon-chat", needs_chart=True),
     # R16: /sky = public "today's sky" page — label must say that; the PERSONAL
     # transit timeline lives on the chart page (/transits/{chart_id}) + dashboard.
     NavItem("transits", "آسمان امروز", "/sky", icon="icon-sun"),
