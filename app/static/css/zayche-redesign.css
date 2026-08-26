@@ -97,3 +97,26 @@
 .z-section-card__lead{margin:-4px 0 13px;color:var(--muted);font-size:.78rem;line-height:1.8;}
 .z-copy{line-height:1.9;color:var(--muted);font-size:.8rem;}
 @media(max-width:560px){.z-list-row{grid-template-columns:1fr;gap:10px;padding:14px;}.z-list-row__side{justify-content:flex-start;}.z-balance{grid-template-columns:1fr;}.z-balance__aside{text-align:right;}.z-workpage__actions>*{flex:1 1 150px;}}
+
+/* Account, settings and admin inherit the same surface grammar. */
+.z-account>h1,.z-settings h1,.z-admin-shell>h1{margin:0;color:var(--txt);font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.035em;}
+.z-account>p,.z-settings>header p{color:var(--muted);line-height:1.8;}
+.z-account .glass,.z-settings .glass,.z-admin-shell .glass{border-color:var(--stroke);box-shadow:0 10px 28px rgba(2,6,23,.16),inset 0 1px 0 rgba(255,255,255,.05);}
+.z-account .glass,.z-settings>section{padding:18px;}
+.z-account>section,.z-account>.glass{margin-top:16px;}
+.z-settings>header{margin-bottom:20px!important;}
+.z-settings>section{margin-top:14px;}
+.z-settings>section h2{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--txt);font-size:1rem;}
+.z-settings .btn,.z-account .btn{min-height:44px;}
+.z-admin-shell{max-width:1120px;padding-top:8px;}
+.z-admin-shell .u-c1e3372a{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0;}
+.z-admin-shell .kpi{min-height:96px;padding:16px;border:1px solid var(--stroke);border-radius:16px;background:var(--surface-2);display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.z-admin-shell .kpi b{color:var(--gold-text,var(--gold));font-size:1.15rem;}
+.z-admin-shell .kpi span{color:var(--muted);font-size:.72rem;line-height:1.6;}
+.z-admin-shell .admin-tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;}
+.z-admin-shell .admin-tabs::-webkit-scrollbar{display:none;}
+.z-admin-shell .admin-tab{flex:0 0 auto;min-height:44px;white-space:nowrap;}
+.z-admin-shell .admin-pane{padding:18px 0;}
+.z-admin-shell .admin-pane>h2{font-size:1.05rem;color:var(--txt);}
+@media(max-width:700px){.z-admin-shell .u-c1e3372a{grid-template-columns:repeat(2,minmax(0,1fr));}.z-admin-shell .admin-pane{padding-top:12px;}}
+@media(max-width:420px){.z-admin-shell .u-c1e3372a{gap:7px;}.z-admin-shell .kpi{padding:12px;min-height:84px;}.z-admin-shell .kpi b{font-size:1rem;}}

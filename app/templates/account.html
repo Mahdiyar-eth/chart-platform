@@ -4,7 +4,7 @@
 {% block description %}حساب کاربری چارت تولد: گزارش‌های خود، سفارش‌ها، اشتراک و دانلودها در یک جا{% endblock %}
 
 {% block content %}
-<div class="u-eef5d7d4" >
+<div class="z-workpage z-account">
   <h1>حساب کاربری</h1>
   <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
 
@@ -145,14 +145,17 @@
     <a class="btn btn-ghost u-516bc368" href="/plans" >مشاهده پلن‌ها</a>
     <a class="btn btn-ghost u-516bc368" href="/birth-form" >چارت جدید</a>
   </div>
+<script>
+function dashSearch() {
+  return {
+    q: '',
     items: {{ search_items|tojson }},
     init() {},
     norm(s) { return (s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک'); },
     results() {
       const q = this.norm(this.q.trim());
       if (!q) return [];
-      return this.items.filter(it =>
-        this.norm(it.label).includes(q) || this.norm(it.k).includes(q)).slice(0, 12);
+      return this.items.filter(it => this.norm(it.label).includes(q) || this.norm(it.k).includes(q)).slice(0, 12);
     }
   };
 }
