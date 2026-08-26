@@ -3,12 +3,17 @@
 {% block description %}هر روز یک لحظه برای دیدن آسمان و دیدن خودت: گذرهای امروز، یک سؤال برای تأمل و یک اقدام کوچک.{% endblock %}
 
 {% block content %}
-<div class="wrap u-c24b5a41" >
-  <h1 class="u-69822621" >هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
+<div class="z-periodic">
+  <header class="z-page-header">
+    <div>
+      <span class="z-eyebrow">رصدخانه روزانه</span>
+      <h1>هر روز یک لحظه برای دیدن آسمان و دیدن خودت</h1>
+    </div>
+  </header>
 
   <div x-data="todayApp()" x-init="init()">
     <!-- chart picker -->
-    <div class="glass u-5a5e59ed" >
+    <div class="glass z-teaser">
       <div>
         <div class="muted u-text-xs" >تاریخ</div>
         <div class="u-e3ec02ac" x-text="status?.today_label"></div>
@@ -21,15 +26,13 @@
     </div>
 
     <!-- streak -->
-    <div class="glass u-f0e8728e" >
-      <span class="u-d4169b69" >🔥</span>
+    <div class="glass z-streak">
+      <span class="z-streak__flame">🔥</span>
       <div>
-        <div class="muted u-a726b01e" >پیوستگی روزانه</div>
-        <div class="u-3c945c05" x-text="status?.streak + ' روز متوالی'"></div>
+        <div class="muted u-text-xs">پیوستگی روزانه</div>
+        <div class="z-streak__value" x-text="(status?.streak ?? 0) + ' روز متوالی'"></div>
       </div>
-      <div class="muted u-ee31f211" x-show="status?.streak > 0" x-cloak>
-        <span x-text="status?.best_streak"></span> بیشترین
-      </div>
+
     </div>
 
     <!-- sky facts -->

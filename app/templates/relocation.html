@@ -3,30 +3,32 @@
 {% block description %}در کدام شهر کدام بخش زندگی‌ات پررنگ می‌شود؟ مقایسهٔ ۱ تا ۳ شهر مقصد روی چارت خودت.{% endblock %}
 
 {% block content %}
-<div class="wrap u-c24b5a41" x-data="relocApp()" x-init="init()">
-  <h1 class="u-69822621">چارت مهاجرت — کدام شهر برای کدام بخشِ زندگی‌ات؟</h1>
-  <p class="muted u-ee31f211">
-    زمان تولد ثابت می‌ماند؛ مکان عوض می‌شود. با جابه‌جایی مختصات، خانه‌های چارتت دوباره چیده می‌شوند —
-    ببین در هر شهر، کدام حوزهٔ زندگی زیر نور می‌رود.
-  </p>
+<div class="z-periodic" x-data="relocApp()" x-init="init()">
+  <header class="z-page-header">
+    <div>
+      <span class="z-eyebrow">چارت مهاجرت</span>
+      <h1>کدام شهر برای کدام بخشِ زندگی‌ات؟</h1>
+      <p class="z-periodic-lead">زمان تولد ثابت می‌ماند؛ مکان عوض می‌شود. با جابه‌جایی مختصات، خانه‌های چارتت دوباره چیده می‌شوند — ببین در هر شهر، کدام حوزهٔ زندگی زیر نور می‌رود.</p>
+    </div>
+  </header>
 
   <!-- city picker -->
-  <div class="glass u-panel">
-    <div class="u-strong-sm">🏙️ شهرهای مقصد (تا ۳ شهر)</div>
+  <div class="glass z-card">
+    <div class="z-card__label"><span>🏙️ شهرهای مقصد (تا ۳ شهر)</span></div>
     <template x-for="(c, i) in cities" :key="'c' + i">
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-        <input class="input" style="flex:2;" x-model="c.name" placeholder="نام شهر (مثلاً تورنتو)">
-        <input class="input" style="flex:1;" x-model="c.lat" placeholder="عرض" dir="ltr" inputmode="decimal">
-        <input class="input" style="flex:1;" x-model="c.lon" placeholder="طول" dir="ltr" inputmode="decimal">
-        <button class="btn-chip" type="button" @click="cities.splice(i,1)" x-show="cities.length > 1">✕</button>
+      <div class="z-city-row">
+        <input class="input" x-model="c.name" placeholder="نام شهر (مثلاً تورنتو)">
+        <input class="input" x-model="c.lat" placeholder="عرض" dir="ltr" inputmode="decimal">
+        <input class="input" x-model="c.lon" placeholder="طول" dir="ltr" inputmode="decimal">
+        <button class="z-city-remove" type="button" @click="cities.splice(i,1)" x-show="cities.length > 1" aria-label="حذف شهر">✕</button>
       </div>
     </template>
-    <button class="btn-chip" type="button" @click="addCity()" x-show="cities.length < 3">+ شهر</button>
+    <button class="z-city-add" type="button" @click="addCity()" x-show="cities.length < 3">+ شهر</button>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
       {% if has_access %}
-      <button class="btn btn-lg btn-accent" @click="compare()" :disabled="busy">مقایسه کن</button>
+      <button class="z-action" @click="compare()" :disabled="busy">مقایسه کن</button>
       {% else %}
-      <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۶ اعتبار</button>
+      <button class="z-action" @click="buy()">باز کردن با ۶ اعتبار</button>
       {% endif %}
     </div>
     <p class="muted u-note" x-show="err" x-text="err" x-cloak></p>
@@ -35,20 +37,20 @@
   <!-- comparison result -->
   <template x-if="result">
     <div>
-      <div class="glass u-panel">
-        <div class="u-strong-sm">📊 مقایسهٔ کنار هم</div>
+      <div class="glass z-card">
+        <div class="z-card__label"><span>📊 مقایسهٔ کنار هم</span></div>
         <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;text-align:center;">
+          <table class="z-compare-table">
             <thead><tr>
-              <th style="padding:8px;">شهر</th><th>طالع جدید</th><th>حوزهٔ غالب</th><th>خانه‌های جابه‌جا</th>
+              <th>شهر</th><th>طالع جدید</th><th>حوزهٔ غالب</th><th>خانه‌های جابه‌جا</th>
             </tr></thead>
             <tbody>
               <template x-for="(c, i) in result.cities" :key="'r' + i">
-                <tr style="border-top:1px solid rgba(255,255,255,.08);">
-                  <td style="padding:8px;"><b x-text="c.city"></b></td>
+                <tr>
+                  <td><b x-text="c.city"></b></td>
                   <td x-text="c.asc_sign_fa"></td>
                   <td x-text="c.focus_area"></td>
-                  <td style="font-size:.85em;" x-text="c.changed_count + ' سیاره'"></td>
+                  <td x-text="c.changed_count + ' سیاره'"></td>
                 </tr>
               </template>
             </tbody>
@@ -56,8 +58,8 @@
         </div>
       </div>
       <template x-for="(c, i) in result.cities" :key="'d' + i">
-        <div class="glass u-panel" style="margin-top:12px;">
-          <b>📍 <span x-text="c.city"></span></b>
+        <div class="glass z-card">
+          <div class="z-card__label"><span>📍 <span x-text="c.city"></span></span></div>
           <p class="u-body" x-text="'حوزهٔ پررنگ این شهر: ' + c.focus_area"></p>
           <p class="muted u-note" x-show="c.h10_planets.length"
              x-text="'روی مسیر شغلی: ' + c.h10_planets.join('، ')"></p>
@@ -80,6 +82,7 @@ function relocApp() {
   return {
     cities: [{ name: '', lat: '', lon: '' }],
     result: null, busy: false, err: '',
+    init() {},
     addCity() { if (this.cities.length < 3) this.cities.push({ name: '', lat: '', lon: '' }); },
     _payload() {
       const cs = this.cities

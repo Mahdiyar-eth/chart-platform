@@ -1,0 +1,542 @@
+[
+  {
+    "path": "/",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2172
+  },
+  {
+    "path": "/",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 3560
+  },
+  {
+    "path": "/plans",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 3101
+  },
+  {
+    "path": "/plans",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 3106
+  },
+  {
+    "path": "/birth-form",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 999
+  },
+  {
+    "path": "/birth-form",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1004
+  },
+  {
+    "path": "/synastry",
+    "width": 390,
+    "status": 200,
+    "title": "سازگاری دو چارت تولد | بررسی رابطه با نجوم",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1308
+  },
+  {
+    "path": "/synastry",
+    "width": 1280,
+    "status": 200,
+    "title": "سازگاری دو چارت تولد | بررسی رابطه با نجوم",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1313
+  },
+  {
+    "path": "/rectify",
+    "width": 390,
+    "status": 200,
+    "title": "بازبینی ساعت تولد | بازسازی دقیق چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1441
+  },
+  {
+    "path": "/rectify",
+    "width": 1280,
+    "status": 200,
+    "title": "بازبینی ساعت تولد | بازسازی دقیق چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1446
+  },
+  {
+    "path": "/today",
+    "width": 390,
+    "status": 200,
+    "title": "امروز — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 643
+  },
+  {
+    "path": "/today",
+    "width": 1280,
+    "status": 200,
+    "title": "امروز — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 648
+  },
+  {
+    "path": "/sky",
+    "width": 390,
+    "status": 200,
+    "title": "آسمان امروز — فاز ماه، موقعیت سیارات و جنبه‌های آسمانی",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2413
+  },
+  {
+    "path": "/sky",
+    "width": 1280,
+    "status": 200,
+    "title": "آسمان امروز — فاز ماه، موقعیت سیارات و جنبه‌های آسمانی",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2418
+  },
+  {
+    "path": "/sky-today",
+    "width": 390,
+    "status": 200,
+    "title": "هر روز یک لحظه برای دیدن آسمان و دیدن خودت. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1288
+  },
+  {
+    "path": "/sky-today",
+    "width": 1280,
+    "status": 200,
+    "title": "هر روز یک لحظه برای دیدن آسمان و دیدن خودت. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1293
+  },
+  {
+    "path": "/articles",
+    "width": 390,
+    "status": 200,
+    "title": "مقالات نجوم و چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2971
+  },
+  {
+    "path": "/articles",
+    "width": 1280,
+    "status": 200,
+    "title": "مقالات نجوم و چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2976
+  },
+  {
+    "path": "/learn",
+    "width": 390,
+    "status": 200,
+    "title": "آموزش چارت تولد — مقالات نجومی",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1768
+  },
+  {
+    "path": "/learn",
+    "width": 1280,
+    "status": 200,
+    "title": "آموزش چارت تولد — مقالات نجومی",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1773
+  },
+  {
+    "path": "/glossary",
+    "width": 390,
+    "status": 200,
+    "title": "واژه‌نامهٔ نجوم و چارت تولد — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2091
+  },
+  {
+    "path": "/glossary",
+    "width": 1280,
+    "status": 200,
+    "title": "واژه‌نامهٔ نجوم و چارت تولد — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2096
+  },
+  {
+    "path": "/faq",
+    "width": 390,
+    "status": 200,
+    "title": "سؤالات پرتکرار",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1880
+  },
+  {
+    "path": "/faq",
+    "width": 1280,
+    "status": 200,
+    "title": "سؤالات پرتکرار",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1885
+  },
+  {
+    "path": "/guide",
+    "width": 390,
+    "status": 200,
+    "title": "راهنمای کامل چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 3822
+  },
+  {
+    "path": "/guide",
+    "width": 1280,
+    "status": 200,
+    "title": "راهنمای کامل چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 3827
+  },
+  {
+    "path": "/about",
+    "width": 390,
+    "status": 200,
+    "title": "درباره ما",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1635
+  },
+  {
+    "path": "/about",
+    "width": 1280,
+    "status": 200,
+    "title": "درباره ما",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1640
+  },
+  {
+    "path": "/contact",
+    "width": 390,
+    "status": 200,
+    "title": "تماس با ما",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 801
+  },
+  {
+    "path": "/contact",
+    "width": 1280,
+    "status": 200,
+    "title": "تماس با ما",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 806
+  },
+  {
+    "path": "/privacy",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2619
+  },
+  {
+    "path": "/privacy",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2624
+  },
+  {
+    "path": "/terms",
+    "width": 390,
+    "status": 200,
+    "title": "قوانین استفاده",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1173
+  },
+  {
+    "path": "/terms",
+    "width": 1280,
+    "status": 200,
+    "title": "قوانین استفاده",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1178
+  },
+  {
+    "path": "/refund",
+    "width": 390,
+    "status": 200,
+    "title": "شرایط استرداد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1175
+  },
+  {
+    "path": "/refund",
+    "width": 1280,
+    "status": 200,
+    "title": "شرایط استرداد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1180
+  },
+  {
+    "path": "/disclaimer",
+    "width": 390,
+    "status": 200,
+    "title": "سلب مسئولیت",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1135
+  },
+  {
+    "path": "/disclaimer",
+    "width": 1280,
+    "status": 200,
+    "title": "سلب مسئولیت",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1140
+  },
+  {
+    "path": "/moon",
+    "width": 390,
+    "status": 200,
+    "title": "ماه در برج‌ها — معنی جایگاه ماه در چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2401
+  },
+  {
+    "path": "/moon",
+    "width": 1280,
+    "status": 200,
+    "title": "ماه در برج‌ها — معنی جایگاه ماه در چارت تولد",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 2406
+  },
+  {
+    "path": "/signs/leo",
+    "width": 390,
+    "status": 404,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 579
+  },
+  {
+    "path": "/signs/leo",
+    "width": 1280,
+    "status": 404,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 584
+  },
+  {
+    "path": "/birth-chart/tehran",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد تهران — دقیق‌ترین محاسبه نجومی آنلاین",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1742
+  },
+  {
+    "path": "/birth-chart/tehran",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد تهران — دقیق‌ترین محاسبه نجومی آنلاین",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1747
+  },
+  {
+    "path": "/solar-guide",
+    "width": 390,
+    "status": 200,
+    "title": "سالِ تو از تولد تا تولد بعدی، در یک نقشه. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1282
+  },
+  {
+    "path": "/solar-guide",
+    "width": 1280,
+    "status": 200,
+    "title": "سالِ تو از تولد تا تولد بعدی، در یک نقشه. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1287
+  },
+  {
+    "path": "/relocation-guide",
+    "width": 390,
+    "status": 200,
+    "title": "در کدام شهر، کدام بخش زندگیات روشن‌تر می‌شود؟ — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1327
+  },
+  {
+    "path": "/relocation-guide",
+    "width": 1280,
+    "status": 200,
+    "title": "در کدام شهر، کدام بخش زندگیات روشن‌تر می‌شود؟ — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1332
+  },
+  {
+    "path": "/deep-report",
+    "width": 390,
+    "status": 200,
+    "title": "فقط یک چارت نبین؛ بفهم چه چیزهایی در آن مهم‌اند. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1436
+  },
+  {
+    "path": "/deep-report",
+    "width": 1280,
+    "status": 200,
+    "title": "فقط یک چارت نبین؛ بفهم چه چیزهایی در آن مهم‌اند. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1441
+  },
+  {
+    "path": "/self-discovery",
+    "width": 390,
+    "status": 200,
+    "title": "سؤال‌های سخت درباره‌ی خودت را ساده شروع کن. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1468
+  },
+  {
+    "path": "/self-discovery",
+    "width": 1280,
+    "status": 200,
+    "title": "سؤال‌های سخت درباره‌ی خودت را ساده شروع کن. — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 1473
+  },
+  {
+    "path": "/gift-guide",
+    "width": 390,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 812
+  },
+  {
+    "path": "/gift-guide",
+    "width": 1280,
+    "status": 200,
+    "title": "چارت تولد آنلاین — زایچه",
+    "overflow": 0,
+    "console_errors": [],
+    "failed_requests": [],
+    "body_chars": 817
+  }
+]
