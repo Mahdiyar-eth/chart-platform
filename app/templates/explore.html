@@ -44,11 +44,11 @@
 
     <!-- running state -->
     <div class="glass u-7995b8d8" x-show="busy" x-cloak>
-      <div class="u-26e70069" x-text="'🔭 ' + (busyCard ? busyCard.title_fa : '') + ' — در حال تحلیل چارت…'"></div>
-      <div class="u-b71c4094" >
-        <div class="u-22991707" ></div>
+      <div class="u-26e70069" x-text="(busyCard ? busyCard.title_fa : '') + ' — در حال نوشتن'"></div>
+      <div class="rp-track" style="margin-top:10px;">
+        <div class="rp-fill" :style="'width:' + pct + '%'"></div>
       </div>
-      <p class="muted u-e2031403" >معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد — این صفحه را نبند.</p>
+      <p class="muted u-e2031403" x-text="elapsed + ' ثانیه — معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد'"></p>
     </div>
 
     <!-- result -->
@@ -112,7 +112,7 @@ function exploreApp() {
     freeAvailable: {{ 'true' if free_available else 'false' }},
     showLimit: 6,
     showAll: false,
-    busy: false,
+    busy: false, pct: 0, elapsed: 0, _tick: null, _abort: null,
     busyKey: "",
     busyCard: null,
     result: null,
@@ -125,9 +125,19 @@ function exploreApp() {
       const self = this;
       this.busy = true; this.busyKey = card.key; this.busyCard = card;
       this.result = null; this.needCredit = false;
+      // UI: a determinate bar and a visible clock. A card that says "20 to 40
+      // seconds" forever is the single worst thing this page can do.
+      this.pct = 4; this.elapsed = 0;
+      clearInterval(this._tick);
+      this._tick = setInterval(() => {
+        self.elapsed += 1;
+        self.pct = Math.min(94, Math.round(4 + (self.elapsed / 40) * 90));
+      }, 1000);
+      this._abort = new AbortController();
+      const killer = setTimeout(() => self._abort.abort(), 90000);
       const fd = new FormData();
       fd.append("chart_id", this.chartId);
-      fetch("/api/explore/" + card.key, { method: "POST", body: fd })
+      fetch("/api/explore/" + card.key, { method: "POST", body: fd, signal: this._abort.signal })
         .then(async (r) => {
           if (!r.ok) {
             let detail = "خطا";
@@ -160,8 +170,18 @@ function exploreApp() {
             }
           }
         })
-        .catch((e) => { if (!self.needCredit) showToast(e.message, false); })
-        .finally(() => { self.busy = false; self.busyKey = ""; self.busyCard = null; });
+        .catch((e) => {
+          if (self.needCredit) return;
+          const msg = (e && e.name === "AbortError")
+            ? "تحلیل بیش از حد طول کشید — اعتبارت برنگشته باشد به‌زودی خودکار برمی‌گردد. دوباره امتحان کن."
+            : (e.message || "خطا");
+          showToast(msg, false);
+        })
+        .finally(() => {
+          clearTimeout(killer); clearInterval(self._tick);
+          self.pct = 100;
+          self.busy = false; self.busyKey = ""; self.busyCard = null;
+        });
     },
   };
 }

@@ -185,8 +185,9 @@
     <div class="u-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
         <div class="report-progress" role="status" aria-live="polite">
-          <p class="muted" style="margin:0 0 8px;">⏳ در حال تولید گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد…</p>
+          <p class="muted" style="margin:0 0 8px;">در حال نوشتن گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد</p>
           <div class="rp-track"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
+          <p class="muted" style="margin:8px 0 0; font-size:.78rem;">می‌توانی صفحه را ببندی — گزارش در حساب کاربری‌ات ذخیره می‌شود.</p>
         </div>
       </template>
       <template x-if="repStatus === 'done'">
@@ -202,7 +203,13 @@
         <a class="btn btn-lg u-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
       </template>
       <template x-if="repStatus === 'failed'">
-        <p class="u-0562fa46" >تولید گزارش با خطا مواجه شد.</p>
+        <p class="u-0562fa46">تولید گزارش با خطا مواجه شد.</p>
+        <p class="muted" style="margin:6px 0 12px;">دسترسی‌ات به این گزارش باقی است — اعتبار دوباره‌ای کم نمی‌شود.</p>
+        <button class="btn btn-lg" id="genBtn" @click.prevent="genReport($event)">تلاش دوباره</button>
+      </template>
+      <template x-if="repStatus === 'stalled'">
+        <p class="u-0562fa46">تولید گزارش بیش از حد طول کشید.</p>
+        <p class="muted" style="margin:6px 0 12px;">دسترسی‌ات باقی است و اعتبار دوباره‌ای کم نمی‌شود. یک‌بار دیگر امتحان کن؛ اگر باز هم نشد به پشتیبانی بگو.</p>
         <button class="btn btn-lg" id="genBtn" @click.prevent="genReport($event)">تلاش دوباره</button>
       </template>
     </div>
@@ -278,7 +285,11 @@ function reportState(){
       else { this.repStatus = 'failed'; btn.disabled = false; btn.style.opacity = 1; }
     },
     async _poll(){
+      // UI: a poll with no end is how "هیچ اتفاقی نیفتاد" happens — if the
+      // worker dies the user waits forever with no message. Give up at 4min.
+      const deadline = Date.now() + 240000;
       while(this.repStatus === 'queued' || this.repStatus === 'running'){
+        if(Date.now() > deadline){ this.repStatus = 'stalled'; break; }
         await new Promise(r => setTimeout(r, 6000));
         const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
         const d = await r.json();

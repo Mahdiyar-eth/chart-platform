@@ -1013,7 +1013,7 @@ def api_purchase(payload: "PurchasePayload", request: Request,
         packs = session.exec(
             select(Plan).where(
                 Plan.active == True,  # noqa: E712
-                Plan.key.in_(["credit3", "credit6", "credit12"]),
+                Plan.key.in_(["credit1", "credit3", "credit6", "credit12"]),
             )
         ).all()
         return JSONResponse(status_code=402, content={
