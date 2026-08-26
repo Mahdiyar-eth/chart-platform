@@ -7,7 +7,7 @@
     {% for o in orders %}
     <div class="flex items-center justify-between py-3 px-4 text-sm">
       <div>
-        <div class="font-medium">{{ o.plan_key }}</div>
+        <div class="font-medium">{{ fa_label(o.plan_key) }}</div>
         <div class="muted">{{ o.created_at.strftime('%Y-%m-%d') }}</div>
       </div>
       <span class="chip">{{ {'pending':'در انتظار پرداخت','paid':'پرداخت‌شده','failed':'ناموفق','canceled':'لغوشده'}.get(o.status, o.status) }}</span>

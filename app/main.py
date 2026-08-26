@@ -70,6 +70,38 @@ def _asset_version():
 templates.env.globals["asset_version"] = _asset_version()
 
 
+# UX: the wallet and the orders list were printing raw internal keys at the
+# user — «explore_card», «report_full», «chat_pack_20», «failed_generation»,
+# «credit12». One place to turn any action, reason or plan key into Persian.
+_FA_LABEL = {
+    # credit-ledger reasons
+    "purchase": "خرید پک اعتبار", "refund": "بازگشت اعتبار",
+    "failed_generation": "بازگشت اعتبار — تولید ناموفق",
+    "free_exploration": "اولین کاوش رایگان", "exploration": "کاوش خودشناسی",
+    "subscription": "اعتبار ماهانهٔ اشتراک", "referral_bonus": "هدیهٔ معرفی دوستان",
+    "admin_grant": "اعتبار اهدایی پشتیبانی",
+    # product actions
+    "explore_card": "یک سؤال، یک جواب", "report_audio": "نسخهٔ صوتی گزارش",
+    "chat_pack_20": "بستهٔ گفت‌وگو با چارت", "transit_3m": "۳ ماه آیندهٔ من",
+    "report_basic": "آشنایی (۵ بخش)", "transit_12m": "۱۲ ماه آیندهٔ من",
+    "relocation": "چارت مهاجرت", "report_full": "شناخت کامل (۱۳ بخش)",
+    "synastry_love": "سازگاری عاطفی", "synastry_work": "سازگاری کاری",
+    "synastry_full": "سازگاری دو نفر", "solar_return": "چارت سالیانه",
+    "report_gold": "شناخت + همراهی", "rectify": "بازبینی ساعت تولد",
+    # toman packs
+    "credit1": "۱ اعتبار", "credit3": "۳ اعتبار",
+    "credit6": "۶ اعتبار", "credit12": "۱۲ اعتبار",
+}
+
+
+def fa_label(key: str) -> str:
+    """Persian label for any internal key; falls back to the key itself."""
+    return _FA_LABEL.get((key or "").strip(), key or "—")
+
+
+templates.env.globals["fa_label"] = fa_label
+
+
 def _from_env(name: str, default: str = "") -> str:
     """Read a value from os.environ (config-aware); used for site-level vars that
     must not be hardcoded in templates (R.7 / T3 Umami)."""
@@ -2521,6 +2553,42 @@ def orders_page(request: Request, session: Session = Depends(get_session)):
     ).all()
     return templates.TemplateResponse(request, "orders.html", {
         "title": "سفارش‌های من", "orders": rows,
+    })
+
+
+@app.get("/chats", response_class=HTMLResponse)
+def chats_page(request: Request, session: Session = Depends(get_session)):
+    """Chat history. ChatMessage rows existed since the chat shipped but no
+    page ever listed them, so a user who paid for the 30-day conversation had
+    no way back to it — they had to remember the chart URL."""
+    from app.models import ChatMessage, Chart, BirthProfile
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login?next=/chats", status_code=303)
+    mine = session.exec(
+        select(Chart.id, BirthProfile.name, Chart.created_at)
+        .join(BirthProfile, Chart.profile_id == BirthProfile.id)
+        .where(BirthProfile.user_id == u.id)
+    ).all()
+    threads = []
+    for cid, cname, _ in mine:
+        msgs = session.exec(
+            select(ChatMessage).where(ChatMessage.chart_id == cid)
+            .order_by(ChatMessage.created_at.desc()).limit(60)
+        ).all()
+        if not msgs:
+            continue
+        last_q = next((m for m in msgs if m.role == "user"), None)
+        threads.append({
+            "chart_id": cid,
+            "name": cname or "بدون نام",
+            "count": len(msgs),
+            "last_at": msgs[0].created_at,
+            "preview": (last_q.content if last_q else msgs[0].content or "")[:120],
+        })
+    threads.sort(key=lambda t: t["last_at"], reverse=True)
+    return templates.TemplateResponse(request, "chats.html", {
+        "threads": threads, "user": u, "title": "گفت‌وگوهای من — زایچه",
     })
 
 
