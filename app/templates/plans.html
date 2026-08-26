@@ -7,10 +7,12 @@
 {% set credit_packs = plans | selectattr('key', 'in', ['credit3','credit6','credit12']) | list %}
 <div class="u-8c4cf147" x-data="purchase()">
   <div class="plans-hero">
-    <span class="eyebrow">کاتالوگ زایچه</span>
-    <h1 class="u-64374dd7">برای سؤالت، یک مسیر هست</h1>
+    <span class="eyebrow">محصول‌ها</span>
+    <h1 class="u-64374dd7">فقط همان چیزی را باز کن که الان لازم داری</h1>
     <p class="u-7e8899c5">
-      همهٔ گزارش‌ها از روی چارتِ رایگانِ خودت ساخته می‌شوند. اول چارتت را بساز، بعد فقط همان خدمتی را باز کن که الآن به کارت می‌آید — با اعتبار.
+      چارت خودت رایگان است و همیشه می‌ماند. هر محصول از روی همان نقشه ساخته می‌شود —
+      یکی را انتخاب می‌کنی، اعتبارش کم می‌شود، و خروجی برای همیشه در حساب تو می‌ماند.
+      اگر تولید نشد، اعتبارت خودکار برمی‌گردد.
     </p>
   </div>
 
@@ -167,8 +169,13 @@
 <style>@keyframes spin{to{transform:rotate(360deg);}}</style>
 <style>
 /* MASTER W10 — compact comparable product grid */
-.plans-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-.plan-card{padding:18px 16px;border-radius:18px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.plans-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+/* Two columns squeezed a 4-line Persian product name into ~180px and left
+   every card a different height. One column until there is room for two. */
+@media (min-width:460px){ .plans-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+.plan-card{position:relative;}
+.plan-card .btn{width:100%;margin-top:auto;}
+.plan-card{padding:20px 16px 16px;border-radius:18px;display:flex;flex-direction:column;gap:8px;min-width:0;}
 .product-groups{display:grid;gap:24px;margin-top:24px;}
 .product-group{min-width:0;}
 .group-heading{display:flex;align-items:center;gap:10px;margin:0 0 10px;}
