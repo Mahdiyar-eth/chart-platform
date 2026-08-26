@@ -214,7 +214,7 @@ REPORT_PLANS = set()  # no plan_key auto-enqueues a report anymore
 # LANCH20 scope: the coupon's "first deep report" rule now keys on the credit
 # actions that unlock deep reports (report_basic/full/gold), not toman plans.
 DEEP_REPORT_ACTIONS = {"report_basic", "report_full", "report_gold"}
-CREDIT_PACKS = {"credit3", "credit6", "credit12"}
+CREDIT_PACKS = {"credit1", "credit3", "credit6", "credit12"}
 SUBSCRIPTION_PLANS = {"monthly", "yearly"}   # H — همراه ماهانه/سالانه
 SUBSCRIPTION_MONTHLY_CREDITS = 5             # H — 5 credits/month
 

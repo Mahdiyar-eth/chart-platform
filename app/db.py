@@ -60,6 +60,13 @@ def seed_plans() -> None:
                        "۲۵+ ارتباط سیاره‌ای میان دو چارت",
                        "تفسیر اختصاصی و عمیق رابطه", "پیش‌نمایش رایگان نمره‌ی کلی"],
              sort=4, active=False),  # R14-D3: toman currency retired — synastry is credit-only (love/work, 8cr)
+        # SALES-STRATEGY: the entry ticket must not cost 3.6x the entry product.
+        # The cheapest product is 1 credit (50,000t of value) but the cheapest
+        # pack was 3 credits at 180,000t, so a buyer who wanted one answer had
+        # to pay for three and hold two unused credits. This is the first rung.
+        dict(key="credit1", name_fa="۱ اعتبار", subtitle_fa="برای امتحان‌کردن — یک سؤال، یک جواب", price_toman=60_000,
+             credits_grant=1, features=["بدون تاریخ انقضا", "همین حالا قابل استفاده"],
+             sort=4),
         dict(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی", price_toman=180_000,
              credits_grant=3, features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا"],
              sort=5),
