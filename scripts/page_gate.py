@@ -21,7 +21,17 @@ from playwright.sync_api import sync_playwright
 BASE = os.getenv("QA_BASE_URL", "https://chart.negar.io")
 OUT = Path("docs/qa/redesign")
 WIDTHS = [360, 390, 430, 768, 1280, 1920]
-PAGES = ["/", "/plans", "/articles", "/synastry", "/today", "/faq", "/glossary"]
+PAGES = [
+    # commercial (W4.1)
+    "/", "/plans", "/birth-form", "/synastry", "/rectify",
+    # product (W4.2)
+    "/today", "/explore", "/faq", "/glossary", "/learn", "/articles",
+    "/credits", "/orders", "/reports", "/account/login", "/contact",
+    "/about", "/guide", "/disclaimer", "/privacy", "/terms", "/refund",
+    # marketing landings (R14-B5)
+    "/solar-guide", "/relocation-guide", "/deep-report", "/self-discovery",
+    "/sky-today",
+]
 
 CHECK_JS = """
 () => {

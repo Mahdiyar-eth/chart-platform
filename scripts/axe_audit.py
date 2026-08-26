@@ -55,7 +55,9 @@ def run():
         browser.close()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(findings, ensure_ascii=False, indent=1), encoding="utf-8")
-    reds = [f for f in findings if f.get("critical_or_serious")]
+    # R15: a run that ERRORED is NOT a pass — errors must go RED too, otherwise
+    # a fully-failing audit (e.g. network blocked) prints "RED 0" and exits 0.
+    reds = [f for f in findings if f.get("critical_or_serious") or f.get("error")]
     print(f"PAGES {len(PAGES)*2} | RED {len(reds)}")
     return 0 if not reds else 1
 

@@ -191,7 +191,7 @@ def test_lanch20_rejected_on_second_report_and_packs():
     c = TestClient(main_app)
     c.cookies.set("chart_user", _user_cookie_value(buyer))
     r = c.get("/api/coupons/check?code=LANCH20")
-    assert r.status_code == 404, f"prior report spend must void LANCH20: {r.text}"
+    assert r.status_code == 400 and "اولین گزارش" in r.json().get("detail",""), f"R15-D9: prior spend must 400 with Persian reason: {r.text}"
 
 
 # ── J: /api/coupons/check validates without consuming ──────────────────────
@@ -205,7 +205,7 @@ def test_coupon_check_endpoint():
     j = r.json()
     assert j["percent"] == 20 and "اولین گزارش" in j["scope"]
     r2 = c.get("/api/coupons/check?code=NOPE123")
-    assert r2.status_code == 404
+    assert r2.status_code == 404  # unknown code stays 404 (only prior-spend is 400)
 
 
 # ── P9 — landing pages render with plan-v2.0 headlines ──────────────────────

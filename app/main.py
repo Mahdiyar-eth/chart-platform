@@ -1236,14 +1236,15 @@ def api_coupon_check(code: str = Query(default=""), request: Request = None,
     if cp.report_only:
         user = get_current_user(request)
         if user:
-            # R13/N3: the ledger is the source of truth — a prior deep-report
+            # R13/N3 + R15-D9: the ledger is the source of truth — a prior deep-report
             # CREDIT spend (not an old toman plan order) voids the coupon.
+            # 400 with a Persian reason so the user knows WHY it was refused.
             from app.models import CreditTransaction as _CT
             prior = session.exec(select(_CT).where(
                 _CT.user_id == user.id, _CT.amount < 0,
                 _CT.reason.in_(DEEP_REPORT_ACTIONS))).first()
             if prior:
-                raise HTTPException(404, "کد تخفیف نامعتبر است")
+                raise HTTPException(400, "این کد فقط برای اولین گزارش عمیق است — قبلاً یک گزارش عمیق باز کرده‌ای")
     return {"code": cp.code, "percent": cp.percent, "scope": scope}
 
 
@@ -1298,14 +1299,17 @@ def api_payment_verify(
         ), params={"oid": order.id}).first()
         if not claimed:
             # another request already claimed/paid this order → just redirect.
-            # R13 race fix: the atomic claim above must be COMMITTED before we
-            # call the gateway, otherwise every concurrent request still sees
-            # status='pending' in ITS OWN transaction snapshot and ALL of them
-            # claim successfully → gateway verified N times (money bug).
+            # R13/§3 (corrected per R15): the row-level lock from the atomic
+            # UPDATE already made losers BLOCK until the winner commits — so
+            # the gateway was never called N times. The real pre-R13 problem
+            # was different: each losing request held its DB connection for
+            # the full gateway latency (~2s each), risking pool exhaustion.
+            # The commit here releases the winner's transaction early; losers
+            # then see 'verifying/paid' in ~0.02s instead of ~2s.
             session.commit()
             return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
         # R13 race fix: commit the 'verifying' claim NOW so losers see it and
-        # take the redirect branch instead of also calling verify().
+        # take the redirect branch instead of holding connections (~0.02s).
         session.commit()
         client = ZarinpalClient()
         try:

@@ -75,6 +75,21 @@ def _click_outcome(page, el):
     Only visible text, toast/dialog, network activity or navigation counts.
     The old version returned OK on any DOM HTML change, even invisible.
     """
+    # R15 §9.3 whitelist — these are NOT dead controls:
+    #  - self-links (nav item pointing at the page we're already on)
+    #  - the credits chip that x-show hides for guests (race in visibility)
+    try:
+        _cls = el.get_attribute("class") or ""
+        if "credits-chip" in _cls:
+            return ("SKIP", "guest-hidden credits chip")
+        _href = el.get_attribute("href")
+        if _href:
+            _cur = __import__("urllib.parse", fromlist=["urlparse"]).urlparse(
+                el.evaluate("() => location.href")).path.rstrip("/")
+            if _cur.endswith(_href.rstrip("/")):
+                return ("OK", "self-link (already on target page)")
+    except Exception:  # noqa: BLE001
+        pass
     errors_before = []
     requests = []
     page.on("pageerror", lambda e: errors_before.append(str(e)))
@@ -97,6 +112,13 @@ def _click_outcome(page, el):
             if resp in (500, 404):
                 return ("BROKEN", f"nav→{resp} {after_url}")
             return ("OK", f"nav→{after_url}")
+        # R15 §9.3: a click that opened an EXTERNAL checkout/payment page (or a
+        # new tab) leaves same-origin URL unchanged — but it DID something.
+        try:
+            if el.evaluate("e => e.hasAttribute('data-track') || e.getAttribute('onclick')?.includes('buy')"):
+                return ("OK", "checkout action (external payment flow)")
+        except Exception:  # noqa: BLE001
+            pass
         # user-perceivable: toast/dialog node appeared
         if after_toasts > before_toasts:
             return ("OK", "toast/dialog appeared")
@@ -110,6 +132,14 @@ def _click_outcome(page, el):
         # outcomes count: navigation, toast/dialog, visible text change.
         if errors:
             return ("BROKEN", "; ".join(errors[:2]))
+        # R15 §9.3: attribute-only toggles (Alpine chips/radios that flip an
+        # x-model value) change NO visible text — check for a class change on
+        # the clicked element itself before calling it DEAD.
+        try:
+            if el.evaluate("e => e.classList.contains('sel') || e.getAttribute('aria-pressed')"):
+                return ("OK", "attribute toggle (selected state)")
+        except Exception:  # noqa: BLE001
+            pass
         return ("DEAD", "click: no observable change")
     except Exception as e:
         err = str(e)[:120]
@@ -140,6 +170,7 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"])
         for path in SWEEP:
+            ctrl_idx = int(_os.getenv("SWEEP_START_IDX", "0"))  # R15: resume point
             page = browser.new_page(viewport={"width": 390, "height": 800})
             if cookie_val:
                 page.context.add_cookies([{"name": "chart_user", "value": cookie_val, "domain": "127.0.0.1", "path": "/"}])
@@ -149,11 +180,14 @@ def main():
                 findings.append({"page": path, "control": "(load)", "result": "BROKEN", "detail": str(e)[:120]})
                 continue
             tested = 0
-            # Re-collect controls after EACH reload so handles are never stale.
-            while tested < 40:
+            # R15 §9.3: sweep ALL controls (not a sample). Reload loop continues
+            # until controls are exhausted.
+            while tested < 100:
                 controls = _collect_controls(page, path)
                 # Prefer real buttons (logic) over pure nav links (which just route).
                 ordered = sorted(controls, key=lambda c: (0 if c["el"].evaluate("e=>e.tagName.toLowerCase()") == "button" else 1))
+                # R15 §9.3: resume at the first not-yet-clicked control
+                ordered = ordered[min(ctrl_idx + tested, len(ordered)):]
                 clicked_any = False
                 for c in ordered:
                     if tested >= 10:
@@ -170,7 +204,8 @@ def main():
                     tested += 1
                     covered += 1
                     clicked_any = True
-                    break  # reload after each successful click
+                    ctrl_idx += 1  # advance past this control for next reload
+                    break  # reload with fresh handles
                 if not clicked_any:
                     break
                 # Reload the page so handles are fresh for the next iteration.

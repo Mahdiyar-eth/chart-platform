@@ -133,7 +133,9 @@ def test_94_lanch20_first_deep_report_ok_pack_no_second_no(monkeypatch):
         s.add(CT(user_id=uid, amount=-7, reason="report_full"))
         s.commit()
     r2 = c.get("/api/coupons/check?code=LANCH20")
-    assert r2.status_code == 404, "coupon dies after first deep-report spend"
+    # R15-D9: 400 with a Persian reason (was a bare 404) — the user must know WHY.
+    assert r2.status_code == 400, "coupon dies after first deep-report spend"
+    assert "اولین گزارش" in r2.json().get("detail", "")
 
 
 def test_94_refund_returns_credits_ledger_invariant(monkeypatch):
