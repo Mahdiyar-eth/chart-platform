@@ -120,7 +120,7 @@
 .z-admin-shell .admin-pane>h2{font-size:1.05rem;color:var(--txt);}
 @media(max-width:700px){.z-admin-shell .u-c1e3372a{grid-template-columns:repeat(2,minmax(0,1fr));}.z-admin-shell .admin-pane{padding-top:12px;}}
 @media(max-width:420px){.z-admin-shell .u-c1e3372a{gap:7px;}.z-admin-shell .kpi{padding:12px;min-height:84px;}.z-admin-shell .kpi b{font-size:1rem;}}
-
+.z-admin-shell .u-4f651017,.z-admin-shell .u-36252e37{background:linear-gradient(135deg,var(--gold),var(--gold-deep));border:1px solid transparent;color:var(--gold-ink);}
 /* Periodic pages: today, transit, solar, relocation — one hero + card rhythm */
 .z-periodic{width:min(100% - 24px,860px);margin-inline:auto;padding:8px 0 40px;}
 .z-periodic .z-page-header{margin-bottom:18px;}
