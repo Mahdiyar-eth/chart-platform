@@ -22,7 +22,7 @@
     try {
       const r = await fetch('/api/admin/health', { headers: { 'X-Requested-With': 'fetch' } });
       const h = await r.json();
-      const dot = (ok) => `<span class="u-884f21bb" >●</span>`;
+      const dot = (ok) => `<span class="${ok ? 'is-ok' : 'is-bad'}">●</span>`;
       const rws = [];
       rws.push(`web ${dot(h.web === 'ok')}`);
       rws.push(`worker ${dot(h.worker === 'ok' || h.worker === 'n/a-local')}`);
