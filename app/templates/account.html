@@ -76,40 +76,13 @@
   </section>
   {% endif %}
 
-  <section class="glass u-91da6b54" >
-    <h2 class="u-text-lg" >
-      <svg class="u-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
-      اعلان مرورگر
-    </h2>
-    <p class="muted u-afc26706" >وقتی «نگاهی به آسمان هفته» آماده شد، همینجا به مرورگرت اعلان می‌فرستیم (iOS Safari پشتیبانی محدود دارد).</p>
-    <button id="pushBtn" class="btn u-6764383a" >فعال‌سازی اعلان</button>
-  </section>
 
-  <section class="glass u-a596fc6b" >
-    <h2 class="u-text-lg" >
-      <svg class="u-49ce351b" aria-hidden="true"><use href="/static/icons.svg#icon-bell"/></svg>
-      تنظیمات اعلان
-    </h2>
-    <div class="u-e8c5c074" x-data="notifPrefs()" x-init="init()" >
-      <label class="u-699ab5d1" >
-        <input class="u-icon-18" type="checkbox" x-model="f.daily_insight" > بینش روزانه
-      </label>
-      <label class="u-699ab5d1" >
-        <input class="u-icon-18" type="checkbox" x-model="f.weekly_reflection" > تأمل هفتگی
-      </label>
-      <label class="u-699ab5d1" >
-        <input class="u-icon-18" type="checkbox" x-model="f.report_ready" > آماده‌شدن گزارش
-      </label>
-      <div class="u-bc73a818" >
-        <span class="muted u-1fe86672" >ساعت‌های سکوت (اعلان ارسال نشود):</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_start" class="input u-ade0e943" title="شروع">
-        <span class="muted">تا</span>
-        <input type="number" min="0" max="23" x-model.number="f.quiet_end" class="input u-ade0e943" title="پایان">
-      </div>
-      <button class="btn btn-ghost u-126cde5c" x-on:click="save()">ذخیره تنظیمات</button>
-      <span class="u-d873955b" x-text="saved" ></span>
-    </div>
-  </section>
+
+  <div class="glass u-91da6b54" style="display:flex; gap:var(--sp-3); flex-wrap:wrap;">
+    <a class="btn btn-md btn-ghost" href="/reports" style="flex:1 1 130px;">گزارش‌های من</a>
+    <a class="btn btn-md btn-ghost" href="/chats" style="flex:1 1 130px;">گفت‌وگوهای من</a>
+    <a class="btn btn-md btn-ghost" href="/settings" style="flex:1 1 130px;">تنظیمات</a>
+  </div>
 
   <section class="glass u-a596fc6b" >
     <h2 class="u-text-lg" >سفارش‌ها</h2>
@@ -136,33 +109,6 @@
     </div>
   </section>
 
-  <section class="glass u-91da6b54" x-data="subs()" x-init="init()" x-cloak>
-    <div class="glass" style="padding:var(--sp-4); margin-bottom:var(--sp-4); display:flex; gap:var(--sp-3); flex-wrap:wrap;">
-      <a class="btn btn-md btn-ghost" href="/reports" style="flex:1 1 140px;">گزارش‌های من</a>
-      <a class="btn btn-md btn-ghost" href="/chats" style="flex:1 1 140px;">گفت‌وگوهای من</a>
-    </div>
-    <h2 class="u-text-lg" >اشتراک همراه «آسمان امروز»</h2>
-    <p class="muted u-afc26706" >Today روزانه، تأمل هفتگی، اعلان گذرها و ۵ اعتبار کاوش در ماه.</p>
-    <template x-for="s in items" :key="s.id">
-      <div class="u-2e7c8e8a" :data-sub="s.id">
-        <div class="u-24ce67f3" >
-          <div class="u-54c2afb7" >
-            <b class="u-ef7ba8ad" x-text="s.plan_key === 'yearly' ? 'سالانه' : 'ماهانه'"></b>
-            <span class="chip u-bceed3d2" x-text="s.active ? 'فعال' : 'غیرفعال'"></span>
-            <div class="muted u-41a52463" x-text="s.expires_at ? 'تا ' + new Date(s.expires_at).toLocaleDateString('fa-IR') : ''"></div>
-          </div>
-          <div class="u-a76d597a" >
-            <a class="btn u-3fd7213e" href="/plans">تمدید</a>
-            <button class="btn btn-ghost u-fb376871" x-show="s.active && !s.confirm" @click="s.confirm = true">لغو</button>
-            <button class="btn u-e69017e5" x-show="s.active && s.confirm" @click="doCancel(s.id)">مطمئنی؟</button>
-          </div>
-        </div>
-      </div>
-    </template>
-    <div x-show="!items.length" class="muted u-ea93c4be" >
-      اشتراک فعالی نداری — محصولات فعلی با اعتبار باز می‌شوند: <a class="u-link-gold" href="/plans" >مشاهده محصولها</a>
-    </div>
-  </section>
 
   <section class="glass u-91da6b54" >
     <h2 class="u-text-lg" >اعتبار کاوش من</h2>
@@ -199,31 +145,6 @@
     <a class="btn btn-ghost u-516bc368" href="/plans" >مشاهده پلن‌ها</a>
     <a class="btn btn-ghost u-516bc368" href="/birth-form" >چارت جدید</a>
   </div>
-  <!-- F-29 (runtime audit): confirm() replaced with an Alpine modal — native
-       confirm() is invisible/unreliable on mobile and banned by design rules -->
-  <div class="u-mt-2b" x-data="{ open: false }" >
-    <a href="/account/export" class="btn btn-ghost u-306269ce" >خروجی داده‌ها (JSON)</a>
-    <button @click="open = true" class="btn btn-ghost u-57a14acc" >حذف کامل حساب و داده‌ها</button>
-    <div x-cloak x-show="open" class="modal-backdrop u-0751ea05" @click.self="open = false">
-      <div class="glass u-99c3d369" >
-        <div class="u-e0cf0e75" >⚠️</div>
-        <h3 class="u-761d3add" >حذف کامل حساب</h3>
-        <p class="muted u-22bf9de2" >همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
-        <form class="u-d6f2af6e" method="post" action="/account/delete" >
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn u-f9c4962a" >بله، حذف کن</button>
-          <button type="button" @click="open = false" class="btn btn-ghost u-0466783d" >انصراف</button>
-        </form>
-      </div>
-    </div>
-  </div>
-  <a class="muted u-49e845e7" href="/privacy" >حریم خصوصی</a>
-</div>
-<script>
-/* G10 (§90) — dashboard search over profiles/reports/orders */
-function dashSearch() {
-  return {
-    q: '',
     items: {{ search_items|tojson }},
     init() {},
     norm(s) { return (s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک'); },
@@ -235,62 +156,6 @@ function dashSearch() {
     }
   };
 }
-/* G8 — notification prefs (Alpine) */
-function notifPrefs() {
-  return {
-    f: { daily_insight: true, weekly_reflection: true, report_ready: true, quiet_start: 23, quiet_end: 7 },
-    saved: '',
-    async init() {
-      try {
-        const r = await fetch('/api/notifications/prefs');
-        if (r.ok) this.f = await r.json();
-      } catch (e) {}
-    },
-    async save() {
-      const body = new URLSearchParams({
-        daily_insight: this.f.daily_insight, weekly_reflection: this.f.weekly_reflection,
-        report_ready: this.f.report_ready, quiet_start: this.f.quiet_start, quiet_end: this.f.quiet_end
-      });
-      const r = await fetch('/api/notifications/prefs', { method: 'POST', body });
-      this.saved = r.ok ? '✓ ذخیره شد' : 'خطا در ذخیره';
-      setTimeout(() => this.saved = '', 3000);
-    }
-  };
-}
-/* D1: Web Push subscribe/unsubscribe from the account page */
-(function () {
-  var btn = document.getElementById('pushBtn');
-  if (!btn) return;
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    btn.textContent = 'مرورگرت اعلان پشتیبانی نمی‌کند';
-    btn.disabled = true;
-    return;
-  }
-  btn.addEventListener('click', function () {
-    Notification.requestPermission().then(function (perm) {
-      if (perm !== 'granted') { btn.textContent = 'دسترسی اعلان رد شد'; return; }
-      return navigator.serviceWorker.register('/sw.js').then(function () {
-        return navigator.serviceWorker.ready;
-      }).then(function (reg) {
-        return fetch('/api/push/vapid-public-key').then(function (r) { return r.json(); })
-          .then(function (j) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(j.key) }); });
-      }).then(function (sub) {
-        return fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: sub.endpoint, p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))), auth: btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))) })
-        });
-      }).then(function (r) { if (r.ok) btn.textContent = '✓ اعلان فعال شد'; });
-    }).catch(function () { btn.textContent = 'خطا در فعال‌سازی'; });
-  });
-  function urlBase64ToUint8Array(base64) {
-    var pad = base64.replace(/=+$/, '');
-    var raw = atob(pad);
-    var arr = new Uint8Array(raw.length);
-    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-    return arr;
-  }
-})();
 function wallet() {
   return {
     balance: 0,
@@ -311,24 +176,6 @@ function wallet() {
       const j = await r.json();
       showToast(r.ok ? 'درخواست تسویه ثبت شد ✅ پس از بررسی ادمین، مبلغ واریز می‌شود.' : (j.detail || 'خطا'), r.ok);
       if (r.ok) location.reload();
-    }
-  };
-}
-function subs() {
-  return {
-    items: [],
-    async init() {
-      try {
-        const r = await fetch('/api/subscriptions');
-        if (r.ok) this.items = await r.json();
-      } catch (e) { /* anonymous */ }
-    },
-    async doCancel(id) {
-      const r = await fetch('/api/subscriptions/' + id + '/cancel', { method: 'POST' });
-      if (r.ok) {
-        const s = this.items.find(x => x.id === id);
-        if (s) { s.active = false; s.confirm = false; }
-      }
     }
   };
 }

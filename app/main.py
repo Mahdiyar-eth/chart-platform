@@ -2556,6 +2556,25 @@ def orders_page(request: Request, session: Session = Depends(get_session)):
     })
 
 
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request, session: Session = Depends(get_session)):
+    """UX: /account was carrying ten unrelated jobs at once — profile, reports,
+    weekly sky, push, quiet hours, orders, wallet, subscription, referral, data
+    export and account deletion. Notifications, subscription and data controls
+    live here so each page answers one question."""
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login?next=/settings", status_code=303)
+    from app.security import CSRF_COOKIE, new_csrf_token
+    csrf = request.cookies.get(CSRF_COOKIE) or new_csrf_token()
+    resp = templates.TemplateResponse(request, "settings.html", {
+        "title": "تنظیمات — زایچه", "user": u, "csrf_token": csrf,
+    })
+    resp.set_cookie(CSRF_COOKIE, csrf, httponly=True, samesite="lax", secure=True,
+                    max_age=24 * 3600)
+    return resp
+
+
 @app.get("/chats", response_class=HTMLResponse)
 def chats_page(request: Request, session: Session = Depends(get_session)):
     """Chat history. ChatMessage rows existed since the chat shipped but no
