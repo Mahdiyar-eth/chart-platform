@@ -20,7 +20,11 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="muted">هنوز گزارشی نساخته‌ای. از صفحهٔ چارت می‌توانی سفارش بدهی.</p>
+  <div class="glass" style="padding:var(--sp-5); text-align:center;">
+    <p style="margin:0 0 6px; font-weight:700;">هنوز گزارشی نداری</p>
+    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">گزارش کامل، ۱۳ حوزهٔ زندگی را با شاهد نجومی باز می‌کند.</p>
+    <a class="btn btn-lg btn-primary" href="/birth-form">اول چارت رایگانت را بساز</a>
+  </div>
   {% endif %}
 </div>
 {% endblock content %}
