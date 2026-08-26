@@ -13,18 +13,17 @@
 .btn-lg{ min-height:54px; padding:0 var(--sp-6); font-size:var(--fs-lg); border-radius:var(--r-md); }
 
 /* ===== Surfaces ===== */
-.card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5); }
+.card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 12px 28px -20px rgba(0,0,0,.9); }
 .glass{ background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r-lg);
   /* W3 perf: NO backdrop-filter on the generic card — with 20+ cards per page
      each one is a separate compositor layer that re-rasters every scroll frame.
      The glass look = translucent bg + border + shadow (kept below). */
-  box-shadow:0 8px 32px rgba(2,6,23,.25), inset 0 1px 0 rgba(255,255,255,.06), inset -1px -1px 1px rgba(255,255,255,.03);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 12px 28px -20px rgba(0,0,0,.9);
   position:relative; }
 /* MASTER W12 — liquid glass depth: layered edge reflection + slow drift.
    The ::after adds a top-edge light refraction so surfaces feel physical. */
-.glass::before{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  background:linear-gradient(160deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.02) 28%, transparent 55%);
-  opacity:.9; }
+
 .glass > *{ position:relative; }
 /* R12/P1-9 + R15-D12: no card-level drift (moving targets break automated
    clicks), no will-change:contents (anti-pattern, forces a layer). The glow
