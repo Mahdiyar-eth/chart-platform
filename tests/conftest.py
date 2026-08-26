@@ -11,6 +11,7 @@ from pathlib import Path
 _TMP_DB = "chart_platform_test"
 os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["PUBLIC_BASE_URL"] = "http://127.0.0.1:8767"
+os.environ["OTP_DEV_MODE"] = "0"  # R15: .env flip must not leak dev_code into test assertions
 os.environ["ENRICH_INSIGHTS"] = "0"  # no LLM calls in tests — deterministic fallback only
 os.environ["RATE_LIMIT_BACKEND"] = "memory"  # tests stay hermetic (no shared Redis keys)
 os.environ["APP_ENV"] = "development"        # tests run in dev mode — prod fail-closed gates off
