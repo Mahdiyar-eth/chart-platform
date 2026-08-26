@@ -38,6 +38,11 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("guide", "راهنما", "/guide", icon="icon-help", group="یادگیری"),
     NavItem("faq", "سؤالات پرتکرار", "/faq", icon="icon-help", group="یادگیری"),
     NavItem("glossary", "واژه‌نامه", "/glossary", icon="icon-book", group="یادگیری"),
+    # UI-AUDIT: /solar-guide and /relocation-guide were orphans — the two
+    # newest products had a marketing page each that nothing on the site
+    # linked to, so no visitor could ever arrive at them.
+    NavItem("solar_guide", "چارت سالیانه چیست؟", "/solar-guide", icon="icon-sun", group="یادگیری"),
+    NavItem("reloc_guide", "چارت مهاجرت چیست؟", "/relocation-guide", icon="icon-compass", group="یادگیری"),
     
     NavItem("account", "حساب من", "/account", icon="icon-user", group="حساب"),
     NavItem("credits", "اعتبار من", "/credits", icon="icon-sparkles", group="حساب"),

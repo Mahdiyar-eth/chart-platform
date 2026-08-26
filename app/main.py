@@ -3333,8 +3333,21 @@ async def admin_llm_test(request: Request):
     """Ping each configured LLM provider so the admin can verify keys live."""
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
-    from app.core.llm import GoProvider, DeepSeekProvider
+    from app.core.llm import GoProvider, DeepSeekProvider, build_router
     results: dict[str, dict] = {}
+    # The REAL generation path first. This endpoint used to probe only the two
+    # legacy direct providers, so when the Go quota was exhausted it reported
+    # "dead" while every report and exploration on the site was generating
+    # normally through the gateway — a false alarm that cost a day.
+    for part in ("report", "preview"):
+        try:
+            r = await build_router(part).complete(
+                "فقط یک کلمه بگو: سلام", max_tokens=32, temperature=0)
+            results[f"router:{part}"] = {"ok": r.ok, "model": r.model,
+                                         "provider": getattr(r, "provider", ""),
+                                         "latency_ms": r.latency_ms, "error": r.error or ""}
+        except Exception as e:  # noqa: BLE001 — a probe must never 500
+            results[f"router:{part}"] = {"ok": False, "error": str(e)[:160]}
     go = GoProvider()
     if go.api_key:
         r = await go.complete("فقط یک کلمه بگو: سلام", max_tokens=64, temperature=0)

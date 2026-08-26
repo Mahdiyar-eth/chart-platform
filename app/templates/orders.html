@@ -15,7 +15,11 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="muted">هنوز سفارشی ثبت نکرده‌ای. <a class="link" href="/plans">دیدن پلن‌ها</a></p>
+  <div class="glass" style="padding:var(--sp-5); text-align:center;">
+    <p style="margin:0 0 6px; font-weight:700;">هنوز خریدی نکرده‌ای</p>
+    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">با یک اعتبار (۶۰ هزار تومان) می‌توانی اولین سؤالت را بپرسی.</p>
+    <a class="btn btn-lg btn-primary" href="/plans">دیدن محصول‌ها</a>
+  </div>
   {% endif %}
 </div>
 {% endblock content %}
