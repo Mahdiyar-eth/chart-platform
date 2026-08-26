@@ -2,7 +2,7 @@
 {% block title %}داشبورد | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="z-dashboard" x-data="{ people: {{ people_json|safe }}, person: '', openOnboarding: localStorage.getItem('zayche_onboarding_done') !== '1' }">
+<div class="z-dashboard" x-data='{"people": {{ people_json|safe }}, "person": "", "openOnboarding": localStorage.getItem("zayche_onboarding_done") !== "1"}'>
   <header class="z-dashboard-head">
     <div class="z-dashboard-head__copy">
       <span class="z-eyebrow">رصدخانهٔ شخصی تو</span>
