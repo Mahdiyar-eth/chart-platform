@@ -1,30 +1,13 @@
 {% extends "base.html" %}
+{% block title %}گزارش‌های من | زایچه{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold mb-6">گزارش‌های من</h1>
+<div class="z-workpage">
+  <header class="z-page-header"><div class="z-page-header__copy"><span class="z-eyebrow">کتابخانهٔ بینش‌ها</span><h1 class="z-title">گزارش‌های من</h1><p class="z-lead">گزارش‌هایی که برای چارت‌هایت ساخته‌ای، آمادهٔ خواندن و دانلود.</p></div><a class="z-action z-page-header__action" href="/plans">گزارش جدید</a></header>
   {% if reports %}
-  <div class="glass divide-y">
-    {% for r in reports %}
-    <div class="flex items-center justify-between py-3 px-4 text-sm">
-      <div>
-        <div class="font-medium">گزارش {{ {'basic':'پایه','full':'کامل','gold':'طلایی'}.get(r.plan_key, r.plan_key) }}</div>
-        <div class="muted">{{ r.created_at.strftime('%Y-%m-%d') }}</div>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="chip">{{ {'queued':'در صف','processing':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, r.status) }}</span>
-        {% if r.status in ('done','degraded') %}
-        <a class="btn" href="/chart/{{ r.chart_id }}">مشاهده در چارت</a>
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
+  <div class="z-list" aria-label="فهرست گزارش‌ها">
+    {% for r in reports %}<article class="z-surface z-list-row"><div class="z-list-row__main"><span class="z-list-row__title">گزارش {{ {'basic':'پایه','full':'کامل','gold':'طلایی'}.get(r.plan_key, r.plan_key) }}</span><span class="z-list-row__meta">ساخته‌شده در {{ r.created_at.strftime('%Y-%m-%d') }}</span></div><div class="z-list-row__side"><span class="z-status {% if r.status in ('done','degraded') %}z-status--ready{% elif r.status in ('queued','processing') %}z-status--pending{% elif r.status == 'failed' %}z-status--failed{% endif %}">{{ {'queued':'در صف تولید','processing':'در حال تولید','done':'آماده','degraded':'آماده با بخش‌های محدود','failed':'تولید ناموفق'}.get(r.status, r.status) }}</span>{% if r.status in ('done','degraded') %}<a class="z-action z-action--small z-action--quiet" href="/chart/{{ r.chart_id }}">مشاهدهٔ چارت</a>{% endif %}</div></article>{% endfor %}
   </div>
-  {% else %}
-  <div class="glass" style="padding:var(--sp-5); text-align:center;">
-    <p style="margin:0 0 6px; font-weight:700;">هنوز گزارشی نداری</p>
-    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">گزارش کامل، ۱۳ حوزهٔ زندگی را با شاهد نجومی باز می‌کند.</p>
-    <a class="btn btn-lg btn-primary" href="/birth-form">اول چارت رایگانت را بساز</a>
-  </div>
-  {% endif %}
+  {% else %}<section class="z-surface z-surface--feature z-empty"><div class="z-empty__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-book-open"/></svg></div><h2>هنوز گزارشی نداری</h2><p>گزارش کامل، ۱۳ حوزهٔ زندگی را با شاهد نجومی از روی چارت خودت باز می‌کند.</p><a class="z-action" href="/birth-form">اول چارت رایگان را بساز</a></section>{% endif %}
 </div>
-{% endblock content %}
+{% endblock %}

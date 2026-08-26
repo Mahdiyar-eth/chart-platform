@@ -1,47 +1,10 @@
 {% extends "base.html" %}
+{% block title %}گفت‌وگوهای من | زایچه{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="wrap" style="max-width:680px; padding-top:var(--sp-5);">
-
-  <header style="margin-bottom:var(--sp-5);">
-    <h1 style="margin:0; font-size:var(--fs-2xl); font-weight:800;">گفت‌وگوهای من</h1>
-    <p class="muted" style="margin:6px 0 0; font-size:.9rem;">
-      هر گفت‌وگو روی یکی از چارت‌هایت ذخیره می‌شود و همیشه در دسترس است.
-    </p>
-  </header>
-
-  {% if threads %}
-  <div style="display:flex; flex-direction:column; gap:var(--sp-3);">
-    {% for t in threads %}
-    <a href="/chat/{{ t.chart_id }}" class="glass"
-       style="display:block; padding:var(--sp-4); text-decoration:none; color:inherit;">
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3);">
-        <span style="font-weight:800;">{{ t.name }}</span>
-        <span class="muted" style="font-size:.74rem; white-space:nowrap;">{{ t.count }} پیام</span>
-      </div>
-      <p class="muted" style="margin:8px 0 0; font-size:.86rem; line-height:1.75;">
-        {{ t.preview }}{% if t.preview|length >= 120 %}…{% endif %}
-      </p>
-      <span style="display:inline-flex; align-items:center; gap:6px; margin-top:10px;
-                   font-size:.84rem; font-weight:700; color:var(--gold);">
-        ادامهٔ گفت‌وگو ←
-      </span>
-    </a>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="glass" style="padding:var(--sp-5); text-align:center;">
-    <p style="margin:0 0 6px; font-weight:700;">هنوز گفت‌وگویی نداری</p>
-    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">
-      با بستهٔ «شناخت + همراهی» می‌توانی ۳۰ روز دربارهٔ چارت خودت سؤال بپرسی —
-      جواب‌ها از روی سیاره‌ها و خانه‌های نقشهٔ خودت نوشته می‌شوند، نه جمله‌های کلی.
-    </p>
-    <a class="btn btn-lg btn-primary" href="/plans">دیدن محصول‌ها</a>
-  </div>
-  {% endif %}
-
-  <div style="margin-top:var(--sp-5); display:flex; gap:var(--sp-3); flex-wrap:wrap;">
-    <a class="btn btn-md btn-ghost" href="/reports">گزارش‌های من</a>
-    <a class="btn btn-md btn-ghost" href="/account">حساب کاربری</a>
-  </div>
+<div class="z-workpage">
+  <header class="z-page-header"><div class="z-page-header__copy"><span class="z-eyebrow">همراه چارت</span><h1 class="z-title">گفت‌وگوهای من</h1><p class="z-lead">هر گفت‌وگو روی یکی از چارت‌هایت ذخیره می‌شود و همیشه در دسترس است.</p></div><a class="z-action z-page-header__action" href="/dashboard">بازگشت به داشبورد</a></header>
+  {% if threads %}<div class="z-list">{% for t in threads %}<a href="/chat/{{ t.chart_id }}" class="z-surface z-list-row" style="text-decoration:none;color:inherit"><div class="z-list-row__main"><span class="z-list-row__title">{{ t.name }}</span><span class="z-list-row__meta">{{ t.count }} پیام · {{ t.preview }}{% if t.preview|length >= 120 %}…{% endif %}</span></div><span class="z-arrow" aria-hidden="true">←</span></a>{% endfor %}</div>{% else %}<section class="z-surface z-surface--feature z-empty"><div class="z-empty__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-message"/></svg></div><h2>هنوز گفت‌وگویی نداری</h2><p>با محصول «شناخت + همراهی» می‌توانی دربارهٔ چارت خودت سؤال بپرسی.</p><a class="z-action" href="/plans">دیدن محصول‌ها</a></section>{% endif %}
+  <div class="z-workpage__actions"><a class="z-action z-action--quiet" href="/reports">گزارش‌های من</a><a class="z-action z-action--quiet" href="/settings">تنظیمات حساب</a></div>
 </div>
-{% endblock content %}
+{% endblock %}

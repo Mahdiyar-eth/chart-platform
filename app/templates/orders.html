@@ -1,25 +1,9 @@
 {% extends "base.html" %}
+{% block title %}سفارش‌های من | زایچه{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold mb-6">سفارش‌های من</h1>
-  {% if orders %}
-  <div class="glass divide-y">
-    {% for o in orders %}
-    <div class="flex items-center justify-between py-3 px-4 text-sm">
-      <div>
-        <div class="font-medium">{{ fa_label(o.plan_key) }}</div>
-        <div class="muted">{{ o.created_at.strftime('%Y-%m-%d') }}</div>
-      </div>
-      <span class="chip">{{ {'pending':'در انتظار پرداخت','paid':'پرداخت‌شده','failed':'ناموفق','canceled':'لغوشده'}.get(o.status, o.status) }}</span>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="glass" style="padding:var(--sp-5); text-align:center;">
-    <p style="margin:0 0 6px; font-weight:700;">هنوز خریدی نکرده‌ای</p>
-    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">با یک اعتبار (۶۰ هزار تومان) می‌توانی اولین سؤالت را بپرسی.</p>
-    <a class="btn btn-lg btn-primary" href="/plans">دیدن محصول‌ها</a>
-  </div>
-  {% endif %}
+<div class="z-workpage">
+  <header class="z-page-header"><div class="z-page-header__copy"><span class="z-eyebrow">حساب و پرداخت</span><h1 class="z-title">سفارش‌های من</h1><p class="z-lead">وضعیت خریدها و رسیدهای اعتباری تو.</p></div><a class="z-action z-page-header__action" href="/plans">خرید اعتبار</a></header>
+  {% if orders %}<div class="z-list">{% for o in orders %}<article class="z-surface z-list-row"><div class="z-list-row__main"><span class="z-list-row__title">{{ fa_label(o.plan_key) }}</span><span class="z-list-row__meta">{{ o.created_at.strftime('%Y-%m-%d') }} · {{ '{:,}'.format(o.amount_rial // 10) }} تومان</span></div><span class="z-status {% if o.status == 'paid' %}z-status--ready{% elif o.status == 'pending' %}z-status--pending{% elif o.status in ('failed','canceled') %}z-status--failed{% endif %}">{{ {'pending':'در انتظار پرداخت','paid':'پرداخت‌شده','failed':'ناموفق','canceled':'لغوشده'}.get(o.status, o.status) }}</span></article>{% endfor %}</div>{% else %}<section class="z-surface z-surface--feature z-empty"><div class="z-empty__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-receipt"/></svg></div><h2>هنوز خریدی نکرده‌ای</h2><p>با یک اعتبار می‌توانی اولین سؤال شخصی‌ات را بپرسی.</p><a class="z-action" href="/plans">دیدن محصول‌ها</a></section>{% endif %}
 </div>
-{% endblock content %}
+{% endblock %}
