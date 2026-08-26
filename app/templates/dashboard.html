@@ -2,106 +2,97 @@
 {% block title %}داشبورد | زایچه{% endblock %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="u-c3ccaf1c" x-data="{ person: '' }">
-  <!-- MASTER W9 header: greeting + Jalali/Tehran date + multi-person switcher -->
-  <div class="glass u-5aa6e94e" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
-    <div>
-      <h1 class="u-aa57f901" style="margin:0;">سلام، {{ user.phone or "دوست من" }} 👋</h1>
-      <p class="muted u-bc2db4a1" style="margin:6px 0 0;" x-text="person || 'امروز در چارت تو چه خبر است؟'"></p>
-      {% if today_fa %}<p class="muted u-bc2db4a1" style="margin:2px 0 0;">📅 {{ today_fa }}</p>{% endif %}
+<div class="z-dashboard" x-data="{ people: {{ people_json|safe }}, person: '', openOnboarding: localStorage.getItem('zayche_onboarding_done') !== '1' }">
+  <header class="z-dashboard-head">
+    <div class="z-dashboard-head__copy">
+      <span class="z-eyebrow">رصدخانهٔ شخصی تو</span>
+      <h1 class="z-greeting">سلام، <span class="z-greeting__name">{{ user.phone or 'دوست من' }}</span></h1>
+      <p class="z-date">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-calendar"/></svg>
+        {% if today_fa %}{{ today_fa }}{% else %}امروز در چارت تو چه خبر است؟{% endif %}
+      </p>
     </div>
-    <div style="min-width:200px;" x-show="people.length" x-cloak>
-      <label class="muted u-bc2db4a1" for="peopleSwitcher">چارت فعال</label>
-      <select id="peopleSwitcher" class="input u-8c0b5cf4" style="width:100%;"
-              x-data="peopleInit()" x-init="people = peopleList(); person = people.length ? people[0].label : ''"
-              @change="goTo($event.target)">
-        <template x-for="pp in people" :key="pp.id">
-          <option :value="pp.chart_id" x-text="pp.label"></option>
-        </template>
-        <option value="__add__">+ افزودن نفر جدید</option>
-      </select>
+    <div class="z-dashboard-head__actions">
+      <div class="z-chart-switcher" x-show="people.length" x-cloak>
+        <label for="peopleSwitcher">چارت فعال</label>
+        <select id="peopleSwitcher" class="z-select" x-model="person" @change="goTo($event.target)">
+          <template x-for="pp in people" :key="pp.id">
+            <option :value="pp.chart_id" x-text="pp.label"></option>
+          </template>
+          <option value="__add__">افزودن نفر جدید</option>
+        </select>
+      </div>
+      <a class="z-icon-button" href="/settings" aria-label="تنظیمات حساب">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-settings"/></svg>
+      </a>
     </div>
-  </div>
+  </header>
 
-  <!-- G4: onboarding checklist -->
-  <div class="glass onboard-card" x-data="{open: localStorage.getItem('ob_done') !== '1'}" x-show="open" x-cloak>
-    <div class="onboard-head">
-      <b>سه قدم تا شناخت کامل</b>
-      <button class="onboard-x" type="button" aria-label="بستن" @click="localStorage.setItem('ob_done','1'); open=false">✕</button>
+  <section class="z-onboarding" x-show="openOnboarding" x-cloak>
+    <div class="z-onboarding__mark"><svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg></div>
+    <div>
+      <div class="z-onboarding__head">
+        <b>سه قدم تا شناخت کامل</b>
+        <button type="button" aria-label="بستن راهنما" @click="localStorage.setItem('zayche_onboarding_done','1');openOnboarding=false">×</button>
+      </div>
+      <p class="z-onboarding__copy">چارت رایگانت را ببین، یک سؤال بپرس و فقط همان گزارشی را باز کن که الآن به کارت می‌آید.</p>
     </div>
-    <ol class="onboard-list">
-      <li><span>اولین «یک سؤال، یک جواب» رایگان چارتت را ببین</span> <a class="btn btn-sm" href="/explore">شروع</a></li>
-      <li><span>از چارتت یک سؤال بپرس</span> <a class="btn btn-sm" href="/dashboard">گفت‌وگو</a></li>
-      <li><span>«شناخت کامل» ۱۳ بخشی را باز کن</span> <a class="btn btn-sm" href="/plans">محصولات</a></li>
-    </ol>
-  </div>
+  </section>
 
   {% if not charts %}
-  <div class="glass glow u-768d6922" >
-    <p class="u-69dc3cc5" >هنوز چارتی نساخته‌ای. با ساخت چارت تولد (رایگان)، داشبورد برایت زنده می‌شود.</p>
-    <a href="/birth-form" class="btn btn-lg u-8bb9d55e" >ساخت چارت رایگان</a>
-  </div>
+  <section class="z-surface z-surface--feature z-empty">
+    <div class="z-empty__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg></div>
+    <h2>رصدخانهٔ تو هنوز خالی است</h2>
+    <p>با ساختن اولین چارت تولد، داشبوردت با آسمان امروز زنده می‌شود؛ آن‌وقت می‌بینی <strong>امروز در چارت تو چه خبر است؟</strong></p>
+    <a class="z-action" href="/birth-form">ساخت چارت رایگان</a>
+  </section>
   {% else %}
 
-  <!-- امروزِ تو teaser (free daily layer, W5) -->
+  <section class="z-kpi-strip" aria-label="خلاصهٔ حساب">
+    <div class="z-kpi"><span class="z-kpi__value">{{ user.credits or 0 }}</span><span class="z-kpi__label">اعتبار باقی‌مانده</span></div>
+    <div class="z-kpi"><span class="z-kpi__value">{{ reports|length }}</span><span class="z-kpi__label">گزارش فعال</span></div>
+    <div class="z-kpi"><span class="z-kpi__value">{{ charts|length }}</span><span class="z-kpi__label">چارت ذخیره‌شده</span></div>
+  </section>
+
   {% if daily and daily.headline %}
-  <a href="/today" class="glass glow u-8080a2b6" >
-    <div class="u-6ed8e93b" >
-      <svg class="u-d3038558" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg>
-      <div>
-        <div class="u-0b5df111" >امروزِ تو{% if daily.date %} — {{ daily.date }}{% endif %}</div>
-        <div class="u-d69aeccd" >{{ daily.headline }}</div>
-        <div class="muted u-9bb4061a" >پنج کارت تأملی امروز ←</div>
-      </div>
-    </div>
-  </a>
+  <section class="z-section">
+    <div class="z-section-head"><div><h2>قدم بعدی تو</h2><p>بر اساس چارت فعال</p></div></div>
+    <a class="z-surface z-surface--feature z-today" href="/today">
+      <div class="z-today__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg></div>
+      <div><span class="z-today__eyebrow">آسمان امروز{% if daily.date %} · {{ daily.date }}{% endif %}</span><strong class="z-today__headline">{{ daily.headline }}</strong><span class="z-today__meta">پنج کارت تأملی برای امروز</span></div>
+      <span class="z-arrow" aria-hidden="true">←</span>
+    </a>
+  </section>
   {% endif %}
 
-  <!-- W9: compact 2-column grid — deep analyses then periodic tools -->
-  <h2 class="muted" style="font-size:1rem;margin:18px 4px 8px;">تحلیل‌های عمیق</h2>
-  <div class="dash-grid" >
-    {% for c in deep_cards %}
-    <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="u-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
-      <b class="u-551f5233" >{{ c.title }}</b>
-      <span class="muted u-6fcea0f4" >{{ c.desc }}</span>
-    </a>
-    {% endfor %}
-  </div>
+  <section class="z-section">
+    <div class="z-section-head"><div><h2>مسیرهای عمیق</h2><p>برای وقتی که می‌خواهی بهتر بفهمی</p></div><a class="z-link" href="/plans">همهٔ محصول‌ها ←</a></div>
+    <div class="z-card-grid">
+      {% for c in deep_cards %}
+      <a class="z-surface z-work-card" href="{{ c.url }}">
+        <span class="z-work-card__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg></span>
+        <b>{{ c.title }}</b><span>{{ c.desc }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
 
-  <h2 class="muted" style="font-size:1rem;margin:18px 4px 8px;">دوره‌ای و ابزارها</h2>
-  <div class="dash-grid" >
-    {% for c in periodic_cards %}
-    <a href="{{ c.url }}" class="glass dash-card" >
-      <svg class="u-4a808a1f" aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg>
-      <b class="u-551f5233" >{{ c.title }}</b>
-      <span class="muted u-6fcea0f4" >{{ c.desc }}</span>
-    </a>
-    {% endfor %}
-  </div>
+  <section class="z-section">
+    <div class="z-section-head"><div><h2>ابزارهای روزمره</h2><p>نگاه‌های کوتاه‌تر، همیشه در دسترس</p></div><a class="z-link" href="/reports">گزارش‌های من ←</a></div>
+    <div class="z-card-grid">
+      {% for c in periodic_cards %}
+      <a class="z-surface z-work-card" href="{{ c.url }}">
+        <span class="z-work-card__icon"><svg aria-hidden="true"><use href="/static/icons.svg#icon-{{ c.icon }}"/></svg></span>
+        <b>{{ c.title }}</b><span>{{ c.desc }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
 
-  <p class="muted u-0375b210" >
-    داده‌های تو خصوصی است؛ این داشبورد فقط برای توست. — <a class="u-88ed9512" href="/account" >حساب و تنظیمات</a>
-  </p>
+  <p class="z-privacy">داده‌های تولد تو خصوصی است و برای ساخت چارت خودت استفاده می‌شود. <a href="/settings">مدیریت حساب و حریم خصوصی</a></p>
   {% endif %}
 </div>
-
 <script>
-const _people = {{ people_json|safe }};
-function peopleInit() {
-  return { people: _people };
-}
-function goTo(sel) {
-  const v = sel.value;
-  if (v === '__add__') { location.href = '/birth-form'; return; }
-  if (v) location.href = '/chart/' + v;
-}
+function goTo(sel){const v=sel.value;if(v==='__add__'){location.href='/birth-form';}else if(v){location.href='/chart/'+encodeURIComponent(v);}}
 </script>
-<style>
-/* W9 compact two-column grid — collapses to one column on small screens */
-.dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-@media (max-width:480px){.dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}}
-.dash-card{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:16px;min-height:96px;}
-@media (prefers-reduced-motion: reduce){.dash-card,.dash-grid{transition:none!important;animation:none!important;}}
-</style>
 {% endblock %}
