@@ -436,11 +436,25 @@ async def expire_stale_orders(ctx: dict) -> None:
     log.info("coupon-sweep: %d stale order slot(s) released", n)
 
 
+async def birthday_reminders(ctx: dict) -> None:
+    """Daily: remind users 14 days before their birthday that the annual chart
+    is ready. Their birth date is already on file and the solar return runs
+    birthday to birthday, so this is the one perfectly-timed, zero-cost
+    recurring sale the product has."""
+    from app.report.birthday_reminder import run_birthday_reminders
+
+    res = await run_birthday_reminders()
+    log.info("birthday-reminders: %s", res)
+
+
 class WorkerSettings:
     functions = [generate_report, generate_report_audio]
     on_startup = startup
     on_shutdown = shutdown
-    cron_jobs = [cron(expire_stale_orders, minute=30, run_at_startup=True)]  # C-05 hourly coupon sweep
+    cron_jobs = [
+        cron(expire_stale_orders, minute=30, run_at_startup=True),  # C-05 hourly coupon sweep
+        cron(birthday_reminders, hour=9, minute=0),                 # daily 09:00 UTC
+    ]
     redis_settings = RedisSettings.from_dsn(REDIS_URL)
     max_jobs = 4
     job_timeout = 1800
