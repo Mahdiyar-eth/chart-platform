@@ -1,5 +1,30 @@
 {% extends "base.html" %}
-{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">
+<style>
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 20px;position:sticky;top:8px;z-index:20;
+  background:var(--bg);padding:8px 0;}
+.admin-tab{padding:10px 18px;border-radius:12px;border:1px solid var(--stroke);background:var(--surface-2);
+  color:var(--muted);font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;}
+.admin-tab.is-on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+.admin-pane{display:none;}
+.admin-pane.is-on{display:block;}
+.admin-pane > h2:first-of-type{margin-top:0;}
+</style>
+<script>
+function adminTab(k){
+  document.querySelectorAll('.admin-pane').forEach(function(s){ s.classList.toggle('is-on', s.dataset.pane===k); });
+  document.querySelectorAll('.admin-tab').forEach(function(b){
+    var on = b.dataset.tab===k; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on);
+  });
+  try{ localStorage.setItem('zayche-admin-tab', k); location.hash = k; }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var k = (location.hash||'').replace('#','');
+  try{ k = k || localStorage.getItem('zayche-admin-tab'); }catch(e){}
+  adminTab(document.querySelector('.admin-pane[data-pane="'+k+'"]') ? k : 'health');
+});
+</script>
+{% endblock %}
 {% block content %}
 <div class="u-7dab554e" >
   <h1 class="u-c911c4a2" >داشبورد مدیریت</h1>
@@ -15,6 +40,15 @@
     <div class="kpi"><b>{{ chat_today }}</b><span>پیام گفتگو امروز (کل: {{ chat_total }})</span></div>
   </div>
 
+  <nav class="admin-tabs" role="tablist">
+    <button class="admin-tab is-on" data-tab="health" aria-selected="true" onclick="adminTab('health')">سلامت</button>
+    <button class="admin-tab" data-tab="money" onclick="adminTab('money')">مالی</button>
+    <button class="admin-tab" data-tab="users" onclick="adminTab('users')">کاربران</button>
+    <button class="admin-tab" data-tab="sales" onclick="adminTab('sales')">فروش</button>
+    <button class="admin-tab" data-tab="content" onclick="adminTab('content')">محتوا</button>
+    <button class="admin-tab" data-tab="config" onclick="adminTab('config')">تنظیمات</button>
+  </nav>
+  <section class="admin-pane" data-pane="health">
   <h2 class="u-h3" >🩺 Production Health (P0-3)</h2>
   <div id="health-body" class="muted u-e1263d29" ></div>
   <script>
@@ -39,6 +73,8 @@
     } catch (e) { document.getElementById('health-body').textContent = 'err ' + e; }
   })();
   </script>
+  </section>
+  <section class="admin-pane" data-pane="content">
   <h2 class="u-h3" >📝 محتوا (CMS — P0-4)</h2>
   <div class="glass u-40712cd7" >
     <div class="u-bad162e2" >
@@ -182,6 +218,8 @@
     } catch(e) { document.getElementById('cms-upload-res').textContent = 'خطا: ' + e.message; }
   }
   </script>
+  </section>
+  <section class="admin-pane" data-pane="money">
   <h2 class="u-h3" >KPI Matrix (A7) — DAU/WAU/MAU · Revenue · AOV/ARPU/LTV · Churn · Engagement</h2>
   <div class="glass u-40712cd7" >
     <div class="u-b3373900" id="kpi-matrix" >
@@ -189,6 +227,8 @@
     </div>
     <p class="u-96d3b742" >منبع: کوئری‌های زندهٔ DB (app/kpi.py) — پنجره‌ها: ۲۴ ساعت / ۷ روز / ۳۰ روز / مادام‌العمر</p>
   </div>
+  </section>
+  <section class="admin-pane" data-pane="money">
   <h2 class="u-h3" >📊 Funnel (G1) — نرخ تبدیل قیف</h2>
   <div class="glass u-40712cd7" >
     <div class="u-14b4b58a" id="funnel-table" >
@@ -224,6 +264,8 @@
 
 
 
+  </section>
+  <section class="admin-pane" data-pane="health">
   <h2 class="u-h3" >هزینه AI — تفکیکی (H1.3)</h2>
   <div class="glass u-d1805458" >
     <div class="u-f0e9d3b4" id="llm-cost-panels" >
@@ -234,6 +276,8 @@
     </p>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="health">
   <h2 class="u-h3" >وضعیت هوش مصنوعی</h2>
   <div class="glass u-d1805458" >
     <div class="u-2b607f43" >
@@ -255,6 +299,8 @@
     </p>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="health">
   <h2 class="u-h3" >پروایدر و مدل هوش مصنوعی</h2>
   <div class="glass u-287f770e" >
     <p class="muted u-text-xs" >برای هر بخش، پروایدر و مدل را انتخاب کن. «خودکار» یعنی اول OpenCode Go و در صورت خطا DeepSeek مستقیم (اگر کلیدش ست باشد). بعد از ذخیره، سرویس را ریاستارت کن.</p>
@@ -285,6 +331,8 @@
     </div>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="config">
   <h2 class="u-h3" >کلیدها و رازها</h2>
   <p class="muted u-01c6fff3" >
     برای استقرار روی سرور جدید، کد/کلید هر بخش را اینجا وارد و ذخیره کنید؛ مقدار به‌صورت رمزنگاری‌شده در دیتابیس ذخیره می‌شود و دیگر نیازی به فایل env نیست. بعد از ذخیره، <b>سرویس را ریاستارت کنید</b> تا اعمال شود. اگر خالی بگذارید، به مقدار متغیر محیطی برمی‌گردد.
@@ -317,6 +365,8 @@
     {% endfor %}
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="sales">
   <h2 class="u-h3" >پلن‌ها</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-67556394" >
@@ -335,6 +385,8 @@
     </table>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="users">
   <h2 class="u-h3" >کاربران (آخرین ۵۰)</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-67556394" >
@@ -354,6 +406,8 @@
     </table>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="users">
   <h2 class="u-h3" >لاگ ممیزی (آخرین ۳۰)</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-4bb70c82" >
@@ -373,6 +427,8 @@
     </table>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="content">
   <h2 class="u-h3" >پرامپت‌ها (اورراید نسخه‌بندی‌شده)</h2>
   <p class="muted u-01c6fff3" >متن جایگزین پرامپت در تولید گزارش‌های بعدی — نسخه‌ی جدید، نسخه‌ی قبلی را غیرفعال می‌کند.</p>
   <div class="u-a542cbe6" >
@@ -389,6 +445,8 @@
     {% endfor %}
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="sales">
   <h2 class="u-h3" >سفارش‌ها (آخرین ۱۰۰)</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-ef475966" >
@@ -420,6 +478,8 @@
     </table>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="users">
   <h2 class="u-h3" >تسویه کیف پول (D3)</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-fe75108e" >
@@ -450,6 +510,8 @@
     </table>
   </div>
 
+  </section>
+  <section class="admin-pane" data-pane="sales">
   <h2 class="u-h3" >گزارش‌ها (آخرین ۲۰)</h2>
   <div class="glass u-d2cdd2b3" >
     <table class="u-ef475966" >
@@ -608,6 +670,8 @@
   </script>
 </div>
 
+  </section>
+  <section class="admin-pane" data-pane="money">
   <h2 class="u-h3" >اقتصاد اعتبار (A7) — قیمتها · گزارش فروش/خرج · اعطای دستی</h2>
   <div class="u-edbe0071" id="credit-panel" >
     <div class="credit-report"></div>
@@ -667,4 +731,5 @@
       <button onclick="grantCredit()" class="btn u-d05f97d8" >اعطا</button>
     </div>
   </div>
+  </section>
 {% endblock %}
