@@ -507,7 +507,13 @@ def api_create_chart(
     tokens = _chart_tokens(request)
     if chart.access_token:
         tokens[chart.id] = chart.access_token
-        resp.set_cookie(CHART_ACCESS_COOKIE, json.dumps(tokens),
+        # BUGFIX (prod 2026-08-27): raw JSON contains quotes/braces/spaces —
+        # set_cookie QUOTES such values («"{...}"») and real Chromium DROPS the
+        # cookie header entirely (tested in Playwright), so a guest who just
+        # created a chart got 303 → /birth-form?e=private and NEVER saw it.
+        # URL-quote the JSON → %7B%22...%7D — pure cookie-safe alphabet.
+        import urllib.parse as _up
+        resp.set_cookie(CHART_ACCESS_COOKIE, _up.quote(json.dumps(tokens), safe=""),
                         max_age=365 * 86400, httponly=True, samesite="lax",
                         secure=True)
     return resp
@@ -593,8 +599,16 @@ CHART_ACCESS_COOKIE = "chart_access"  # {chart_id: token} — anonymous ownershi
 
 def _chart_tokens(request: Request) -> dict:
     raw = request.cookies.get(CHART_ACCESS_COOKIE, "")
+    if not raw:
+        return {}
     try:
-        d = json.loads(raw)
+        import urllib.parse as _up
+        # BUGFIX (prod 2026-08-27): value is now URL-quoted by the setter.
+        # Legacy cookies (set before the fix) hold raw JSON — which set_cookie
+        # sent DOUBLE-QUOTED («"{...}"») — so also tolerate the quoted form.
+        d = json.loads(_up.unquote(raw))
+        if isinstance(d, str):           # legacy double-quoted JSON string
+            d = json.loads(d)
         return d if isinstance(d, dict) else {}
     except Exception:  # noqa: BLE001
         return {}

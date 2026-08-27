@@ -179,3 +179,58 @@ def test_create_order_inherits_profile_id(monkeypatch):
         # uses the credit3 pack plan which is still orderable via /api/orders.
         order, _url = create_order(s, "credit6", c.id)
         assert order.profile_id == p.id  # ← was None before the fix
+
+
+# ── BUGFIX 2026-08-27: chart_access cookie round-trip ─────
+# Real Chromium DROPS a cookie whose value contains quotes/braces (set_cookie
+# sent raw JSON → «"{...}"» → guest who just created a chart got 303 to
+# /birth-form and NEVER saw their chart). The setter now URL-quotes the JSON;
+# the reader unquotes and also tolerates legacy double-quoted values.
+
+def test_chart_tokens_roundtrip_urlquoted():
+    from urllib.parse import quote
+    from app.main import _chart_tokens
+    import json as _j
+
+    class _R:
+        def __init__(self, raw):
+            self.cookies = {"chart_access": raw}
+
+    tokens = {"abcd-1234": "tok_x-y_z", "efgh-5678": "tok2"}
+    quoted = quote(_j.dumps(tokens), safe="")
+    assert '"' not in quoted and "{" not in quoted  # browser-safe alphabet
+    # new %-quoted form (what the setter now emits, what Chromium keeps)
+    assert _chart_tokens(_R(quoted)) == tokens
+    # plain JSON (cookie jars that already URL-normalize) still works
+    assert _chart_tokens(_R(_j.dumps(tokens))) == tokens
+    # legacy double-quoted form («"{...}"» from the old set_cookie quoting)
+    legacy = '"' + _j.dumps(tokens).replace('"', '\\"') + '"'
+    assert _chart_tokens(_R(legacy)) == tokens
+
+
+def test_guest_chart_page_visible_after_creation():
+    """E2E regression: guest creates a chart via /api/charts, then the EXACT
+    Set-Cookie value must let /chart/{id} render (200), not 303 to birth-form.
+    TestClient runs over http — Secure cookies are dropped by the jar there,
+    so re-add the cookie with secure=False to mirror an https browser."""
+    from fastapi.testclient import TestClient
+    from app.main import app
+    with TestClient(app) as c:
+        r = c.post("/api/charts", data={
+            "calendar": "jalali", "year": 1373, "month": 6, "day": 15,
+            "time_known": "true", "hour": 6, "minute": 10,
+            "city_fa": "تهران", "province_fa": "تهران", "lat": 35.6892,
+            "lon": 51.3890, "zodiac": "tropical"})
+        assert r.status_code == 200
+        cid = r.json()["chart_id"]
+        set_cookie = r.headers.get("set-cookie", "")
+        assert "chart_access=" in set_cookie
+        raw = set_cookie.split("chart_access=")[1].split(";")[0]
+        # raw value must be URL-quoted (no quotes/braces) so browsers keep it
+        assert '"' not in raw and "{" not in raw, f"unsafe cookie value: {raw[:60]}"
+        # https-browser simulation: inject the cookie header directly
+        # (httpx drops Secure cookies on its http test transport)
+        c.cookies.delete("chart_access")
+        r2 = c.get(f"/chart/{cid}", follow_redirects=False,
+                   headers={"Cookie": f"chart_access={raw}"})
+        assert r2.status_code == 200, f"guest chart page redirected: {r2.status_code} {r2.headers.get('location','')}"
