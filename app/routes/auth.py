@@ -28,15 +28,23 @@ def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(.
                     cap: str | None = Form(None)):
     from app.auth import set_user_cookie, verify_otp
     from app.db import get_session
-    from app.main import claim_anonymous_charts
+    from app.main import _chart_tokens, claim_anonymous_charts
     from fastapi import HTTPException
     u = verify_otp(phone, code)
     if not u:
         raise HTTPException(401, "[ZAY-AUTH-001] کد نادرست یا منقضی شده")
+    # A5 (F-37): link guest chart(s) to the freshly-logged-in user.
+    # BUGFIX 2026-08-27: claim from the chart_access COOKIE (all guest charts)
+    # as well as the legacy `cap` form field — the login page never sent `cap`,
+    # so the guest chart vanished from the dashboard after login.
+    tokens = _chart_tokens(request) or {}
     if cap:
+        tokens = {**tokens, "_cap": cap}
+    if tokens:
         session = next(get_session())
         try:
-            claim_anonymous_charts(session, u, cap)  # A5 (F-37): link guest chart
+            for tok in set(tokens.values()):
+                claim_anonymous_charts(session, u, tok)  # idempotent per chart
         finally:
             session.close()
     return set_user_cookie(request, u.id)

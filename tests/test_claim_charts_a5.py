@@ -78,3 +78,40 @@ def test_claim_wrong_token_noop():
     uid = _mk_user()
     with Session(engine) as s:
         assert claim_anonymous_charts(s, uid, "cap_missing_" + uuid.uuid4().hex) == 0
+
+
+# ── BUGFIX 2026-08-27: login claims guest charts from the chart_access COOKIE ──
+# The login page never sent the `cap` form field, so after OTP login a guest's
+# chart (profile.user_id NULL) stayed unclaimed → vanished from the dashboard.
+# The verify endpoint now claims every token found in the chart_access cookie.
+
+def test_verify_claims_chart_from_cookie(monkeypatch):
+    import json as _j
+    from urllib.parse import quote
+    from app.routes.auth import auth_otp_verify
+
+    uid = _mk_user()
+    cap = "cap_cookie_" + uuid.uuid4().hex
+    cid = _chart(cap)  # guest chart (owner None)
+
+    class FakeRequest:
+        cookies = {"chart_access": quote(_j.dumps({"cid": cap}), safe="")}
+        def __init__(self):
+            pass
+
+    # monkeypatch verify_otp to return the user, set_user_cookie to no-op redirect
+    def fake_verify2(phone, code):
+        class U:
+            id = uid
+        return U()
+    def fake_set_cookie(req, user_id):
+        class R:
+            status_code = 303
+            headers = {}
+        return R()
+    monkeypatch.setattr("app.auth.verify_otp", fake_verify2)
+    monkeypatch.setattr("app.auth.set_user_cookie", fake_set_cookie)
+    # cap=None explicitly — calling the handler directly would otherwise pass
+    # the Form() default object into the DB query
+    auth_otp_verify(FakeRequest(), "09120000000", "12345", cap=None)
+    assert _profile_user(cid) == uid  # chart claimed from cookie
