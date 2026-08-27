@@ -14,7 +14,7 @@ import time
 
 from app.explore.cards import Card
 from app.report.prompt_builder import factors_block
-from app.report.qa import FORBIDDEN_PATTERNS
+from app.report.qa import FORBIDDEN_PATTERNS, _norm_token
 from app.report.rules import evaluate
 
 log = logging.getLogger("zayche.explore")
@@ -91,7 +91,14 @@ def qa_explore(result: dict | None, chart: dict, card: Card) -> list[str]:
     """Gates: valid JSON, banned words across ALL free text, evidence only
     from factors ACTIVE in ANY allowed domain of the card (union — a card
     may cite Mercury when mind is one of its domains), min 2 insights,
-    min lengths. Mirrors qa_section but with a card-wide whitelist."""
+    min lengths. Mirrors qa_section but with a card-wide whitelist.
+
+    Factor tokens are normalized (invisible chars stripped + Persian→English)
+    BEFORE the whitelist check — the prompt explicitly allows evidence in
+    Persian («به فارسی یا انگلیسی استاندارد») but `allowed` holds canonical
+    English engine names; without normalization the model's Persian evidence
+    («خورشید», «طالع», «عطارد») was ALWAYS rejected → 5 QA retries → the whole
+    exploration "silently" failed for every user (prod 2026-08-26)."""
     if result is None:
         return ["خروجی JSON نامعتبر است"]
 
@@ -139,13 +146,30 @@ def qa_explore(result: dict | None, chart: dict, card: Card) -> list[str]:
             errors.append(f"insight {i + 1}: شواهد (evidence) خالی است")
             continue
         for e in ev:
-            tok = str(e).split()[0].rstrip("،,.")
+            tok = _evidence_factor(str(e))
             if not allow_any and tok not in allowed:
                 errors.append(f"عامل {tok} خارج از عوامل فعال این کارت است")
                 break
     if total_words < 150:
         errors.append(f"کل بخش کوتاه است ({total_words} کلمه)")
     return errors
+
+
+_INVISIBLE = re.compile(r"[\u200c\u200d\u200b\u2060\ufeff\u202a\u202b\u202c\u202d\u202e]")
+
+
+def _evidence_factor(raw: str) -> str:
+    """Normalize one evidence item to a canonical engine factor name.
+
+    Accepts «Sun in Leo», «خورشید در اسد», «طالع», «Mercury», «عطارد»,
+    «ASC/Vx» etc. — strips invisible unicode (ZWNJ/ZWJ/BOM/bidi) which the
+    model sometimes emits between tokens (breaks exact-match), then maps
+    Persian factor names via the report QA table (report/qa.py F-27b)."""
+    t = _INVISIBLE.sub("", raw).strip()
+    t = (t.split()[0] if t.split() else t).split("/")[0]
+    t = t.rstrip("،,.;:()[]\"'«»")
+    canon = _norm_token(t)
+    return {"Asc": "ASC", "Mc": "MC"}.get(canon.title(), canon.title())
 
 
 async def generate_exploration(router, chart: dict, card: Card,
@@ -253,6 +277,17 @@ def refund_credit(session, user_id: str, exploration_id: str, cost: int = 1) -> 
     ).first()
     if orig:
         _c.refund(session, orig.id, "failed_generation")
+
+
+def restore_free_exploration(session, user_id: str) -> None:
+    """F5 fix (prod 2026-08-26) — a FAILED free exploration must not burn the
+    user's one-time freebie: they saw no result, so the loss-aversion funnel
+    owes them the first exploration. Called ONLY on the failure paths."""
+    from sqlalchemy import text
+    session.execute(text(
+        "UPDATE users SET free_exploration_used = false WHERE id = :uid"
+    ), params={"uid": user_id})
+    session.commit()
 
 
 def grant_free_credit(session, user_id: str, amount: int = 1) -> None:

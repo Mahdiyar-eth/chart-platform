@@ -88,7 +88,7 @@
     </div>
 
     <!-- insufficient credit -->
-    <div class="glass u-7995b8d8" x-show="needCredit" x-cloak>
+    <div class="glass u-7995b8d8" x-show="needCredit" x-cloak id="needCreditBox">
       <div class="u-1df3b92c" >اعتبار کافی نداری</div>
       <p class="muted u-093b6454" >هر کاوش ۱ اعتبار است. می‌توانی پک اعتبار بخری — اعتبارت هرگز منقضی نمی‌شود.</p>
       <div class="u-6002dd78" >
@@ -171,11 +171,14 @@ function exploreApp() {
           }
         })
         .catch((e) => {
-          if (self.needCredit) return;
           const msg = (e && e.name === "AbortError")
             ? "تحلیل بیش از حد طول کشید — اعتبارت برنگشته باشد به‌زودی خودکار برمی‌گردد. دوباره امتحان کن."
             : (e.message || "خطا");
-          showToast(msg, false);
+          showToast(msg, false);          // ALWAYS surface the failure — silent resets read as «کار نمی‌کند»
+          if (self.needCredit) {          // ...and put the credit CTA on screen
+            setTimeout(() => { const el = document.getElementById("needCreditBox"); if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 150);
+            return;
+          }
         })
         .finally(() => {
           clearTimeout(killer); clearInterval(self._tick);

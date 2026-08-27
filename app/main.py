@@ -3508,7 +3508,7 @@ async def api_explore_start(
     SSE: status → done(result) | error. Failed generation → auto refund."""
     from fastapi.responses import StreamingResponse
     from app.explore.cards import CARD_MAP
-    from app.explore.service import generate_exploration, spend_credit, refund_credit, mark_free_exploration
+    from app.explore.service import spend_credit, mark_free_exploration
     from app.models import Exploration
 
     card = CARD_MAP.get(card_key)
@@ -3546,12 +3546,15 @@ async def api_explore_start(
     async def event_stream():
         try:
             from app.core.llm import build_chat_router
+            from app.explore.service import generate_exploration, refund_credit, restore_free_exploration
             yield "event: status\ndata: {\"status\":\"analysing\"}\n\n"
             result, metrics = await generate_exploration(
                 build_chat_router(), chart.chart_json, card,
                 exploration_id=exp.id, user_id=user.id)
             if result is None:
                 refund_credit(session, user.id, exp.id, charged)
+                if charged == 0:
+                    restore_free_exploration(session, user.id)  # don't burn the freebie on failure
                 with Session(engine) as s2:
                     e = s2.get(Exploration, exp.id)
                     e.status = "failed"
@@ -3571,6 +3574,8 @@ async def api_explore_start(
         except Exception as e:  # noqa: BLE001 — stream must not hang the client
             try:
                 refund_credit(session, user.id, exp.id, charged)
+                if charged == 0:
+                    restore_free_exploration(session, user.id)  # don't burn the freebie on failure
                 with Session(engine) as s2:
                     e2 = s2.get(Exploration, exp.id)
                     e2.status = "failed"
