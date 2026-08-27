@@ -116,13 +116,19 @@ def qa_explore(result: dict | None, chart: dict, card: Card) -> list[str]:
             errors.append(f"عبارت ممنوع «{pat}» در متن")
             break
 
-    # union of active factors across ALL card domains
+    # union of active factors across ALL card domains, RELAXED to any factor
+    # active anywhere in this chart (prod 2026-08-26): the model routinely
+    # enriches a card with other REAL chart factors (Moon/Saturn in a
+    # personality card) — card-domain-strict matching made the WHOLE
+    # generation fail 5/5 retries for every real user. QA now guards against
+    # HALLUCINATION (factors that don't exist in the chart), while the card's
+    # `focus` still steers the content toward the right factors.
     allowed: set[str] = set()
-    for d in card.domains:
-        try:
-            allowed |= {r["factor"] for r in evaluate(chart).get(d, [])}
-        except Exception:  # noqa: BLE001
-            pass
+    try:
+        for dom_rules in evaluate(chart).values():
+            allowed |= {r["factor"] for r in dom_rules}
+    except Exception:  # noqa: BLE001
+        pass
     allow_any = not allowed
 
     insights = result.get("insights", [])
@@ -156,19 +162,25 @@ def qa_explore(result: dict | None, chart: dict, card: Card) -> list[str]:
 
 
 _INVISIBLE = re.compile(r"[\u200c\u200d\u200b\u2060\ufeff\u202a\u202b\u202c\u202d\u202e]")
+# wrapper words the model prefixes to a factor («جنبه خورشید», «عامل زحل»)
+_WRAP_WORDS = {"جنبه", "عامل", "سیاره", "نقش", "تأثیر", "تاثیر", "انرژی",
+               "برج", "رابطه", "خانه", "عنصر", "موقعیت"}
 
 
 def _evidence_factor(raw: str) -> str:
     """Normalize one evidence item to a canonical engine factor name.
 
-    Accepts «Sun in Leo», «خورشید در اسد», «طالع», «Mercury», «عطارد»,
-    «ASC/Vx» etc. — strips invisible unicode (ZWNJ/ZWJ/BOM/bidi) which the
-    model sometimes emits between tokens (breaks exact-match), then maps
-    Persian factor names via the report QA table (report/qa.py F-27b)."""
+    Accepts «Sun in Leo», «خورشید در اسد», «جنبه خورشید», «طالع», «Mercury»,
+    «عطارد», «ASC/Vx» etc. — strips invisible unicode (ZWNJ/ZWJ/BOM/bidi)
+    which the model sometimes emits between tokens (breaks exact-match),
+    then maps Persian factor names via the report QA table (report/qa.py
+    F-27b). Trailing context («in Leo», «در اسد», «و زهره») is dropped."""
     t = _INVISIBLE.sub("", raw).strip()
-    t = (t.split()[0] if t.split() else t).split("/")[0]
-    t = t.rstrip("،,.;:()[]\"'«»")
-    canon = _norm_token(t)
+    toks = t.split()
+    while toks and toks[0].rstrip("،,.;:()[]\"'«»") in _WRAP_WORDS:
+        toks = toks[1:]
+    first = (toks[0] if toks else t).split("/")[0].rstrip("،,.;:()[]\"'«»")
+    canon = _norm_token(first)
     return {"Asc": "ASC", "Mc": "MC"}.get(canon.title(), canon.title())
 
 

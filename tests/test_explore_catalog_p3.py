@@ -328,9 +328,11 @@ def test_build_prompt_only_uses_card_domains():
 
 def test_qa_accepts_persian_and_invisible_char_evidence():
     """Prod bug 2026-08-26 — explore QA rejected the model's Persian evidence
-    («خورشید», «طالع», «عطارد») because the whitelist holds canonical English
+    («خورشید», «طالع», «عطارد») because the whitelist held canonical English
     names; every card then failed all 5 QA retries and the user saw nothing.
-    Evidence must be normalized (invisible chars + Persian→English) first."""
+    Evidence must be normalized (invisible chars + Persian→English) first.
+    QA stays anti-hallucination: a factor that does NOT exist in the chart
+    (garbage token) is still rejected."""
     from app.explore.cards import CARD_MAP
     from app.explore.service import qa_explore
     chart = TEST_CHART
@@ -343,12 +345,17 @@ def test_qa_accepts_persian_and_invisible_char_evidence():
             {"insight": long_i1, "practical_advice": "با تمرکز روی این الگو تصمیم‌های بهتری می‌گیری.",
              "evidence": ["خورشید در \u200cاسد", "Sun in Leo"]},
             {"insight": long_i2, "practical_advice": "از این شناخت در تعاملات روزانه استفاده کن.",
-             "evidence": ["طالع/ASC", "عطارد", "Mercury"]},
+             "evidence": ["جنبه طالع", "عطارد", "Mercury"]},
         ],
     }
     errs = qa_explore(base, chart, card)
-    # only a *genuine* off-card factor (Moon) must trip the whitelist
     assert not any("خارج از عوامل" in e for e in errs), errs
+
+    # anti-hallucination: a factor that is NOT in the chart at all still fails
+    base2 = json.loads(json.dumps(base))
+    base2["insights"][0]["evidence"] = ["Zorgon"]
+    errs2 = qa_explore(base2, chart, card)
+    assert any("خارج از عوامل" in e for e in errs2), errs2
 
 
 # ── F5 funnel: first exploration free (loss aversion) ───────────────────────
