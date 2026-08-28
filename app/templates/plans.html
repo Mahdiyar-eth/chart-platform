@@ -271,7 +271,16 @@ function purchase() {
           body: JSON.stringify({action_key: actionKey, chart_id: chartId})
         });
         const j = await r.json().catch(() => ({}));
-        if (r.ok && j.ok) { this.busyMsg='باز شد! در حال بارگذاری…'; this.busyStep=3; showToast('باز شد! در حال بارگذاری…', true); location.href = '/account'; }
+        if (r.ok && j.ok) {
+          const ak = actionKey || '';
+          if (ak.startsWith('report')) {
+            this.busyMsg='اعتبارت کم شد — در حال آماده‌سازی گزارش…'; this.busyStep=3;
+            showToast('اعتبارت کم شد ✅ حالا گزارشت ساخته می‌شود...', true);
+            setTimeout(() => location.href = '/chart/' + chartId + '?autostart=' + encodeURIComponent(ak), 600);
+          } else {
+            this.busyMsg='باز شد! در حال بارگذاری…'; this.busyStep=3; showToast('باز شد! در حال بارگذاری…', true); location.href = '/account';
+          }
+        }
         else if (j.login_required) { location.href = '/account/login?next=/plans'; }
         else if (r.status === 402) { this.busy=false; this.busyStep=0; showToast('اعتبار کافی نیست — از پک اعتبار بخر', false); location.href = '/credits'; }
         else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; this.busyStep=0; }

@@ -2,6 +2,15 @@
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
 <div class="u-49826953" x-data="reportState()" x-init="init()">
+  <!-- FIX B: report progress as FIXED top banner — always visible without scroll -->
+  <div class="report-fixed-banner" x-show="repStatus === 'queued' || repStatus === 'running'" x-cloak role="status" aria-live="polite">
+    <div class="report-fixed-inner">
+      <span class="report-fixed-title">⏳ در حال نوشتن گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳</span>
+      <span class="report-fixed-pct" x-text="Math.round(Math.min(96, Math.round(100 * Math.max(repSections,1) / 13))) + '%'"></span>
+    </div>
+    <div class="rp-track rp-track--fixed"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'" ></div></div>
+    <span class="report-fixed-hint">می‌توانی این صفحه را ببندی — گزارش در «گزارش‌های من» ذخیره می‌شود</span>
+  </div>
   <a href="/birth-form" class="muted u-05eeadb6" >→ فرم جدید</a>
   <h1 class="u-note-gold" >چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
@@ -263,7 +272,7 @@ function reportState(){
       try{
         const p = await fetch('/api/charts/{{ chart.id }}/preview?t={{ access_token }}');
         const pd = await p.json();
-        this.insights = (pd.insights || []).slice(0, 5);
+        this.insights = (pd.insights || []).slice(0, 7);
         this.preview = {
           patterns: pd.patterns || [],
           llm_patterns: pd.llm_patterns || [],  // R12/P1-4: LLM patterns get their own block
@@ -278,6 +287,18 @@ function reportState(){
       const d = await r.json();
       if(d.status === 'queued' || d.status === 'running'){ this.repStatus = d.status; this.repSections = d.sections_count || 0; this._poll(); }
       else if(d.status === 'done' || d.status === 'degraded'){ this.repStatus = d.status; this.pdfUrl = d.pdf_url; window.umami?.track('report_created'); }
+      // FIX A: autostart from ?autostart=report_basic (after purchase from /plans)
+      else {
+        const qs = new URLSearchParams(location.search);
+        const auto = qs.get('autostart');
+        if(auto && auto.startsWith('report') && !this.repStatus){
+          // bought entitlement, but no report yet → auto-start now so they see progress immediately
+          // Use a fake event to reuse genReport's POST logic without a button node
+          try { await this.genReport({currentTarget: {disabled:false, style:{}}}); } catch(e){}
+          // clean URL without reload
+          try { history.replaceState({}, '', location.pathname + location.search.replace(/[\?&]autostart=[^&]+/,'').replace(/^&/,'?')); } catch(e){}
+        }
+      }
     },
     async genReport(e){
       window.track && window.track('report_started');
