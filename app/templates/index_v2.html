@@ -1,0 +1,198 @@
+{% extends "base_v2.html" %}
+{% block title %}زایچه — نقشهٔ آسمان تو، دقیقاً لحظه‌ای که به دنیا آمدی{% endblock %}
+{% block body_attrs %}data-page="landing-v2"{% endblock %}
+
+{% block head_css %}
+<link rel="stylesheet" href="/static/css/landing.css?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+
+{# ═══════════════════ HERO ═══════════════════ #}
+<header class="lx-hero">
+  <span class="gx-eyebrow">محاسبهٔ نجومی · نه فال</span>
+  <h1 class="gx-h1 lx-hero-title">
+    آسمان، دقیقاً لحظه‌ای که<br>
+    <span class="lx-shine">به دنیا آمدی</span>
+  </h1>
+  <p class="gx-lead lx-hero-lead">
+    روز، ساعت و شهر تولدت را بگو تا نقشهٔ واقعی آن لحظه ترسیم شود.
+    بعد هر جمله‌ای که دربارهٔ خودت می‌خوانی، شاهدش را همراه دارد:
+    <b class="gx-gold">کدام سیاره، در کدام خانه</b>.
+  </p>
+
+  <div class="lx-hero-cta">
+    <a class="gx-btn gx-btn--primary gx-btn--lg" href="/birth-form" data-track="hero_free_chart">
+      <svg aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg>
+      چارت رایگان من
+    </a>
+    <a class="gx-btn gx-btn--ghost gx-btn--lg" href="#lx-compare">ببین چه می‌گیری</a>
+  </div>
+
+  <ul class="lx-trust">
+    <li><svg aria-hidden="true"><use href="/static/icons.svg#icon-check"/></svg> بدون ثبت‌نام</li>
+    <li><svg aria-hidden="true"><use href="/static/icons.svg#icon-check"/></svg> Swiss Ephemeris</li>
+    <li><svg aria-hidden="true"><use href="/static/icons.svg#icon-check"/></svg> ۳۳۷ شهر ایران</li>
+  </ul>
+</header>
+
+{# ═══════════════════ FREE CHART — what you get for nothing ═══════════════════ #}
+<section class="gx-mt-5 gx-reveal">
+  <div class="lx-sec-head">
+    <h2 class="gx-h2">چارت رایگانت واقعاً کامل است</h2>
+    <p class="gx-muted">بدون ثبت‌نام، بدون پرداخت — این‌ها را همین حالا می‌گیری</p>
+  </div>
+
+  <div class="gx-grid">
+    {% set free_items = [
+      ('icon-compass', 'چرخ چارت تعاملی', 'روی هر سیاره بزن تا معنایش را ببینی'),
+      ('icon-grid',    'جدول کامل',       '۱۰ سیاره + کایرون + لیلیت + گره‌ها با برج، خانه و درجه'),
+      ('icon-star',    '۷ بینش شخصی',     'هر کدام با شاهد نجومی، نه جملهٔ کلی'),
+      ('icon-sun',     'آسمان امروز',     'گذرهای امروز نسبت به چارت خودت'),
+      ('icon-clock',   'بازبینی ساعت تولد', 'ساعت دقیق نمی‌دانی؟ رایگان تخمین می‌زنیم'),
+      ('icon-heart',   'نمرهٔ سازگاری',   'خلاصهٔ رابطهٔ دو چارت، رایگان')
+    ] %}
+    {% for icon, title, desc in free_items %}
+    <article class="gx-card lx-free-card">
+      <span class="lx-ic"><svg aria-hidden="true"><use href="/static/icons.svg#{{ icon }}"/></svg></span>
+      <b>{{ title }}</b>
+      <span class="gx-faint">{{ desc }}</span>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+{# ═══════════════════ THE HONEST COMPARISON — the pricing anchor ═══════════════════ #}
+<section id="lx-compare" class="gx-mt-5 gx-reveal">
+  <div class="lx-sec-head">
+    <span class="gx-eyebrow">مقایسهٔ صادقانه</span>
+    <h2 class="gx-h2">همان عمق، یک‌پانزدهم قیمت</h2>
+    <p class="gx-muted">
+      گزارش‌های عمیق خارجی گران‌اند چون واقعاً اختصاصی‌اند. ما همان عمق را به فارسی می‌نویسیم.
+    </p>
+  </div>
+
+  <div class="lx-compare">
+    <div class="lx-compare-row lx-compare-row--them">
+      <div class="lx-compare-who">
+        <b>astro.com</b>
+        <span class="gx-faint">گزارش روان‌شناختی — Liz Greene</span>
+      </div>
+      <div class="lx-compare-price">
+        <span class="lx-price-fx">۷۴٫۹۰ دلار</span>
+        <span class="gx-faint gx-num">≈ ۱۵٬۰۰۰٬۰۰۰ تومان</span>
+      </div>
+    </div>
+
+    <div class="lx-compare-row lx-compare-row--them">
+      <div class="lx-compare-who">
+        <b>CHANI</b>
+        <span class="gx-faint">اشتراک سالانه</span>
+      </div>
+      <div class="lx-compare-price">
+        <span class="lx-price-fx">۹۰ دلار / سال</span>
+        <span class="gx-faint gx-num">≈ ۱۸٬۰۰۰٬۰۰۰ تومان</span>
+      </div>
+    </div>
+
+    <div class="lx-compare-row lx-compare-row--us">
+      <div class="lx-compare-who">
+        <b class="gx-gold">زایچه — شناخت کامل</b>
+        <span class="gx-faint">۳۰ تا ۴۰ صفحه، فارسی، اختصاصی برای چارت تو</span>
+      </div>
+      <div class="lx-compare-price">
+        <span class="lx-price-us gx-num">۱٬۰۰۰٬۰۰۰ تومان</span>
+        <span class="gx-badge">۱۰ اعتبار</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="gx-faint gx-center gx-mt-3">
+    نرخ دلار مبنا: ۲۰۰٬۰۰۰ تومان · قیمت‌های خارجی از سایت رسمی همان سرویس
+  </p>
+</section>
+
+{# ═══════════════════ WHAT'S INSIDE THE DEEP REPORT ═══════════════════ #}
+<section class="gx-mt-5 gx-reveal">
+  <div class="lx-sec-head">
+    <h2 class="gx-h2">داخل گزارش کامل چیست؟</h2>
+    <p class="gx-muted">۱۷ فصل — هر فصل با شاهد نجومی و راهکار عملی</p>
+  </div>
+
+  <div class="gx-grid">
+    {% set chapters = [
+      ('icon-user',      'شخصیت و هویت',   'چه کسی هستی، پیش از آنکه دنیا شکلت دهد'),
+      ('icon-heart',     'عشق و رابطه',    'چه الگویی را تکرار می‌کنی و چرا'),
+      ('icon-tag',       'شغل و مسیر',     'با کدام انرژی کار کنی تا خسته نشوی'),
+      ('icon-wallet',    'پول و ثروت',     'رابطه‌ات با پول، از روی خانهٔ دوم و هشتم'),
+      ('icon-refresh',   'باگ‌های تو و رفعشان', '۵ الگوی سختِ چارت + تمرین عملی برای هرکدام'),
+      ('icon-sparkles',  'نقشهٔ موفقیت',   'استعداد اصلی و چطور به پول تبدیلش کنی'),
+      ('icon-calendar',  '۱۲ ماه پیش رو',  'گذرهای مهم با تاریخ شمسی، چه کن و چه نکن'),
+      ('icon-book-open', 'کارت یک‌صفحه‌ای','خلاصهٔ خودت، قابل اشتراک‌گذاری')
+    ] %}
+    {% for icon, title, desc in chapters %}
+    <article class="gx-card lx-chapter">
+      <span class="lx-ic"><svg aria-hidden="true"><use href="/static/icons.svg#{{ icon }}"/></svg></span>
+      <b>{{ title }}</b>
+      <span class="gx-faint">{{ desc }}</span>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="lx-formats gx-mt-4">
+    <span class="gx-chip">📄 PDF</span>
+    <span class="gx-chip">📝 Word قابل ویرایش</span>
+    <span class="gx-chip">🎧 نسخهٔ صوتی (۱ اعتبار)</span>
+    <span class="gx-chip">📱 خواندن در وب‌اپ</span>
+  </div>
+</section>
+
+{# ═══════════════════ SAMPLE — prove the writing quality ═══════════════════ #}
+<section class="gx-mt-5 gx-reveal">
+  <div class="lx-sec-head">
+    <span class="gx-eyebrow">نمونهٔ واقعی</span>
+    <h2 class="gx-h2">قلم ما این‌طور می‌نویسد</h2>
+  </div>
+
+  <article class="gx-card gx-card--glow lx-sample">
+    <span class="gx-badge">فصل: باگ‌های تو و رفعشان</span>
+    <p class="lx-sample-body">
+      زحل در خانهٔ هفتم تو نشسته — همان خانه‌ای که روابط نزدیک را می‌سازد.
+      این یعنی در رابطه‌ها زود احساس مسئولیت می‌کنی و دیر اعتماد.
+      معمولاً کسی را انتخاب می‌کنی که «باید» مراقبش باشی، بعد از خستگی گله می‌کنی
+      که چرا کسی مراقب تو نیست.
+    </p>
+    <p class="lx-sample-evidence">
+      <b>شاهد نجومی:</b> زحل · خانهٔ ۷ · مقابلهٔ ۳ درجه با خورشید
+    </p>
+    <p class="lx-sample-action">
+      <b>راهکار:</b> این هفته یک بار — فقط یک بار — چیزی را که خودت لازم داری
+      مستقیم بخواه، بدون اینکه اول کاری برای طرف مقابل انجام دهی.
+    </p>
+  </article>
+</section>
+
+{# ═══════════════════ HOW IT WORKS ═══════════════════ #}
+<section class="gx-mt-5 gx-reveal">
+  <div class="lx-sec-head"><h2 class="gx-h2">در سه قدم</h2></div>
+  <ol class="lx-steps">
+    <li><span class="lx-step-n">۱</span><b>تاریخ، ساعت و شهر تولدت را بگو</b><span class="gx-faint">کمتر از یک دقیقه — ساعت دقیق را هم نمی‌دانی؟ رایگان تخمین می‌زنیم</span></li>
+    <li><span class="lx-step-n">۲</span><b>چارت رایگانت را ببین</b><span class="gx-faint">چرخ تعاملی، جدول کامل، ۷ بینش شخصی</span></li>
+    <li><span class="lx-step-n">۳</span><b>هر وقت خواستی، عمیق شو</b><span class="gx-faint">گفت‌وگو با چارتت یا گزارش کامل ۳۰ صفحه‌ای</span></li>
+  </ol>
+</section>
+
+{# ═══════════════════ FINAL CTA ═══════════════════ #}
+<section class="lx-final gx-reveal">
+  <h2 class="gx-h2">نقشهٔ آسمانت منتظر است</h2>
+  <p class="gx-muted">رایگان، بدون ثبت‌نام، در کمتر از یک دقیقه</p>
+  <a class="gx-btn gx-btn--primary gx-btn--lg" href="/birth-form" data-track="footer_free_chart">
+    <svg aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg>
+    چارت رایگان من
+  </a>
+  <p class="gx-faint gx-mt-3">
+    زایچه ابزار خودشناسی است، نه پیش‌گویی قطعی.
+  </p>
+</section>
+
+{% endblock %}

@@ -315,8 +315,19 @@ def health_check():
 # ─────────────────────────── pages ───────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
-def landing(request: Request, ref: str = ""):
-    resp = templates.TemplateResponse(request, "index.html", {"title": "چارت تولد — آینهی خودشناسی", "ref": ref})
+def landing(request: Request, ref: str = "", v: str = ""):
+    """Landing page.
+
+    GALACTIC-V2: the ground-up redesign ships behind a flag so the live funnel
+    is never at risk while it is being built. Resolution order:
+      1. explicit `?v=2` / `?v=1`   — lets us screenshot either shell on prod
+      2. env ZAYCHE_UI_V2=1         — the eventual global switch
+      3. default                    — the current (v1) shell
+    """
+    import os as _os
+    use_v2 = (v == "2") or (v != "1" and _os.getenv("ZAYCHE_UI_V2") == "1")
+    tpl = "index_v2.html" if use_v2 else "index.html"
+    resp = templates.TemplateResponse(request, tpl, {"title": "چارت تولد — آینه‌ی خودشناسی", "ref": ref})
     if ref and len(ref) <= 20:
         resp.set_cookie("chart_ref", ref, max_age=7 * 86400, httponly=True, samesite="lax", secure=True)
     return resp

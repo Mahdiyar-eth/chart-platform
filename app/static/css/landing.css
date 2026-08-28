@@ -1,0 +1,111 @@
+/* ══════════════════════════════════════════════════════════════
+ *  Zayche Galactic v2 — landing page
+ *  Loaded only by index_v2.html. Depends on tokens-v2.css + galactic.css.
+ *  Same contract: transform/opacity only, zero backdrop-filter.
+ * ══════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────── hero ───────────────────────── */
+.lx-hero{ padding:var(--sp-7) 0 var(--sp-6); text-align:center; max-width:760px; margin-inline:auto; }
+.lx-hero-title{ margin-bottom:var(--sp-4); }
+
+/* the one decorative flourish: a slow gold sweep across the key phrase.
+   background-position is compositor-friendly on a text clip. */
+.lx-shine{
+  background:linear-gradient(100deg,
+    hsl(var(--c-gold)) 0%, hsl(var(--c-gold-deep)) 28%,
+    #FFF3C4 46%, hsl(var(--c-gold)) 64%, hsl(var(--c-gold-deep)) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+  animation:lx-sweep 7s var(--ease-in-out) infinite;
+}
+@keyframes lx-sweep{ 0%,100%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } }
+
+.lx-hero-lead{ max-width:600px; margin-inline:auto; }
+.lx-hero-cta{ display:flex; gap:var(--sp-3); justify-content:center; flex-wrap:wrap; margin-top:var(--sp-5); }
+@media (max-width:520px){
+  .lx-hero-cta{ flex-direction:column; }
+  .lx-hero-cta .gx-btn{ width:100%; }
+}
+
+.lx-trust{
+  list-style:none; margin:var(--sp-5) 0 0; padding:0;
+  display:flex; gap:var(--sp-4); justify-content:center; flex-wrap:wrap;
+}
+.lx-trust li{ display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-sm); color:var(--text-muted); }
+.lx-trust svg{ width:15px; height:15px; color:hsl(var(--c-mint)); }
+
+/* ───────────────────────── section heads ───────────────────────── */
+.lx-sec-head{ text-align:center; max-width:620px; margin:0 auto var(--sp-5); }
+.lx-sec-head p{ margin:0; }
+
+/* ───────────────────────── cards ───────────────────────── */
+.lx-ic{
+  width:42px; height:42px; border-radius:var(--r-md);
+  display:grid; place-items:center; flex:none;
+  background:var(--accent-soft); color:var(--accent);
+  margin-bottom:var(--sp-3);
+}
+.lx-ic svg{ width:21px; height:21px; }
+
+.lx-free-card,.lx-chapter{ display:flex; flex-direction:column; gap:6px; }
+.lx-free-card b,.lx-chapter b{ font-size:var(--fs-md); }
+
+/* ───────────────────────── the price anchor ───────────────────────── */
+.lx-compare{ display:flex; flex-direction:column; gap:var(--sp-3); max-width:720px; margin-inline:auto; }
+.lx-compare-row{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4);
+  padding:var(--sp-4) var(--sp-5);
+  border:1px solid var(--border); border-radius:var(--r-lg);
+  background:var(--surface);
+}
+.lx-compare-row--them{ opacity:.82; }
+.lx-compare-row--us{
+  border-color:hsl(var(--c-gold) / .45);
+  background:var(--accent-soft);
+  box-shadow:0 12px 40px rgba(0,0,0,.22);
+}
+.lx-compare-who{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.lx-compare-who b{ font-size:var(--fs-md); }
+.lx-compare-price{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; text-align:end; flex:none; }
+.lx-price-fx{ font-size:var(--fs-md); font-weight:var(--fw-bold); color:var(--text-muted); text-decoration:line-through; text-decoration-thickness:1px; }
+.lx-price-us{ font-size:var(--fs-xl); font-weight:var(--fw-black); color:var(--accent); }
+
+@media (max-width:560px){
+  .lx-compare-row{ flex-direction:column; align-items:flex-start; gap:var(--sp-2); }
+  .lx-compare-price{ align-items:flex-start; text-align:start; }
+}
+
+/* ───────────────────────── formats + sample ───────────────────────── */
+.lx-formats{ display:flex; gap:var(--sp-2); flex-wrap:wrap; justify-content:center; }
+
+.lx-sample{ max-width:720px; margin-inline:auto; }
+.lx-sample-body{ font-size:var(--fs-md); line-height:var(--lh-loose); margin:var(--sp-3) 0; }
+.lx-sample-evidence,.lx-sample-action{
+  font-size:var(--fs-sm); line-height:var(--lh-normal);
+  padding:var(--sp-3); border-radius:var(--r-md);
+  background:var(--surface-sunk); margin:var(--sp-3) 0 0;
+}
+.lx-sample-evidence b{ color:var(--accent); }
+.lx-sample-action b{ color:hsl(var(--c-aqua)); }
+
+/* ───────────────────────── steps ───────────────────────── */
+.lx-steps{ list-style:none; margin:0; padding:0; display:grid; gap:var(--sp-4); max-width:720px; margin-inline:auto;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+.lx-steps li{ display:flex; flex-direction:column; gap:6px; padding:var(--sp-4);
+  border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.lx-step-n{
+  width:32px; height:32px; border-radius:var(--r-full);
+  display:grid; place-items:center; margin-bottom:var(--sp-2);
+  background:var(--accent); color:var(--accent-ink);
+  font-weight:var(--fw-black); font-size:var(--fs-sm);
+}
+
+/* ───────────────────────── final cta ───────────────────────── */
+.lx-final{
+  text-align:center; margin-top:var(--sp-8);
+  padding:var(--sp-7) var(--sp-5);
+  border:1px solid hsl(var(--c-gold) / .28); border-radius:var(--r-xl);
+  background:radial-gradient(120% 100% at 50% 0%, hsl(var(--c-gold) / .10), transparent 70%), var(--surface);
+}
+.lx-final .gx-btn{ margin-top:var(--sp-4); }
