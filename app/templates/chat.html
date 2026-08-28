@@ -20,15 +20,23 @@
 
   <div class="u-ac7cd697" id="msgs" x-show="!locked" x-ref="box">
     <template x-for="m in msgs" :key="m.id">
-      <div class="u-34b6e1f7 u-933b315d" :>
+      <div class="u-34b6e1f7 u-933b315d" :class="m.me ? 'msg-me' : 'msg-ai'" :>
         <span x-text="m.text" :class="m.streaming ? 'streaming-cursor' : ''"></span>
+        <span x-show="m.streaming && !m.text" class="chat-typing" aria-live="polite">در حال نوشتن<span class="dots"><i></i><i></i><i></i></span></span>
       </div>
     </template>
+    <div x-show="busy && !msgs.some(m=>m.streaming)" class="chat-typing chat-typing--standalone" aria-live="polite">در حال فکر کردن<span class="dots"><i></i><i></i><i></i></span></div>
   </div>
 
   <style>
   .streaming-cursor::after{content:'▍';color:var(--gold);animation:blink 1s step-start infinite;margin-right:2px;}
   @keyframes blink{50%{opacity:0;}}
+  .chat-typing{ display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:.84rem; }
+  .chat-typing .dots{ display:inline-flex; gap:3px; }
+  .chat-typing .dots i{ width:6px; height:6px; border-radius:50%; background:var(--gold); animation:typingDot 1.2s infinite; }
+  .chat-typing .dots i:nth-child(2){ animation-delay:.2s; } .chat-typing .dots i:nth-child(3){ animation-delay:.4s; }
+  @keyframes typingDot{ 0%,80%,100%{ opacity:.3; transform:scale(.8);} 40%{ opacity:1; transform:scale(1);} }
+  .chat-typing--standalone{ padding:10px 14px; margin-top:8px; }
   </style>
 
   <form class="u-ab6fd1c0" @submit.prevent="send()" x-show="!locked" >
@@ -42,12 +50,12 @@
       <div class="u-20bb8944" >
         <svg class="u-8fd988a7" aria-hidden="true"><use href="/static/icons.svg#icon-lock"/></svg>
       </div>
-      <p class="u-5f7269c9" >گفت‌وگو با چارت تولد</p>
+      <p class="u-5f7269c9" >گفت‌وگو با چارت — با اعتبار باز می‌شود</p>
       <p class="u-b93f88bd" >
-        این قابلیت بخشی از پلن‌های <b>طلایی</b> و <b>ماهانه</b> است. با فعال‌سازی، از چارتت هر چیزی بپرس: شخصیت، شغل، روابط، انرژی، آینده...
+        با <b>۲ اعتبار</b> گفت‌وگو را برای همین چارت باز کن — ۲۰ سؤال، هر سؤال با شاهد چارت خودت. اعتبارها منقضی نمی‌شوند.
       </p>
       <a class="btn btn-lg u-5e4603b4" href="/plans?chart={{ chart_id }}" >
-        <svg class="u-icon-18" aria-hidden="true"><use href="/static/icons.svg#icon-tag"/></svg> خرید و فعال‌سازی
+        <svg class="u-icon-18" aria-hidden="true"><use href="/static/icons.svg#icon-tag"/></svg> دیدن همه محصول‌ها
       </a>
 
       <div class="mt-3">

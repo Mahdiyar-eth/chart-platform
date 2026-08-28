@@ -152,11 +152,35 @@ a:hover{ color:var(--gold-text,var(--gold)); }
     .muted{ color:var(--muted); }
     .gold{ color:var(--gold-text,var(--gold)); }
     .hidden{ display:none !important; }
-    /* progress bar (glass step-by-step) */
-    .steps{ display:flex; gap:8px; margin:18px 0 26px; }
-    .step-dot{ flex:1; height:6px; border-radius:99px; background:var(--nav-ink-a12, var(--w-d12, rgba(255,255,255,.12))); overflow:hidden; }
+    /* progress bar (glass step-by-step) — unified design */
+    .form-progress{ margin:16px 0 24px; }
+    .form-progress-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:.84rem; }
+    .form-progress-label{ color:var(--txt); font-weight:700; }
+    .form-progress-label b{ color:var(--gold-text,var(--gold)); }
+    .form-progress-pct{ color:var(--muted); font-weight:800; font-variant-numeric:tabular-nums; }
+    .steps{ display:flex; gap:8px; margin:0 0 10px; }
+    .step-dot{ flex:1; height:8px; border-radius:99px; background:var(--nav-ink-a12, var(--w-d12, rgba(255,255,255,.12))); overflow:hidden; border:none; padding:0; cursor:pointer; transition:background .2s; }
     .step-dot > i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--gold),var(--gold-deep)); border-radius:99px; transition:width .4s var(--ease); }
     .step-dot.on > i{ width:100%; }
+    .step-dot.active{ box-shadow:0 0 0 2px var(--gold-dim, rgba(212,175,55,.35)); }
+    .step-dot:disabled{ cursor:default; }
+    .form-progress-titles{ display:flex; gap:6px; font-size:.68rem; line-height:1.5; }
+    .form-progress-titles span{ flex:1; text-align:center; color:var(--muted-2); padding:2px 0; border-radius:6px; transition:color .2s, background .2s; }
+    .form-progress-titles span.active{ color:var(--gold-text,var(--gold)); font-weight:800; background:var(--gold-soft, rgba(212,175,55,.12)); }
+    .form-progress-titles span.done{ color:var(--gold-text,var(--gold)); }
+    /* funnel progress (chart → explore → deep) */
+    .funnel-progress{ margin:14px 0 18px; }
+    .funnel-bar{ height:6px; border-radius:99px; background:var(--nav-ink-a12, var(--w-d12, rgba(255,255,255,.12))); overflow:hidden; margin-bottom:10px; }
+    .funnel-bar i{ display:block; height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-deep)); border-radius:99px; transition:width .6s var(--ease); }
+    .funnel-steps{ display:flex; gap:8px; list-style:none; margin:0; padding:0; }
+    .funnel-steps li{ flex:1; display:flex; align-items:center; gap:6px; font-size:.8rem; color:var(--muted); }
+    .funnel-steps li.done{ color:var(--gold-text,var(--gold)); font-weight:700; }
+    .funnel-dot{ width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:.72rem; font-weight:800; background:var(--nav-ink-a12, var(--w-d12, rgba(255,255,255,.12))); color:var(--muted); flex:none; }
+    .funnel-steps li.done .funnel-dot{ background:var(--gold); color:var(--bg); }
+    .funnel-link{ display:flex; align-items:center; gap:6px; color:var(--txt); text-decoration:none; min-height:44px; }
+    .funnel-link .funnel-dot{ background:var(--gold-soft, rgba(212,175,55,.18)); color:var(--gold-text,var(--gold)); }
+    .funnel-link:hover .funnel-dot{ background:var(--gold); color:var(--bg); }
+    .funnel-hint{ margin:6px 0 0; font-size:.74rem; }
     /* sign cards */
     .sign-card{ background:var(--nav-ink-a06, var(--w-d06, rgba(255,255,255,.06))); border:1px solid var(--stroke); border-radius:18px; padding:16px; text-align:center; transition:transform .18s var(--ease), background-color .2s; }
     .sign-card:hover{ background:var(--nav-ink-a1, var(--w-d1, rgba(255,255,255,.1))); transform:translateY(-2px); }

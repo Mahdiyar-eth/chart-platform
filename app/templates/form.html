@@ -13,10 +13,22 @@
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
   <form id="birthForm" class="glass glow u-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
-    <div class="steps">
-      <template x-for="(s, i) in 5" :key="i">
-        <div class="step-dot" :class="{'on': i < step}"><i></i></div>
-      </template>
+    <!-- Unified step progress: labeled, clickable, with percentage -->
+    <div class="form-progress" role="progressbar" :aria-valuenow="step" aria-valuemin="1" aria-valuemax="5" aria-label="پیشرفت فرم">
+      <div class="form-progress-head">
+        <span class="form-progress-label">مرحله <b x-text="step"></b> از ۵ — <span x-text="stepTitles[step-1]"></span></span>
+        <span class="form-progress-pct" x-text="Math.round(step/5*100) + '%'"></span>
+      </div>
+      <div class="steps" aria-hidden="true">
+        <template x-for="(s, i) in 5" :key="i">
+          <button type="button" class="step-dot" :class="{'on': i < step, 'active': i+1 === step}" :aria-label="'مرحله ' + (i+1) + ': ' + stepTitles[i]" @click="goTo(i+1)"><i></i></button>
+        </template>
+      </div>
+      <div class="form-progress-titles" aria-hidden="true">
+        <template x-for="(t, i) in stepTitles" :key="t">
+          <span :class="{'active': i+1 === step, 'done': i+1 < step}" x-text="t"></span>
+        </template>
+      </div>
     </div>
     <!-- STEP 1: date -->
     <div x-show="step === 1" x-transition>
@@ -66,19 +78,21 @@
 
     <!-- STEP 4: focus areas -->
     <div x-show="step === 4" x-transition>
-      <label>حوزه‌های مورد علاقه‌ات (چندتایی) {% with text='بخش‌هایی از گزارش که بیشتر به آن‌ها علاقه‌داری. این انتخاب ترتیب و تأکید بخش‌های گزارش را شخصی‌سازی می‌کند — بعداً هم می‌توانی تغییرش بدهی.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <label>حوزه‌های مورد علاقه‌ات (اختیاری — چندتایی) {% with text='بخش‌هایی از گزارش که بیشتر به آن‌ها علاقه‌داری. این انتخاب ترتیب و تأکید بخش‌های گزارش را شخصی‌سازی می‌کند — بعداً هم می‌توانی تغییرش بدهی. می‌توانی هیچ‌کدام را هم انتخاب نکنی.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <p class="muted" style="font-size:.78rem; margin:4px 0 8px;">اختیاری — می‌توانی رد شوی. انتخاب نکنی هم گزارش کامل می‌گیری.</p>
       <div>
         <template x-for="a in areas" :key="a">
           <button type="button" class="chip" :class="{'sel': focus.includes(a)}" @click="toggleArea(a)" x-text="a"></button>
         </template>
       </div>
+      <p class="muted" style="font-size:.74rem; margin-top:8px;" x-show="focus.length">انتخاب شد: <span x-text="focus.length"></span> مورد</p>
     </div>
 
     <!-- STEP 5: question + submit -->
     <div x-show="step === 5" x-transition>
-      <label for="birth-question">سؤال شخصی (اختیاری)</label>
-      <input id="birth-question" class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟" aria-label="سؤال شخصی">
-      <p class="muted u-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
+      <label for="birth-question">سؤال شخصی (اختیاری — می‌توانی خالی بگذاری)</label>
+      <input id="birth-question" class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟ (اختیاری)" aria-label="سؤال شخصی">
+      <p class="muted u-7920d10e" >اختیاری — در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود. خالی بگذاری هم چارت کامل می‌گیری.</p>
     </div>
 
     <div class="u-82b7dc59" >
@@ -98,6 +112,8 @@ function formState(){
     cityQ: '', cities: [], picked: '', city: null,
     areas: ['هویت و شخصیت','ذهن و منطق','عواطف و شهود','پول و ثروت','شغل','روابط و ازدواج','خانواده','انرژی و تندرستی','خلاقیت','آموزش و مهاجرت','شبکه‌ها و دوستان','معنویت','کارما'],
     focus: [], question: '', loading: false, error: '',
+    stepTitles: ['تاریخ تولد','ساعت تولد','شهر تولد','علاقه‌مندی‌ها','سؤال شخصی'],
+    goTo(n){ if(n <= this.step){ this.error=''; this.step=n; } },
     async searchCity(){
       if(!this.cityQ.trim()){ this.cities = []; return; }
       const r = await fetch('/api/cities?q=' + encodeURIComponent(this.cityQ));

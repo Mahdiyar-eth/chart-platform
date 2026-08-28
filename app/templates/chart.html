@@ -17,12 +17,16 @@
   </div>
   {% endif %}
 
-  <!-- funnel progress (F3): chart → explore → deep -->
-  <div class="u-5d1c1741" >
-    <span class="u-83c28af5" >۱ · چارت تو ✓</span>
-    <a class="u-39591448" href="/explore?chart={{ chart.id }}" >۲ · خودت را کشف کن</a>
-    <a class="u-39591448" href="/plans?chart={{ chart.id }}" >۳ · گزارش عمیق</a>
-  </div>
+  <!-- funnel progress (F3): chart → explore → deep — now with real bar + labels -->
+  <nav class="funnel-progress" aria-label="مسیر چارت">
+    <div class="funnel-bar" aria-hidden="true"><i style="width:33%"></i></div>
+    <ol class="funnel-steps">
+      <li class="done" aria-current="false"><span class="funnel-dot">✓</span><span>۱ · چارت تو</span></li>
+      <li><a class="funnel-link" href="/explore?chart={{ chart.id }}"><span class="funnel-dot">۲</span><span>خودت را کشف کن</span></a></li>
+      <li><a class="funnel-link" href="/plans?chart={{ chart.id }}"><span class="funnel-dot">۳</span><span>گزارش عمیق</span></a></li>
+    </ol>
+    <p class="funnel-hint muted">قدم ۱ از ۳ — بعدی: یک سؤال، یک جوابِ رایگان</p>
+  </nav>
 
   <!-- chart wheel -->
   <div class="glass glow u-49e93d7f" >
@@ -184,10 +188,14 @@
     </div>
     <div class="u-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
-        <div class="report-progress" role="status" aria-live="polite">
-          <p class="muted" style="margin:0 0 8px;">در حال نوشتن گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد</p>
-          <div class="rp-track"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
-          <p class="muted" style="margin:8px 0 0; font-size:.78rem;">می‌توانی صفحه را ببندی — گزارش در حساب کاربری‌ات ذخیره می‌شود.</p>
+        <div class="report-progress report-progress--sticky" role="status" aria-live="polite" aria-label="پیشرفت گزارش">
+          <div class="report-progress-head">
+            <span class="report-progress-title">در حال نوشتن گزارش…</span>
+            <span class="report-progress-pct" x-text="Math.round(Math.min(96, Math.round(100 * Math.max(repSections,1) / 13))) + '%'"></span>
+          </div>
+          <p class="muted report-progress-sub">بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد — حدود <span x-text="Math.max(0, 13 - Math.max(repSections,1))"></span> بخش مانده</p>
+          <div class="rp-track" role="progressbar" :aria-valuenow="Math.max(repSections,1)" aria-valuemin="0" aria-valuemax="13"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
+          <p class="muted report-progress-hint">⏱ حدود ۲–۳ دقیقه · می‌توانی صفحه را ببندی — گزارش در حساب کاربری‌ات ذخیره می‌شود · اعتبارت فقط بعد از موفقیت کم می‌شود</p>
         </div>
       </template>
       <template x-if="repStatus === 'done'">
