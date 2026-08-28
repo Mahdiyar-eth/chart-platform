@@ -1,0 +1,7 @@
+/* Vazirmatn — the only family. Loaded once, shared by v1 and v2 shells.
+   font-display:swap (not `optional`) so Persian text is never invisible on a
+   cold cache — a blank hero is worse than a brief fallback flash. */
+@font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Regular.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
+@font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Medium.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Medium.ttf') format('truetype'); font-weight:500; font-display:swap; }
+@font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-Bold.woff2') format('woff2'), url('/static/fonts/Vazirmatn-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+@font-face{ font-family:'Vazirmatn'; src:url('/static/fonts/Vazirmatn-ExtraBold.woff2') format('woff2'), url('/static/fonts/Vazirmatn-ExtraBold.ttf') format('truetype'); font-weight:800; font-display:swap; }

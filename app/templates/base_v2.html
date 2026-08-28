@@ -1,0 +1,219 @@
+{# ══════════════════════════════════════════════════════════════
+   Zayche Galactic v2 — app shell
+   Deep Space Editorial. Built from design-tokens.json → tokens-v2.css.
+
+   Contract:
+    • one gold accent; chat CTAs are aqua so money vs. talk never blur
+    • ONLY transform/opacity animate; backdrop-filter appears twice total
+    • bottom nav = exactly 4 equal slots (app/nav.py enforces + tests lock)
+    • every nav surface renders from request.state.nav (single source)
+   ══════════════════════════════════════════════════════════════ #}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>{% block title %}زایچه — نقشهٔ آسمان تو{% endblock %}</title>
+  <meta name="description" content="{% block description %}گزارش اختصاصی چارت تولد با محاسبهٔ دقیق نجومی — شناخت شخصیت، مسیر شغلی، روابط و استعدادها.{% endblock %}">
+  {% block robots %}{% endblock %}
+
+  <meta property="og:site_name" content="زایچه">
+  <meta name="application-name" content="زایچه">
+  <meta property="og:title" content="{% block og_title %}زایچه — نقشهٔ آسمان تو، برای شناخت بهتر خودت{% endblock %}">
+  <meta property="og:description" content="{% block og_desc %}گزارش اختصاصی چارت تولد با محاسبهٔ دقیق نجومی{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:image" content="{% block og_image %}https://chart.negar.io/static/og-banner.png{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  {% block canonical %}{% endblock %}
+
+  {# ── PWA: installable on Android AND iOS ── #}
+  <meta name="theme-color" content="#0C1130">
+  <link rel="manifest" href="/static/manifest.webmanifest?v={{ asset_version }}">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="زایچه">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/static/icon-180.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/static/icon-192.png">
+
+  {# ── fonts: preload the two weights actually used above the fold ── #}
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/Vazirmatn-Regular.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/fonts/Vazirmatn-Bold.woff2">
+
+  {# ── styles: generated tokens FIRST, then the shell ── #}
+  <link rel="stylesheet" href="/static/css/fonts.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/tokens-v2.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/galactic.css?v={{ asset_version }}">
+  {% block head_css %}{% endblock %}
+
+  {# theme before paint — no flash. Dark is the product default. #}
+  <script>
+    (function(){
+      var t; try{ t = localStorage.getItem('zayche-theme'); }catch(e){}
+      if(t === 'light') document.documentElement.setAttribute('data-theme','light');
+    })();
+  </script>
+
+  <script defer src="/static/vendor/alpine.min.js"></script>
+  <script defer src="/static/js/track.js?v={{ asset_version }}"></script>
+
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"زایچه","url":"https://chart.negar.io/","logo":"https://chart.negar.io/static/icon-512.png"}
+  </script>
+  {% block head_extra %}{% endblock %}
+</head>
+
+<body {% block body_attrs %}{% endblock %}>
+  {# cosmic backdrop: two fixed GPU layers, never repaint content #}
+  <div class="gx-sky" aria-hidden="true"></div>
+  <div class="gx-stars" aria-hidden="true"></div>
+
+  {# external sprite (cached once, not inlined per page) #}
+  <svg aria-hidden="true" style="display:none" data-sprite-ext><use href="/static/icons.svg?v={{ asset_version }}#icon-sun"/></svg>
+
+  <a href="#gx-main" class="gx-sr">پرش به محتوای اصلی</a>
+
+  {# ─────────────────────── appbar ─────────────────────── #}
+  <header class="gx-appbar">
+    <div class="gx-appbar-inner">
+      <a href="/" class="gx-brand" aria-label="زایچه — صفحهٔ اصلی">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><linearGradient id="zg-brand" gradientUnits="userSpaceOnUse" x1="17" y1="17" x2="47" y2="47">
+            <stop offset="0" stop-color="#F5C518"/><stop offset="1" stop-color="#E08E0B"/></linearGradient></defs>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="url(#zg-brand)" stroke-width="3"/>
+          <circle cx="32" cy="32" r="20.5" fill="none" stroke="url(#zg-brand)" stroke-width="1" opacity=".45"/>
+          <path d="M32 17 L35.8 28.2 L47 32 L35.8 35.8 L32 47 L28.2 35.8 L17 32 L28.2 28.2 Z" fill="url(#zg-brand)"/>
+        </svg>
+        <span>زایچه</span>
+      </a>
+
+      <nav class="gx-nav" aria-label="ناوبری اصلی">
+        {% for it in request.state.nav.top %}
+        <a href="{{ it.url }}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>
+          {% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}
+        </a>
+        {% endfor %}
+      </nav>
+
+      <span class="gx-spacer"></span>
+
+      <a href="/credits" class="gx-credit" x-data="creditsBall" x-init="loader()" x-show="show" x-cloak aria-label="اعتبار من">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg>
+        <span class="gx-num" x-text="balance"></span>
+      </a>
+
+      <button class="gx-iconbtn gx-only-desktop" id="gxTheme" aria-label="تغییر حالت روشن و تاریک" title="روشن / تاریک">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg>
+      </button>
+
+      <button class="gx-iconbtn" aria-label="باز کردن منو" aria-controls="gxDrawer" aria-expanded="false" onclick="gxDrawer(true)">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-menu"/></svg>
+      </button>
+    </div>
+  </header>
+
+  {# ─────────────────────── content ─────────────────────── #}
+  <main id="gx-main" class="gx-main">
+    <div class="gx-wrap">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  {# ─────────────────────── footer ─────────────────────── #}
+  <footer class="gx-wrap" style="padding-block:var(--sp-7) var(--sp-8); border-top:1px solid var(--border); margin-top:var(--sp-8);">
+    <div class="gx-grid">
+      {% for gname, items in request.state.nav.drawer %}
+      <div>
+        <h2 class="gx-eyebrow">{{ gname }}</h2>
+        <div class="gx-stack" style="gap:var(--sp-2)">
+          {% for it in items %}<a href="{{ it.url }}" class="gx-faint" style="text-decoration:none; min-height:var(--touch-min); display:flex; align-items:center;">{{ it.label_fa }}</a>{% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="gx-faint gx-mt-5" style="line-height:var(--lh-normal);">
+      زایچه ابزار خودشناسی است، نه پیش‌گویی قطعی. تصمیم‌های مهم زندگی‌ات را با آگاهی خودت بگیر.
+    </p>
+  </footer>
+
+  {# ─────────────────────── drawer ─────────────────────── #}
+  <div class="gx-scrim" id="gxScrim" onclick="gxDrawer(false)"></div>
+  <aside class="gx-drawer" id="gxDrawer" aria-label="منوی کامل">
+    <div class="gx-drawer-head">
+      <strong>منو</strong>
+      <button class="gx-iconbtn" onclick="gxDrawer(false)" aria-label="بستن منو">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-close"/></svg>
+      </button>
+    </div>
+
+    <div class="gx-drawer-group">
+      <a href="/birth-form" class="gx-btn gx-btn--primary gx-btn--block">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> چارت رایگان من
+      </a>
+    </div>
+
+    {% for gname, items in request.state.nav.drawer %}
+    <div class="gx-drawer-group">
+      <div class="gx-drawer-group-title">{{ gname }}</div>
+      {% for it in items %}
+      <a href="{{ it.url }}" class="gx-drawer-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}>
+        {% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="gx-drawer-group">
+      <button class="gx-drawer-item" id="gxThemeDrawer" style="width:100%; background:none; border:0; cursor:pointer; text-align:start;">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg> حالت روشن / تاریک
+      </button>
+      <button class="gx-drawer-item" id="gxInstallDrawer" hidden style="width:100%; background:none; border:0; cursor:pointer; text-align:start;">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-download"/></svg> نصب اپ روی گوشی
+      </button>
+    </div>
+  </aside>
+
+  {# ───────────────────── bottom nav (4 slots) ───────────────────── #}
+  <nav class="gx-bottomnav" aria-label="ناوبری پایین">
+    {% for it in request.state.nav.bottom %}
+    <a href="{{ it.url }}" class="gx-bn-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}>
+      <svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{{ it.short_fa }}
+    </a>
+    {% endfor %}
+  </nav>
+
+  {# ───────────────────── install prompt ───────────────────── #}
+  <div class="gx-install" id="gxInstall" hidden>
+    <div style="flex:1">
+      <strong style="display:block; font-size:var(--fs-sm)">زایچه را روی گوشی‌ات نصب کن</strong>
+      <span class="gx-faint">بدون فروشگاه — مثل یک اپ باز می‌شود</span>
+    </div>
+    <button class="gx-btn gx-btn--primary gx-btn--sm" id="gxInstallGo">نصب</button>
+    <button class="gx-iconbtn" id="gxInstallNo" aria-label="بعداً">
+      <svg aria-hidden="true"><use href="/static/icons.svg#icon-close"/></svg>
+    </button>
+  </div>
+
+  <div id="toastStack" aria-live="polite"></div>
+  {% block body_end %}{% endblock %}
+
+  <script src="/static/js/galactic.js?v={{ asset_version }}" defer></script>
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('creditsBall', () => ({
+        show: false, balance: 0,
+        loader(){
+          fetch('/api/credits/me', {headers:{'Accept':'application/json'}})
+            .then(r => { if(!r.ok) throw 0; return r.json(); })
+            .then(d => { this.balance = d.balance; this.show = true; })
+            .catch(() => {});
+        }
+      }));
+    });
+  </script>
+</body>
+</html>

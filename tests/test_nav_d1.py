@@ -16,11 +16,17 @@ def test_guest_bottom_has_fab_not_dashboard():
     assert "کاوش" not in labs
 
 
-def test_chart_owner_gets_dashboard_and_explore():
+def test_chart_owner_gets_dashboard_and_chat():
+    """Galactic v2 (plan §3): «کاوش» retired as a product — conversation replaces it.
+
+    A user WITH a chart must reach their dashboard and the one conversation
+    surface from the bottom bar; the free-chart CTA disappears after conversion.
+    """
     n = nav_for(has_chart=True)
     labs = _labels(n["bottom"])
-    assert "چارت من" in labs and "کاوش" in labs
+    assert "چارت من" in labs and "گفت‌وگو" in labs
     assert "چارت رایگان" not in labs      # no pointless CTA after conversion
+    assert "کاوش" not in labs             # retired — must never come back
 
 
 def test_no_duplicate_urls_across_bottom():
