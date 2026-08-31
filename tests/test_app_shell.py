@@ -156,3 +156,16 @@ def test_no_fragment_only_icon_references(tpl: Path):
     assert not bad, (
         f"{tpl.name}: fragment-only sprite reference(s) render nothing: {bad[:3]}"
     )
+
+
+# ── page identity ────────────────────────────────────────────────────────────
+@pytest.mark.parametrize("tpl", [t for t in ALL_TPL if t.name != "base.html"],
+                         ids=lambda p: p.name)
+def test_every_page_sets_its_own_title(tpl: Path):
+    """With client-side navigation the tab title updates on every swap, so a
+    page falling back to the generic default is visible on screen, not just in
+    search results. 19 pages shared one title before this."""
+    src = tpl.read_text(encoding="utf-8")
+    if "{% extends" not in src:
+        pytest.skip("not a page template")
+    assert "block title" in src, f"{tpl.name} has no title of its own"

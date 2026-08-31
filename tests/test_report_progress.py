@@ -18,7 +18,10 @@ from __future__ import annotations
 
 import asyncio
 import re
+import uuid
 from pathlib import Path
+
+import pytest
 
 from sqlmodel import Session
 
@@ -26,6 +29,42 @@ from app.db import engine
 from app.models import Chart, Report
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture
+def scratch_report():
+    """A running Report, cleaned up afterwards.
+
+    These tests need rows in status="running". Left behind, they age past the
+    stale-recovery cutoff and then crowd out test_stale_recovery's own row in
+    its LIMIT 10 sweep — a failure that only appears an hour into a session.
+    """
+    made: list[tuple[str, str]] = []
+
+    def _make(plan_key: str = "full") -> str:
+        with Session(engine) as s:
+            ch = Chart(chart_json={}, access_token=f"t-{uuid.uuid4().hex[:8]}")
+            s.add(ch)
+            s.commit()
+            rep = Report(chart_id=ch.id, status="running", plan_key=plan_key)
+            s.add(rep)
+            s.commit()
+            made.append((rep.id, ch.id))
+            return rep.id
+
+    yield _make
+
+    with Session(engine) as s:
+        for rid, cid in made:
+            r = s.get(Report, rid)
+            if r:
+                s.delete(r)
+        s.commit()
+        for _rid, cid in made:
+            c = s.get(Chart, cid)
+            if c:
+                s.delete(c)
+        s.commit()
 
 
 def test_worker_publishes_progress_incrementally():
@@ -77,18 +116,11 @@ def test_progress_publish_is_atomic():
     )
 
 
-def test_progress_counter_climbs_under_concurrency():
+def test_progress_counter_climbs_under_concurrency(scratch_report):
     """Prove it with real concurrent writers against the real database."""
     from app.report.worker import _publish_progress
 
-    with Session(engine) as s:
-        ch = Chart(chart_json={}, access_token="t-prog")
-        s.add(ch)
-        s.commit()
-        rep = Report(chart_id=ch.id, status="running", plan_key="full")
-        s.add(rep)
-        s.commit()
-        rid = rep.id
+    rid = scratch_report()
 
     async def drive():
         await asyncio.gather(*(asyncio.to_thread(_publish_progress, rid, 13)
@@ -105,7 +137,7 @@ def test_progress_counter_climbs_under_concurrency():
     assert m.get("sections_total") == 13
 
 
-def test_progress_climbs_during_a_real_generation(monkeypatch):
+def test_progress_climbs_during_a_real_generation(monkeypatch, scratch_report):
     """End-to-end, no paid calls: run generate_sections_async against a stub
     router and watch the database counter move while it runs.
 
@@ -136,14 +168,7 @@ def test_progress_climbs_during_a_real_generation(monkeypatch):
             return LLMResult(text=body, provider="stub", model="stub",
                              latency_ms=1, usage=LLMUsage(10, 20), error=None)
 
-    with Session(engine) as s:
-        ch = Chart(chart_json={}, access_token="t-prog-e2e")
-        s.add(ch)
-        s.commit()
-        rep = Report(chart_id=ch.id, status="running", plan_key="full")
-        s.add(rep)
-        s.commit()
-        rid = rep.id
+    rid = scratch_report()
 
     stub = Stub()
     monkeypatch.setattr(worker, "build_section_router", lambda d, m: stub)

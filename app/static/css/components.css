@@ -3,14 +3,15 @@
    C2 utilities: replace repetitive inline styles with token-driven classes. ── */
 
 /* ===== Buttons (base .btn lives in base.css) ===== */
-.btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  border:none; cursor:pointer; font-weight:800; text-decoration:none; font-family:inherit; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:none; cursor:pointer; font-weight:700; text-decoration:none; font-family:inherit; }
 .btn-primary{ background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:var(--gold-ink); }
 .btn-ghost{ background:var(--nav-ink-a08, var(--w-d08, rgba(255,255,255,.08))); color:var(--txt); border:1px solid var(--stroke); }
 .btn-danger{ background:var(--danger-soft); color:var(--white); }
 .btn-sm{ min-height:38px; padding:0 var(--sp-4); font-size:var(--fs-sm); border-radius:var(--r-sm); }
 .btn-md{ min-height:48px; padding:0 var(--sp-5); font-size:var(--fs-md); border-radius:var(--r-md); }
-.btn-lg{ min-height:54px; padding:0 var(--sp-6); font-size:var(--fs-lg); border-radius:var(--r-md); }
+.btn-lg{ min-height:52px; padding:0 var(--sp-6); font-size:1rem; font-weight:700;
+         border-radius:var(--r-md); letter-spacing:-.005em; }
 
 /* ===== Surfaces ===== */
 .card{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--r-lg); padding:var(--sp-5);
