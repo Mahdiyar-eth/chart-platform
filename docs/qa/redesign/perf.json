@@ -1,16 +1,16 @@
 [
   {
     "page": "/",
-    "fcp_ms": 476,
-    "p95_frame_ms": 18,
+    "fcp_ms": 288,
+    "p95_frame_ms": 19,
     "backdrop": 2,
     "animated": 2
   },
   {
     "page": "/plans",
-    "fcp_ms": 260,
+    "fcp_ms": 232,
     "p95_frame_ms": 17,
-    "backdrop": 2,
+    "backdrop": 3,
     "animated": 2
   }
 ]

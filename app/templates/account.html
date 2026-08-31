@@ -4,7 +4,7 @@
 {% block description %}حساب کاربری چارت تولد: گزارش‌های خود، سفارش‌ها، اشتراک و دانلودها در یک جا{% endblock %}
 
 {% block content %}
-<div class="u-eef5d7d4" >
+<div class="z-workpage z-account">
   <h1>حساب کاربری</h1>
   <p class="muted">سلام {{ user.phone }} 👋 — چارت‌ها، گزارش‌ها و سفارش‌هایت</p>
 
@@ -158,8 +158,7 @@ function dashSearch() {
     results() {
       const q = this.norm(this.q.trim());
       if (!q) return [];
-      return this.items.filter(it =>
-        this.norm(it.label).includes(q) || this.norm(it.k).includes(q)).slice(0, 12);
+      return this.items.filter(it => this.norm(it.label).includes(q) || this.norm(it.k).includes(q)).slice(0, 12);
     }
   };
 }

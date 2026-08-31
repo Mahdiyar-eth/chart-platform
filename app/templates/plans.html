@@ -160,14 +160,20 @@
 
 <div x-data="purchase()" x-cloak>
   <div class="u-f265ab7f" x-show="busy">
-    <div class="glass u-8f0163b3">
-      <svg class="u-392787e9" aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg>
-      <div class="u-e3ec02ac">در حال پردازش...</div>
+    <div class="glass u-8f0163b3" role="status" aria-live="polite">
+      <svg class="u-392787e9 spin" aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg>
+      <div class="u-e3ec02ac" x-text="busyMsg || 'در حال پردازش...'"></div>
+      <div class="busy-steps" aria-hidden="true">
+        <span :class="{'on': busyStep>=1}">بررسی</span><i>→</i><span :class="{'on': busyStep>=2}">ایجاد سفارش</span><i>→</i><span :class="{'on': busyStep>=3}">انتقال به پرداخت</span>
+      </div>
     </div>
   </div>
 </div>
 
-<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+<style>@keyframes spin{to{transform:rotate(360deg);}} .spin{animation:spin .9s linear infinite;}
+.busy-steps{ display:flex; gap:6px; align-items:center; justify-content:center; margin-top:8px; font-size:.72rem; color:var(--muted); }
+.busy-steps span.on{ color:var(--gold-text,var(--gold)); font-weight:700; }
+</style>
 <style>
 /* MASTER W10 — compact comparable product grid */
 .plans-grid{display:grid;grid-template-columns:1fr;gap:12px;}
@@ -232,6 +238,8 @@
 function purchase() {
   return {
     busy: false,
+    busyMsg: '',
+    busyStep: 0,
     coupon: '',
     couponMsg: '',
     couponPercent: 0,
@@ -255,7 +263,7 @@ function purchase() {
         return;
       }
       window.track && window.track('checkout_started', {plan: actionKey});
-      this.busy = true;
+      this.busy = true; this.busyMsg = 'در حال بررسی اعتبار…'; this.busyStep = 1;
       try {
         const r = await fetch('/api/purchase', {
           method: 'POST',
@@ -265,21 +273,29 @@ function purchase() {
         });
         const j = await r.json().catch(() => ({}));
         if (r.ok && j.ok) {
-          showToast('باز شد! در حال بارگذاری…', true);
-          // Go to the thing that was just bought. Sending every buyer to
-          // /account meant a report purchase ended on a page with no report,
-          // no link to one, and no way to start one.
-          location.href = j.next || (chartId ? '/chart/' + chartId : '/account');
+          const ak = actionKey || '';
+          if (ak.startsWith('report')) {
+            this.busyMsg='اعتبارت کم شد — در حال آماده‌سازی گزارش…'; this.busyStep=3;
+            showToast('اعتبارت کم شد ✅ حالا گزارشت ساخته می‌شود...', true);
+            // /api/purchase now creates and enqueues the report itself and
+            // returns j.next; autostart stays as a fallback for the legacy paths.
+            setTimeout(() => location.href = j.next || ('/chart/' + chartId + '?autostart=' + encodeURIComponent(ak)), 600);
+          } else {
+            this.busyMsg='باز شد! در حال بارگذاری…'; this.busyStep=3;
+            showToast('باز شد! در حال بارگذاری…', true);
+            // send the buyer to the thing they bought, not to /account
+            location.href = j.next || (chartId ? '/chart/' + chartId : '/account');
+          }
         }
         else if (j.login_required) {
-          // the chart id was dropped from `next`, so returning to /plans
-          // without ?chart= bounced the user straight back to /birth-form
+          // keep ?chart= — without it, returning to /plans bounces the user
+          // straight back to /birth-form and the purchase is lost
           const back = '/plans' + (chartId ? '?chart=' + encodeURIComponent(chartId) : '');
           location.href = '/account/login?next=' + encodeURIComponent(back);
         }
-        else if (r.status === 402) { showToast('اعتبار کافی نیست — از پک اعتبار بخر', false); location.href = '/credits'; }
-        else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; }
-      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
+        else if (r.status === 402) { this.busy=false; this.busyStep=0; showToast('اعتبار کافی نیست — از پک اعتبار بخر', false); location.href = '/credits'; }
+        else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; this.busyStep=0; }
+      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; this.busyStep=0; }
     },
     // credit packs go through /api/orders (toman gateway). MASTER W3: the
     // subscription branch is gone — /plans sells credits only.
@@ -291,7 +307,7 @@ function purchase() {
         return;
       }
       window.track && window.track('checkout_started', {plan: planKey});
-      this.busy = true;
+      this.busy = true; this.busyMsg='در حال ایجاد سفارش…'; this.busyStep=2;
       try {
         const fd = new FormData();
         fd.append('plan_key', planKey);
@@ -299,10 +315,11 @@ function purchase() {
         if (this.coupon.trim()) fd.append('coupon', this.coupon.trim().toUpperCase());
         const r = await fetch('/api/orders', { method: 'POST', body: fd });
         const j = await r.json();
-        if (!r.ok) { showToast(j.detail || 'خطا در ایجاد سفارش', false); this.busy = false; return; }
-        if (j.paid_by_balance) { showToast('خرید انجام شد ✅', true); location.href = '/account'; return; }
+        if (!r.ok) { showToast(j.detail || 'خطا در ایجاد سفارش', false); this.busy = false; this.busyStep=0; return; }
+        if (j.paid_by_balance) { this.busyMsg='خرید انجام شد ✅'; this.busyStep=3; showToast('خرید انجام شد ✅', true); location.href = '/account'; return; }
+        this.busyMsg='در حال انتقال به درگاه…'; this.busyStep=3;
         window.location.href = j.payment_url;
-      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
+      } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; this.busyStep=0; }
     }
   };
 }

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>زایچه — داشبورد کاربر (شیشه‌ای تیره)</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1128; --bg2:#141a3a;
+  --glass:rgba(255,255,255,.055); --stroke:rgba(255,255,255,.11);
+  --txt:#eef1ff; --muted:#a8b4e8;
+  --gold:#f5c518; --gold-deep:#e08e0b; --gold-ink:#241a00;
+  --r-lg:20px; --r-md:14px;
+}
+body{font-family:"Vazirmatn",system-ui,sans-serif;background:
+  radial-gradient(1100px 700px at 85% -10%, rgba(124,108,240,.22), transparent 60%),
+  radial-gradient(900px 600px at -10% 30%, rgba(245,197,24,.07), transparent 55%),
+  var(--bg);
+  color:var(--txt);min-height:100vh;padding-bottom:90px}
+.appbar{position:sticky;top:10px;z-index:9;margin:12px 14px;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-radius:18px;background:rgba(17,22,49,.75);border:1px solid var(--stroke);backdrop-filter:blur(18px)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--gold)}
+.credits{font-size:.78rem;font-weight:700;color:var(--gold);border:1px solid rgba(245,197,24,.35);
+  padding:6px 14px;border-radius:999px;background:rgba(245,197,24,.08)}
+main{max-width:760px;margin:0 auto;padding:18px 16px}
+.hero-greet{margin:6px 2px 20px}
+.hero-greet h1{font-size:1.5rem;line-height:1.5}
+.hero-greet p{color:var(--muted);font-size:.9rem;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:var(--glass);border:1px solid var(--stroke);border-radius:var(--r-lg);padding:18px 16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.09),transparent 45%)}
+.card .ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.25)}
+.card b{display:block;margin-top:10px;font-size:.95rem}
+.card p{color:var(--muted);font-size:.78rem;margin-top:4px;line-height:1.8}
+.card.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px}
+.card.wide .ic{flex:none;width:46px;height:46px}
+.card .go{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:1.1rem}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.kpi{background:linear-gradient(180deg,rgba(245,197,24,.10),rgba(245,197,24,.03));border:1px solid rgba(245,197,24,.22);
+  border-radius:var(--r-md);padding:12px;text-align:center}
+.kpi .v{font-size:1.25rem;font-weight:800;color:var(--gold)}
+.kpi .l{font-size:.68rem;color:var(--muted);margin-top:2px}
+.section-t{font-size:.92rem;font-weight:800;margin:22px 2px 10px;display:flex;align-items:center;gap:8px}
+.section-t span.more{margin-inline-start:auto;color:var(--muted);font-size:.72rem;font-weight:400}
+.report{background:var(--glass);border:1px solid var(--stroke);border-radius:var(--r-md);padding:14px;display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.report .thumb{width:52px;height:52px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  background:linear-gradient(135deg,rgba(124,108,240,.35),rgba(245,197,24,.15));border:1px solid var(--stroke)}
+.report b{font-size:.86rem}
+.report .meta{font-size:.7rem;color:var(--muted);margin-top:4px}
+.pill{font-size:.64rem;padding:3px 10px;border-radius:999px;margin-inline-start:auto;white-space:nowrap}
+.pill.ok{color:#7ee2a8;background:rgba(126,226,168,.12);border:1px solid rgba(126,226,168,.3)}
+.pill.gen{color:var(--gold);background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.3)}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(13,17,40,.94);border-top:1px solid var(--stroke);
+  padding:8px 6px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(16px)}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.62rem;color:rgba(238,241,255,.62);text-decoration:none}
+.bn.on{color:var(--gold)}
+.bn .fic{font-size:1.15rem}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">✦ زایچه</div>
+  <div class="credits">✦ ۷ اعتبار</div>
+</header>
+<main>
+  <div class="hero-greet">
+    <h1>سلام مهدی 👋</h1>
+    <p>چارتت آماده‌ست — امروز آسمانت چه می‌گوید؟</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">۷</div><div class="l">اعتبار باقی‌مانده</div></div>
+    <div class="kpi"><div class="v">۳</div><div class="l">گزارش فعال</div></div>
+    <div class="kpi"><div class="v">۲</div><div class="l">گذر پیش‌رو</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card wide"><div class="ic">🌙</div><div><b>آسمان امروز تو</b><p>ماه در خانهٔ ۱۰ — روز خوبی برای دیده‌شدن</p></div><span class="go">←</span></div>
+    <a class="card" href="#"><div class="ic">📜</div><b>گزارش‌های من</b><p>۳ گزارش فعال، PDF و Word</p></a>
+    <a class="card" href="#"><div class="ic">💞</div><b>سازگاری</b><p>با شاهد از هر دو چارت</p></a>
+    <a class="card wide" href="#"><div class="ic">🛒</div><div><b>افزودن اعتبار</b><p>پک‌های اعتباری — بدون انقضا، هر اعتبار ۵۰ هزار تومان</p></div><span class="go">←</span></a>
+    <a class="card" href="#"><div class="ic">⚙️</div><b>تنظیمات</b><p>اطلاعات و حریم خصوصی</p></a>
+  </div>
+
+  <div class="section-t">گزارش‌های اخیر <span class="more">همه ←</span></div>
+  <div class="report"><div class="thumb">☀️</div><div><b>شناخت کامل</b><div class="meta">۱۳ بخش · ساخته‌شده ۲ شهریور</div></div><span class="pill ok">فعال</span></div>
+  <div class="report"><div class="thumb">✨</div><div><b>یک سؤال — شغلم را عوض کنم؟</b><div class="meta">در حال تولید… ۴۰٪</div></div><span class="pill gen">در جریان</span></div>
+</main>
+<nav class="bottomnav">
+  <a class="bn" href="#"><span class="fic">🏠</span>خانه</a>
+  <a class="bn" href="#"><span class="fic">💞</span>سازگاری</a>
+  <a class="bn" href="#"><span class="fic">☀️</span>چارت</a>
+  <a class="bn on" href="#"><span class="fic">📊</span>داشبورد</a>
+  <a class="bn" href="#"><span class="fic">👤</span>حساب</a>
+</nav>
+</body>
+</html>

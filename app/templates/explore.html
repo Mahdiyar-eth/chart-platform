@@ -42,13 +42,14 @@
       <span x-text="showAll ? 'نمایش کمتر' : 'همه تحلیل‌ها (' + cards.length + ' کارت)'"></span>
     </button>
 
-    <!-- running state -->
-    <div class="glass u-7995b8d8" x-show="busy" x-cloak>
-      <div class="u-26e70069" x-text="(busyCard ? busyCard.title_fa : '') + ' — در حال نوشتن'"></div>
-      <div class="rp-track" style="margin-top:10px;">
-        <div class="rp-fill" :style="'width:' + pct + '%'"></div>
+    <!-- running state — FIX C: FIXED overlay, not inline (was hidden below fold) -->
+    <div class="explore-busy-overlay" x-show="busy" x-cloak role="status" aria-live="polite" aria-label="در حال تحلیل">
+      <div class="explore-busy-card glass">
+        <div class="u-26e70069" x-text="(busyCard ? busyCard.title_fa : '') + ' — در حال نوشتن'"></div>
+        <div class="rp-track" style="margin-top:12px;"><div class="rp-fill" :style="'width:' + pct + '%'" ></div></div>
+        <p class="muted u-e2031403" x-text="elapsed + ' ثانیه — معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد'"></p>
+        <p class="muted" style="font-size:.74rem; margin-top:4px;">⏳ می‌توانی صبر کنی — نتیجه همین‌جا می‌آید، اعتبارت فقط بعد موفقیت کم می‌شود</p>
       </div>
-      <p class="muted u-e2031403" x-text="elapsed + ' ثانیه — معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد'"></p>
     </div>
 
     <!-- result -->
@@ -72,6 +73,10 @@
         <div class="muted u-dceba6d0" x-show="result?.metrics" x-cloak>
           <span x-text="'⏱ ' + result?.metrics.duration_s + ' ثانیه · ' + result?.metrics.calls + ' تماس'"></span>
         </div>
+        <div class="mt-3">
+          <a class="btn btn-ghost" href="/reports">مشاهده در گزارش‌های من →</a>
+          <a class="btn" href="/chat/{{ active_chart }}" x-show="chartId">گفت‌وگو با همین چارت</a>
+        </div>
       </div>
 
       <!-- deeper layer CTA (funnel: free exploration → deeper) -->
@@ -88,7 +93,7 @@
     </div>
 
     <!-- insufficient credit -->
-    <div class="glass u-7995b8d8" x-show="needCredit" x-cloak>
+    <div class="glass u-7995b8d8" x-show="needCredit" x-cloak id="needCreditBox">
       <div class="u-1df3b92c" >اعتبار کافی نداری</div>
       <p class="muted u-093b6454" >هر کاوش ۱ اعتبار است. می‌توانی پک اعتبار بخری — اعتبارت هرگز منقضی نمی‌شود.</p>
       <div class="u-6002dd78" >
@@ -171,11 +176,14 @@ function exploreApp() {
           }
         })
         .catch((e) => {
-          if (self.needCredit) return;
           const msg = (e && e.name === "AbortError")
             ? "تحلیل بیش از حد طول کشید — اعتبارت برنگشته باشد به‌زودی خودکار برمی‌گردد. دوباره امتحان کن."
             : (e.message || "خطا");
-          showToast(msg, false);
+          showToast(msg, false);          // ALWAYS surface the failure — silent resets read as «کار نمی‌کند»
+          if (self.needCredit) {          // ...and put the credit CTA on screen
+            setTimeout(() => { const el = document.getElementById("needCreditBox"); if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 150);
+            return;
+          }
         })
         .finally(() => {
           clearTimeout(killer); clearInterval(self._tick);

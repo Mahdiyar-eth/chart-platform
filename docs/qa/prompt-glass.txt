@@ -1,0 +1,13 @@
+High-fidelity mobile UI design mockup, tall portrait 9:16 aspect, for a Persian RTL astrology web app called "Zayche" (زایچه).
+
+Aesthetic: premium night-sky. Deep navy background (#0d1128) with a soft purple aurora glow in the top corner, glassmorphism cards with hairline light borders and subtle translucency, single gold accent color (#f5c518). Vazirmatn-style Persian typography, elegant spacing, modern SaaS quality like Linear or Stripe dark mode.
+
+Layout top to bottom:
+1. Floating pill-shaped appbar: gold brand mark "زایچه" on the right, small outlined gold credit pill "۷ اعتبار" on the left.
+2. Large Persian greeting headline "سلام مهدی" with muted subtitle line under it.
+3. Row of three KPI stat chips in one segmented card: large gold numerals ۷ / ۳ / ۲ with tiny gray labels (اعتبار، گزارش فعال، گذر پیش‌رو).
+4. Wide featured glass card with a moon icon tile on the right: title «آسمان امروز تو», subtitle «ماه در خانهٔ دهم — روزِ دیده‌شدن», small left arrow.
+5. 2x2 grid of navigation cards, each with a small rounded icon tile, bold title and muted caption: گزارش‌های من، سازگاری، افزودن اعتبار، تنظیمات.
+6. Fixed dark bottom navigation bar with five items, the center item raised inside a glowing gold circle labeled چارت.
+
+Realistic Farsi content everywhere, crisp rendering, no watermark, no lorem ipsum.

@@ -1,10 +1,20 @@
 {% extends "base.html" %}
 {% block title %}صفحه پیدا نشد | زایچه{% endblock %}
+{% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto px-4 py-20 text-center">
-  <div class="text-6xl font-black mb-4">{{ code }}</div>
-  <h1 class="text-2xl font-bold mb-3">{{ title }}</h1>
-  <p class="muted mb-8">{{ message }}</p>
-  <a href="/" class="btn">بازگشت به خانه</a>
+<div class="z-periodic">
+  <div class="glass z-locked" style="max-width:560px;margin:48px auto 8px;">
+    <span class="z-eyebrow">{{ code }}</span>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <a class="z-action" href="/">بازگشت به خانه</a>
+  </div>
+  <div class="glass z-card" style="max-width:560px;margin:16px auto 40px;">
+    <div class="z-card__label">شاید دنبال این‌ها باشی</div>
+    <div class="z-event-row"><span class="z-event-row__dot"></span><p><a href="/birth-form" class="u-link-gold">ساخت چارت تولد رایگان</a></p></div>
+    <div class="z-event-row"><span class="z-event-row__dot"></span><p><a href="/plans" class="u-link-gold">مشاهدهٔ گزارش‌ها و پلن‌ها</a></p></div>
+    <div class="z-event-row"><span class="z-event-row__dot"></span><p><a href="/articles" class="u-link-gold">مقالات نجوم و چارت تولد</a></p></div>
+    <div class="z-event-row"><span class="z-event-row__dot"></span><p><a href="/faq" class="u-link-gold">سؤالات پرتکرار</a></p></div>
+  </div>
 </div>
-{% endblock content %}
+{% endblock %}

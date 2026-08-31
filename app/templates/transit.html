@@ -1,34 +1,33 @@
 {% extends "base.html" %}
 {% block title %}گذرهای چارت من | زایچه{% endblock %}
 {% block content %}
-<div class="u-29c04372" >
-  <div class="u-f16fa207" >
-    <h1 class="u-42c7ba33" >گذرهای کنونی سیارات</h1>
-    <a class="btn btn-ghost u-70764bf3" href="/chart/{{ chart_id }}" >← چارت</a>
-  </div>
-  <p class="muted u-7e3a2bf4" >
-    سیارات در حال گذر، با نقاط کلیدی چارت تولد تو پیوندهایی می‌سازند — این «آب‌وهوای» نجومی این روزهاست.
-  </p>
+<div class="z-periodic">
+  <header class="z-page-header">
+    <div>
+      <span class="z-eyebrow">رصدخانهٔ گذرها</span>
+      <h1>گذرهای کنونی سیارات</h1>
+      <p class="z-periodic-lead">سیارات در حال گذر، با نقاط کلیدی چارت تولد تو پیوندهایی می‌سازند — این «آب‌وهوای» نجومی این روزهاست.</p>
+    </div>
+    <a class="z-action z-action--ghost" href="/chart/{{ chart_id }}">← چارت</a>
+  </header>
 
-  <div class="u-a56c85e3" >
+  <div class="z-card">
+    <div class="z-card__label"><span>🪐 گذرهای فعال</span></div>
     {% for e in events %}
-    <div class="glass u-36aaa7de" >
-      <div class="u-0bec4c4d" >🪐</div>
-      <div class="u-97445a8d" >
-        <div class="u-b800" >{{ e.planet_fa }} <span class="u-gold" >{{ e.aspect }}</span> {{ {'Sun':'خورشید تولد','Moon':'ماه تولد','ASC':'طالع تولد'}.get(e.target, e.target) }}</div>
-        <div class="muted u-9bcd21d2" >در {{ e.sign_fa }} — اورب {{ e.orb }}°</div>
-      </div>
+    <div class="z-event-row">
+      <span class="z-event-row__dot"></span>
+      <p><b>{{ e.planet_fa }}</b> در {{ e.aspect }} با {{ {'Sun':'خورشید تولد','Moon':'ماه تولد','ASC':'طالع تولد'}.get(e.target, e.target) }} — در {{ e.sign_fa }}، اورب {{ e.orb }}°</p>
     </div>
     {% endfor %}
     {% if not events %}
-    <div class="glass u-767a4b0e" >
-      گذر مهمی در این بازه فعال نیست — چارت تو در آرامش است.
+    <div class="empty-state">
+      <p class="muted">گذر مهمی در این بازه فعال نیست — چارت تو در آرامش است.</p>
     </div>
     {% endif %}
   </div>
 
-  <p class="muted u-26650c5a" >
-    تحلیل اختصاصیِ روایت گذرهای پیشِ رو همین‌جا فعال است — <a class="u-gold" href="/transits/{{ chart_id }}" >گذرهای پیشِ رو</a>
+  <p class="z-periodic-lead">
+    تحلیل اختصاصیِ روایت گذرهای پیشِ رو همین‌جا فعال است — <a class="u-gold" href="/transits/{{ chart_id }}">گذرهای پیشِ رو</a>
   </p>
 </div>
 {% endblock %}

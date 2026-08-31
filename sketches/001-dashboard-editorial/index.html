@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>زایچه — داشبورد کاربر (روشنِ تحریریه‌ای)</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f6f4ef; --card:#ffffff; --ink:#1d2333; --muted:#6b7285;
+  --gold:#b07d10; --gold-soft:#f7ecd2; --line:#e8e4da;
+  --r-lg:18px; --r-md:13px;
+}
+body{font-family:"Vazirmatn",system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;padding-bottom:90px}
+.appbar{position:sticky;top:0;z-index:9;background:rgba(246,244,239,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+.brand{font-weight:800;color:var(--ink)}
+.brand em{font-style:normal;color:var(--gold)}
+.credits{font-size:.8rem;font-weight:700;color:var(--gold);border:1.5px solid var(--gold);padding:5px 14px;border-radius:999px;background:var(--gold-soft)}
+main{max-width:720px;margin:0 auto;padding:26px 20px}
+h1{font-size:1.65rem;line-height:1.45;letter-spacing:-.01em}
+.sub{color:var(--muted);margin-top:8px;font-size:.92rem}
+.rule{height:1px;background:var(--line);margin:22px 0}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;text-decoration:none;color:inherit;
+  transition:transform .15s ease, box-shadow .15s ease}
+.tile:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(29,35,51,.08)}
+.tile .kicker{font-size:.66rem;font-weight:700;color:var(--gold);letter-spacing:.06em}
+.tile b{display:block;font-size:1.02rem;margin-top:6px}
+.tile p{color:var(--muted);font-size:.78rem;margin-top:5px;line-height:1.85}
+.stat-row{display:flex;gap:0;border:1px solid var(--line);border-radius:var(--r-md);background:var(--card);overflow:hidden;margin-top:4px}
+.stat{flex:1;padding:14px;text-align:center;border-inline-start:1px solid var(--line)}
+.stat:first-child{border:none}
+.stat .v{font-weight:800;font-size:1.15rem}
+.stat .v small{font-size:.7rem;color:var(--gold);font-weight:700}
+.stat .l{font-size:.68rem;color:var(--muted);margin-top:2px}
+.section-t{display:flex;align-items:baseline;margin:26px 2px 12px}
+.section-t h2{font-size:1.05rem}
+.section-t a{margin-inline-start:auto;font-size:.75rem;color:var(--gold);text-decoration:none}
+.doc{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.doc .no{font-size:1.5rem;font-weight:800;color:var(--gold-soft);-webkit-text-stroke:1px var(--gold);line-height:1;min-width:34px;text-align:center}
+.doc b{font-size:.9rem}
+.doc .meta{font-size:.72rem;color:var(--muted);margin-top:4px}
+.tag{font-size:.64rem;font-weight:700;padding:3px 10px;border-radius:999px;margin-inline-start:auto;white-space:nowrap}
+.tag.ok{color:#1a7a44;background:#e5f5ec}
+.tag.run{color:var(--gold);background:var(--gold-soft)}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--ink);padding:10px 6px calc(12px + env(safe-area-inset-bottom))}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.62rem;color:rgba(255,255,255,.66);text-decoration:none}
+.bn.on{color:#f0c75e}
+.bn .fic{font-size:1.15rem}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">زایچه<em>✦</em></div>
+  <div class="credits">۷ اعتبار</div>
+</header>
+<main>
+  <h1>سلام مهدی،<br>آسمان امروزت روشن است.</h1>
+  <p class="sub">سه گزارش فعال داری و دو گذر مهم پیش رو — از همین‌جا شروع کن.</p>
+
+  <div class="rule"></div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="v">۷ <small>اعتبار</small></div><div class="l">موجودی</div></div>
+    <div class="stat"><div class="v">۳</div><div class="l">گزارش فعال</div></div>
+    <div class="stat"><div class="v">۲</div><div class="l">گذر پیش‌رو</div></div>
+  </div>
+
+  <div class="section-t"><h2>قدم بعدی تو</h2></div>
+  <div class="tiles">
+    <a class="tile" href="#"><span class="kicker">امروز</span><b>آسمان امروز</b><p>ماه در خانهٔ دهم — روزِ دیده‌شدن</p></a>
+    <a class="tile" href="#"><span class="kicker">گزارش‌ها</span><b>گزارش‌های من</b><p>PDF و Word، همیشه مال تو</p></a>
+    <a class="tile" href="#"><span class="kicker">رابطه</span><b>سازگاری دو نفره</b><p>با شاهد از هر دو چارت</p></a>
+    <a class="tile" href="#"><span class="kicker">فروشگاه</span><b>افزودن اعتبار</b><p>بدون انقضا · هر اعتبار ۵۰ هزار</p></a>
+  </div>
+
+  <div class="section-t"><h2>گزارش‌های اخیر</h2><a href="#">همه ←</a></div>
+  <div class="doc"><div class="no">۰۱</div><div><b>شناخت کامل</b><div class="meta">۱۳ بخش · ۲ شهریور</div></div><span class="tag ok">فعال</span></div>
+  <div class="doc"><div class="no">۰۲</div><div><b>یک سؤال — شغلم را عوض کنم؟</b><div class="meta">در حال تولید… ۴۰٪</div></div><span class="tag run">در جریان</span></div>
+</main>
+<nav class="bottomnav">
+  <a class="bn" href="#"><span class="fic">🏠</span>خانه</a>
+  <a class="bn" href="#"><span class="fic">💞</span>سازگاری</a>
+  <a class="bn" href="#"><span class="fic">☀️</span>چارت</a>
+  <a class="bn on" href="#"><span class="fic">📊</span>داشبورد</a>
+  <a class="bn" href="#"><span class="fic">👤</span>حساب</a>
+</nav>
+</body>
+</html>

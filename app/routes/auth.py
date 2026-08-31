@@ -28,29 +28,26 @@ def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(.
                     cap: str | None = Form(None)):
     from app.auth import set_user_cookie, verify_otp
     from app.db import get_session
-    from app.main import claim_anonymous_charts
+    from app.main import _chart_tokens, claim_anonymous_charts
     from fastapi import HTTPException
     u = verify_otp(phone, code)
     if not u:
         raise HTTPException(401, "[ZAY-AUTH-001] کد نادرست یا منقضی شده")
-
-    # A5 (F-37) — link the guest's charts to the account they just created.
-    #
-    # `cap` as a form field never actually arrives: chart_access is httpOnly,
-    # so the login page cannot read it and has never posted one. Read the
-    # cookie here instead, and claim every chart in it (a guest may well have
-    # built more than one before signing up). The explicit `cap` parameter is
-    # still honoured for callers that do have a bare token.
-    from app.main import _chart_tokens
-    caps = list(_chart_tokens(request).values())
-    if cap and cap not in caps:
-        caps.append(cap)
-    if caps:
+    # The `cap` form field never actually arrives: chart_access is httpOnly,
+    # so the login page is structurally unable to read it. The cookie is the
+    # only reliable source, hence the claim happens server-side here.
+    # A5 (F-37): link guest chart(s) to the freshly-logged-in user.
+    # BUGFIX 2026-08-27: claim from the chart_access COOKIE (all guest charts)
+    # as well as the legacy `cap` form field — the login page never sent `cap`,
+    # so the guest chart vanished from the dashboard after login.
+    tokens = _chart_tokens(request) or {}
+    if cap:
+        tokens = {**tokens, "_cap": cap}
+    if tokens:
         session = next(get_session())
         try:
-            for token in caps:
-                # never steals: claim_anonymous_charts skips owned profiles
-                claim_anonymous_charts(session, u, token)
+            for tok in set(tokens.values()):
+                claim_anonymous_charts(session, u, tok)  # idempotent per chart
         finally:
             session.close()
     return set_user_cookie(request, u.id)

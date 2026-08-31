@@ -114,9 +114,25 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* C4: real report progress bar (section x of 13) */
 .report-progress{ margin-top:var(--sp-4); }
+.report-progress--sticky{ position:sticky; top:12px; z-index:10; background:var(--surface-2); border:1px solid var(--gold-dim, rgba(212,175,55,.32)); border-radius:16px; padding:14px 16px; box-shadow:0 8px 32px rgba(0,0,0,.18); }
+.report-progress-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.report-progress-title{ font-weight:800; font-size:.9rem; color:var(--txt); }
+.report-progress-pct{ font-weight:800; color:var(--gold-text,var(--gold)); font-variant-numeric:tabular-nums; }
+.report-progress-sub{ margin:0 0 8px; font-size:.82rem; }
+.report-progress-hint{ margin:8px 0 0; font-size:.72rem; line-height:1.7; }
 .rp-track{ height:10px; border-radius:var(--r-full); background:var(--nav-ink-a09, var(--w-d09, rgba(255,255,255,.09))); overflow:hidden; }
 .rp-fill{ height:100%; border-radius:var(--r-full); background:linear-gradient(135deg,var(--gold),var(--gold-deep)); transition:width 1.2s var(--ease); }
 @media (prefers-reduced-motion:reduce){ .rp-fill{ transition:none; } }
+/* FIX B: fixed top banner for report progress (always visible) */
+.report-fixed-banner{ position:fixed; top:0; left:0; right:0; z-index:100; background:var(--surface); border-bottom:2px solid var(--gold); padding:10px 16px 12px; box-shadow:0 4px 20px rgba(0,0,0,.25); }
+.report-fixed-inner{ display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto 8px; }
+.report-fixed-title{ font-weight:800; font-size:.88rem; }
+.report-fixed-pct{ font-weight:800; color:var(--gold-text,var(--gold)); }
+.report-fixed-hint{ display:block; text-align:center; font-size:.7rem; color:var(--muted); margin-top:6px; }
+.rp-track--fixed{ max-width:1100px; margin:0 auto; }
+/* FIX C: explore busy as fixed overlay */
+.explore-busy-overlay{ position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); backdrop-filter:blur(6px); padding:16px; }
+.explore-busy-card{ max-width:520px; width:100%; padding:22px; border:1px solid var(--gold-dim, rgba(212,175,55,.32)); border-radius:18px; text-align:center; }
 
 .sk-line{ height:14px; margin-bottom:var(--sp-2); }
 

@@ -3,16 +3,18 @@
 {% block description %}سال تولدت تا تولد بعدی: تم اصلی، خانهٔ برجسته و ۵ گذر کلیدی با تاریخ دقیق.{% endblock %}
 
 {% block content %}
-<div class="wrap u-c24b5a41" x-data="solarApp()" x-init="init()">
-  <h1 class="u-69822621">چارت سالیانه — سالِ تو از تولد تا تولد بعدی</h1>
-  <p class="muted u-ee31f211">
-    هر سال، خورشید به همان نقطهٔ دقیق لحظهٔ تولدت برمی‌گردد؛ چارت آن لحظه نقشهٔ سال پیشِ روست —
-    محاسبه‌شده برای محل زندگی فعلی تو{% if city_fa %} ({{ city_fa }}){% endif %}.
-  </p>
+<div class="z-periodic" x-data="solarApp()" x-init="init()">
+  <header class="z-page-header">
+    <div>
+      <span class="z-eyebrow">چارت سالیانه</span>
+      <h1>سالِ تو از تولد تا تولد بعدی</h1>
+      <p class="z-periodic-lead">هر سال، خورشید به همان نقطهٔ دقیق لحظهٔ تولدت برمی‌گردد؛ چارت آن لحظه نقشهٔ سال پیشِ روست — محاسبه‌شده برای محل زندگی فعلی تو{% if city_fa %} ({{ city_fa }}){% endif %}.</p>
+    </div>
+  </header>
 
   <!-- free teaser: the exact return moment + precision proof -->
-  <div class="glass u-panel">
-    <div class="u-ea49063c"><div class="u-strong-sm">☀️ لحظهٔ بازگشت خورشید</div></div>
+  <div class="glass z-teaser">
+    <div class="z-teaser__label"><span>☀️ لحظهٔ بازگشت خورشید</span></div>
     <p class="u-body" x-show="teaser.moment_utc" x-cloak>
       <span x-text="teaser.moment_utc"></span> UTC
       — دقت محاسبه: <b x-text="teaser.precision_arcmin"></b> دقیقهٔ قوسی (&lt; ۱ دقیقه)
@@ -24,18 +26,18 @@
   <!-- paid full content -->
   <template x-if="loaded">
     <div>
-      <div class="glass u-panel">
-        <div class="u-strong-sm">🧭 تم اصلی سال شما</div>
+      <div class="glass z-card">
+        <div class="z-card__label"><span>🧭 تم اصلی سال شما</span></div>
         <p class="u-body" x-text="sec.theme"></p>
         <p class="muted u-note" x-text="'حال‌وهوا: ' + sec.mood"></p>
       </div>
 
-      <div class="glass u-panel">
-        <div class="u-strong-sm">🗓️ ۵ گذر کلیدی سال — با تاریخ</div>
+      <div class="glass z-card">
+        <div class="z-card__label"><span>🗓️ ۵ گذر کلیدی سال — با تاریخ</span></div>
         <template x-for="(t, i) in sec.transits" :key="'t' + i">
-          <div class="u-38697191">
-            <span class="u-3a38b258" aria-hidden="true"></span>
-            <p class="u-362151c5"><b x-text="t.date"></b> — <span x-text="t.headline"></span></p>
+          <div class="z-event-row">
+            <span class="z-event-row__dot" aria-hidden="true"></span>
+            <p><b x-text="t.date"></b> — <span x-text="t.headline"></span></p>
           </div>
         </template>
       </div>
@@ -64,12 +66,12 @@
        on a skeleton that would never resolve -->
   <p class="muted u-note" x-show="err" x-text="err" x-cloak></p>
   {% else %}
-  <div class="glass glow u-56ef63c4">
+  <div class="glass z-locked">
     <h2>چارت سالیانه را باز کن — ۹ اعتبار</h2>
-    <p class="muted u-note-gold">تم اصلی سال · خانهٔ برجسته · ۵ گذر کلیدی با تاریخ · پرسش فصلی · روایت کامل</p>
-    <button class="btn btn-lg btn-accent" @click="buy()" :disabled="busy"
+    <p>تم اصلی سال · خانهٔ برجسته · ۵ گذر کلیدی با تاریخ · پرسش فصلی · روایت کامل</p>
+    <button class="z-action" @click="buy()" :disabled="busy"
             x-text="busy ? 'در حال باز کردن…' : 'باز کردن با ۹ اعتبار'">باز کردن با ۹ اعتبار</button>
-    <p class="muted u-note">تنها محصولی که هر سال دوباره معنا پیدا می‌کند — سالِ بعد، چارتِ سالِ بعد.</p>
+    <p class="z-locked__note">تنها محصولی که هر سال دوباره معنا پیدا می‌کند — سالِ بعد، چارتِ سالِ بعد.</p>
   </div>
   {% endif %}
 </div>

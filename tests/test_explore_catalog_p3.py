@@ -326,6 +326,38 @@ def test_build_prompt_only_uses_card_domains():
     assert "سؤال کاربر" in prompt and "عوامل فعال" in prompt
 
 
+def test_qa_accepts_persian_and_invisible_char_evidence():
+    """Prod bug 2026-08-26 — explore QA rejected the model's Persian evidence
+    («خورشید», «طالع», «عطارد») because the whitelist held canonical English
+    names; every card then failed all 5 QA retries and the user saw nothing.
+    Evidence must be normalized (invisible chars + Persian→English) first.
+    QA stays anti-hallucination: a factor that does NOT exist in the chart
+    (garbage token) is still rejected."""
+    from app.explore.cards import CARD_MAP
+    from app.explore.service import qa_explore
+    chart = TEST_CHART
+    card = CARD_MAP["personality"]
+    long_i1 = "این الگو در طول زندگی پایدار است و هویت اصلی تو را می‌سازد؛ خورشید در این ترکیب نقش مرکزی دارد و هر تصمیم بزرگ تو را جهت می‌دهد و به آن معنا می‌بخشد."
+    long_i2 = "طالع تو لایهٔ بیرونی شخصیت را نشان می‌دهد و عطارد شیوهٔ پردازش ذهنی‌ات را؛ این سه با هم تصویر کامل‌تری از شخصیت می‌سازند و در روابط و کار هم دیده می‌شوند."
+    base = {
+        "intro": "بررسی شخصیت تو بر پایهٔ خورشید، طالع و عطارد انجام شد و الگوی اصلی آن روشن شد.",
+        "insights": [
+            {"insight": long_i1, "practical_advice": "با تمرکز روی این الگو تصمیم‌های بهتری می‌گیری.",
+             "evidence": ["خورشید در \u200cاسد", "Sun in Leo"]},
+            {"insight": long_i2, "practical_advice": "از این شناخت در تعاملات روزانه استفاده کن.",
+             "evidence": ["جنبه طالع", "عطارد", "Mercury"]},
+        ],
+    }
+    errs = qa_explore(base, chart, card)
+    assert not any("خارج از عوامل" in e for e in errs), errs
+
+    # anti-hallucination: a factor that is NOT in the chart at all still fails
+    base2 = json.loads(json.dumps(base))
+    base2["insights"][0]["evidence"] = ["Zorgon"]
+    errs2 = qa_explore(base2, chart, card)
+    assert any("خارج از عوامل" in e for e in errs2), errs2
+
+
 # ── F5 funnel: first exploration free (loss aversion) ───────────────────────
 def test_first_exploration_free_when_broke(monkeypatch):
     """F5 — 0-credit user gets ONE free exploration, then 402."""
@@ -352,7 +384,9 @@ def test_first_exploration_free_when_broke(monkeypatch):
 
 
 def test_free_exploration_failure_grants_no_refund(monkeypatch):
-    """F5 — a failed free exploration must NOT mint credits."""
+    """F5 — a failed free exploration must NOT mint credits, AND must NOT burn
+    the user's one-time freebie (prod bug 2026-08-26: generation failed →
+    free_exploration_used stayed true → every later click was a silent 402)."""
     c = TestClient(app)
     uid = _mk_user(c)
     with Session(engine) as s:
@@ -368,4 +402,4 @@ def test_free_exploration_failure_grants_no_refund(monkeypatch):
     with Session(engine) as s:
         u = s.get(User, uid)
         assert u.credits == 0  # nothing minted
-        assert u.free_exploration_used is True  # still consumed
+        assert u.free_exploration_used is False  # restored — freebie NOT burned
