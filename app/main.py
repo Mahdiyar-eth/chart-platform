@@ -290,7 +290,15 @@ def readiness():
     if not _r2_configured() and IS_PROD:
         out["r2"] = "down"
         code = 503
-    # 5) disk headroom (watchdog threshold is 85%)
+    # 5) semantic retrieval. Informational, never 503: chat works without it
+    #    (it remembers the conversation and the chart regardless), but the
+    #    feature has been silently dormant since it shipped and nothing said so.
+    try:
+        from app.rag import rag_available
+        out["rag"] = "ok" if rag_available() else "unavailable (sentence-transformers not installed)"
+    except Exception:  # noqa: BLE001
+        out["rag"] = "unknown"
+    # 6) disk headroom (watchdog threshold is 85%)
     try:
         import shutil
         free_gb = shutil.disk_usage("/").free / 2 ** 30
@@ -2030,6 +2038,25 @@ def api_chat_history(chart_id: str, request: Request, session: Session = Depends
     ]}
 
 
+def _chat_history_for_prompt(session: Session, chart_id: str,
+                             limit: int = 8) -> list[dict]:
+    """The last few turns of this conversation, oldest first.
+
+    Every message has been persisted to ChatMessage since chat shipped, and
+    /api/chat/history has served the whole transcript to the UI all along —
+    but the model never saw any of it. The page showed a continuous
+    conversation the backend had no knowledge of, so "چرا؟" after an answer
+    referred to nothing.
+
+    Only the tail is loaded; build_chat_prompt windows it again for cost.
+    """
+    rows = session.exec(
+        select(ChatMessage).where(ChatMessage.chart_id == chart_id)
+        .order_by(ChatMessage.created_at.desc()).limit(limit)
+    ).all()
+    return [{"role": m.role, "content": m.content} for m in reversed(rows)]
+
+
 def _chat_guarded_context(request: Request, chart_id: str,
                           session: Session) -> tuple:
     """Shared guards for /api/chat and /api/chat/stream (D4): rate limit,
@@ -2103,6 +2130,7 @@ def api_chat(
             report_sections=(report.sections if report and report.sections else None),
             focus_areas=(profile.focus_areas if profile else None),
             report_id=(report.id if report else None),
+            history=_chat_history_for_prompt(session, chart_id),
         )
     except Exception:
         chat_quota_release(acct)  # don't burn the daily quota on a failed call
@@ -2179,6 +2207,10 @@ async def api_chat_stream(
     _ent = getattr(request.state, "chat_ent", None)
     _ent_id = _ent.id if _ent is not None else None
     _daily_limit = _chat_daily_limit(order)
+    # Read before the generator runs: this turn's own messages are written
+    # when the stream completes, and the model must not be handed the question
+    # it is currently answering.
+    _history = _chat_history_for_prompt(session, chart_id)
 
     async def event_stream():
         from app.chat.service import chat_stream
@@ -2189,6 +2221,7 @@ async def api_chat_stream(
                 report_sections=(report.sections if report and report.sections else None),
                 focus_areas=(profile.focus_areas if profile else None),
                 report_id=(report.id if report else None),
+                history=_history,
             ):
                 if ev["type"] == "token":
                     produced = True

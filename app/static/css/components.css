@@ -226,3 +226,23 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 /* relocation destination picker */
 .reloc-city { margin-top: var(--sp-2); }
 .reloc-city-row { display: flex; gap: var(--sp-2); align-items: center; }
+
+/* ── chat bubbles ─────────────────────────────────────────────────────────
+   The Alpine :class expression for these was swept into utilities.css by the
+   st- -> u- rename and sat there as a JavaScript ternary inside a rule body,
+   so every declaration was dropped and both speakers rendered identically.
+   Real classes, bound from the template. */
+.chat-bubble { max-width: 82%; }
+.chat-bubble.is-me {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+  color: var(--gold-ink);
+  border-radius: var(--r-md) var(--r-md) 4px var(--r-md);
+}
+.chat-bubble.is-them {
+  align-self: flex-start;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  color: var(--txt);
+  border-radius: var(--r-md) var(--r-md) var(--r-md) 4px;
+}

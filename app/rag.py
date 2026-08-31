@@ -32,6 +32,27 @@ RAG_MODEL_NAME = os.getenv("RAG_MODEL", "intfloat/multilingual-e5-small")
 RAG_EMBEDDING_DIM = int(os.getenv("RAG_EMBEDDING_DIM", "384"))
 
 
+def rag_available() -> bool:
+    """Is semantic retrieval actually usable on this deployment?
+
+    sentence-transformers is not in requirements.txt, so on a stock install
+    _model_instance() raises ImportError at both ends: the worker logs "RAG
+    index skipped" and chat quietly falls back to rag_chunks=[]. Nothing was
+    ever wrong at runtime — and nothing was ever indexed either. Zero chunks
+    have been written in the lifetime of the feature.
+
+    Exposed so /readiness and the admin panel can report the truth instead of
+    the system looking like it has semantic retrieval when it has none. Chat
+    still remembers the conversation and the chart without it (see
+    build_chat_prompt history) — this covers retrieval over report text only.
+    """
+    try:
+        import sentence_transformers  # noqa: F401
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _model_instance():
     """Lazy singleton — CPU inference on the worker."""
     global _model

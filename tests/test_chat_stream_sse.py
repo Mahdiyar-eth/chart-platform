@@ -20,7 +20,7 @@ def _chat_stream_stub(tokens: list[str], fail: bool = False):
     """Async generator replacement for app.chat.service.chat_stream —
     emits the same event shape the endpoint consumes."""
     async def gen(question, chart_json, report_sections=None, focus_areas=None,
-                  router=None, report_id=None):
+                  router=None, report_id=None, history=None):
         yield {"type": "intent", "intent": "general", "domains": []}
         if fail:
             yield {"type": "error", "message": "سرویس در دسترس نیست"}

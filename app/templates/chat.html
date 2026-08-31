@@ -20,7 +20,7 @@
 
   <div class="u-ac7cd697" id="msgs" x-show="!locked" x-ref="box">
     <template x-for="m in msgs" :key="m.id">
-      <div class="u-34b6e1f7 u-933b315d" :>
+      <div class="chat-bubble u-933b315d" :class="m.me ? 'is-me' : 'is-them'">
         <span x-text="m.text" :class="m.streaming ? 'streaming-cursor' : ''"></span>
       </div>
     </template>
@@ -107,7 +107,13 @@ function chat(){
             if(evType === 'token'){ full = ev.text; const m = this.msgs.find(m => m.id===aid); if(m) m.text = full; }
             else if(evType === 'done'){ const m = this.msgs.find(m => m.id===aid); if(m){ m.text = ev.answer || full; m.streaming = false; } }
             else if(evType === 'error'){ const m = this.msgs.find(m => m.id===aid); if(m){ m.text = ev.message || 'پاسخی آماده نشد؛ دوباره تلاش کنید.'; m.streaming = false; } }
-            else if(evType === 'quota'){ }
+            else if(evType === 'quota'){
+              // the server emits this on every successful answer; it used to
+              // land in an empty block, so the counter never moved
+              if(typeof ev.remaining === 'number') this.remaining = ev.remaining;
+              if(typeof ev.limit === 'number' && ev.limit) this.limit = ev.limit;
+              if(ev.pack && ev.pack.exhausted) showToast('پک گفت‌وگویت تمام شد', false);
+            }
           }
           this.$nextTick(() => { const b=this.$refs.box; b.scrollTop=b.scrollHeight; });
         }
