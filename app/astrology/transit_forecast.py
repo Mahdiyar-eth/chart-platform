@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 import swisseph as swe
 
 from app.astrology.engine import (
-    ASPECT_FA, ASPECT_NAMES, SIGNS_FA, _house_of, _retro, ensure_ephe,
+    ASPECT_FA, ASPECT_NAMES, SIGNS_FA, _house_of, ensure_ephe,
     jd_from_utc, sign_of,
 )
 
@@ -48,7 +48,7 @@ _RETRO_STATION = 0.03      # deg/day threshold (a planet moving this slow treats
 
 _MAX_EXACT_DATES = 3
 RETRO_GROUP_DAYS = 180.0   # consecutive crossings within this many julian days = one retro event
-DETECT_ORB = 8.0           # only count a crossing when the planet is this near the aspect
+  # (DETECT_ORB defined once above — duplicate removed X22/R24)
 
 
 @dataclass
@@ -148,38 +148,6 @@ def _iso_dt(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _crossing_points(body_swe: int, target_lon: float, aspect: float,
-                     jd0: float, jd1: float, days: int) -> list[float]:
-    """Scan daily [jd0, jd0+days], return Julian days where the signed
-    separation from `aspect` crosses zero (bisection to <1 arc-min)."""
-    lons = [0.0] * (days + 1)
-    for d in range(days + 1):
-        lons[d], _ = _transit_lon(body_swe, jd0 + d)
-    exacts: list[float] = []
-    for d in range(days):
-        g0 = _norm180(lons[d] - target_lon - aspect)
-        g1 = _norm180(lons[d + 1] - target_lon - aspect)
-        if g0 == 0.0:
-            exacts.append(jd0 + d)
-            continue
-        if g0 * g1 < 0:
-            lo, hi = jd0 + d, jd0 + d + 1
-            glo = g0
-            for _ in range(BISECT_MAX):
-                mid = (lo + hi) / 2.0
-                mlon, _ = _transit_lon(body_swe, mid)
-                gmid = _norm180(mlon - target_lon - aspect)
-                if gmid == 0.0:
-                    lo = hi = mid
-                    break
-                if (gmid > 0) == (glo > 0):
-                    lo, glo = mid, gmid
-                else:
-                    hi = mid
-            exacts.append((lo + hi) / 2.0)
-    return exacts
-
-
 @dataclass
 class _EventRaw:
     body: str
@@ -214,7 +182,6 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
         for d in range(days + 1):
             lons[d], speeds[d] = _transit_lon(body_swe, jd0 + d)
         for target, tlon in targets.items():
-            weight_t = WEIGHT_TARGET.get(target, 1)
             for aspect in ASPECTS:
                 # crossings via daily sign-change scan on precomputed lons
                 exacts: list[float] = []
@@ -268,8 +235,6 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
         # dedup gates: keep a crossing only if it is a genuine aspect hold
         w = WEIGHT_PLANET.get(r.body, 1) * WEIGHT_TARGET.get(r.target, 1) * WEIGHT_ASPECT.get(int(r.aspect), 1)
         exacts = r.exacts[:_MAX_EXACT_DATES]
-        if len(r.exacts) > _MAX_EXACT_DATES:
-            pass
         # window: around each exact crossing, |orb| <= TRANSIT_ORB
         # approximate half-window (days) from speed: orb/speed
         half_days = TRANSIT_ORB / max(abs(r.speed), 1e-4) if r.speed else 7.0
@@ -293,3 +258,74 @@ def forecast(chart_json: dict, months: int = 12, start: datetime | None = None) 
 
     events.sort(key=lambda e: e.window_start)
     return [e.to_json() for e in events]
+
+
+def top_by_weight(events: list[dict], n: int = 5) -> list[dict]:
+    """R.5 / V9 — the N globally highest-weight transits, independent of month.
+
+    The R4 page only sorted WITHIN each month, so a heavy Saturn transit 10 months
+    out was buried ~4000px below monthly groups. This returns the top-N across the
+    WHOLE window sorted by weight desc (ties broken chronologically), which feeds
+    the '۵ گذر مهم امسال' teaser. Pure + deterministic so it is unit-testable.
+    """
+    def _key(e: dict) -> tuple:
+        return (-(e.get("weight") or 0), e.get("window_start") or "")
+
+    return sorted(events, key=_key)[:n]
+
+
+def open_month_keys(events: list[dict], open_count: int = 3) -> list[str]:
+    """R.5 / V10 — the first `open_count` month-groups (YYYY-MM) to show expanded.
+
+    Transits are computed forward from 'now', so the earliest month-groups ARE the
+    current month + the next few. Everything outside this set is collapsed into
+    `<details>`, which is what brings the 5439px wall under the 3000px target.
+    Returns a SORTED list (chronological) so it serialises to JSON for the template.
+    Empty/no-events → empty list (nothing open).
+    """
+    months = sorted({str(e.get("window_start") or "")[:7] for e in events if e.get("window_start")})
+    return months[:open_count]
+
+
+# Gregorian month number -> Persian month name (pre-existing label mapping; keep).
+FA_MONTH = {"01": "فروردین", "02": "اردیبهشت", "03": "خرداد", "04": "تیر", "05": "مرداد",
+            "06": "شهریور", "07": "مهر", "08": "آبان", "09": "آذر", "10": "دی",
+            "11": "بهمن", "12": "اسفند"}
+
+_FA_INT = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+
+
+def _fa_digits(n: int) -> str:
+    """Convert an integer to Persian (Extended Arabic-Indic) digits for display."""
+    return str(n).translate(_FA_INT)
+
+
+def month_label_map(events: list[dict]) -> dict[str, str]:
+    """R.6 / U2 — map 'YYYY-MM' → a disambiguated month label (with Persian year).
+
+    A 12-month window that spans two Persian years can show the same month name
+    twice (e.g. «آبان ۱۴۰۵» and «آبان ۱۴۰۶») with no way to tell them apart. This
+    returns 'آبان ۱۴۰۵' / 'آبان ۱۴۰۶' when the set covers more than one year, and
+    the bare name (آبان) when it doesn't — so short ranges stay clean and long
+    ranges never duplicate ambiguously. Pure + deterministic → unit-testable.
+    """
+    import jdatetime
+
+    keys = sorted({str(e.get("window_start") or "")[:7] for e in events if e.get("window_start")})
+    years = sorted({k[:4] for k in keys})
+    spans_two_years = len(years) > 1
+    out: dict[str, str] = {}
+    for k in keys:
+        mm = k[5:7]
+        base = FA_MONTH.get(mm, k)
+        if not spans_two_years:
+            out[k] = base
+            continue
+        # Use the 15th of the month to avoid Nowruz/edge ambiguity when converting.
+        try:
+            gy, gm = int(k[:4]), int(mm)
+            jy = jdatetime.date.fromgregorian(year=gy, month=gm, day=15).year
+            out[k] = f"{base} {_fa_digits(jy)}"
+        except Exception:  # noqa: BLE001 — if conversion fails, keep the bare name
+            out[k] = base
+    return out

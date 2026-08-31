@@ -1,7 +1,8 @@
 """B4 — weekly transit alerts acceptance tests (delivery mocked, DB real)."""
 import os, json, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+from pathlib import Path
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 os.environ.setdefault("CREATE_ALL_ON_BOOT", "1")
 
 from datetime import datetime, timedelta, timezone
@@ -11,11 +12,15 @@ from app.db import engine
 from sqlmodel import Session, select
 from app.models import (BirthProfile, Chart, NotificationPrefs, Subscription,
                         TransitAlertLog, TransitForecast, User)
-from app.report.transit_alerts import pick_alert_event, alert_text, run_transit_alerts
+from app.report.transit_alerts import pick_alert_event, run_transit_alerts
 
 
-def _ev(w, days_ahead, tp="Saturn", tgt="Sun"):
-    d = (datetime.now(timezone.utc) + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
+def _ev(w, days_ahead, tp="Saturn", tgt="Sun", *, today=None):
+    """R13 fix: the date must be relative to the `today` passed to
+    pick_alert_event — datetime.now() made this test time-bomb (it passed in
+    August, fails any day the offset crosses a month boundary)."""
+    base = today or datetime.now(timezone.utc)
+    d = (base + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
     return {"transit_planet": tp, "transit_planet_fa": "زحل", "aspect": "conjunction",
             "aspect_fa": "هم‌نشینی", "natal_target": tgt, "natal_target_fa": "خورشید",
             "weight": w, "exact_dates": [d], "retro_passes": 1}
@@ -23,7 +28,8 @@ def _ev(w, days_ahead, tp="Saturn", tgt="Sun"):
 
 def test_1_picks_highest_weight_in_7day_window():
     today = datetime(2026, 8, 22, tzinfo=timezone.utc)
-    evs = [_ev(10, 2), _ev(25, 5, tp="Jupiter"), _ev(30, 9)]   # 3rd is day+9 → outside window
+    evs = [_ev(10, 2, today=today), _ev(25, 5, tp="Jupiter", today=today),
+           _ev(30, 9, today=today)]   # 3rd is day+9 → outside window
     got = pick_alert_event(evs, today=today)
     assert got and got["weight"] == 25 and got["transit_planet"] == "Jupiter"
 
@@ -69,7 +75,7 @@ async def test_2_respects_prefs_and_dedup_and_link():
             pr.transit_alerts = True
             s.add(pr)
             s.commit()
-        r2 = await run_transit_alerts()
+        _r2 = await run_transit_alerts()
         assert len(delivered) == 1
         chat_id, text, platform = delivered[0]
         assert f"/transits?c={cid}" in text
@@ -83,3 +89,4 @@ async def test_2_respects_prefs_and_dedup_and_link():
         assert len(delivered) == 1, "anti-duplicate: max one push per week"
     finally:
         bh.send_message = orig
+

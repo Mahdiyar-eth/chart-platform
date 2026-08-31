@@ -8,12 +8,9 @@ import threading
 import uuid
 
 import pytest
-from sqlalchemy import text
 from sqlmodel import Session, select
 
-from app import credits
-from app.credits import (InsufficientCredits, UnknownAction, balance,
-                         get_price, grant, refund, spend)
+from app.credits import (InsufficientCredits, UnknownAction, get_price, grant, refund, spend)
 from app.db import engine
 from app.models import CreditTransaction, User
 

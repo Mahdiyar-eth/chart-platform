@@ -5,7 +5,7 @@
 <style>
   .sky{max-width:780px;margin:0 auto;padding:32px 16px 64px;}
   .sky header{text-align:center;}
-  .sky .hd-icon{width:66px;height:66px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.32);color:var(--gold);}
+  .sky .hd-icon{width:66px;height:66px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.32);color:var(--gold-text,var(--gold));}
   .sky h1{margin-top:14px;font-size:1.9rem;font-weight:800;}
   .sky .sub{margin-top:6px;color:var(--muted);}
   .sky .toggle{display:flex;justify-content:center;gap:8px;margin-top:18px;}
@@ -14,29 +14,29 @@
   .sky .glass{margin-top:16px;padding:20px;}
   .sec-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
   .sec-head svg{width:20px;height:20px;color:var(--gold);flex-shrink:0;}
-  .sec-head h2{font-size:1.08rem;font-weight:800;color:var(--gold);}
+  .sec-head h2{font-size:1.08rem;font-weight:800;color:var(--gold-text,var(--gold));}
   .moon-hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
   .moon-hero .phase-name{font-size:1.35rem;font-weight:800;}
   .illum{flex:1;min-width:140px;}
   .illum .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}
   .illum .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#F0C75E,#C8901E);}
   .illum .lbl{margin-top:6px;font-size:.78rem;color:var(--muted);}
-  .mean{margin-top:12px;font-size:.94rem;line-height:1.9;color:#e8e2f5;}
+  .mean{margin-top:12px;font-size:.94rem;line-height:1.9;color:var(--muted-3,var(--txt));}
   .spec-box{margin-top:12px;padding:10px 14px;border:1px dashed rgba(212,175,55,.4);border-radius:10px;background:rgba(212,175,55,.06);font-size:.86rem;line-height:1.8;color:var(--muted);}
-  .spec-box b{color:var(--gold);}
+  .spec-box b{color:var(--gold-text,var(--gold));}
   .planet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
   .planet-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;}
   .planet-card .glyph{font-size:1.35rem;color:var(--gold);line-height:1;}
   .planet-card .nm{margin-top:6px;font-weight:800;font-size:.9rem;}
   .planet-card .sg{margin-top:2px;color:var(--muted);font-size:.8rem;}
   .planet-card .theme{margin-top:8px;font-size:.78rem;line-height:1.6;color:#cfc7e4;}
-  .planet-card .spec{margin-top:6px;font-size:.75rem;color:var(--gold);}
-  .retro-badge{color:#ff9f43;font-size:.8rem;font-weight:700;}
+  .planet-card .spec{margin-top:6px;font-size:.75rem;color:var(--gold-text,var(--gold));}
+  .retro-badge{color:var(--warn-txt,var(--gold-deep));font-size:.8rem;font-weight:700;}
   .note{font-size:.78rem;color:var(--muted);margin-top:12px;line-height:1.7;}
   .retro-list{display:flex;flex-direction:column;gap:10px;}
   .retro-item{display:flex;gap:12px;align-items:flex-start;padding:11px 13px;border:1px solid rgba(255,159,67,.25);background:rgba(255,159,67,.05);border-radius:12px;}
-  .retro-item .glyph{font-size:1.3rem;color:#ff9f43;line-height:1;}
-  .retro-item .t{font-size:.88rem;line-height:1.7;color:#e8e2f5;}
+  .retro-item .glyph{font-size:1.3rem;color:var(--warn-txt,var(--gold-deep));line-height:1;}
+  .retro-item .t{font-size:.88rem;line-height:1.7;color:var(--muted-3,var(--txt));}
   .retro-item .t b{color:#ffd9a8;}
   .aspect-list{display:flex;flex-direction:column;gap:10px;}
   .aspect-row{display:flex;gap:12px;align-items:center;padding:11px 13px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);border-radius:12px;}
@@ -56,7 +56,7 @@
 
 <div class="sky" x-data="{spec:false}">
   <header>
-    <div class="hd-icon"><svg class="st-d7326515" aria-hidden="true"><use href="#icon-moon"/></svg></div>
+    <div class="hd-icon"><svg class="u-d7326515" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></div>
     <h1>آسمان امروز</h1>
     <p class="sub">{{ sky.date_fa }}</p>
   </header>
@@ -68,7 +68,7 @@
 
   <!-- 1) moon phase -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-moon"/></svg><h2>فاز ماه</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg><h2>فاز ماه</h2></div>
     <div class="moon-hero">
       <div class="phase-name">{{ sky.moon_phase }}</div>
       <div class="illum">
@@ -84,7 +84,7 @@
 
   <!-- 2) planetary positions -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-sparkles"/></svg><h2>موقعیت سیارات امروز</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg><h2>موقعیت سیارات امروز</h2></div>
     <div class="planet-grid">
       {% for p in sky.planets %}
       <div class="planet-card">
@@ -101,10 +101,10 @@
 
   <!-- 3) retrogrades -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-refresh"/></svg><h2>سیارات رجوعی الان</h2></div>
     {% if sky.retrogrades %}
-    <p class="mean st-d6e47aa9" >حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
-    <div class="retro-list st-56f43562" >
+    <p class="mean u-d6e47aa9" >حرکت رجوعی یک خطای دیدِ رصدی است: از دیدِ زمین، سیاره مدتی به‌نظر می‌رسد عقب‌عقب حرکت می‌کند. در نجومِ تأملی، این دوره‌ها وقتِ <b>مرور و بازبینی</b> هستند، نه بدشانسی یا خطر.</p>
+    <div class="retro-list u-mt-12" >
       {% for r in sky.retrogrades %}
       <div class="retro-item">
         <span class="glyph">{{ r.glyph }}</span>
@@ -113,13 +113,13 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="mean st-d6e47aa9" >الان هیچ سیاره‌ای در حرکت رجوعی نیست.</p>
+    <p class="mean u-d6e47aa9" >الان هیچ سیاره‌ای در حرکت رجوعی نیست.</p>
     {% endif %}
   </section>
 
   <!-- 4) today's aspects -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-link"/></svg><h2>جنبه‌های امروز</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-link"/></svg><h2>جنبه‌های امروز</h2></div>
     {% if sky.aspects %}
     <div class="aspect-list">
       {% for a in sky.aspects %}
@@ -134,34 +134,34 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="mean st-d6e47aa9" >امروز جنبه‌ی شاخصی میان سیارات نیست.</p>
+    <p class="mean u-d6e47aa9" >امروز جنبه‌ی شاخصی میان سیارات نیست.</p>
     {% endif %}
   </section>
 
   <!-- 5) upcoming moon events -->
   <section class="glass">
-    <div class="sec-head"><svg aria-hidden="true"><use href="#icon-calendar"/></svg><h2>رویدادهای آسمانی پیش رو</h2></div>
+    <div class="sec-head"><svg aria-hidden="true"><use href="/static/icons.svg#icon-calendar"/></svg><h2>رویدادهای آسمانی پیش رو</h2></div>
     <div class="event-list">
       {% for e in sky.moon_events %}
       <div class="event-row">
-        <svg aria-hidden="true"><use href="#icon-moon"/></svg>
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg>
         <span class="lbl">{{ e.label }}</span>
-        <span class="dt">{{ e.date_fa }}<br><span class="st-57f9e31d" >{{ e.sign_fa }}</span></span>
+        <span class="dt">{{ e.date_fa }}<br><span class="u-57f9e31d" >{{ e.sign_fa }}</span></span>
       </div>
       {% endfor %}
     </div>
   </section>
 
   <!-- 6) weekly reflection -->
-  <section class="glass st-91a87015" >
-    <div class="sec-head st-03c4bb6f" ><svg aria-hidden="true"><use href="#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
+  <section class="glass u-91a87015" >
+    <div class="sec-head u-03c4bb6f" ><svg aria-hidden="true"><use href="/static/icons.svg#icon-heart"/></svg><h2>تمرین تأمل این هفته</h2></div>
     <p class="reflect">«{{ sky.reflection }}»</p>
-    <p class="note st-56f43562" >چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
+    <p class="note u-mt-12" >چند دقیقه در خلوت، بدون قضاوت، به همین یک سؤال فکر کن. نوشتن پاسخ کمک می‌کند.</p>
   </section>
 
   <!-- 7) CTA -->
   <div class="glass cta-box">
-    <p class="st-9704c2ae" >می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
+    <p class="u-9704c2ae" >می‌خواهی آسمانِ لحظه‌ی تولد خودت را ببینی؟</p>
     <a class="btn btn-lg" href="/birth-form">چارت تولد رایگان من</a>
   </div>
 

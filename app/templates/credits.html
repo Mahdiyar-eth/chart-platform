@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-2">اعتبار من</h1>
+  <p class="muted mb-6">موجودی فعلی و تاریخچهٔ مصرف. اعتبار هرگز منقضی نمی‌شود.</p>
+
+  <section class="glass glow mb-6 text-center">
+    <div class="text-sm muted">موجودی</div>
+    <div class="text-4xl font-bold mt-1">{{ balance }} <span class="text-base font-normal muted">اعتبار</span></div>
+    <a href="/plans" class="btn mt-4 inline-block">خرید بستهٔ اعتبار</a>
+  </section>
+
+  {% if packs %}
+  <section class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">بسته‌های اعتباری</h2>
+    <div class="space-y-3">
+      {% for p in packs %}
+      <div class="glass flex items-center justify-between gap-3">
+        <div>
+          <div class="font-medium">{{ p.title_fa }}</div>
+          <div class="text-sm muted">{{ p.credits }} اعتبار</div>
+        </div>
+        <button class="btn js-buy" data-action="{{ p.action_key }}" data-chart="">خرید با اعتبار</button>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">تاریخچهٔ تراکنش‌ها</h2>
+    {% if txs %}
+    <div class="glass divide-y">
+      {% for t in txs %}
+      <div class="flex items-center justify-between py-3 px-4 text-sm">
+        <span>{{ 'افزایش' if t.amount > 0 else 'کسر' }} {{ t.amount | abs }}</span>
+        <span class="muted">{{ t.reason }}</span>
+        <span class="muted">{{ t.created_at.strftime('%Y-%m-%d') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">هنوز تراکنشی ثبت نشده.</p>
+    {% endif %}
+  </section>
+</div>
+
+<script>
+// X10: real purchase calls — the endpoint was unreachable from every page before round 2.
+document.querySelectorAll('.js-buy').forEach(function (b) {
+  b.addEventListener('click', async function () {
+    b.disabled = true; b.textContent = 'در حال پردازش…';
+    try {
+      const fd = new FormData();
+      fd.append('action_key', b.dataset.action);
+      if (b.dataset.chart) fd.append('chart_id', b.dataset.chart);
+      const r = await fetch('/api/purchase', { method: 'POST', body: fd });
+      if (r.status === 402) { b.textContent = 'اعتبار کافی نیست'; return; }
+      const j = await r.json();
+      if (j && j.ok) { location.href = '/credits'; return; }
+      b.textContent = j && j.detail ? j.detail : 'خطا';
+    } catch (e) { b.textContent = 'خطا'; }
+  });
+});
+</script>
+{% endblock content %}

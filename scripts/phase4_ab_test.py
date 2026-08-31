@@ -1,7 +1,7 @@
 """Phase 4 — A/B: deepseek-v4-pro thinking OFF vs ON on 20 charts (chat prompt v2).
 Direct GO call, same key, same model; only the thinking flag differs.
 """
-import asyncio, json, sys, time, os, re
+import asyncio, json, sys, time
 sys.path.insert(0, "/root/chart-platform")
 import httpx
 from scripts.ai_benchmark_v4 import make_chart

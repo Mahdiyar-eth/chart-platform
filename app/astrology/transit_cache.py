@@ -32,12 +32,39 @@ def cached_forecast(session, chart_id: str, months: int, chart_json: dict,
         )).first()
     now = _now_naive()
     if row is not None and row.computed_at and (now - row.computed_at) <= timedelta(days=ttl_days):
-        return json.loads(row.payload_json)
+        data = json.loads(row.payload_json)
+        # X1/R1: payload may hold the merged dict {events, narratives} after a paid
+        # analyze — always normalize to the events list for callers.
+        if isinstance(data, dict):
+            return data.get("events") or []
+        return data
 
     result = forecast(chart_json, months=months, start=start)
     if session is not None:
         if row is None:
             row = TransitForecast(chart_id=chart_id, months=months)
+        else:
+            # X-R22: TTL rewrite must NOT wipe paid narratives. Re-merge them onto
+            # the fresh deterministic list.
+            try:
+                prev = json.loads(row.payload_json or "{}")
+            except Exception:  # noqa: BLE001
+                prev = {}
+            if isinstance(prev, dict) and prev.get("narratives"):
+                # Y17/N12b: drop narratives whose event vanished after recompute
+                # (content drift, not crash) so the page never shows analysis for
+                # a transit that no longer exists in this window.
+                _live = {e.get("id") for e in result}
+                _kept = [n for n in prev["narratives"]
+                         if not (n.get("event") or {}).get("id")  # legacy: no anchor → keep
+                         or n["event"]["id"] in _live]
+                row.payload_json = json.dumps({"events": result,
+                                               "narratives": _kept},
+                                              ensure_ascii=False)
+                row.computed_at = now
+                session.add(row)
+                session.commit()
+                return result
         row.payload_json = json.dumps(result, ensure_ascii=False)
         row.computed_at = now
         session.add(row)

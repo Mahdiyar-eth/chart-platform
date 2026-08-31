@@ -312,6 +312,32 @@ async def cms_media_upload(request: Request, file: UploadFile,
     return {"id": m.id, "url": key, "size": len(data)}
 
 
+@router.get("/media/{key:path}")
+def cms_media_get(key: str):
+    """R.5 / V4 (option A): serve a CMS media object.
+
+    In production R2 is configured, so media is served from Cloudflare (fail-closed
+    guards that). When R2 is NOT configured (dev / fresh CI), `upload_bytes` writes
+    the file to the local MEDIA_DIR fallback — this route makes that write READABLE,
+    so a media object uploaded without R2 can actually be served (the review's
+    complaint was a 'semi-fallback' that wrote but was never served). Resolution
+    reuses storage._local_media_path, which neutralises `..` traversal.
+    """
+    from pathlib import Path
+    from fastapi.responses import FileResponse
+
+    from app.storage import _local_media_path, configured
+
+    if configured():
+        # R2 is on: this route is not the serving path — the real URL comes from a
+        # presigned link. Refuse to invent one here (would leak the bucket layout).
+        raise HTTPException(404, "media served via presigned URL in production")
+    p: Path = _local_media_path(key)
+    if not p.is_file():
+        raise HTTPException(404, "media not found")
+    return FileResponse(p, media_type="application/octet-stream")
+
+
 @router.delete("/api/admin/content/media/{mid}")
 def cms_media_delete(mid: str, request: Request, session: Session = Depends(get_session)):
     if not _is_admin(request):

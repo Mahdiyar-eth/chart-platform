@@ -50,6 +50,18 @@ def _coupon(s: Session, code: str, max_uses=1) -> Coupon:
     return c
 
 
+
+
+def _login(c, phone_suffix="c05"):
+    """R14-D2: credit packs require login — attach a valid user cookie."""
+    import uuid as _u
+    from app.auth import _user_cookie_value
+    from app.models import User as _UM
+    uid = "u" + _u.uuid4().hex[:10]
+    with Session(engine) as s:
+        s.add(_UM(id=uid, phone=uid + "@" + phone_suffix, credits=0)); s.commit()
+    c.cookies.update({"chart_user": _user_cookie_value(uid)})
+
 def test_stale_pending_order_releases_coupon(monkeypatch):
     """A pending order older than the window releases its coupon slot."""
     monkeypatch.setattr("app.main.ZarinpalClient", FakeZP)
@@ -59,8 +71,9 @@ def test_stale_pending_order_releases_coupon(monkeypatch):
         cp0 = _coupon(s, "STALE1", max_uses=1)
     code = cp0.code
     cid, tok = _mk_chart(c)
+    _login(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         o = s.get(Order, oid)
@@ -87,13 +100,14 @@ def test_fresh_pending_order_not_swept(monkeypatch):
         cp0 = _coupon(s, "FRESH1", max_uses=1)
     code = cp0.code
     cid, tok = _mk_chart(c)
+    _login(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         o = s.get(Order, oid)
         assert o.status == "pending"  # just created, still fresh
-        released = sweep_stale_orders(s, stale_minutes=30)
+        _released = sweep_stale_orders(s, stale_minutes=30)
         assert s.get(Order, oid).status == "pending", "fresh order must not be expired"
         assert s.exec(select(Coupon).where(Coupon.code == code)).first().used_count == 1
 
@@ -107,8 +121,9 @@ def test_sweep_is_idempotent(monkeypatch):
         cp0 = _coupon(s, "IDEM1", max_uses=1)
     code = cp0.code
     cid, tok = _mk_chart(c)
+    _login(c)
     c.cookies.update({"chart_access": json.dumps({cid: tok})})
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code}
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code}
                  ).json()["order_id"]
     with Session(engine) as s:
         s.get(Order, oid).created_at = utcnow() - timedelta(hours=2)

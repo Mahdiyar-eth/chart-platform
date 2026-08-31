@@ -1,8 +1,8 @@
 """A5 — account-enforcement + anonymous-chart claim acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
-from sqlmodel import Session, select
+from sqlmodel import Session
 from fastapi.testclient import TestClient
 from app.main import app as main_app, claim_anonymous_charts
 from app.models import BirthProfile, Chart, User

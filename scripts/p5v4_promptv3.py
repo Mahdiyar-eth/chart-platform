@@ -1,7 +1,6 @@
 """P5 v4 — personalization before/after prompt v3 (gemini + flash only)."""
 import asyncio, json, sys
 sys.path.insert(0, "/root/chart-platform")
-import httpx, time
 from scripts.ai_benchmark_v4 import make_chart, rubric_eval
 from app.chat.service import _retrieve
 from app.chat.retrieval import CHAT_SYSTEM_PROMPT

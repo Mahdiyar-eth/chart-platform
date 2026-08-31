@@ -13,34 +13,38 @@
 {% endblock %}
 {% block description %}{{ art.meta }}{% endblock %}
 {% block content %}
-<div class="wrap st-dea6d1e3" >
-  <a class="st-4b6becd2" href="/articles" >→ همه‌ی مقالات</a>
-  <div class="article-banner st-e9ec6935" >{{ banner_svg | safe }}</div>
-  <h1 class="st-973be4b9" >{{ art.title }}</h1>
-  <div class="st-5eca212a" >{{ art.category }} · {{ art.date_fa }}</div>
-  {% if art.image %}<img class="st-c536c459" src="{{ art.image }}" alt="{{ art.title }}" >{% endif %}
-  <article class="st-f57a95f1" >
+<div class="wrap u-dea6d1e3" >
+  <a class="u-4b6becd2" href="/articles" >→ همه‌ی مقالات</a>
+  <div class="article-banner u-e9ec6935" >{{ banner_svg | safe }}</div>
+  <h1 class="u-973be4b9" >{{ art.title }}</h1>
+  <div class="u-5eca212a" >{{ art.category }} · {{ art.date_fa }}</div>
+  {% if art.image %}<img class="u-c536c459" src="{{ art.image }}" alt="{{ art.title }}" >{% endif %}
+  <article class="u-f57a95f1" >
     {% for sec in art.body %}
-    {% if sec.h2 %}<h2 class="st-1a43d4fe" >{{ sec.h2 }}</h2>{% endif %}
-    <p class="st-2b583d73" >{{ sec.p }}</p>
+    {% if sec.h2 %}<h2 class="u-1a43d4fe" >{{ sec.h2 }}</h2>{% endif %}
+    <p class="u-2b583d73" >{{ sec.p }}</p>
     {% endfor %}
   </article>
-  <div class="st-42497a28" >
-    <p class="st-b20d91ab" >آماده‌ای چارت خودت را ببینی؟ اینسایت‌های اولیه رایگان است.</p>
-    <a class="btn btn-lg st-60e32dcb" href="/birth-form" >چارت رایگان من</a>
-    <div class="st-39a7ef09" >
-      <a class="st-b4e64313" href="/plans" >مقایسه‌ی پلن‌ها و گزارش کامل</a>
+  <div class="u-42497a28" >
+    <p class="u-b20d91ab" >آماده‌ای چارت خودت را ببینی؟ اینسایت‌های اولیه رایگان است.</p>
+    <a class="btn btn-lg u-60e32dcb" href="/birth-form" >چارت رایگان من</a>
+    <div class="u-39a7ef09" >
+      <a class="u-b4e64313" href="/plans" >مقایسه‌ی پلن‌ها و گزارش کامل</a>
     </div>
   </div>
   {% if others %}
-  <div class="st-d9f14975" >
-    <h2 class="st-4064230e" >مقالات مرتبط</h2>
-    <div class="st-74f6f9b9" >
+  <div class="u-d9f14975" >
+    <h2 class="u-4064230e" >مقالات مرتبط</h2>
+    <div class="u-74f6f9b9" >
       {% for o in others %}
-      <a class="st-3c67cd38" href="/articles/{{ o.slug }}" >{{ o.title }}</a>
+      <a class="u-3c67cd38" href="/articles/{{ o.slug }}" >{{ o.title }}</a>
       {% endfor %}
     </div>
   </div>
   {% endif %}
+  <!-- R.8 / S2: give readers a path to look up any term they just met. -->
+  <div class="u-d9f14975" >
+    <a class="u-3c67cd38" href="/glossary" >معنی اصطلاح‌های نجومی را در واژه‌نامه ببین ←</a>
+  </div>
 </div>
 {% endblock %}

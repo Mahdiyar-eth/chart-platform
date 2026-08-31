@@ -2,33 +2,33 @@
 {% block title %}{{ title }}{% endblock %}
 {% block description %}{{ description }}{% endblock %}
 {% block content %}
-<div class="st-f3b12c0d" >
-  <div class="st-91a87015" >
-    <svg class="st-6593bd47" aria-hidden="true"><use href="#icon-star"/></svg>
-    <h1 class="st-1e38c504" >چارت تولد {{ city.city_fa }}</h1>
-    <p class="muted st-0f7483d6" >
+<div class="u-f3b12c0d" >
+  <div class="u-91a87015" >
+    <svg class="u-6593bd47" aria-hidden="true"><use href="/static/icons.svg#icon-star"/></svg>
+    <h1 class="u-1e38c504" >چارت تولد {{ city.city_fa }}</h1>
+    <p class="muted u-0f7483d6" >
       محاسبه‌ی دقیق چارت نجومی برای متولدین {{ city.city_fa }} (استان {{ city.province_fa }})
       با لحاظ ساعت، دقیقه و مختصات جغرافیایی — نتیجه بر پایه‌ی محاسبه‌ی نجومی، نه فال.
     </p>
   </div>
 
-  <div class="glass st-b6e8db22" >
-    <h2 class="st-fdd5d74a" >چرا شهر تولد در چارت مهم است؟</h2>
-    <p class="st-d5c890e5" >
+  <div class="glass u-b6e8db22" >
+    <h2 class="u-fdd5d74a" >چرا شهر تولد در چارت مهم است؟</h2>
+    <p class="u-d5c890e5" >
       در طالع‌بینی تولد، مختصات جغرافیایی و منطقه‌ی زمانی محل تولد مستقیماً روی
       <b>طالع (ASC)</b> و جایگاه خانه‌ها اثر می‌گذارد. چارت متولد {{ city.city_fa }}
       با طول و عرض جغرافیایی {{ "%.4f"|format(city.lat) }}° و {{ "%.4f"|format(city.lon) }}°
       محاسبه می‌شود تا خانه‌ها و زوایا تا حد امکان دقیق باشند.
     </p>
-    <p class="st-d5c890e5" >
+    <p class="u-d5c890e5" >
       برای محاسبه‌ی کامل، ساعت دقیق تولد هم لازم است — بدون ساعت، طالع و خانه‌ها
       محاسبه نمی‌شوند (سیاست حریم خصوصی و شفافیت ما همین است).
     </p>
   </div>
 
-  <div class="glass st-83e9ba94" >
-    <h2 class="st-fdd5d74a" >در چارت تولد {{ city.city_fa }} چه می‌بینی؟</h2>
-    <ul class="st-bb98cac6" >
+  <div class="glass u-83e9ba94" >
+    <h2 class="u-fdd5d74a" >در چارت تولد {{ city.city_fa }} چه می‌بینی؟</h2>
+    <ul class="u-bb98cac6" >
       <li>خورشید، ماه و طالع (Big Three) به همراه برج و درجه</li>
       <li>نمودار نجومی با خانه‌ها، جنبه‌ها و عناصر</li>
       <li>گزارش اختصاصی: شخصیت، روابط، شغل و مسیر زندگی</li>
@@ -36,25 +36,25 @@
     </ul>
   </div>
 
-  <div class="glass glow st-f52fa3ef" >
-    <h2 class="st-fdd5d74a" >همین حالا چارتت را بساز</h2>
-    <p class="muted st-73a8a2e1" >رایگان است — فقط تاریخ، ساعت و شهر تولدت را وارد کن.</p>
-    <a href="/birth-form?city={{ city.city_fa }}" class="btn btn-lg st-60e32dcb" >ساخت چارت تولد {{ city.city_fa }}</a>
+  <div class="glass glow u-f52fa3ef" >
+    <h2 class="u-fdd5d74a" >همین حالا چارتت را بساز</h2>
+    <p class="muted u-73a8a2e1" >رایگان است — فقط تاریخ، ساعت و شهر تولدت را وارد کن.</p>
+    <a href="/birth-form?city={{ city.city_fa }}" class="btn btn-lg u-60e32dcb" >ساخت چارت تولد {{ city.city_fa }}</a>
   </div>
 
-  <div class="glass st-6e69ff0c" >
-    <h2 class="st-704202b0" >سوالات متداول</h2>
-    <p class="st-37edf235" >
+  <div class="glass u-6e69ff0c" >
+    <h2 class="u-704202b0" >سوالات متداول</h2>
+    <p class="u-37edf235" >
       <b>آیا شهر تولد روی شخصیت اثر دارد؟</b> — شخصیت از سیارات و خانه‌ها خوانده می‌شود؛ شهر تولد فقط
       محل محاسبه‌ی دقیق طالع و خانه‌هاست. ساکن شدن در شهر دیگر، چارت تولد را تغییر نمی‌دهد.
     </p>
-    <p class="st-37edf235" >
+    <p class="u-37edf235" >
       <b>ساعت تولد را نمی‌دانم؛ چه می‌شود؟</b> — چارت با «بدون ساعت» ساخته می‌شود و خورشید و ماه
       محاسبه می‌شوند؛ طالع و خانه‌ها نیازمند ساعت دقیق هستند.
     </p>
   </div>
 
-  <p class="muted st-2ed1c5ef" >
+  <p class="muted u-2ed1c5ef" >
     محاسبه برای خودشناسی است، نه پیشگویی قطعی.
   </p>
 </div>

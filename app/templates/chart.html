@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block robots %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block content %}
-<div class="st-49826953" x-data="reportState()" x-init="init()">
-  <a href="/birth-form" class="muted st-05eeadb6" >→ فرم جدید</a>
-  <h1 class="st-8a77e5a3" >چارت تولد تو</h1>
+<div class="u-49826953" x-data="reportState()" x-init="init()">
+  <a href="/birth-form" class="muted u-05eeadb6" >→ فرم جدید</a>
+  <h1 class="u-note-gold" >چارت تولد تو</h1>
   <p class="muted">نقشه‌ی آسمان در لحظه‌ی تولد تو — بر پایه‌ی محاسبات دقیق نجومی</p>
 
   {% if is_guest %}
@@ -18,48 +18,48 @@
   {% endif %}
 
   <!-- funnel progress (F3): chart → explore → deep -->
-  <div class="st-5d1c1741" >
-    <span class="st-83c28af5" >۱ · چارت تو ✓</span>
-    <a class="st-39591448" href="/explore?chart={{ chart.id }}" >۲ · خودت را کشف کن</a>
-    <a class="st-39591448" href="/plans?chart={{ chart.id }}" >۳ · گزارش عمیق</a>
+  <div class="u-5d1c1741" >
+    <span class="u-83c28af5" >۱ · چارت تو ✓</span>
+    <a class="u-39591448" href="/explore?chart={{ chart.id }}" >۲ · خودت را کشف کن</a>
+    <a class="u-39591448" href="/plans?chart={{ chart.id }}" >۳ · گزارش عمیق</a>
   </div>
 
   <!-- chart wheel -->
-  <div class="glass glow st-49e93d7f" >
+  <div class="glass glow u-49e93d7f" >
     {{ svg | safe }}
   </div>
-  <p class="muted st-ab879090" >
+  <p class="muted u-ab879090" >
     💡 <b>این چرخ چه می‌گوید؟</b> این دایره، آسمان را در لحظه‌ی تولد تو ترسیم می‌کند: هر سیاره در کدام برج (نشانه) و کدام خانه (حوزه‌ی زندگی) بوده. خط افق <b>AC</b> شخصیتِ بیرونی‌ات و خط عمود <b>MC</b> مسیر شغلی‌ات را نشان می‌دهد.
   </p>
 
   <!-- Big Three -->
-  <section class="glass st-2e500338">
-    <h2>سه‌گانه‌ی اصلی <span class="muted st-d6e47aa9" >(Big Three)</span></h2>
-    <div class="st-13b5d8df" >
+  <section class="glass u-2e500338">
+    <h2>سه‌گانه‌ی اصلی <span class="muted u-d6e47aa9" >(Big Three)</span></h2>
+    <div class="u-13b5d8df" >
       {% for key, label in [('Sun','خورشید'), ('Moon','ماه')] + ([('ASC','طالع')] if 'ASC' in big_three else []) %}
       {% set bt = big_three[key] %}
       <div class="sign-card" style="border-top:4px solid {{ bt.color }};">
-        <div class="st-bea3ad6b" >{{ '☉' if key == 'Sun' else ('☽' if key == 'Moon' else '↑') }}</div>
+        <div class="u-bea3ad6b" >{{ '☉' if key == 'Sun' else ('☽' if key == 'Moon' else '↑') }}</div>
         <b>{{ bt.sign_fa }}</b>
         <span>{{ label }} — {{ bt.element }} {{ bt.modality }}</span>
         <span style="color:{{ bt.color }}; margin-top:6px;">{{ bt.tone }}</span>
       </div>
       {% endfor %}
     </div>
-    <p class="muted st-79b0ade9" >
+    <p class="muted u-79b0ade9" >
       💡 <b>خورشید، ماه و طالع یعنی چه؟</b> خورشید «هسته‌ی هویت» توست، ماه «دنیای احساسات و نیازهای درونی‌ات»، و طالع (AC) «نقاب و اولین برخورد دیگران با تو». این سه با هم ستون اصلی شناخت شخصیت‌اند.
     </p>
   </section>
 
   <!-- visual widgets (collapsed — decluttered, audit U-1) -->
-  <details class="glass st-fed69838" >
-    <summary class="st-97216832" >📊 نمودارهای بیشتر</summary>
-    <div class="st-140e60a7" >
+  <details class="glass u-fed69838" >
+    <summary class="u-97216832" >📊 نمودارهای بیشتر</summary>
+    <div class="u-140e60a7" >
       {% if aspect_grid %}<div>{{ aspect_grid | safe }}</div>{% endif %}
       {% if element_donut %}<div>{{ element_donut | safe }}</div>{% endif %}
       {% if house_bar %}<div>{{ house_bar | safe }}</div>{% endif %}
     </div>
-    <p class="muted st-123b0a05" >
+    <p class="muted u-123b0a05" >
       💡 <b>این نمودارها چه می‌گویند؟</b> جدول جنبه‌ها یعنی زاویه‌ی بین سیاره‌ها (هم‌کاری یا تنش درونی‌ات)؛ دونات عناصر نشان می‌دهد کدام عنصر (آتش/خاک/هوا/آب) در تو غالب است؛ و نمودار خانه‌ها یعنی انرژی‌ات بیشتر در کدام حوزه‌های زندگی متمرکز است.
     </p>
   </details>
@@ -83,75 +83,133 @@
     </div>
   </section>
 
-  <!-- free insights (plan §8): Big Three + rule-engine preview -->
-  <section class="glass st-2e500338" >
-    <h2>نکته‌های کوتاه</h2>
-    <ul class="st-95982eda" >
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
+  <!-- free preview (MASTER W2): answer to YOUR question + 3 patterns + next transit -->
+  <section class="glass u-2e500338" >
+    <h2>پاسخ چارت به سؤال تو</h2>
+    {% if big_three.get('Moon') %}
+    <ul class="u-95982eda" >
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></span><span>ماه در {{ big_three['Moon'].sign_fa }} — {{ big_three['Moon'].gift }}؛ چالش: {{ big_three['Moon'].challenge }}</span>
       </li>
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-sun"/></svg></span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-sun"/></svg></span><span>خورشید در {{ big_three['Sun'].sign_fa }} — {{ big_three['Sun'].gift }}؛ چالش: {{ big_three['Sun'].challenge }}</span>
       </li>
       {% if 'ASC' in big_three %}
-      <li class="st-4dce153e" >
-        <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
+      <li class="u-4dce153e" >
+        <span><svg class="u-7e0d2d2b" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg></span><span>طالع {{ big_three['ASC'].sign_fa }} — {{ big_three['ASC'].gift }}؛ چالش: {{ big_three['ASC'].challenge }}</span>
       </li>
       {% endif %}
-      <template x-for="ins in insights" :key="ins.domain">
-        <li class="st-4dce153e" >
-          <span><svg class="st-7e0d2d2b" aria-hidden="true"><use href="#icon-sparkles"/></svg></span><span x-text="ins.insight"></span>
-        </li>
-      </template>
     </ul>
-    <p class="muted st-ae75db1b" >برای تحلیل عمیق هر ۱۳ حوزه، گزارش کامل را تهیه کنید.</p>
+    {% endif %}
+    <!-- the user's own question + chosen focus areas, echoed always (R12/P0-3) -->
+    <template x-if="preview.question_answer || preview.personal_question">
+      <div class="glass u-card-inset" style="margin-top:12px;">
+        <b>سؤالی که موقع ساخت چارت پرسیدی:</b>
+        <p class="muted u-note" x-text="preview.personal_question"></p>
+        <p style="margin:8px 0 0;" x-show="preview.question_answer" x-text="preview.question_answer"></p>
+        <p class="muted u-note" x-show="preview.question_answer">پاسخ کامل‌تر با یک تحلیل LLM در گزارش کامل می‌آید.</p>
+      </div>
+    </template>
+    <template x-if="preview.focus_areas && preview.focus_areas.length">
+      <div class="u-c03e3f84" style="margin-top:10px;">
+        <span class="chip">حوزه‌های انتخابی تو:</span>
+        <template x-for="(fa, i) in preview.focus_areas" :key="'fa' + i">
+          <span class="chip" x-text="fa"></span>
+        </template>
+      </div>
+    </template>
+    <!-- 3 dominant patterns with astrological evidence (deduped — R12/P1-4) -->
+    <template x-for="pat in preview.patterns" :key="pat.evidence + pat.title">
+      <div style="margin-top:10px;">
+        <b x-text="(pat.title || pat.domain_title) + ': '"></b>
+        <span x-text="pat.text || pat.insight"></span>
+        <div class="muted u-note" x-text="'شاهد: ' + (pat.evidence || '')"></div>
+      </div>
+    </template>
+    <!-- LLM-written patterns render ONLY here; deterministic `insights` loop removed (was double-rendering, R12/P1-4) -->
+    <template x-for="pat in preview.llm_patterns" :key="'llm' + pat.evidence + pat.title">
+      <div style="margin-top:10px;">
+        <b x-text="(pat.title || 'الگو') + ': '"></b>
+        <span x-text="pat.text"></span>
+        <div class="muted u-note" x-text="'شاهد: ' + (pat.evidence || '')"></div>
+      </div>
+    </template>
+    <!-- one upcoming transit with date -->
+    <template x-if="preview.next_transit">
+      <p class="muted u-note" style="margin-top:12px;" x-text="'⏳ ' + preview.next_transit.headline"></p>
+    </template>
+    <!-- element distribution in one honest line -->
+    <template x-if="preview.element_summary && preview.element_summary.line">
+      <p class="muted u-note" x-text="'⚖️ ' + preview.element_summary.line"></p>
+    </template>
+    <p class="muted u-note" style="margin-top:12px;">این فقط نگاه اول است. گزارش کامل هر ۱۳ حوزه را جداگانه با شواهد نجومی و پیشنهاد عملی باز می‌کند.</p>
   </section>
 
   <!-- annual transit timeline (plan §9.3) -->
-  <section class="glass st-2e500338" >
+  <section class="glass u-2e500338" >
     <h2>گذرهای سال آینده</h2>
-    <p class="muted st-28c79581" >وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
-    <div class="st-c23902c1" >
-      <img class="st-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" >
+    <p class="muted u-28c79581" >وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
+    <div class="u-c23902c1" >
+      <img class="u-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" >
     </div>
   </section>
 
   <!-- CTA (decluttered funnel, audit U-1) -->
-  <section class="glass glow st-56ef63c4" >
-    <h2>گزارش کامل — ۲۵+ صفحه</h2>
-    <p class="muted st-8a77e5a3" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
-    <div class="st-c03e3f84" >
-      <span class="chip">پایه ۱۴۹ هزار</span>
-      <span class="chip">استاندارد ۳۴۹ هزار</span>
-      <span class="chip">پرمیوم ۶۹۹ هزار</span>
+  <section class="glass glow u-56ef63c4" >
+    <h2>شناخت کامل — ۲۵+ صفحه</h2>
+    <p class="muted u-note-gold" >۱۳ حوزه‌ی زندگی + ترانزیت ۳ ساله + فصل اسلامی + PDF/Word</p>
+    <div class="u-c03e3f84" >
+      <span class="chip">آشنایی ۵ بخش — ۳ اعتبار</span>
+      <span class="chip">شناخت کامل — ۷ اعتبار</span>
+      <span class="chip">شناخت + همراهی — ۱۴ اعتبار</span>
     </div>
-    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">خرید گزارش کامل</a>
-    <div class="st-1f205fde" >
-      <a class="st-57f9e31d" href="/chat/{{ chart.id }}" >💬 گفت‌وگو با چارت</a>
-      <a class="st-57f9e31d" href="/transit/{{ chart.id }}" >گذرهای کنونی</a>
-      <button class="st-9284abb5" @click="share()" >📤 اشتراک‌گذاری</button>
+    <a class="btn btn-lg" href="/plans?chart={{ chart.id }}">باز کردن با اعتبار</a>
+    {% if user %}
+    <details class="mt-3">
+      <summary class="text-sm opacity-70 cursor-pointer">یا همین‌جا با اعتبار باز کن</summary>
+      <div class="mt-3">
+        {% with action_key="report_basic", action_name_fa="آشنایی (۵ بخش)", needed=3,
+                have=user.credits|default(0), chart_id=chart.id, next="/chart/" ~ chart.id %}
+          {% include "partials/credit_cta.html" %}
+        {% endwith %}
+      </div>
+    </details>
+    {% endif %}
+    <div class="u-1f205fde" >
+      <a class="u-57f9e31d" href="/chat/{{ chart.id }}" >💬 گفت‌وگو با چارت</a>
+      <a class="u-57f9e31d" href="/transit/{{ chart.id }}" >گذرهای کنونی</a>
+      <a class="u-57f9e31d" href="/solar/{{ chart.id }}" >چارت سالیانه</a>
+      <a class="u-57f9e31d" href="/relocation/{{ chart.id }}" >چارت مهاجرت</a>
+      <button class="u-9284abb5" @click="share()" >📤 اشتراک‌گذاری</button>
     </div>
-    <div class="st-d6f2af6e" x-cloak>
+    <div class="u-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
         <div class="report-progress" role="status" aria-live="polite">
-          <p class="muted" style="margin:0 0 8px;">⏳ در حال تولید گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد…</p>
+          <p class="muted" style="margin:0 0 8px;">در حال نوشتن گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد</p>
           <div class="rp-track"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
+          <p class="muted" style="margin:8px 0 0; font-size:.78rem;">می‌توانی صفحه را ببندی — گزارش در حساب کاربری‌ات ذخیره می‌شود.</p>
         </div>
       </template>
       <template x-if="repStatus === 'done'">
-        <div class="st-64087613" >
-          <a class="btn btn-lg st-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
-          <button class="btn btn-lg st-3b6a3a65" @click.prevent="requestAudio()" x-show="audioStatus !== 'ready'"
+        <div class="u-64087613" >
+          <a class="btn btn-lg u-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
+          <button class="btn btn-lg u-3b6a3a65" @click.prevent="requestAudio()" x-show="audioStatus !== 'ready'"
                   x-text="audioStatus === 'generating' ? '⏳ در حال تولید صوت...' : '🔊 نسخه صوتی گزارش'" ></button>
-          <a class="btn btn-lg st-80d654f9" :href="audioUrl" x-show="audioStatus === 'ready'" >🔊 دانلود نسخه صوتی</a>
+          <a class="btn btn-lg u-80d654f9" :href="audioUrl" x-show="audioStatus === 'ready'" >🔊 دانلود نسخه صوتی</a>
         </div>
       </template>
       <template x-if="repStatus === 'degraded'">
-        <p class="muted st-fdf33f23" >⚠️ بخشی از گزارش به دلیل اختلال موقت، خلاصه تولید شده و به‌زودی خودکار تکمیل می‌شود.</p>
-        <a class="btn btn-lg st-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
+        <p class="muted u-fdf33f23" >⚠️ بخشی از گزارش به دلیل اختلال موقت، خلاصه تولید شده و به‌زودی خودکار تکمیل می‌شود.</p>
+        <a class="btn btn-lg u-80d654f9" :href="pdfUrl" >📄 دانلود گزارش PDF</a>
       </template>
       <template x-if="repStatus === 'failed'">
-        <p class="st-0562fa46" >تولید گزارش با خطا مواجه شد.</p>
+        <p class="u-0562fa46">تولید گزارش با خطا مواجه شد.</p>
+        <p class="muted" style="margin:6px 0 12px;">دسترسی‌ات به این گزارش باقی است — اعتبار دوباره‌ای کم نمی‌شود.</p>
+        <button class="btn btn-lg" id="genBtn" @click.prevent="genReport($event)">تلاش دوباره</button>
+      </template>
+      <template x-if="repStatus === 'stalled'">
+        <p class="u-0562fa46">تولید گزارش بیش از حد طول کشید.</p>
+        <p class="muted" style="margin:6px 0 12px;">دسترسی‌ات باقی است و اعتبار دوباره‌ای کم نمی‌شود. یک‌بار دیگر امتحان کن؛ اگر باز هم نشد به پشتیبانی بگو.</p>
         <button class="btn btn-lg" id="genBtn" @click.prevent="genReport($event)">تلاش دوباره</button>
       </template>
     </div>
@@ -161,6 +219,7 @@
 function reportState(){
   return {
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
+    preview: { patterns: [], llm_patterns: [], focus_areas: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
       if(this.audioStatus === 'generating' || !this.repId) return;
@@ -197,6 +256,15 @@ function reportState(){
         const p = await fetch('/api/charts/{{ chart.id }}/preview?t={{ access_token }}');
         const pd = await p.json();
         this.insights = (pd.insights || []).slice(0, 5);
+        this.preview = {
+          patterns: pd.patterns || [],
+          llm_patterns: pd.llm_patterns || [],  // R12/P1-4: LLM patterns get their own block
+          focus_areas: pd.focus_areas || [],
+          question_answer: pd.question_answer || '',
+          personal_question: pd.personal_question || '',
+          next_transit: pd.next_transit || null,
+          element_summary: pd.element_summary || null,
+        };
       }catch(_e){}
       const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
       const d = await r.json();
@@ -217,7 +285,11 @@ function reportState(){
       else { this.repStatus = 'failed'; btn.disabled = false; btn.style.opacity = 1; }
     },
     async _poll(){
+      // UI: a poll with no end is how "هیچ اتفاقی نیفتاد" happens — if the
+      // worker dies the user waits forever with no message. Give up at 4min.
+      const deadline = Date.now() + 240000;
       while(this.repStatus === 'queued' || this.repStatus === 'running'){
+        if(Date.now() > deadline){ this.repStatus = 'stalled'; break; }
         await new Promise(r => setTimeout(r, 6000));
         const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
         const d = await r.json();

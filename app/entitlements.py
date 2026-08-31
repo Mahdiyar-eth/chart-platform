@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import or_
 from sqlmodel import Session, select
 
 from app.credits import spend
@@ -30,11 +29,17 @@ def _usable(ent: Entitlement, now: datetime) -> bool:
 
 
 def has(session: Session, user_id: str, kind: str, *,
-        chart_id: str | None = None, ref_id: str | None = None) -> Entitlement | None:
+        chart_id: str | None = None, ref_id: str | None = None,
+        unbound_only: bool = False) -> Entitlement | None:
     """Return the first usable entitlement for (user, kind [, chart]/[ref]).
 
     Never cross-chart/cross-ref: an entitlement for chart X is NOT valid for
-    chart Y (closed per plan A3)."""
+    chart Y (closed per plan A3).
+
+    Z5 (Opus R3): when `unbound_only=True`, skip entitlements already bound to
+    a report (ref_id set) so an upgrade/second purchase picks the NEWLY bought
+    entitlement instead of recycling the first one (which made the regenerate
+    path bind nothing and inherit the WRONG tier/ref)."""
     now = _now()
     ents = session.exec(
         select(Entitlement).where(
@@ -43,10 +48,20 @@ def has(session: Session, user_id: str, kind: str, *,
         )
     ).all()
     for ent in ents:
-        if chart_id is not None and ent.chart_id and ent.chart_id != chart_id:
+        # X5/R5: scope is MANDATORY. An unscoped entitlement (NULL chart_id /
+        # ref_id) must never satisfy a scoped request — otherwise one purchase
+        # would unlock every report/chart of the user. Both credit grants and
+        # legacy order backfills are chart/report-scoped, so strict matching is
+        # safe for existing customers.
+        _user_level = kind in ("chat", "audio")  # packs usable across the user's own charts
+        if not _user_level and chart_id is not None and ent.chart_id != chart_id:
             continue
-        if ref_id is not None and ent.ref_id and ent.ref_id != ref_id:
+        if ref_id is not None and ent.ref_id != ref_id:
             continue
+        if unbound_only and ent.ref_id is not None:
+            continue  # already spent on a report — not the upgrade target
+        # A request WITH scope must match an entitlement that carries that scope;
+        # unscoped ents only satisfy unscoped lookups (e.g. chat packs).
         if _usable(ent, now):
             return ent
     return None
@@ -57,8 +72,10 @@ def consume(session: Session, ent: Entitlement, n: int = 1) -> bool:
     Guarded UPDATE — no read-modify-write race. Returns False when exhausted."""
     from sqlalchemy import text
     res = session.execute(text(
-        "UPDATE entitlements SET used = used + :n WHERE id = :id AND used <= quantity - :n"
-    ), params={"n": n, "id": ent.id})
+        "UPDATE entitlements SET used = used + :n WHERE id = :id "
+        "AND used <= quantity - :n AND (expires_at IS NULL OR expires_at >= :now)"
+    ), params={"n": n, "id": ent.id,
+              "now": datetime.now(timezone.utc).replace(tzinfo=None)})
     if res.rowcount == 0:
         return False
     session.refresh(ent)
@@ -72,6 +89,38 @@ def _action_quantity(action_key: str) -> int:
     return _QUANTITY_BY_ACTION.get(action_key, 1)
 
 
+# R.9 / Q1 (P1): a single purchase may grant MULTIPLE entitlement kinds. The
+# catalogue sells "report_gold" as «گزارش ۱۳بخشه + چت ۳۰روزه + گذر ۱۲ماهه», but
+# _kind_for_action collapsed it to just "report" — so a gold buyer (14 credits)
+# got only what a full (7 credits) buyer got, and had to RE-pay for transit.
+# This maps a credit action to the full set of kinds it unlocks.
+_MULTI_KIND_BY_ACTION = {
+    "report_gold": ["report", "chat", "transit"],
+}
+
+# Kind → lifetime (days) for the gold-bundle entitlements. chat is a 30-day pack
+# (existing promise); transit in the gold bundle is the 12-month forecast.
+_EXPIRY_DAYS = {"chat": 30}
+_EXPIRY_DAYS_BY_KIND = _EXPIRY_DAYS  # alias (back-compat)
+
+
+def _kinds_for_action(action_key: str) -> list[str]:
+    """Kinds granted by a credit action — may be >1 (e.g. report_gold)."""
+    multi = _MULTI_KIND_BY_ACTION.get(action_key)
+    if multi:
+        return multi
+    return [_kind_for_action(action_key)]
+
+
+def _expiry_for_kind(kind: str):
+    """X6/R7 — entitlement expiry by kind. Returns naive UTC datetime or None."""
+    from datetime import timedelta
+    days = _EXPIRY_DAYS_BY_KIND.get(kind)
+    if not days:
+        return None
+    return _now() + timedelta(days=days)
+
+
 def grant_from_credits(session: Session, user_id: str, action_key: str, *,
                        idempotency_key: str,
                        chart_id: str | None = None,
@@ -83,26 +132,41 @@ def grant_from_credits(session: Session, user_id: str, action_key: str, *,
     ref_id=report.id so buying one report can't unlock another."""
 
     tx = spend(session, user_id, action_key, idempotency_key=idempotency_key,
-               chart_id=chart_id)
-    # kind is derived from the action_key (e.g. report_full -> 'report')
-    kind = _kind_for_action(action_key)
-    existing = session.exec(
-        select(Entitlement).where(
-            Entitlement.source == "credit",
-            Entitlement.source_ref == tx.id,
+               chart_id=chart_id, commit=False)  # X4/R6: single atomic commit below
+    # R.9 / Q1: one action may grant several kinds (report_gold → report+chat+transit).
+    kinds = _kinds_for_action(action_key)
+    first = None
+    for kind in kinds:
+        existing = session.exec(
+            select(Entitlement).where(
+                Entitlement.source == "credit",
+                Entitlement.source_ref == tx.id,
+                Entitlement.kind == kind,
+            )
+        ).first()
+        if existing:
+            if first is None:
+                first = existing
+            continue
+        # chat in a bundle is a 30-day pack; transit is the single 12-month analysis
+        qty = _action_quantity(action_key) if quantity is None else quantity
+        ent = Entitlement(
+            user_id=user_id, kind=kind, chart_id=chart_id,
+            ref_id=ref_id, quantity=qty, used=0,
+            source="credit", source_ref=tx.id,
+            expires_at=_expiry_for_kind(kind),  # chat=30d; report/transit=None
         )
-    ).first()
-    if existing:
-        return existing
-    ent = Entitlement(
-        user_id=user_id, kind=kind, chart_id=chart_id,
-        ref_id=ref_id, quantity=_action_quantity(action_key) if quantity is None else quantity, used=0,
-        source="credit", source_ref=tx.id,
-    )
-    session.add(ent)
-    session.commit()
-    session.refresh(ent)
-    return ent
+        session.add(ent)
+        if first is None:
+            first = ent
+    try:
+        session.commit()  # X4/R6: credits decrement + entitlement(s) in ONE commit
+    except Exception:
+        session.rollback()
+        raise
+    if first is not None:
+        session.refresh(first)
+    return first
 
 
 def grant_from_order(session: Session, order: Order) -> Entitlement | None:
@@ -132,18 +196,40 @@ def grant_from_order(session: Session, order: Order) -> Entitlement | None:
 
 def _kind_for_action(action_key: str) -> str:
     """Map a credit action_key to an entitlement kind."""
+    # R.10 / P3-2: report_audio is an ADD-ON (kind "audio"), NOT a report. The
+    # `report_` prefix below would otherwise collapse it to "report" — a buyer of
+    # the audio add-on got report access instead (catalog↔delivery mismatch the
+    # gate caught). Check the more-specific key first.
+    if action_key == "report_audio":
+        return "audio"
     if action_key.startswith("report_"):
         return "report"
     if action_key.startswith("transit_"):
         return "transit"
     if action_key.startswith("chat_"):
         return "chat"
-    if action_key.startswith("synastry_"):
-        return "synastry"
+    # R12/P1-5: synastry variants are handled BELOW (before this wildcard) —
+    # the old startswith("synastry_") collapsed all three SKUs into one kind.
     if action_key == "rectify":
         return "rectify"
     if action_key.startswith("explore"):
         return "explore"
+    # MASTER W6/W7/W8 — the new products get their OWN kinds so each
+    # purchase unlocks exactly what its title promises (catalog↔delivery).
+    if action_key in ("solar_return",):
+        return "solar"
+    if action_key == "relocation":
+        return "relocation"
+    # R12/P1-5: three synastry SKUs must NOT share one kind. love/work are
+    # per-variant products (8cr each); the legacy 10-cr bundle retires to
+    # kind "synastry_full" so it can no longer unlock the cheaper variants'
+    # gate, and the variants' gates accept only their own kind.
+    if action_key == "synastry_love":
+        return "synastry_love"
+    if action_key == "synastry_work":
+        return "synastry_work"
+    if action_key.startswith("synastry_"):
+        return "synastry_full"  # legacy bundle (retired from sale)
     return "credit"  # generic
 
 
@@ -157,12 +243,13 @@ def _kind_for_plan(plan_key: str) -> str | None:
         "report_full": "report",
         "report_gold": "report",
         "report_audio": "audio",
-        "synastry": "synastry",
-        "synastry_full": "synastry",
+        "synastry": "synastry_full",   # R12/P1-5: legacy bundle → its own kind
+        "synastry_full": "synastry_full",
         "transit_12m": "transit",
         "transit_3m": "transit",
         "chat_pack_20": "chat",
         "monthly": "chat",
+        "yearly": "chat",
         "rectify": "rectify",
     }.get(plan_key)
 

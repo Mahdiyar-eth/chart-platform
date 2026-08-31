@@ -1,6 +1,7 @@
 """B1 — transit forecast engine acceptance tests (deterministic, no LLM)."""
 import os, time, uuid
-os.environ.setdefault("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe")
+from pathlib import Path
+os.environ.setdefault("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent / "ephe"))
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 import swisseph as swe
@@ -19,6 +20,19 @@ REQ_KEYS = {"id","transit_planet","transit_planet_fa","natal_target","natal_targ
             "aspect","aspect_fa","exact_dates","window_start","window_end",
             "retro_passes","weight","natal_house","transit_sign_fa"}
 ASPECT_DEG = {"conjunction":0,"sextile":60,"square":90,"trine":120,"opposition":180}
+def _mk_chart():
+    """R4/W3: cache tests write TransitForecast (FK chart_id -> charts.id after Z2).
+    Build a REAL chart so the FK is satisfied on a fresh/CI schema."""
+    from app.models import BirthProfile, Chart
+    cj = _golden()
+    with Session(engine) as s:
+        p = BirthProfile(user_id=None, raw_year=1373, raw_month=5, raw_day=10)
+        s.add(p); s.flush()
+        cid = "b1-" + uuid.uuid4().hex[:10]
+        s.add(Chart(id=cid, profile_id=p.id, chart_json=cj))
+        s.commit()
+    return cid
+
 
 def _golden(birth_id="chart-1-mahdi"):
     b = next(c["birth"] for c in GOLDEN_CHARTS if c["id"] == birth_id)
@@ -96,7 +110,7 @@ def test_12_schema_exact_keys():
         assert set(e.keys()) == REQ_KEYS, set(e.keys()) ^ REQ_KEYS
 
 def test_10_cache_skips_recompute():
-    cid = "b1-cache-" + uuid.uuid4().hex[:8]
+    cid = _mk_chart()
     cj = _golden(); n = {"v": 0}
     orig = transit_cache.forecast
     def wrap(chart_json, months=12, start=None):
@@ -116,7 +130,7 @@ def test_10_cache_skips_recompute():
         transit_cache.forecast = orig
 
 def test_11_cache_invalidates_after_ttl():
-    cid = "b1-cache2-" + uuid.uuid4().hex[:8]
+    cid = _mk_chart()
     cj = _golden(); n = {"v": 0}
     orig = transit_cache.forecast
     def wrap(chart_json, months=12, start=None):

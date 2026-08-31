@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="wrap" style="max-width:680px; padding-top:var(--sp-5);">
+
+  <header style="margin-bottom:var(--sp-5);">
+    <h1 style="margin:0; font-size:var(--fs-2xl); font-weight:800;">گفت‌وگوهای من</h1>
+    <p class="muted" style="margin:6px 0 0; font-size:.9rem;">
+      هر گفت‌وگو روی یکی از چارت‌هایت ذخیره می‌شود و همیشه در دسترس است.
+    </p>
+  </header>
+
+  {% if threads %}
+  <div style="display:flex; flex-direction:column; gap:var(--sp-3);">
+    {% for t in threads %}
+    <a href="/chat/{{ t.chart_id }}" class="glass"
+       style="display:block; padding:var(--sp-4); text-decoration:none; color:inherit;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3);">
+        <span style="font-weight:800;">{{ t.name }}</span>
+        <span class="muted" style="font-size:.74rem; white-space:nowrap;">{{ t.count }} پیام</span>
+      </div>
+      <p class="muted" style="margin:8px 0 0; font-size:.86rem; line-height:1.75;">
+        {{ t.preview }}{% if t.preview|length >= 120 %}…{% endif %}
+      </p>
+      <span style="display:inline-flex; align-items:center; gap:6px; margin-top:10px;
+                   font-size:.84rem; font-weight:700; color:var(--gold);">
+        ادامهٔ گفت‌وگو ←
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass" style="padding:var(--sp-5); text-align:center;">
+    <p style="margin:0 0 6px; font-weight:700;">هنوز گفت‌وگویی نداری</p>
+    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">
+      با بستهٔ «شناخت + همراهی» می‌توانی ۳۰ روز دربارهٔ چارت خودت سؤال بپرسی —
+      جواب‌ها از روی سیاره‌ها و خانه‌های نقشهٔ خودت نوشته می‌شوند، نه جمله‌های کلی.
+    </p>
+    <a class="btn btn-lg btn-primary" href="/plans">دیدن محصول‌ها</a>
+  </div>
+  {% endif %}
+
+  <div style="margin-top:var(--sp-5); display:flex; gap:var(--sp-3); flex-wrap:wrap;">
+    <a class="btn btn-md btn-ghost" href="/reports">گزارش‌های من</a>
+    <a class="btn btn-md btn-ghost" href="/account">حساب کاربری</a>
+  </div>
+</div>
+{% endblock content %}

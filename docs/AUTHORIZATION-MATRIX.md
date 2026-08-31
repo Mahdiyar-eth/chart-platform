@@ -31,6 +31,8 @@
 | `GET /api/charts/{chart_id}/forecast` | Capability | `_owns_chart` (B3) |
 | `POST /api/charts/{chart_id}/forecast/analyze` | Capability + User | `_owns_chart` + login؛ هزینهٔ transit_3m/transit_12m (B3) |
 | `GET /transits/{chart_id}` | Capability | `_owns_chart` (صفحهٔ گذرها B3) |
+| `GET /settings` | Session | login required; shows only the caller's own settings |
+| `GET /chats` | Session | login required; lists only the caller's own charts |
 | `GET /api/reports/{report_id}.docx` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/pdf` | Capability | `_owns_chart` |
 | `GET /api/reports/{report_id}/audio` | Capability | `_owns_chart` (C1) |
@@ -56,7 +58,11 @@
 | `GET /s/{token}` | Public | HMAC verify, rate limit (G7) |
 | `POST /api/synastry/order` | Capability | `_owns_chart` |
 | `POST /api/synastry/full` | Capability | `_owns_chart` |
+| `POST /api/synastry/charts` | Public | rate-limit only — saves charts, no gate (R13) |
 | `GET /api/synastry/access` | Paid/Capability | access check |
+| `GET /design-system` | Dev/QA | 404 in prod (W1.4 styleguide) |
+| `GET /solar-guide` | Public | marketing landing (R14-B5) |
+| `GET /relocation-guide` | Public | marketing landing (R14-B5) |
 | `GET /api/notifications/prefs` | User | session cookie (G8) |
 | `POST /api/notifications/prefs` | User | CSRF + validated ranges (G8) |
 | `GET /api/consent` | User | session cookie, owner-only (G9) |
@@ -86,6 +92,9 @@
 | `GET /api/auth/me` | User | کوکی ورود |
 | `POST /api/auth/logout` | User | کوکی ورود |
 | `GET /account` | User | کوکی ورود |
+| `GET /credits` | User | کوکی ورود — کیف اعتبار + تاریخچه (R2-X12) |
+| `GET /orders` | User | کوکی ورود — سفارش‌های خود کاربر (R2-X13) |
+| `GET /reports` | User | کوکی ورود — گزارش‌های چارت‌های خود کاربر (R2-X13) |
 | `GET /account/login` | Public | rate limit |
 | `GET /account/export` | User | owner-only JSON export (G1 — no secrets) |
 | `GET /dashboard` | User | session cookie; hero + 8 cards (G15) |
@@ -98,6 +107,7 @@
 | `GET /guide` | Public | — |
 | `GET /about` | Public | — |
 | `GET /faq` | Public | — |
+| `GET /glossary` | Public | R.7/T2 — واژه‌نامهٔ ۶۰+ اصطلاح (F3) |
 | `GET /learn` | Public | — |
 | `GET /learn/{slug}` | Public | — |
 | `GET /signs/{slug}` | Public | — |
@@ -128,6 +138,17 @@
 | `POST /api/admin/secrets/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/secrets/{key}/reveal` | Admin | `_is_admin` |
 | `POST /api/admin/llm/test` | Admin | `_is_admin` |
+| `GET /api/admin/token-caps` | Admin | `_is_admin` (MASTER W14) |
+| `POST /api/admin/token-caps/{product}` | Admin | `_is_admin` + audit (W14) |
+| `GET /api/admin/cost-revenue` | Admin | `_is_admin` (W14) |
+| `GET /solar/{chart_id}` | Owner | `_owns_chart` (MASTER W6) |
+| `POST /api/solar/purchase` | Owner+Login | `_owns_chart` + credit spend (W6) |
+| `GET /api/solar/{chart_id}` | Owner+9cr | `_owns_chart` + entitlement solar (W6) |
+| `GET /api/solar/{chart_id}/teaser` | Owner | `_owns_chart` — free teaser (W6) |
+| `GET /relocation/{chart_id}` | Owner | `_owns_chart` (MASTER W7) |
+| `GET /api/relocation/{chart_id}` | Owner+6cr | `_owns_chart` + entitlement relocation (W7) |
+| `POST /api/relocation/purchase` | Owner+Login | `_owns_chart` + credit spend (W7) |
+| `GET /api/today/daily` | Owner | `_owns_chart` — free daily layer (W5) |
 | `GET /api/explore/cards` | Public | none (catalog) |
 | `GET /explore` | User | `get_current_user` + `_owns_chart` (or redirect) |
 | `POST /api/explore/{card_key}` | User | `get_current_user` + `_owns_chart` + credit spend (atomic, 1 credit) |
@@ -151,6 +172,7 @@
 | `PUT /api/admin/content/pages/{key}` | Admin | `_is_admin` |
 | `POST /api/admin/content/media` | Admin | `_is_admin` |
 | `DELETE /api/admin/content/media/{mid}` | Admin | `_is_admin` |
+| `GET /media/{key:path}` | Public | R.5/V4 — serves a CMS media object from the LOCAL MEDIA_DIR fallback; **only reachable when R2 is NOT configured** (dev/fresh CI). When R2 is configured (prod) it 404s and media is served via presigned URL instead, so no object is exposed. |
 
 **نکات:**
 - Capability token: HMAC-امضاشده (P0-1) — قابل اشتراک با لینک شخصی، قابل Revoke با تغییر `capability_salt`.

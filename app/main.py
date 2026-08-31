@@ -16,7 +16,6 @@ from pathlib import Path
 import redis.asyncio as redis_async
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
-from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,12 +33,15 @@ from app.astrology.svg_wheel import render_chart_svg
 from app.bots.handler import TELEGRAM_WEBHOOK_SECRET, handle_update
 from app.chat.service import chat_answer
 from app.db import engine, get_session, init_db
-from fastapi.responses import JSONResponse
 from app.entitlements import has as ent_has, grant_from_order as ent_grant_order, grant_from_credits as ent_grant_credits
 from app.credits import balance, get_price, UnknownAction
-from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, Exploration, FunnelEvent, LLMRun, Order, Plan,
+from app.credits import InsufficientCredits
+from app.models import (AuditLog, BirthProfile, Chart, ChatMessage, Coupon, FunnelEvent, LLMRun, Order, Plan,
                         ReferralCode, ReferralEvent, Report, ReportChunk, Subscription,
-                        User, WeeklyReflection, WithdrawalRequest,)
+                        User, WeeklyReflection, WithdrawalRequest,
+                        CreditTransaction, Entitlement, Exploration,  # Z1 deletion cascade
+                        PushSubscription, ConsentLog, NotificationPrefs, TransitAlertLog, Subscriber,
+)
 from app import secret_store
 
 BALE_WEBHOOK_SECRET = secret_store.get_secret("bale_webhook_secret", "BALE_WEBHOOK_SECRET", "")
@@ -50,19 +52,69 @@ BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 def _asset_version():
-    """Cache-busting version from the css dir hash (design tokens/base/components)."""
+    """Cache-busting version from the static assets hash (css + icons + sw)."""
     import hashlib
+    h = hashlib.sha256()
     d = BASE_DIR / "static" / "css"
-    if not d.is_dir():
-        return "0"
-    h = hashlib.md5()
-    for f in sorted(d.iterdir()):
-        if f.suffix == ".css":
-            h.update(f.name.encode())
-            h.update(f.read_bytes())
+    if d.is_dir():
+        for f in sorted(d.iterdir()):
+            if f.suffix == ".css":
+                h.update(f.name.encode())
+                h.update(f.read_bytes())
+    # R14-B4: the sprite is cache-busted too — an icon change must reach users.
+    ic = BASE_DIR / "static" / "icons.svg"
+    if ic.is_file():
+        h.update(ic.read_bytes())
     return h.hexdigest()[:10]
 
 templates.env.globals["asset_version"] = _asset_version()
+
+
+# UX: the wallet and the orders list were printing raw internal keys at the
+# user — «explore_card», «report_full», «chat_pack_20», «failed_generation»,
+# «credit12». One place to turn any action, reason or plan key into Persian.
+_FA_LABEL = {
+    # credit-ledger reasons
+    "purchase": "خرید پک اعتبار", "refund": "بازگشت اعتبار",
+    "failed_generation": "بازگشت اعتبار — تولید ناموفق",
+    "free_exploration": "اولین کاوش رایگان", "exploration": "کاوش خودشناسی",
+    "subscription": "اعتبار ماهانهٔ اشتراک", "referral_bonus": "هدیهٔ معرفی دوستان",
+    "admin_grant": "اعتبار اهدایی پشتیبانی",
+    # product actions
+    "explore_card": "یک سؤال، یک جواب", "report_audio": "نسخهٔ صوتی گزارش",
+    "chat_pack_20": "بستهٔ گفت‌وگو با چارت", "transit_3m": "۳ ماه آیندهٔ من",
+    "report_basic": "آشنایی (۵ بخش)", "transit_12m": "۱۲ ماه آیندهٔ من",
+    "relocation": "چارت مهاجرت", "report_full": "شناخت کامل (۱۳ بخش)",
+    "synastry_love": "سازگاری عاطفی", "synastry_work": "سازگاری کاری",
+    "synastry_full": "سازگاری دو نفر", "solar_return": "چارت سالیانه",
+    "report_gold": "شناخت + همراهی", "rectify": "بازبینی ساعت تولد",
+    # toman packs
+    "credit1": "۱ اعتبار", "credit3": "۳ اعتبار",
+    "credit6": "۶ اعتبار", "credit12": "۱۲ اعتبار",
+}
+
+
+def fa_label(key: str) -> str:
+    """Persian label for any internal key; falls back to the key itself."""
+    return _FA_LABEL.get((key or "").strip(), key or "—")
+
+
+templates.env.globals["fa_label"] = fa_label
+
+
+def _from_env(name: str, default: str = "") -> str:
+    """Read a value from os.environ (config-aware); used for site-level vars that
+    must not be hardcoded in templates (R.7 / T3 Umami)."""
+    import os as _os
+    return _os.getenv(name, default).strip()
+
+
+# R.7 / T3 (N2): Umami analytics was hardcoded in base.html, which would send data
+# to the same website-id from ANY host (staging/new domain). Read from env so a
+# different site/domain gets its own id. Empty id => telemetry disabled in template.
+templates.env.globals["umami_src"] = _from_env("UMAMI_SRC", "https://analytics.negar.io/script.js")
+templates.env.globals["umami_site_id"] = _from_env("UMAMI_SITE_ID")
+templates.env.globals["umami_domains"] = _from_env("UMAMI_DOMAINS", "chart.negar.io")
 
 
 # D2 (plan §7): single-source navigation, state-aware per request
@@ -180,6 +232,17 @@ def sw_file():
                         headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
 
+@app.get("/design-system", response_class=HTMLResponse)
+def design_system_page(request: Request):
+    """REDESIGN-MASTER W1.4 — living styleguide. Dev/QA only: prod returns 404
+    so the component library never ships as a public marketing surface."""
+    if os.getenv("APP_ENV", "development") in ("prod", "production"):
+        raise HTTPException(404, "not found")
+    return templates.TemplateResponse(request, "design_system.html", {
+        "title": "دیزاین‌سیستم — زایچه",
+    })
+
+
 @app.get("/liveness")
 def liveness():
     """C5 (audit r4): pure process heartbeat — no dependencies. A running
@@ -288,6 +351,7 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
     # G2: guests must be nudged to claim the chart (top funnel-leak fix)
     from app.auth import get_current_user as _gcu
     is_guest = _gcu(request) is None
+    _cu = get_current_user(request)
     return templates.TemplateResponse(request, "chart.html", {
         "title": "چارت تولد", "chart": chart, "big_three": bt, "svg": svg,
         "aspect_grid": aspect_grid_svg(planets),
@@ -295,6 +359,7 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
         "house_bar": house_bar_svg(houses),
         "access_token": chart.access_token or "",
         "is_guest": is_guest,
+        "user": _cu,
     })
 
 
@@ -302,7 +367,11 @@ def chart_page(request: Request, chart_id: str, session: Session = Depends(get_s
 @app.post("/api/subscribe")
 def api_subscribe(request: Request, contact: str = Form(...), source: str = Form("guide"),
                   session: Session = Depends(get_session)):
-    """G3 — lead magnet/newsletter signup. Explicit consent recorded; rate-limited upstream."""
+    """G3 — lead magnet/newsletter signup. Explicit consent recorded.
+    X14/R15: rate-limited HERE (5/10min per IP) — when the real SMS service is
+    connected this endpoint becomes an SMS-bomb vector otherwise."""
+    if not _rate_limit(f"subscribe:{_rl_client(request)}", 5, 600):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
     import re as _re
     contact = contact.strip()
     channel = "email" if "@" in contact else "sms"
@@ -311,6 +380,17 @@ def api_subscribe(request: Request, contact: str = Form(...), source: str = Form
     if channel == "email" and not _re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", contact):
         raise HTTPException(422, "[ZAY-SUB-002] ایمیل معتبر نیست")
     from app.models import Subscriber
+    existing = session.exec(select(Subscriber).where(Subscriber.contact == contact)).first()
+    if existing and existing.unsubscribed_at is None:
+        # R10: one row per contact — re-issue the same download link.
+        resp = JSONResponse({"ok": True, "download_url": f"/guide/download/{existing.token}",
+                             "already_subscribed": True})
+        return resp
+    if existing:  # previously unsubscribed → resubscribe in place (keep same row)
+        existing.unsubscribed_at = None
+        session.add(existing); session.commit()
+        resp = JSONResponse({"ok": True, "download_url": f"/guide/download/{existing.token}"})
+        return resp
     token = secrets.token_urlsafe(24)
     sub = Subscriber(contact=contact, channel=channel, source=source, token=token)
     session.add(sub)
@@ -332,7 +412,7 @@ def guide_download(token: str, request: Request, session: Session = Depends(get_
     sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
     if not sub:
         raise HTTPException(404, "لینک نامعتبر است")
-    path = "/root/chart-platform/app/static/guides/zayche-guide.pdf"
+    path = Path(__file__).resolve().parent / "static" / "guides" / "zayche-guide.pdf"
     if not os.path.exists(path):
         raise HTTPException(404, "فایل راهنما یافت نشد")
     return FileResponse(path, media_type="application/pdf", filename="zayche-guide.pdf")
@@ -340,14 +420,26 @@ def guide_download(token: str, request: Request, session: Session = Depends(get_
 
 @app.get("/unsubscribe/{token}")
 def unsubscribe(token: str, request: Request, session: Session = Depends(get_session)):
-    """G3 — mandatory one-click unsubscribe."""
+    """G3 + X15/R16: GET only RENDERS the confirm page — email clients prefetch
+    links, so a state-changing GET let a bot silently unsubscribe people."""
+    return HTMLResponse(
+        "<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px' dir='rtl'>"
+        "<h2>لغو اشتراک خبرنامه</h2>"
+        f"<form method='post' action='/unsubscribe/{token}'>"
+        "<button type='submit' style='padding:12px 32px;font-size:16px;cursor:pointer'>بله، لغو کن</button>"
+        "</form></body>")
+
+
+@app.post("/unsubscribe/{token}")
+def unsubscribe_confirm(token: str, session: Session = Depends(get_session)):
+    """X15: the state change lives here (POST)."""
     from app.models import Subscriber
     sub = session.exec(select(Subscriber).where(Subscriber.token == token)).first()
     if sub and sub.unsubscribed_at is None:
         sub.unsubscribed_at = datetime.now(timezone.utc)
         session.add(sub)
         session.commit()
-    return HTMLResponse("<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px'>لغو اشتراک انجام شد. دیگر پیامی دریافت نمی‌کنی.</body>")
+    return HTMLResponse("<meta charset='utf-8'><body style='font-family:sans-serif;text-align:center;padding:60px' dir='rtl'>لغو اشتراک انجام شد. دیگر پیامی دریافت نمی‌کنی.</body>")
 
 
 # ─────────────────────────── api ───────────────────────────
@@ -619,12 +711,31 @@ def api_create_report(chart_id: str, request: Request,
     # ownership (P0-1): only the owner (user_id or capability token) may trigger
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
-    # plan v3.0 §8/§12: report generation happens AFTER payment — plan_key drives section set
+    # plan v3.0 §8/§12: report generation happens AFTER payment — plan_key drives
+    # section set. X8/R4: TWO purchase paths now unlock generation: legacy paid
+    # order OR a credit entitlement scoped to this chart. plan_key comes from
+    # whichever path matched.
     paid = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    if not paid:
+    _u = get_current_user(request)
+    ent = ent_has(session, _u.id, "report", chart_id=chart_id,
+                  unbound_only=True) if _u else None
+    if ent is None and _u:
+        # Z5: fall back to any usable entitlement (legacy/edge) so we never
+        # 403 a purchase the user already paid for.
+        ent = ent_has(session, _u.id, "report", chart_id=chart_id)
+    if not paid and not ent:
         raise HTTPException(403, "[ZAY-REPORT-003] برای تولید گزارش، ابتدا پلن را خریداری کنید")
+    # Y2/N2: Entitlement has NO source_action field — derive the tier from the
+    # CreditTransaction that funded it (ent.source_ref = tx id, reason = action key).
+    _credit_plan = None
+    if ent is not None and ent.source_ref:
+        from app.models import CreditTransaction as _CT
+        _tx = session.get(_CT, ent.source_ref)
+        if _tx is not None:
+            _credit_plan = {"report_basic": "basic", "report_full": "full",
+                            "report_gold": "gold"}.get(_tx.reason or "")
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
@@ -656,10 +767,20 @@ def api_create_report(chart_id: str, request: Request,
                 session.commit()
             return {"report_id": existing.id, "status": existing.status,
                     "queued": ok, "plan_key": existing.plan_key, "existing": True}
-    rep = Report(chart_id=chart_id, status="queued", plan_key=paid.plan_key or "full")
+    rep = Report(chart_id=chart_id, status="queued",
+                 plan_key=(paid.plan_key if paid else (_credit_plan or "full")))
     session.add(rep)
     session.commit()
     session.refresh(rep)
+    # Y1/N1: a credit-bought report must be DOWNLOADABLE — bind the user's
+    # unscoped report entitlement to THIS report (ref_id), matching what
+    # _report_gate checks. Legacy paid orders already carry report_id.
+    if _u and not paid and ent is not None and not ent.ref_id:
+        from app.timeutil import ensure_utc, utcnow
+        if not (ent.expires_at and ensure_utc(ent.expires_at) < utcnow()):
+            ent.ref_id = rep.id
+            session.add(ent)
+            session.commit()
     ok = _enqueue_report(rep.id)
     if not ok:
         rep.status = "failed"
@@ -670,17 +791,23 @@ def api_create_report(chart_id: str, request: Request,
 
 @app.get("/api/charts/{chart_id}/preview")
 async def api_chart_preview(chart_id: str, request: Request, session: Session = Depends(get_session)):
-    """Free 3-5 insights — deterministic baseline, enriched with a cheap LLM
-    (deepseek-flash flat-subscription) when available, cached in Redis to avoid
-    repeat spend. Falls back to the deterministic one-liners on any failure."""
+    """MASTER W2 — the free preview must ANSWER the user's own question.
+
+    Deterministic baseline (3 patterns with evidence + next-transit teaser +
+    element summary) is instant and free. When the user wrote a personal
+    question in the form, ONE cheap LLM call (preview router = deepseek-flash)
+    adds `question_answer` + 3 LLM patterns — cached PERMANENTLY per chart_id
+    (`freepreview:{chart_id}`, no TTL): the second load of the same chart
+    costs ZERO LLM calls (AC-1). Any failure → deterministic baseline only.
+    """
     chart = session.get(Chart, chart_id)
     if not chart:
         raise HTTPException(404, "chart not found")
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "not authorized")
-    from app.report.preview import enrich_insights_async, free_insights
+    from app.report.preview import enrich_free_preview_async, free_insights
     insights = free_insights(chart.chart_json)
-    cache_key = f"enriched:{chart_id}"
+    cache_key = f"freepreview:{chart_id}"
 
     async def _cache_get() -> dict | None:
         try:
@@ -694,7 +821,8 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
     async def _cache_set(val: dict) -> None:
         try:
             r = redis_async.from_url(_REDIS_URL, decode_responses=True)
-            await r.set(cache_key, json.dumps(val, ensure_ascii=False), ex=7 * 86400)
+            # W2/§9: permanent cache — one LLM call PER CHART, ever.
+            await r.set(cache_key, json.dumps(val, ensure_ascii=False))
             await r.aclose()
         except Exception:
             pass
@@ -704,13 +832,48 @@ async def api_chart_preview(chart_id: str, request: Request, session: Session = 
         cached["cached"] = True
         return cached
     if os.getenv("ENRICH_INSIGHTS", "1") == "0":
-        return insights  # enrichment disabled (tests / config)
+        # enrichment disabled — still build profile_meta so P0-3 echo works
+        profile_meta: dict = {}
+        if chart.profile_id:
+            prof = session.get(BirthProfile, chart.profile_id)
+            if prof:
+                profile_meta = {"personal_question": prof.personal_question or "",
+                                "focus_areas": list(prof.focus_areas or [])}
+        insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+        insights["focus_areas"] = list(profile_meta.get("focus_areas") or [])
+        return insights
+
+    profile_meta: dict = {}
+    if chart.profile_id:
+        prof = session.get(BirthProfile, chart.profile_id)
+        if prof:
+            profile_meta = {"personal_question": prof.personal_question or "",
+                            "focus_areas": list(prof.focus_areas or [])}
+    profile_meta["_patterns"] = insights.get("patterns", [])
+    # R12/P0-3: the question and the chosen focus areas belong to the USER —
+    # echo them in EVERY response (deterministic path included, no LLM needed).
+    insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+    insights["focus_areas"] = list(profile_meta.get("focus_areas") or [])
+    if os.getenv("ENRICH_INSIGHTS", "1") == "0":
+        return insights  # enrichment disabled (tests / config) — but echo already done
     try:
-        enriched = await asyncio.wait_for(
-            enrich_insights_async(chart.chart_json, insights), timeout=7.0)
+        enriched = await enrich_free_preview_async(chart.chart_json, profile_meta)
         if enriched:
-            await _cache_set(enriched)
-            return enriched
+            insights.update(enriched)
+            insights["enriched"] = True
+            insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()
+            await _cache_set(insights)  # SUCCESS → permanent cache (one call per chart, ever)
+            return insights
+    except Exception:
+        pass
+    # R12/P0-2: a FAILED enrichment must NOT poison the permanent cache —
+    # otherwise one transient LLM outage on first visit means that chart never
+    # gets its answer (cache has no TTL). Short TTL only: retry in 15 min.
+    insights["personal_question"] = (profile_meta.get("personal_question") or "").strip()  # P0-3: echo even without LLM
+    try:
+        r = redis_async.from_url(_REDIS_URL, decode_responses=True)
+        await r.set(cache_key, json.dumps(insights, ensure_ascii=False), ex=900)
+        await r.aclose()
     except Exception:
         pass
     return insights
@@ -794,9 +957,39 @@ def api_report_pdf(report_id: str, request: Request,
 
 @app.get("/plans", response_class=HTMLResponse)
 def plans_page(request: Request, session: Session = Depends(get_session)):
+    """R.10 / P1-2 (A4 de-narrowing): sell the UNIFIED credit model, not parallel toman plans.
+
+    The engine behind the scenes is credit-based (POST /api/purchase → grant_from_credits),
+    but plans.html still called the old /api/orders (toman) path — so the main sales page
+    sold report_basic/full/gold as toman plans while the whole back-end is credit. This is
+    the "two parallel money systems" the F1 audit flagged. Now:
+      - the primary table lists credit PRODUCTS from `credit_prices` (what you get / N credits),
+        each "باز کردن با N اعتبار" button → /api/purchase
+      - credit packs stay (the only place toman appears) → /api/orders
+      - the monthly/yearly subscription is a distinct product, shown separately
+    """
+    from app.models import CreditPrice
     plans = session.exec(select(Plan).where(Plan.active).order_by(Plan.sort)).all()
+    # Only the ACTIVE credit products worth selling in the main table (skip free/inactive).
+    products = [
+        {"action_key": r.action_key, "title_fa": r.title_fa, "credits": r.credits}
+        for r in session.exec(select(CreditPrice).where(CreditPrice.active)).all()
+        if r.action_key not in ("rectify", "explore_card")  # rectify is free; explore is in-product
+    ]
+    products.sort(key=lambda x: ([
+        "report_basic", "report_full", "report_gold", "chat_pack_20",
+        "synastry_love", "synastry_work", "transit_3m", "transit_12m",
+        "solar_return", "relocation", "report_audio",
+    ].index(x["action_key"]) if x["action_key"] in [
+        "report_basic", "report_full", "report_gold", "chat_pack_20",
+        "synastry_love", "synastry_work", "transit_3m", "transit_12m",
+        "solar_return", "relocation", "report_audio",
+    ] else 99))
+    user = get_current_user(request)
+    user_balance = (balance(session, user.id) if user else 0)
     return templates.TemplateResponse(request, "plans.html", {
-        "title": "تعرفهها", "plans": plans,
+        "title": "تعرفه‌ها", "plans": plans,
+        "credit_products": products, "user_balance": user_balance,
     })
 
 
@@ -852,7 +1045,7 @@ def api_purchase(payload: "PurchasePayload", request: Request,
         packs = session.exec(
             select(Plan).where(
                 Plan.active == True,  # noqa: E712
-                Plan.key.in_(["credit3", "credit6", "credit12"]),
+                Plan.key.in_(["credit1", "credit3", "credit6", "credit12"]),
             )
         ).all()
         return JSONResponse(status_code=402, content={
@@ -861,6 +1054,17 @@ def api_purchase(payload: "PurchasePayload", request: Request,
                        "credits": p.credits_grant, "price_toman": p.price_toman}
                       for p in packs],
         })
+    # X5/R5: chart-scoped actions MUST carry chart_id — an unscoped report/
+    # transit/rectify entitlement would unlock every chart of the user.
+    # R12/P0-1: solar_return + relocation are chart-scoped too — buying them
+    # without chart_id used to mint a DEAD entitlement (money taken, nothing
+    # delivered). Same guard as every other chart-scoped product.
+    _CHART_SCOPED_PREFIXES = ("report", "transit", "rectify", "synastry",
+                              "solar_return", "relocation")
+    if payload.action_key.startswith(_CHART_SCOPED_PREFIXES) and not payload.chart_id:
+        return JSONResponse(status_code=400, content={
+            "error": "chart_id_required",
+            "message": "برای این خرید، شناسهٔ چارت الزامی است"})
     ent = ent_grant_credits(
         session, user.id, payload.action_key,
         idempotency_key=f"purchase:{user.id}:{payload.action_key}:{payload.chart_id or 'none'}",
@@ -871,12 +1075,14 @@ def api_purchase(payload: "PurchasePayload", request: Request,
 
 @app.get("/api/credits/me")
 def api_credits_me(request: Request, session: Session = Depends(get_session)):
-    """A4: current user credit balance (401 if not logged in).
-    Drives the appbar credit chip + credit_cta.
-    """
+    """A4: current user credit balance.
+
+    R.9 / Q6 (P3): a guest has no logged-in user — return 200 with balance 0
+    instead of a 401 that logged a console error on EVERY page (the appbar chip
+    called this for guests too)."""
     user = get_current_user(request)
     if not user:
-        raise HTTPException(401, "login required")
+        return {"balance": 0, "currency": "credit", "guest": True}
     return {"balance": balance(session, user.id), "currency": "credit"}
 
 
@@ -926,6 +1132,14 @@ def api_create_order(
         raise HTTPException(403, "not authorized")
     if not chart and plan_key not in CREDIT_PACKS:
         raise HTTPException(400, "[ZAY-PAY-001] برای این پلن ابتدا چارت بسازید")
+    # R14-D2 (owner decision, option A): credit packs REQUIRE login. The old
+    # guest path minted "escrow" orders whose credits could never be delivered
+    # (no buyer to grant them to) — money taken, product undeliverable.
+    if plan_key in CREDIT_PACKS and not user:
+        return JSONResponse(status_code=401, content={
+            "login_required": True,
+            "next": "/account/login?next=/plans",
+            "message": "برای خرید اعتبار، اول با شماره موبایل وارد شو"})
     if secondary_chart_id:
         sec = session.get(Chart, secondary_chart_id)
         if not sec or not _owns_chart(sec, session, request):
@@ -982,6 +1196,9 @@ def api_create_order(
         raise HTTPException(404, "plan not found")
     except ValueError as e:
         raise HTTPException(400, str(e))
+    except ZarinpalError:
+        # R.9 / Q3: gateway outage mid-payment must be a friendly 502, not a raw 500.
+        raise HTTPException(502, "درگاه پرداخت موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید.")
     except RuntimeError as e:
         raise HTTPException(502, str(e))
     return {"order_id": order.id, "payment_url": pay_url, "authority": order.authority,
@@ -1038,7 +1255,7 @@ def api_coupon_check(code: str = Query(default=""), request: Request = None,
                      session: Session = Depends(get_session)):
     """§13 — validate a coupon WITHOUT consuming it; report_only coupons also
     check the caller's first-deep-report eligibility."""
-    from app.payment.orders import REPORT_PLANS
+    from app.payment.orders import DEEP_REPORT_ACTIONS
     from app.timeutil import ensure_utc, utcnow
     cp = session.exec(select(Coupon).where(Coupon.code == code.strip().upper())).first()
     if not cp or not cp.active:
@@ -1051,11 +1268,15 @@ def api_coupon_check(code: str = Query(default=""), request: Request = None,
     if cp.report_only:
         user = get_current_user(request)
         if user:
-            prior = session.exec(select(Order).where(
-                Order.user_id == user.id, Order.status == "paid",
-                Order.plan_key.in_(REPORT_PLANS))).first()
+            # R13/N3 + R15-D9: the ledger is the source of truth — a prior deep-report
+            # CREDIT spend (not an old toman plan order) voids the coupon.
+            # 400 with a Persian reason so the user knows WHY it was refused.
+            from app.models import CreditTransaction as _CT
+            prior = session.exec(select(_CT).where(
+                _CT.user_id == user.id, _CT.amount < 0,
+                _CT.reason.in_(DEEP_REPORT_ACTIONS))).first()
             if prior:
-                raise HTTPException(400, "این کد فقط برای اولین گزارش عمیق است")
+                raise HTTPException(400, "این کد فقط برای اولین گزارش عمیق است — قبلاً یک گزارش عمیق باز کرده‌ای")
     return {"code": cp.code, "percent": cp.percent, "scope": scope}
 
 
@@ -1109,8 +1330,19 @@ def api_payment_verify(
             "UPDATE orders SET status = 'verifying' WHERE id = :oid AND status = 'pending' RETURNING id"
         ), params={"oid": order.id}).first()
         if not claimed:
-            # another request already claimed/paid this order → just redirect
+            # another request already claimed/paid this order → just redirect.
+            # R13/§3 (corrected per R15): the row-level lock from the atomic
+            # UPDATE already made losers BLOCK until the winner commits — so
+            # the gateway was never called N times. The real pre-R13 problem
+            # was different: each losing request held its DB connection for
+            # the full gateway latency (~2s each), risking pool exhaustion.
+            # The commit here releases the winner's transaction early; losers
+            # then see 'verifying/paid' in ~0.02s instead of ~2s.
+            session.commit()
             return RedirectResponse(f"/payment/result?order_id={order.id}", status_code=303)
+        # R13 race fix: commit the 'verifying' claim NOW so losers see it and
+        # take the redirect branch instead of holding connections (~0.02s).
+        session.commit()
         client = ZarinpalClient()
         try:
             v = client.verify(Authority, order.amount_rial)
@@ -1123,7 +1355,9 @@ def api_payment_verify(
             # nothing to consume here; idempotency holds because the
             # pending→verifying claim above runs at most once per order.
             # monthly subscription: activate + extend 30 days (plan §7)
-            from app.payment.orders import REPORT_PLANS, activate_subscription, CREDIT_PACKS, grant_credits, SUBSCRIPTION_PLANS, grant_subscription_credits
+            from app.payment.orders import (DEEP_REPORT_ACTIONS,
+                                            activate_subscription, CREDIT_PACKS, grant_credits,
+                                            SUBSCRIPTION_PLANS, grant_subscription_credits)
             if order.plan_key in SUBSCRIPTION_PLANS:
                 activate_subscription(session, order)
                 sub = session.exec(
@@ -1134,11 +1368,23 @@ def api_payment_verify(
                 ).first()
                 if sub:
                     grant_subscription_credits(session, sub)  # H — first month granted on purchase
-            # P6 — credit packs: grant credits atomically + ledger row
+            # P6 — credit packs: grant credits atomically + ledger row.
+            # R13 fix: a GUEST pack order (no user_id, anonymous chart) has no
+            # resolvable buyer — grant_credits raises and the whole verify
+            # rolled back to 'pending'. Credits belong to an ACCOUNT, so the
+            # honest behaviour is: payment succeeded (money moved), order paid,
+            # but the credits wait in escrow until the guest claims the chart.
             if order.plan_key in CREDIT_PACKS:
-                grant_credits(session, order)
-            # auto-generate report for report plans (basic/full/gold — NOT synastry/sub)
-            if order.plan_key in REPORT_PLANS and order.chart_id and not order.report_id:
+                try:
+                    grant_credits(session, order)
+                except ValueError as ve:
+                    session.rollback()
+                    order.status = "paid"  # money DID move at the gateway
+                    order.note = f"credits pending claim: {str(ve)[:120]}"
+                    session.add(order)
+            # auto-generate report for deep-report orders (R13/N3: legacy toman
+            # plans retired — the path now keys on DEEP_REPORT_ACTIONS)
+            if order.plan_key in DEEP_REPORT_ACTIONS and order.chart_id and not order.report_id:
                 rep = Report(chart_id=order.chart_id, status="queued",
                              plan_key=order.plan_key)
                 session.add(rep)
@@ -1205,7 +1451,13 @@ def api_share_card(chart_id: str, request: Request,
         raise HTTPException(404, "chart not found")
     from app.share.card import render_share_card
     from fastapi.responses import FileResponse
-    path = render_share_card(chart.chart_json, chart_id)
+    try:
+        path = render_share_card(chart.chart_json, chart_id)
+    except Exception:  # noqa: BLE001 — renderer unavailable (browser not installed)
+        # R.5 / V6 (P2-3): 503 "service unavailable" not 404 — the chart EXISTS,
+        # the renderer doesn't. 404 would mislead a client into thinking the chart
+        # is gone; 503 says "try later" (same principle as the VAPID fix).
+        raise HTTPException(503, "share card renderer unavailable")
     return FileResponse(path, media_type="image/png")
 
 
@@ -1325,92 +1577,80 @@ def synastry_share_page(request: Request, token: str, p: str = Query("")):
     })
 
 
-@app.post("/api/synastry/order")
-def api_synastry_order(request: Request, session: Session = Depends(get_session),
-                       name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
-                       day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
-                       city_a: str = Form(None), calendar_a: str = Form("jalali"),
-                       zodiac_a: str = Form("tropical"),
-                       name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
-                       day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
-                       city_b: str = Form(None), calendar_b: str = Form("jalali"),
-                       zodiac_b: str = Form("tropical")):
-    """Save both charts + create the paid synastry order (plan §8, ~499k toman).
-
-    H1.6: Person B is a GUEST profile (user_id=NULL, no account required) —
-    only the buyer's chart A lands in their account; B's birth data is stored
-    as an anonymous profile reachable solely via its capability token."""
-    from app.payment.orders import create_order
-    chart_a, profile_a = _compute_and_save_chart(
+@app.post("/api/synastry/charts")
+def api_synastry_charts(request: Request, session: Session = Depends(get_session),
+                        name_a: str = Form(""), year_a: int = Form(...), month_a: int = Form(...),
+                        day_a: int = Form(...), hour_a: int = Form(12), minute_a: int = Form(0),
+                        city_a: str = Form(None), calendar_a: str = Form("jalali"),
+                        zodiac_a: str = Form("tropical"),
+                        name_b: str = Form(""), year_b: int = Form(...), month_b: int = Form(...),
+                        day_b: int = Form(...), hour_b: int = Form(12), minute_b: int = Form(0),
+                        city_b: str = Form(None), calendar_b: str = Form("jalali"),
+                        zodiac_b: str = Form("tropical")):
+    """R13 — save both synastry charts WITHOUT creating a payment order.
+    Returns chart ids so the credit path (/api/purchase) can scope the
+    entitlement. Person B stays a guest profile (H1.6)."""
+    if not _rate_limit(f"synch:{_rl_client(request)}", 10, 60):
+        raise HTTPException(429, "درخواست زیاد است؛ کمی بعد دوباره تلاش کن")
+    chart_a, _pa = _compute_and_save_chart(
         session, request, calendar=calendar_a, year=year_a, month=month_a, day=day_a,
         time_known=True, hour=hour_a, minute=minute_a, city_fa=city_a,
         province_fa=None, lat=None, lon=None, name=name_a, zodiac=zodiac_a)
-    chart_b, profile_b = _compute_and_save_chart(
+    chart_b, _pb = _compute_and_save_chart(
         session, request, calendar=calendar_b, year=year_b, month=month_b, day=day_b,
         time_known=True, hour=hour_b, minute=minute_b, city_fa=city_b,
         province_fa=None, lat=None, lon=None, name=name_b, zodiac=zodiac_b,
-        guest=True)  # H1.6: guest — anonymous BirthProfile + capability token
+        guest=True)
     session.add(chart_a); session.add(chart_b)
     session.commit(); session.refresh(chart_a); session.refresh(chart_b)
-    user = get_current_user(request)
-    try:
-        order, pay_url = create_order(
-            session, "synastry", chart_a.id, secondary_chart_id=chart_b.id,
-            coupon=None, ref_code="", new_user_id=user.id if user else None,
-        )
-    except (LookupError, ValueError, RuntimeError) as e:
-        # F-19 (audit v8 P1): failure compensation — the payment order could
-        # not be created, so the JUST-CREATED charts/profiles (including the
-        # anonymous Person B, which has NO user owner and therefore NO other
-        # deletion path) must not be left orphaned in the DB.
-        try:
-            session.rollback()  # drop the uncommitted order first (it holds an FK to chart A)
-            session.delete(chart_a)
-            session.delete(chart_b)
-            session.flush()
-            session.delete(profile_a)
-            session.delete(profile_b)
-            session.commit()
-        except Exception as _e:  # noqa: BLE001
-            # F-19 residual (audit v9 P1): cleanup MUST be fail-closed — if
-            # the compensation itself fails, the guest Person B data may be
-            # orphaned with NO deletion path. Surface a 5xx (NOT the original
-            # 400) so the operator sees the incomplete state instead of the
-            # user silently walking away with leftover private data.
-            try:
-                session.rollback()
-                from app.security import audit
-                audit(session.bind, "system", "synastry.cleanup_failed",
-                      chart_a.id, f"compensation failed: {_e!r} — charts/profiles may be orphaned")
-            except Exception:
-                pass
-            raise HTTPException(502, "خطای داخلی: دادههای سیناستری پاک نشد — با پشتیبانی تماس بگیرید")
-        raise HTTPException(400, str(e))
-    return {"order_id": order.id, "payment_url": pay_url,
-            "chart_a": chart_a.id, "chart_b": chart_b.id,
-            "token_b": chart_b.access_token}  # H1.6: guest capability token
+    # B's capability token must reach the buyer so the paid full report can
+    # be unlocked without person B having an account (H1.6 semantics).
+    return {"chart_a": chart_a.id, "chart_b": chart_b.id,
+            "token_b": chart_b.access_token}
+
+
+@app.post("/api/synastry/order")
+def api_synastry_order(request: Request, session: Session = Depends(get_session)):
+    """R14-D3: RETIRED — the toman synastry plan is gone. Synastry is bought
+    with CREDITS (synastry_love / synastry_work, 8cr each) via /api/synastry/charts
+    + /api/purchase. Old clients get a clear 410, not a 500."""
+    raise HTTPException(410, "خرید سیناستری با تومان حذف شد — سازگاری عاطفی/کاری را با اعتبار باز کن")
 
 
 @app.post("/api/synastry/full")
 def api_synastry_full(request: Request, session: Session = Depends(get_session),
-                      chart_a: str = Form(...), chart_b: str = Form(...)):
-    """Full synastry report — requires OWNING both charts AND a paid synastry order (audit r4 A4)."""
+                      chart_a: str = Form(...), chart_b: str = Form(...),
+                      variant: str = Form("love")):
+    """Full synastry — MASTER W8: variant='love'|'work' selects the lens.
+    Requires OWNING both charts AND a paid/credited synastry product (audit r4 A4)."""
     from app.astrology.synastry import synastry
+    user = get_current_user(request)
+    if variant not in ("love", "work"):
+        raise HTTPException(400, "variant باید love یا work باشد")
     ca = session.get(Chart, chart_a)
     cb = session.get(Chart, chart_b)
     if not ca or not cb:
         raise HTTPException(404, "chart not found")
     if not _owns_chart(ca, session, request) or not _owns_chart(cb, session, request):
         raise HTTPException(403, "not authorized")
-    paid = session.exec(
+    # R12/P1-5: each variant accepts ONLY its own product kind (plus the
+    # legacy paid order / legacy bundle for old customers).
+    needed_kind = "synastry_love" if variant == "love" else "synastry_work"
+    action_key = "synastry_love" if variant == "love" else "synastry_work"
+    credited = bool(user and ent_has(session, user.id, needed_kind,
+                                     chart_id=chart_a))
+    legacy_bundle = bool(user and ent_has(session, user.id, "synastry_full",
+                                          chart_id=chart_a))
+    paid_legacy = session.exec(
         select(Order).where(
             Order.plan_key == "synastry", Order.status == "paid",
             Order.chart_id == chart_a, Order.secondary_chart_id == chart_b,
         )
     ).first()
-    if not paid:
-        raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا سیناستری را خریداری کنید")
-    return synastry(ca.chart_json, cb.chart_json)
+    if not credited and not legacy_bundle and not paid_legacy:
+        raise HTTPException(403, "[ZAY-PAY-001] برای مشاهدهی تحلیل کامل، ابتدا این سازگاری را خریداری کنید")
+    result = synastry(ca.chart_json, cb.chart_json, variant=variant)
+    return {**result, "action_key": action_key}
 
 
 @app.get("/api/synastry/access")
@@ -1459,6 +1699,10 @@ def api_rectify(request: Request, city_fa: str = Form(...), year: int = Form(...
         raise HTTPException(400, "حداقل یک رویداد لازم است")
     r = rectify_birth_time(city[0]["lat"], city[0]["lon"], year, month, day, events,
                            jalali=calendar == "jalali")
+    # Y15 (owner decision 2026-08-23): rectify is FREE for everyone — it is a
+    # deterministic engine (no LLM cost) and works as an acquisition tool.
+    # Abuse is bounded by the rate limit above; the credit_prices row for
+    # 'rectify' stays seeded but inactive-by-policy (no gate reads it here).
     return {"best_time": r.best_time, "score": r.score, "candidates": r.candidates,
             "events_used": r.events_used, "details": r.details}
 
@@ -1505,6 +1749,17 @@ def api_report_audio_request(report_id: str, request: Request,
         # allow one retry — flip back to none so the worker re-generates
         rep.audio_status = "none"
         session.commit()
+    # R8/X11: audio costs 1 credit — charged at generation request, idempotent per
+    # (report,user) so re-POST while queued never double-charges. Guests (capability
+    # token) keep the free path — the funnel demo stays open.
+    u = get_current_user(request)
+    if u:
+        from app.credits import spend, CreditError
+        try:
+            spend(session, u.id, "report_audio",
+                  idempotency_key=f"audio:{report_id}:{u.id}")
+        except CreditError:
+            raise HTTPException(402, "اعتبار کافی برای نسخهٔ صوتی نیست")
     # enqueue (redis path; failure surfaces as 503 — never inline TTS)
     try:
         import asyncio as _a
@@ -1520,7 +1775,6 @@ def api_report_audio_request(report_id: str, request: Request,
 
 def _enqueue_audio(report_id: str) -> object:
     """Synchronous bridge to enqueue the audio job (no async endpoint)."""
-    import asyncio
 
     async def _do():
         from arq import create_pool
@@ -1600,9 +1854,12 @@ def _chat_account_key(chart, order, request) -> str:
 
 
 def _chat_daily_limit(order) -> int:
-    """Gold=5/day, monthly=15/day (admin-overridable via secrets table)."""
-    limit_key = "chat_daily_limit_gold" if order.plan_key == "gold" else "chat_daily_limit_monthly"
-    default = "5" if order.plan_key == "gold" else "15"
+    """Gold=5/day, monthly=15/day (admin-overridable via secrets table).
+    X6: entitlement-only chat (order=None) uses the gold default."""
+    _pk = getattr(order, "plan_key", None) or ("gold" if order is None else None)
+    is_goldish = _pk in ("gold",) or (_pk is None and order is None)
+    limit_key = "chat_daily_limit_gold" if is_goldish else "chat_daily_limit_monthly"
+    default = "5" if is_goldish else "15"
     try:
         return int(secret_store.get_secret(limit_key, limit_key.upper(), default))
     except ValueError:
@@ -1660,7 +1917,7 @@ def api_chat_access(chart_id: str, request: Request, session: Session = Depends(
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    allowed = bool(order and order.plan_key in ("gold", "monthly"))
+    allowed = bool(order and order.plan_key in ("gold", "monthly", "yearly"))
     if not allowed:
         return {"allowed": False, "used": 0, "limit": 0, "remaining": 0}
     if not _monthly_sub_active(session, order, chart_id):  # A9: expired monthly
@@ -1701,12 +1958,23 @@ def _chat_guarded_context(request: Request, chart_id: str,
     # another chart's paid quota or answer questions about someone else's birth chart
     if not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این گفتگو ندارید")
-    # paid check: chat requires GOLD/monthly (audit P0-4 — plan §7)
+    # paid check: chat requires GOLD/monthly (audit P0-4 — plan §7) OR a
+    # credit chat-pack entitlement (X6/R7: the pack must actually be CONSUMED
+    # per message and must not be expired).
     order = session.exec(
         select(Order).where(Order.chart_id == chart_id, Order.status == "paid")
     ).first()
-    if not order or order.plan_key not in ("gold", "monthly"):
+    _ent_chat = None
+    u = get_current_user(request)
+    if u:
+        from app.entitlements import has as ent_has
+        _ent_chat = ent_has(session, u.id, "chat", chart_id=chart_id)
+    if _ent_chat is None and (not order or order.plan_key not in ("gold", "monthly", "yearly")):
         raise HTTPException(403, "گفت‌وگو با هوش مصنوعی مخصوص پلن طلایی است")
+    try:
+        request.state.chat_ent = _ent_chat  # X6: consumed after a successful answer
+    except Exception:  # noqa: BLE001
+        pass
     # audit r4 A9: monthly subscriptions EXPIRE — a paid order alone is not enough
     if not _monthly_sub_active(session, order, chart_id):
         raise HTTPException(403, "اشتراک ماهانه‌ات منقضی شده؛ برای ادامه گفت‌وگو آن را تمدید کن")
@@ -1787,6 +2055,16 @@ def api_chat(
         shown = _chat_quota_info(session, chart_id, order, acct)["used"]
     result["quota"] = {"used": shown, "limit": daily_limit,
                        "remaining": max(0, daily_limit - shown)}
+    # X6/R7: a chat-pack entitlement is CONSUMED per successful answer.
+    _ent = getattr(request.state, "chat_ent", None)
+    if _ent is not None:
+        from app.entitlements import consume as ent_consume
+        if not ent_consume(session, _ent, 1):
+            result["pack_exhausted"] = True
+        else:
+            session.commit()  # R26: consume() itself does not commit
+            result["pack"] = {"used": _ent.used, "limit": _ent.quantity,
+                              "remaining": max(0, _ent.quantity - _ent.used)}
     return result
 
 
@@ -1984,8 +2262,10 @@ async def bale_webhook(secret: str, request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard_page(request: Request, session: Session = Depends(get_session)):
-    """G15 (§22) — dashboard as the primary product: hero «امروز در چارت تو
-    چه خبر است؟» + 8 retention cards. Login-gated; chart-less users get a CTA."""
+    """G15 (§22) + MASTER W9 — dashboard as the primary product:
+    greeting + Persian (Jalali/Tehran) date, multi-person chart switcher,
+    «امروزِ تو» teaser and a compact 2-column grid of deep-analysis /
+    periodic cards. Login-gated; chart-less users get a CTA."""
     u = get_current_user(request)
     if not u:
         return RedirectResponse("/account/login?next=/dashboard", status_code=303)
@@ -1993,6 +2273,14 @@ def dashboard_page(request: Request, session: Session = Depends(get_session)):
     profile_ids = [p.id for p in profiles]
     charts = (session.exec(select(Chart).where(Chart.profile_id.in_(profile_ids))
                            .order_by(Chart.created_at.desc())).all() if profile_ids else [])
+    # W9 multi-person switcher meta: one entry per PROFILE (person), not per chart
+    people = []
+    for p in profiles:
+        ch = next((c for c in charts if c.profile_id == p.id), None)
+        people.append({"id": p.id,
+                       "name": p.name or "بدون نام",
+                       "chart_id": ch.id if ch else "",
+                       "label": f"{p.name or 'بدون نام'} — {p.raw_year}/{p.raw_month}/{p.raw_day}"})
     chart_ids = [c.id for c in charts]
     reports = (session.exec(select(Report).where(Report.chart_id.in_(chart_ids))
                             .order_by(Report.created_at.desc())).all() if chart_ids else [])
@@ -2003,31 +2291,45 @@ def dashboard_page(request: Request, session: Session = Depends(get_session)):
         from app.today.service import today_status
         try:
             st = today_status(session, charts[0])
-            daily = {"date": st.get("date_fa") if st else None,
-                     "headline": (st.get("daily") or {}).get("headline") if st else None}
+            daily = {"date": st.get("today_label") if st else None,
+                     "headline": (st.get("question") or "")[:90] if st else None}
         except Exception:  # noqa: BLE001 — dashboard must never 500 on a service hiccup
             daily = None
-    cards = [
-        {"key": "today", "title": "امروز در چارت تو", "desc": "بینش روزانه بر اساس چارت تولدت",
-         "url": "/today", "icon": "sun"},
-        {"key": "weekly", "title": "نگاهی به آسمان هفته", "desc": "تأمل هفتگی و گذرهای پیش رو",
-         "url": "/today?view=week", "icon": "moon"},
-        {"key": "chat", "title": "گفت‌وگو با چارت", "desc": "سؤال بپرس؛ پاسخ از گزارش و چارت تو",
-         "url": f"/chat/{charts[0].id}" if charts else "/birth-form", "icon": "chat"},
-        {"key": "explore", "title": "خودت را کشف کن", "desc": "کاوش تعاملی شخصیت و مسیر زندگی",
+    from app.timeutil import jalali_today_label
+    try:
+        today_fa = jalali_today_label()
+    except Exception:  # noqa: BLE001
+        today_fa = ""
+    newest = charts[0].id if charts else ""
+    deep_cards = [
+        {"key": "explore", "title": "یک سؤال، یک جواب", "desc": "پاسخ کوتاه به یک پرسش مشخص از چارتت",
          "url": "/explore", "icon": "compass"},
-        {"key": "reports", "title": "گزارش‌ها", "desc": f"{len(done)} گزارش آماده — دانلود PDF",
+        {"key": "chat", "title": "از چارتت بپرس", "desc": "گفت‌وگوی شخصی با هوش مصنوعی روی چارت تو",
+         "url": f"/chat/{newest}" if newest else "/birth-form", "icon": "chat"},
+        {"key": "reports", "title": "شناخت کامل", "desc": f"{len(done)} گزارش آماده — دانلود PDF",
          "url": "/account", "icon": "book"},
-        {"key": "synastry", "title": "سازگاری دو چارت", "desc": "سیناستری با شریک زندگی‌ات",
+        {"key": "synastry", "title": "سازگاری دو نفر", "desc": "عاطفی یا کاری — با شاهد نجومی",
          "url": "/synastry", "icon": "heart"},
-        {"key": "wallet", "title": "کیف پول", "desc": f"{u.credits} اعتبار — دعوت دوستان",
-         "url": "/account", "icon": "wallet"},
-        {"key": "plans", "title": "پلن‌ها", "desc": "گزارش کامل، طلایی و اشتراک",
+        {"key": "solar", "title": "چارت سالیانه", "desc": "سال تولد تا تولد بعدی — تم و گذرهای کلیدی",
+         "url": f"/solar/{newest}" if newest else "/plans", "icon": "sun"},
+        {"key": "relocation", "title": "چارت مهاجرت", "desc": "کدام شهر برای کدام بخش زندگی‌ات",
+         "url": f"/relocation/{newest}" if newest else "/birth-form", "icon": "compass"},
+    ]
+    periodic_cards = [
+        {"key": "transit12", "title": "۱۲ ماه آیندهٔ من", "desc": "مهم‌ترین گذرهای سال با تاریخ دقیق",
+         "url": f"/transit/{newest}" if newest else "/birth-form", "icon": "moon"},
+        {"key": "audio", "title": "گزارش صوتی", "desc": "گزارشت را گوش کن",
+         "url": "/account", "icon": "sparkles"},
+        {"key": "credits", "title": "اعتبار و دعوت دوستان", "desc": f"{u.credits} اعتبار",
+         "url": "/credits", "icon": "wallet"},
+        {"key": "products", "title": "همهٔ محصولات", "desc": "با اعتبار باز کن",
          "url": "/plans", "icon": "sparkles"},
     ]
     return templates.TemplateResponse(request, "dashboard.html", {
         "title": "داشبورد — زایچه", "user": u, "charts": charts,
-        "daily": daily, "cards": cards, "reports_done": len(done),
+        "people_json": _safe_json(people), "daily": daily, "today_fa": today_fa,
+        "deep_cards": deep_cards, "periodic_cards": periodic_cards,
+        "reports_done": len(done),
     })
 
 
@@ -2115,8 +2417,12 @@ class TrackPayload(BaseModel):
 
 
 @app.post("/api/track")
-async def api_track(payload: TrackPayload, session: Session = Depends(get_session)):
-    """G1 — anonymous funnel event beacon (fire-and-forget from track.js)."""
+async def api_track(payload: TrackPayload, request: Request,
+                    session: Session = Depends(get_session)):
+    """G1 — anonymous funnel event beacon (fire-and-forget from track.js).
+    X14/R15: 60/min per IP — unbounded writes to funnel_events were possible."""
+    if not _rate_limit(f"track:{_rl_client(request)}", 60, 60):
+        raise HTTPException(429, "too many")
     ev = payload.event
     if ev not in FUNNEL_EVENTS:
         raise HTTPException(400, "unknown event")
@@ -2132,9 +2438,13 @@ def api_admin_funnel(request: Request, session: Session = Depends(get_session)):
     """G1 — conversion funnel: per-step counts + conversion rate + drop-off."""
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
-    counts: dict[str, int] = {}
-    for ev in session.exec(select(FunnelEvent.event)).all():
-        counts[ev] = counts.get(ev, 0) + 1
+    # X16/R12: GROUP BY in the DB — loading every row into Python OOMs at scale.
+    from sqlalchemy import func as _func
+    rows = session.exec(
+        select(FunnelEvent.event, _func.count(FunnelEvent.id))
+        .group_by(FunnelEvent.event)
+    ).all()
+    counts: dict[str, int] = {ev: int(n) for ev, n in rows}
     steps = []
     prev = None
     for name in FUNNEL_STEPS:
@@ -2205,6 +2515,149 @@ def set_notif_prefs(request: Request, session: Session = Depends(get_session),
     return {"ok": True}
 
 
+@app.get("/credits", response_class=HTMLResponse)
+def credits_page(request: Request, session: Session = Depends(get_session)):
+    """X12 — credit wallet page: balance, transaction history, pack purchases.
+    Closes the review's 'economy unreachable from UI' gap for credits."""
+    from app.credits import balance as credit_balance
+    from app.models import CreditTransaction, CreditPrice
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    bal = credit_balance(session, u.id)
+    txs = session.exec(
+        select(CreditTransaction).where(CreditTransaction.user_id == u.id)
+        .order_by(CreditTransaction.created_at.desc()).limit(30)
+    ).all()
+    packs = session.exec(
+        select(CreditPrice).where(
+            CreditPrice.active == True  # noqa: E712
+        )
+    ).all()
+    packs = [p for p in packs if p.action_key.startswith("chat_pack") or p.action_key.startswith("transit")]
+    return templates.TemplateResponse(request, "credits.html", {
+        "title": "اعتبار من", "user": u, "balance": bal, "txs": txs, "packs": packs,
+    })
+
+
+@app.get("/orders", response_class=HTMLResponse)
+def orders_page(request: Request, session: Session = Depends(get_session)):
+    """X13 — order history page (was API-only; review: unreachable from UI)."""
+    from app.models import Order
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    rows = session.exec(
+        select(Order).where(Order.user_id == u.id)
+        .order_by(Order.created_at.desc()).limit(50)
+    ).all()
+    return templates.TemplateResponse(request, "orders.html", {
+        "title": "سفارش‌های من", "orders": rows,
+    })
+
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request, session: Session = Depends(get_session)):
+    """UX: /account was carrying ten unrelated jobs at once — profile, reports,
+    weekly sky, push, quiet hours, orders, wallet, subscription, referral, data
+    export and account deletion. Notifications, subscription and data controls
+    live here so each page answers one question."""
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login?next=/settings", status_code=303)
+    from app.security import CSRF_COOKIE, new_csrf_token
+    csrf = request.cookies.get(CSRF_COOKIE) or new_csrf_token()
+    resp = templates.TemplateResponse(request, "settings.html", {
+        "title": "تنظیمات — زایچه", "user": u, "csrf_token": csrf,
+    })
+    resp.set_cookie(CSRF_COOKIE, csrf, httponly=True, samesite="lax", secure=True,
+                    max_age=24 * 3600)
+    return resp
+
+
+@app.get("/chats", response_class=HTMLResponse)
+def chats_page(request: Request, session: Session = Depends(get_session)):
+    """Chat history. ChatMessage rows existed since the chat shipped but no
+    page ever listed them, so a user who paid for the 30-day conversation had
+    no way back to it — they had to remember the chart URL."""
+    from app.models import ChatMessage, Chart, BirthProfile
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login?next=/chats", status_code=303)
+    mine = session.exec(
+        select(Chart.id, BirthProfile.name, Chart.created_at)
+        .join(BirthProfile, Chart.profile_id == BirthProfile.id)
+        .where(BirthProfile.user_id == u.id)
+    ).all()
+    threads = []
+    for cid, cname, _ in mine:
+        msgs = session.exec(
+            select(ChatMessage).where(ChatMessage.chart_id == cid)
+            .order_by(ChatMessage.created_at.desc()).limit(60)
+        ).all()
+        if not msgs:
+            continue
+        last_q = next((m for m in msgs if m.role == "user"), None)
+        threads.append({
+            "chart_id": cid,
+            "name": cname or "بدون نام",
+            "count": len(msgs),
+            "last_at": msgs[0].created_at,
+            "preview": (last_q.content if last_q else msgs[0].content or "")[:120],
+        })
+    threads.sort(key=lambda t: t["last_at"], reverse=True)
+    return templates.TemplateResponse(request, "chats.html", {
+        "threads": threads, "user": u, "title": "گفت‌وگوهای من — زایچه",
+    })
+
+
+@app.get("/reports", response_class=HTMLResponse)
+def reports_page(request: Request, session: Session = Depends(get_session)):
+    """X13 — report history page with download links (token gate intact)."""
+    from app.models import Report, Chart, BirthProfile
+    u = get_current_user(request)
+    if not u:
+        return RedirectResponse("/account/login", status_code=303)
+    my_chart_ids = set(session.exec(
+        select(Chart.id).join(BirthProfile, Chart.profile_id == BirthProfile.id)
+        .where(BirthProfile.user_id == u.id)
+    ).all())
+    rows = session.exec(
+        select(Report).order_by(Report.created_at.desc()).limit(200)
+    ).all()
+    rows = [r for r in rows if r.chart_id in my_chart_ids][:50]
+    return templates.TemplateResponse(request, "reports.html", {
+        "title": "گزارش‌های من", "reports": rows,
+    })
+
+
+@app.exception_handler(404)
+async def not_found_fa(request: Request, exc):
+    """X20/R15: friendly Persian 404 (HTML for pages, JSON for APIs)."""
+    if request.url.path.startswith(("/api/", "/static/")):
+                return JSONResponse({"detail": "یافت نشد"}, status_code=404)
+    return templates.TemplateResponse(request, "error.html", {
+        "title": "صفحه پیدا نشد", "code": 404,
+        "message": "این صفحه وجود ندارد یا جابه‌جا شده است.",
+    }, status_code=404)
+
+
+@app.exception_handler(500)
+async def server_error_fa(request: Request, exc):
+    """X20/R15: friendly Persian 500."""
+    if request.url.path.startswith(("/api/", "/static/")):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "خطای داخلی سرور"}, status_code=500)
+    try:
+        return templates.TemplateResponse(request, "error.html", {
+            "title": "خطای غیرمنتظره", "code": 500,
+            "message": "مشکلی پیش آمد؛ چند لحظه بعد دوباره تلاش کن.",
+        }, status_code=500)
+    except Exception:  # noqa: BLE001 — templates themselves broken
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse("<h1>خطای غیرمنتظره</h1>", status_code=500)
+
+
 @app.get("/account/login", response_class=HTMLResponse)
 def account_login_page(request: Request):
     return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})
@@ -2225,10 +2678,10 @@ def api_chart_forecast(chart_id: str, request: Request, session: Session = Depen
     analysis = []
     try:
         import json as _json
-        payload = _json.loads(
-            session.exec(select(TransitForecast).where(
-                TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first().payload_json)
-        analysis = payload.get("narratives") or []
+        prow = session.exec(select(TransitForecast).where(
+            TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+        pd = _json.loads(prow.payload_json) if prow and prow.payload_json else {}
+        analysis = (pd.get("narratives") or []) if isinstance(pd, dict) else []
     except Exception:  # noqa: BLE001
         analysis = []
     return {"months": months, "events": events, "analysis": analysis}
@@ -2247,17 +2700,73 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
     if not chart or not _owns_chart(chart, session, request):
         raise HTTPException(403, "دسترسی به این چارت ندارید")
     months = 3 if months not in (3, 12) else months
+    # Y3/N3: check the paid-analysis cache BEFORE spending — a cached month must
+    # never cost the user another charge.
+    import json as _json
+    from app.models import TransitForecast
+    _row = session.exec(select(TransitForecast).where(
+        TransitForecast.chart_id == chart_id, TransitForecast.months == months)).first()
+    _existing = []
+    if _row and _row.payload_json:
+        try:
+            _pd = _json.loads(_row.payload_json)
+            if isinstance(_pd, dict):
+                _existing = _pd.get("narratives") or []
+        except Exception:  # noqa: BLE001
+            _existing = []
+
+    if _existing:
+        # Y3/N3: cached analysis → zero charge.
+        events_cached = []
+        try:
+            _pd = _json.loads(_row.payload_json) if _row and _row.payload_json else {}
+            events_cached = (_pd.get("events") or []) if isinstance(_pd, dict) else []
+        except Exception:  # noqa: BLE001
+            events_cached = []
+        return {"months": months, "events": events_cached, "narratives": _existing,
+                "metrics": {"cached": True}, "refunded": 0}
+
     action = f"transit_{months}m"
     from app.credits import InsufficientCredits, refund as _refund, spend
+    # R.9 / Q1 (P1): a gold buyer already owns a transit entitlement for this chart
+    # (report_gold → report+chat+transit). Honour it instead of charging again.
+    _ent = ent_has(session, user.id, "transit", chart_id=chart_id)
+    if _ent:
+        # Consume the bundled transit entitlement (quantity bucket) and proceed to
+        # generate the analysis for free.
+        from app.entitlements import consume as ent_consume
+        ent_consume(session, _ent, 1)
+        from app.astrology.transit_cache import cached_forecast, store_transit_analysis
+        from app.core.llm import build_router
+        from app.report.transit_narrative import narrate_transit
+        events = cached_forecast(session, chart_id, months, chart.chart_json)
+        if isinstance(events, dict):
+            events = events.get("events") or []
+        failed_n = {"n": 0}
+
+        def _on_fail_gold(ev):
+            failed_n["n"] += 1
+
+        narratives, m = narrate_transit(events, chart.chart_json, router=build_router("transit"),
+                                        plan_key=action, on_event_failed=_on_fail_gold)
+        store_transit_analysis(session, chart_id, months, {"narratives": narratives})
+        session.commit()
+        return {"months": months, "events": events, "narratives": narratives,
+                "metrics": {k: v for k, v in m.items() if k != "provider" and not isinstance(v, (set,))},
+                "refunded_events": failed_n["n"],
+                "refunded_credits": None, "entitlement": True}
     try:
-        tx = spend(session, user.id, action, idempotency_key=f"transit:{chart_id}:{months}", chart_id=chart_id)
+        from datetime import datetime as _dt
+        _period = _dt.now(timezone.utc).strftime("%Y-%m")  # X2/R2: monthly bucket
+        tx = spend(session, user.id, action,
+                   idempotency_key=f"transit:{user.id}:{chart_id}:{months}:{_period}",
+                   chart_id=chart_id)
     except InsufficientCredits as e:
         return JSONResponse(status_code=402, content={
             "code": "ZAY-AI-002", "message": "اعتبار کافی نیست",
             "need": e.needed, "balance": e.have, "credit_packs": True})
 
     from app.astrology.transit_cache import cached_forecast, store_transit_analysis
-    from app.astrology.transit_forecast import forecast
     from app.core.llm import build_router
     from app.report.transit_narrative import narrate_transit
     events = cached_forecast(session, chart_id, months, chart.chart_json)
@@ -2265,26 +2774,62 @@ def api_chart_forecast_analyze(chart_id: str, request: Request, session: Session
         events = events.get("events") or []
     refunded = {"n": 0}
 
+    failed_n = {"n": 0}
+
     def _on_fail(ev):
-        nonlocal_refunded = refunded
-        nonlocal_refunded["n"] += 1
-        try:
-            _refund(session, tx.id, reason=f"{action} QA refund")
-        except Exception:  # noqa: BLE001
-            pass
+        # X3/R3: count only; a single partial refund is issued after generation.
+        failed_n["n"] += 1
 
     narratives, m = narrate_transit(events, chart.chart_json, router=build_router("transit"),
                                     plan_key=action, on_event_failed=_on_fail)
     store_transit_analysis(session, chart_id, months, {"narratives": narratives})
     session.commit()  # persist the credit spend + stored analysis (get_session does not autoc...[truncated]
+    # X3/R3 policy (documented 2026-08-23): partial QA failure refunds the FAILED
+    # share only: ceil(price * failed/narrated). Full refund iff ALL narrated fail.
+    # R.7 / T1 (P1): the denominator MUST be the number of events actually narrated
+    # (m["events"] == len(top) == n), NOT len(events) — otherwise a chart with 30
+    # events that narrates 12 and fails all 12 returns ceil(price*12/30)=2 instead
+    # of a full 5 (the reviewer caught this running the real money funnel).
+    total_ev = int(m.get("events") or 0) or 1
+    if failed_n["n"]:
+        from app.credits import get_price as _gp
+        import math as _math
+        _price = _gp(session, action)
+        if failed_n["n"] >= total_ev:
+            _refund_amount = _price          # nothing usable → full refund
+        else:
+            _refund_amount = min(_price, _math.ceil(_price * failed_n["n"] / total_ev))
+        try:
+            rr = _refund(session, tx.id,
+                         reason=f"{action} partial QA refund ({failed_n['n']}/{total_ev})",
+                         amount=_refund_amount)
+            refunded["amount"] = abs(rr.amount) if rr else None
+        except Exception:  # noqa: BLE001 — never break the response on refund issues
+            refunded["amount"] = None
     return {"months": months, "events": events, "narratives": narratives,
             "metrics": {k: v for k, v in m.items() if k != "provider" and not isinstance(v, (set,))},
-            "refunded": refunded["n"]}
+            "refunded_events": failed_n["n"], "refunded_credits": refunded.get("amount")}
+
+
+def _sample_narrative() -> dict:
+    """W8: a deterministic teaser narrative shown on the transits page when the
+    user has NOT yet bought the analysis — so they see exactly what 5 credits
+    unlocks. Pure static copy (no LLM), never replaces a real purchase."""
+    return {
+        "headline": "زحل در نسبت با خورشید — مرور بنیان‌ها",
+        "what_it_means": "این فاصلهٔ زاویه‌ای، دوره‌ای از تثبیت و مسئولیت را برجسته می‌کند؛ فرصتی برای بازبینی ساختارهای شغلی و بلندمدت در چارت تو.",
+        "reflection_question": "کدام تعهد را آگاهانه مرور می‌کنی؟",
+        "window_text": "بازهٔ شکل‌گیری این فاصلهٔ زاویه‌ای (نمونه)",
+    }
 
 
 @app.get("/transits/{chart_id}")
-def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
-    """B3 — transit timeline page (free deterministic data + paid analysis if owned)."""
+def transits_page(chart_id: str, request: Request, session: Session = Depends(get_session),
+                  months: int = Query(default=12)):
+    """B3 — transit timeline page (free deterministic data + paid analysis if owned).
+
+    Z6 (Opus R3): `months` now honored from the query (3 or 12); the JS selector
+    passes it to analyze() too, so the page and the JSON are consistent."""
     user = get_current_user(request)
     from app.models import Chart, TransitForecast
     chart = session.get(Chart, chart_id)
@@ -2292,20 +2837,39 @@ def transits_page(chart_id: str, request: Request, session: Session = Depends(ge
         return RedirectResponse("/account/login", status_code=303) if not user \
             else RedirectResponse("/", status_code=303)
     from app.astrology.transit_cache import cached_forecast
+    _m = 12 if months not in (3, 12) else months  # Z6: honor ?months=
     try:
         import json as _json
-        ev12 = cached_forecast(session, chart_id, 12, chart.chart_json)
+        ev12 = cached_forecast(session, chart_id, _m, chart.chart_json)
         payload = session.exec(select(TransitForecast).where(
-            TransitForecast.chart_id == chart_id, TransitForecast.months == 12)).first()
-        analysis = _json.loads(payload.payload_json or "{}").get("narratives") or [] if payload else []
+            TransitForecast.chart_id == chart_id, TransitForecast.months == _m)).first()
+        pdata = _json.loads(payload.payload_json) if payload and payload.payload_json else {}
+        if not isinstance(pdata, dict):
+            pdata = {}
+        analysis = pdata.get("narratives") or []
     except Exception:  # noqa: BLE001
         ev12, analysis = [], []
+    from app.astrology.transit_forecast import month_label_map, open_month_keys, top_by_weight
+    # R.5 / V9+V10: compute the top-5 globally-weighed events and the set of
+    # month-groups to leave expanded (current + next 2) server-side so the page
+    # sells (teaser above the fold) and the wall of 28 cards is collapsible.
+    # R.6 / U2: month labels carry the Persian year when the window spans two
+    # years, so «آبان ۱۴۰۵» and «آبان ۱۴۰۶» are distinguishable.
+    top_events = top_by_weight(ev12, 5)
+    open_months = open_month_keys(ev12, 3)
+    month_labels = month_label_map(ev12)
     return templates.TemplateResponse(request, "transits_forecast.html", {
         "title": "گذرهای پیشِ رو",
         "chart_id": chart_id,
         "events": ev12,
         "analysis": analysis,
         "chart": chart,
+        "have_credits": (user.credits if user else 0),
+        "months": _m,
+        "sample_narrative": analysis if analysis else _sample_narrative(),
+        "top_events": top_events,
+        "open_months": open_months,
+        "month_labels": month_labels,
     })
 
 
@@ -2549,6 +3113,33 @@ def account_delete(request: Request, csrf_token: str = Form(""),
     # with any withdrawal request could not delete their account.
     for wd in session.exec(select(WithdrawalRequest).where(WithdrawalRequest.user_id == u.id)).all():
         session.delete(wd)
+    # Z1/R3 (2026-08-23): the credit economy added user-FK rows that deletion
+    # missed — a PAYING user could never delete their account (IntegrityError
+    # 500). "Blast radius" rule: every new table with FK→users must appear here,
+    # in the data export, and in retention policy.
+    for tx in session.exec(select(CreditTransaction).where(CreditTransaction.user_id == u.id)).all():
+        session.delete(tx)
+    for ent in session.exec(select(Entitlement).where(Entitlement.user_id == u.id)).all():
+        session.delete(ent)
+    for ex in session.exec(select(Exploration).where(Exploration.user_id == u.id)).all():
+        session.delete(ex)
+    for ps in session.exec(select(PushSubscription).where(PushSubscription.user_id == u.id)).all():
+        session.delete(ps)
+    for cl in session.exec(select(ConsentLog).where(ConsentLog.user_id == u.id)).all():
+        session.delete(cl)
+    for np_ in session.exec(select(NotificationPrefs).where(NotificationPrefs.user_id == u.id)).all():
+        session.delete(np_)
+    # Z15 (Opus R3 P2-6): transit alert log is user-keyed (users.id for web) —
+    # never cleaned on delete before; remove it so the account truly disappears.
+    for tal in session.exec(select(TransitAlertLog).where(TransitAlertLog.user_key == u.id)).all():
+        session.delete(tal)
+    # W9 (Opus R4, P2): lead-magnet subscribers are keyed by contact (phone/email),
+    # not user_id — never cleaned on delete; remove rows matching the account's phone
+    # so a deleted account leaves no newsletter/lead-magnet trail (privacy blast-radius).
+    if getattr(u, "phone", None):
+        for sub in session.exec(select(Subscriber).where(Subscriber.contact == u.phone)).all():
+            session.delete(sub)
+    # funnel events are anonymous (session-scoped, no FK) — nothing to delete.
     session.flush()
 
     for c in charts:
@@ -2574,7 +3165,7 @@ def _load_pages() -> dict:
     from pathlib import Path as _P
 
     base: dict = {}
-    p = _P("/root/chart-platform/app/content/pages.json")
+    p = _P(BASE_DIR / "content" / "pages.json")
     if p.exists():
         base = _json.loads(p.read_text("utf-8"))
     try:
@@ -2633,7 +3224,7 @@ def _load_articles() -> list[dict]:
         pass
     import json as _json
     from pathlib import Path as _P
-    p = _P("/root/chart-platform/app/content/articles.json")
+    p = _P(BASE_DIR / "content" / "articles.json")
     return _json.loads(p.read_text("utf-8")) if p.exists() else []
 
 
@@ -2829,8 +3420,21 @@ async def admin_llm_test(request: Request):
     """Ping each configured LLM provider so the admin can verify keys live."""
     if not _is_admin(request):
         raise HTTPException(403, "admin only")
-    from app.core.llm import GoProvider, DeepSeekProvider
+    from app.core.llm import GoProvider, DeepSeekProvider, build_router
     results: dict[str, dict] = {}
+    # The REAL generation path first. This endpoint used to probe only the two
+    # legacy direct providers, so when the Go quota was exhausted it reported
+    # "dead" while every report and exploration on the site was generating
+    # normally through the gateway — a false alarm that cost a day.
+    for part in ("report", "preview"):
+        try:
+            r = await build_router(part).complete(
+                "فقط یک کلمه بگو: سلام", max_tokens=32, temperature=0)
+            results[f"router:{part}"] = {"ok": r.ok, "model": r.model,
+                                         "provider": getattr(r, "provider", ""),
+                                         "latency_ms": r.latency_ms, "error": r.error or ""}
+        except Exception as e:  # noqa: BLE001 — a probe must never 500
+            results[f"router:{part}"] = {"ok": False, "error": str(e)[:160]}
     go = GoProvider()
     if go.api_key:
         r = await go.complete("فقط یک کلمه بگو: سلام", max_tokens=64, temperature=0)
@@ -3024,7 +3628,7 @@ def _today_plan_access(session: Session, chart: Chart) -> str:
     order = session.exec(
         select(Order).where(Order.chart_id == chart.id, Order.status == "paid")
     ).first()
-    if order and order.plan_key in ("gold", "monthly") and _monthly_sub_active(session, order, chart.id):
+    if order and order.plan_key in ("gold", "monthly", "yearly") and _monthly_sub_active(session, order, chart.id):
         return "full"
     return "preview"
 
@@ -3061,6 +3665,173 @@ def page_today(request: Request, chart: str = "", session: Session = Depends(get
         "status_json": _safe_json(status) if status else "null",
         "access": access,
     })
+
+
+# ───────────────────── MASTER W6 — چارت سالیانه (N2) ─────────────────────
+@app.get("/solar/{chart_id}", response_class=HTMLResponse)
+def solar_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """Solar-return page: free teaser (moment + precision) + paid full report."""
+    from app.astrology.engine import compute_from_fields  # noqa: F401
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    has_ent = bool(user and ent_has(session, user.id, "solar", chart_id=chart_id))
+    return templates.TemplateResponse(request, "solar.html", {
+        "title": "چارت سالیانه", "chart": chart,
+        "has_access": has_ent, "access_token": chart.access_token or "",
+        "city_fa": (prof.city_fa if prof else "") or "",
+    })
+
+
+@app.post("/api/solar/purchase")
+def api_solar_purchase(request: Request, chart_id: str = Form(...),
+                       session: Session = Depends(get_session)):
+    """Buy the solar-year report with credits → entitlement kind 'solar'."""
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True,
+                                                      "next": f"/solar/{chart_id}"})
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    try:
+        ent = ent_grant_credits(session, user.id, "solar_return",
+                                idempotency_key=f"purchase:{user.id}:solar_return:{chart_id}",
+                                chart_id=chart_id)
+    except InsufficientCredits as e:
+        return JSONResponse(status_code=402, content={
+            "needed": e.needed, "have": e.have,
+            "message": "اعتبار کافی نیست — از پک اعتبار بخر"})
+    except UnknownAction:
+        return JSONResponse(status_code=400, content={"error": "unknown_action"})
+    return {"ok": True, "entitlement_id": ent.id}
+
+
+@app.get("/api/solar/{chart_id}")
+async def api_solar_report(chart_id: str, request: Request,
+                           session: Session = Depends(get_session)):
+    """Full solar-year product: gate 9 credits → engine + narrative."""
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    if not user or not ent_has(session, user.id, "solar", chart_id=chart_id):
+        raise HTTPException(402, "[ZAY-CRD-001] چارت سالیانه با ۹ اعتبار باز می‌شود")
+    from app.report.solar_service import build_solar_product
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    lat, lon = (prof.lat, prof.lon) if prof else (35.6889, 51.3897)
+    tz_name = (prof.tz_name if prof else None) or "Asia/Tehran"
+    sec = await build_solar_product(session, user.id, chart.chart_json,
+                                    float(lat), float(lon), tz_name,
+                                    zodiac=(prof.zodiac if prof else "tropical") or "tropical")
+    return sec
+
+
+@app.get("/api/solar/{chart_id}/teaser")
+def api_solar_teaser(chart_id: str, request: Request,
+                     session: Session = Depends(get_session)):
+    """Free teaser: exact SR moment + precision proof (AC-4 evidence)."""
+    from app.report.solar import solar_return_for
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    prof = session.get(BirthProfile, chart.profile_id) if chart.profile_id else None
+    sr = solar_return_for(chart.chart_json,
+                          float(prof.lat) if prof else 35.6889,
+                          float(prof.lon) if prof else 51.3897,
+                          (prof.tz_name if prof else None) or "Asia/Tehran")
+    return {"moment_utc": sr.moment_utc.strftime("%Y-%m-%d %H:%M"),
+            "precision_arcmin": sr.error_arcmin}
+
+
+# ───────────────────── MASTER W7 — چارت مهاجرت (N3) ─────────────────────
+@app.get("/relocation/{chart_id}", response_class=HTMLResponse)
+def relocation_page(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """Relocation page: city picker (1-3) + gated comparison report."""
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    has_ent = bool(user and ent_has(session, user.id, "relocation", chart_id=chart_id))
+    return templates.TemplateResponse(request, "relocation.html", {
+        "title": "چارت مهاجرت", "chart": chart,
+        "has_access": has_ent, "access_token": chart.access_token or "",
+    })
+
+
+class RelocationPayload(BaseModel):
+    cities: list[dict]  # [{name_fa, lat, lon}]
+
+
+@app.get("/api/relocation/{chart_id}")
+def api_relocation_report(chart_id: str, request: Request,
+                          session: Session = Depends(get_session),
+                          cities_json: str = ""):
+    """AC-5 — compare up to 3 destination cities side-by-side. Gate: 6 credits."""
+    from app.report.relocation import compare_cities
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    user = get_current_user(request)
+    if not user or not ent_has(session, user.id, "relocation", chart_id=chart_id):
+        raise HTTPException(402, "[ZAY-CRD-001] چارت مهاجرت با ۶ اعتبار باز می‌شود")
+    try:
+        raw = json.loads(cities_json) if cities_json else []
+    except Exception:
+        raise HTTPException(400, "شهرهای نامعتبر")
+    clean = []
+    for c in raw[:3]:
+        try:
+            clean.append({"name_fa": str(c.get("name_fa", ""))[:60],
+                          "lat": float(c["lat"]), "lon": float(c["lon"])})
+        except Exception:  # noqa: BLE001
+            continue
+    if not clean:
+        raise HTTPException(400, "حداقل یک شهر مقصد لازم است")
+    return compare_cities(chart.chart_json, clean)
+
+
+@app.post("/api/relocation/purchase")
+def api_relocation_purchase(request: Request, chart_id: str = Form(...),
+                            session: Session = Depends(get_session)):
+    """Buy the relocation comparison with credits → kind 'relocation'."""
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse(status_code=401, content={"login_required": True,
+                                                      "next": f"/relocation/{chart_id}"})
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    try:
+        ent = ent_grant_credits(session, user.id, "relocation",
+                                idempotency_key=f"purchase:{user.id}:relocation:{chart_id}",
+                                chart_id=chart_id)
+    except InsufficientCredits as e:
+        return JSONResponse(status_code=402, content={
+            "needed": e.needed, "have": e.have,
+            "message": "اعتبار کافی نیست — از پک اعتبار بخر"})
+    except UnknownAction:
+        return JSONResponse(status_code=400, content={"error": "unknown_action"})
+    return {"ok": True, "entitlement_id": ent.id}
+
+
+@app.get("/api/today/daily")
+async def api_today_daily(chart_id: str, request: Request, session: Session = Depends(get_session)):
+    """MASTER W5 (N1) — the five reflective daily cards for /today.
+
+    4 deterministic cards (zero cost) + 1 cheap LLM insight cached per
+    (chart_id, date) in Redis (`today:{cid}:{date}`, 48h TTL). Free product —
+    the return hook (plan §5)."""
+    from app.today.daily import get_daily_layer
+    from app.today.service import _chart_tz
+    chart = session.get(Chart, chart_id)
+    if not chart or not _owns_chart(chart, session, request):
+        raise HTTPException(403, "دسترسی به این چارت ندارید")
+    tz_name = _chart_tz(session, chart)
+    payload = await get_daily_layer(session, chart, tz_name)
+    return payload
 
 
 @app.get("/api/today")

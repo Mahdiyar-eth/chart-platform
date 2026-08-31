@@ -1,0 +1,199 @@
+==> alembic chain check (fresh EMPTY DB → upgrade head → drift check)
+==> alembic chain check (fresh EMPTY DB → upgrade head → drift check)
+drift db recreated (empty)
+app-user vector failed: (psycopg2.errors.InsufficientPrivilege) permission denied to create extension "v
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> dfb85378c2bf, baseline schema
+INFO  [alembic.runtime.migration] Running upgrade dfb85378c2bf -> c4f1a2b3e5d7, add chat_messages (AI chat history + usage metering)
+INFO  [alembic.runtime.migration] Running upgrade c4f1a2b3e5d7 -> d4f2580df4bf, align schema to models (audit r3)
+INFO  [alembic.runtime.migration] Running upgrade d4f2580df4bf -> 9a3c5e7b1d2f, birth profiles zodiac
+INFO  [alembic.runtime.migration] Running upgrade 9a3c5e7b1d2f -> 3c92dac1a241, subscription_expiry_unique
+INFO  [alembic.runtime.migration] Running upgrade 3c92dac1a241 -> d4db5d787f91, b6: subscriptions.order_id + orders.error (refund lifecycle)
+INFO  [alembic.runtime.migration] Running upgrade d4db5d787f91 -> 66bc97b51008, b6b: align schema to models (prod create_all drift)
+INFO  [alembic.runtime.migration] Running upgrade 66bc97b51008 -> 64397ea3dbf5, d1 push_subscriptions table
+INFO  [alembic.runtime.migration] Running upgrade 64397ea3dbf5 -> be499a77ca2b, d2 report_chunks pgvector
+INFO  [alembic.runtime.migration] Running upgrade be499a77ca2b -> cdd5c0abf767, d3 wallet balance + withdrawal_requests
+INFO  [alembic.runtime.migration] Running upgrade cdd5c0abf767 -> 9f1a5ac160e7, d3 orders.note
+INFO  [alembic.runtime.migration] Running upgrade 9f1a5ac160e7 -> cc51bd1b6bf1, h0.4 report updated_at
+INFO  [alembic.runtime.migration] Running upgrade cc51bd1b6bf1 -> bad790d98ddf, h1.3 llm_runs user_id kind
+INFO  [alembic.runtime.migration] Running upgrade bad790d98ddf -> 9d34ed9201c2, h1.5 report audio status
+INFO  [alembic.runtime.migration] Running upgrade 9d34ed9201c2 -> cec42d441b5c, f11 unique partial index: one pending withdrawal per user
+INFO  [alembic.runtime.migration] Running upgrade cec42d441b5c -> 435333592075, f17 backfill report_id linkage for legacy paid reports
+INFO  [alembic.runtime.migration] Running upgrade 435333592075 -> fd5cf11364ab, P3: users.credits + explorations + credit_transactions
+INFO  [alembic.runtime.migration] Running upgrade fd5cf11364ab -> 9f2c41e8b0d1, P3 fix: explorations.chart_id must be nullable (chart can be deleted).
+INFO  [alembic.runtime.migration] Running upgrade 9f2c41e8b0d1 -> c0833e69209e, P4: daily_reflections + streak
+INFO  [alembic.runtime.migration] Running upgrade c0833e69209e -> 7475dfc2998b, P5: users.free_exploration_used
+INFO  [alembic.runtime.migration] Running upgrade 7475dfc2998b -> 7108139b90bd, P6: plans.credits_grant
+INFO  [alembic.runtime.migration] Running upgrade 7108139b90bd -> a7c0c5d2e9f4, P6: orders.user_id (credit-pack orders without a chart).
+INFO  [alembic.runtime.migration] Running upgrade a7c0c5d2e9f4 -> 57a8681f0484, P7: subscriptions.last_credit_grant_at
+INFO  [alembic.runtime.migration] Running upgrade 57a8681f0484 -> ea82d92314de, P8: coupons.report_only
+INFO  [alembic.runtime.migration] Running upgrade ea82d92314de -> 5897f4417ccf, G8: notification_prefs
+INFO  [alembic.runtime.migration] Running upgrade 5897f4417ccf -> 575c0e692ce6, G9: consent_logs
+INFO  [alembic.runtime.migration] Running upgrade 575c0e692ce6 -> 8d20fb4d4148, m5 llm_runs telemetry columns
+INFO  [alembic.runtime.migration] Running upgrade 8d20fb4d4148 -> 10958fde8752, p0_4 cms content tables (articles/pages/media/versions)
+INFO  [alembic.runtime.migration] Running upgrade 10958fde8752 -> a1c0de000001, a1: add credit_prices + entitlements + credit_transactions.idempotency_key
+INFO  [alembic.runtime.migration] Running upgrade a1c0de000001 -> a1c0de000002, g1: add funnel_events (anonymous funnel tracking)
+INFO  [alembic.runtime.migration] Running upgrade a1c0de000002 -> a1c0de000003, A6 — backfill entitlements from existing paid orders (legacy compat).
+INFO  [alembic.runtime.migration] Running upgrade a1c0de000003 -> b4a0de000004, B1+B4 — transit forecast cache, alert log, notification_prefs.transit_alerts.
+INFO  [alembic.runtime.migration] Running upgrade b4a0de000004 -> c7f1a2b9d4e6, Y4/N7: unique (chart_id, months) on transit_forecasts
+INFO  [alembic.runtime.migration] Running upgrade c7f1a2b9d4e6 -> c8d2e3f4a5b6, Y4/N7 follow-up: align schema with models (CI alembic-drift gate).
+INFO  [alembic.runtime.migration] Running upgrade c8d2e3f4a5b6 -> d9e3f4a5b6c7, Z2/Z3 (Opus R3): restore transit_forecasts.chart_id FK + create subscribers table.
+INFO  [alembic.runtime.migration] Running upgrade d9e3f4a5b6c7 -> e1a2b3c4d5e6, Z11 (Opus R3 P2-1): notification_prefs.transit_alerts NOT NULL with backfill.
+A6 backfill: created 0 entitlement(s) for paid orders.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.schemas
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.tables
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.types
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.constraints
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.defaults
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.comments
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.checkconstraint_byname
+INFO  [alembic.ddl.postgresql] Detected sequence named 'transit_forecasts_id_seq' as owned by integer column 'transit_forecasts(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'consent_logs_id_seq' as owned by integer column 'consent_logs(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'report_chunks_id_seq' as owned by integer column 'report_chunks(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'push_subscriptions_id_seq' as owned by integer column 'push_subscriptions(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'transit_alert_log_id_seq' as owned by integer column 'transit_alert_log(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'subscribers_id_seq' as owned by integer column 'subscribers(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'audit_logs_id_seq' as owned by integer column 'audit_logs(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'bot_chat_states_id_seq' as owned by integer column 'bot_chat_states(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'funnel_events_id_seq' as owned by integer column 'funnel_events(id)', assuming SERIAL and omitting
+No new upgrade operations detected.
+DRIFT-GATE: CLEAN
+drift db dropped
+==> drift gate OK
+==> pytest + coverage (gate: >= 60%)
+........................................................................ [ 10%]
+........................................................................ [ 20%]
+........................................................................ [ 30%]
+..............................................s......................... [ 40%]
+........................................................................ [ 51%]
+........................................................................ [ 61%]
+........................................................................ [ 71%]
+........................................................................ [ 81%]
+........................................................................ [ 92%]
+........................................................                 [100%]
+=============================== warnings summary ===============================
+tests/test_admin_credit_a7.py: 5 warnings
+tests/test_funnel_g1.py: 1 warning
+tests/test_purchase_a4.py: 4 warnings
+tests/test_round21_y_fixes.py: 13 warnings
+tests/test_round2_e2e_credit_economy.py: 10 warnings
+tests/test_round2_x1_x7.py: 6 warnings
+tests/test_transit_forecast_b3.py: 5 warnings
+tests/test_z1_account_delete_paying_user.py: 6 warnings
+  /root/chart-platform/venv/lib/python3.11/site-packages/starlette/testclient.py:455: DeprecationWarning: Setting per-request cookies=<...> is being deprecated, because the expected behaviour on cookie persistence is ambiguous. Set cookies directly on the client instance instead.
+    return super().request(
+
+tests/test_push_delivery_p12.py::test_webpush_real_delivery_decryptable
+  /root/chart-platform/venv/lib/python3.11/site-packages/urllib3/connectionpool.py:1110: InsecureRequestWarning: Unverified HTTPS request is being made to host '127.0.0.1'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+    warnings.warn(
+
+tests/test_transit_alerts_b4.py::test_2_respects_prefs_and_dedup_and_link
+  /root/chart-platform/app/report/transit_alerts.py:68: SAWarning: fully NULL primary key identity cannot load any object.  This condition may raise an error in a future release.
+    prof = s.get(BirthProfile, chart.profile_id)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.11.15-final-0 _______________
+
+Name                                Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------
+app/__init__.py                         0      0   100%
+app/astrology/__init__.py               0      0   100%
+app/astrology/big_three.py             23      0   100%
+app/astrology/cities_ir.py             42     16    62%   20, 32-38, 56-58, 67-71
+app/astrology/cities_world.py          57      6    89%   67-69, 83, 94, 96
+app/astrology/engine.py               178     19    89%   88-91, 290, 304-313, 317, 321, 323-324
+app/astrology/golden_data.py            1      0   100%
+app/astrology/rectify.py               66      1    98%   34
+app/astrology/sky.py                  114      2    98%   126, 128
+app/astrology/svg_wheel.py             95     13    86%   98, 142-145, 149-159
+app/astrology/svg_widgets.py          174     13    93%   32, 138-149, 169
+app/astrology/synastry.py              49      6    88%   31, 61, 80, 83-85
+app/astrology/transit_cache.py         57      4    93%   51-52, 87-88
+app/astrology/transit_forecast.py     158     14    91%   116-117, 129-134, 139, 171, 192-193, 207-208
+app/astrology/transits.py              84      4    95%   50-51, 61-62
+app/auth.py                           113     16    86%   33-35, 72, 75, 96-107, 111
+app/bots/handler.py                   241     94    61%   39-52, 121, 127-128, 149-150, 153-154, 167-172, 190-196, 206-207, 213-216, 254, 261-277, 282-283, 290-293, 298-301, 309-311, 326-327, 330-331, 336-385
+app/bots/state.py                      26      1    96%   19
+app/chat/intents.py                    15      0   100%
+app/chat/retrieval.py                  60      0   100%
+app/chat/service.py                    42     22    48%   19-23, 43, 66-86
+app/config.py                           4      0   100%
+app/core/__init__.py                    0      0   100%
+app/core/llm.py                       495    179    64%   75, 155-161, 211-245, 253-302, 318-323, 328, 400-401, 408, 419, 451-467, 492, 539-589, 636, 646-665, 705-706, 735-736, 775, 786, 789, 804-807, 817-832, 837
+app/credits.py                        129     39    70%   109-116, 137, 146, 152-155, 163-179, 190-195, 208, 211, 224-229
+app/db.py                              64      7    89%   12-14, 33-34, 111-112
+app/entitlements.py                   104     12    88%   135-137, 147, 172, 175-181
+app/env.py                              4      0   100%
+app/errors.py                           4      2    50%   39-40
+app/explore/cards.py                   14      1    93%   69
+app/explore/service.py                156     25    84%   68, 82-87, 96, 117-118, 123, 125, 130-131, 136, 139-140, 147, 169-170, 204-205, 221, 260-261
+app/feature_flags.py                   19      3    84%   20, 29-30
+app/kpi.py                             16      0   100%
+app/main.py                          1943    386    80%   58, 119, 148-149, 179-180, 212, 222-224, 229-230, 237-238, 241-242, 259, 272, 312, 319, 328-331, 343, 352, 355, 424, 466, 470, 479, 515, 545, 588, 621-623, 665, 667, 695, 702-706, 724-726, 737, 750-751, 754-759, 763-764, 767-775, 783, 796, 803, 817-829, 841, 845-846, 867, 869, 927, 957, 996-998, 1030-1034, 1043-1046, 1048, 1062, 1064, 1085, 1113, 1115, 1120-1124, 1132-1147, 1194-1202, 1205, 1220-1223, 1232-1233, 1267, 1271, 1276-1277, 1285, 1299, 1306, 1339, 1344, 1380, 1388-1389, 1454-1455, 1471, 1481, 1490, 1496, 1508, 1516, 1521, 1525-1526, 1528, 1546, 1567, 1569, 1572-1574, 1576, 1579-1580, 1596-1599, 1607-1618, 1627, 1629, 1647, 1666-1667, 1695-1696, 1706-1714, 1727, 1744, 1783, 1786, 1806-1807, 1818-1820, 1851-1853, 1875-1876, 1885, 1893, 1953-1954, 1956-1957, 1960-1961, 1975, 1986, 2012-2029, 2038-2043, 2053-2064, 2072-2081, 2116-2117, 2178, 2231, 2236, 2328-2344, 2352-2360, 2368-2380, 2399-2409, 2436-2437, 2452, 2466-2467, 2475-2476, 2498, 2505, 2515-2528, 2557, 2570-2571, 2614, 2789-2790, 2831, 2833, 2835, 2837, 2839, 2843, 2849, 2884-2895, 2915-2920, 2931-2932, 2950, 2954-2956, 2969, 2981, 2985, 2996-2998, 3004, 3122, 3129-3147, 3166-3169, 3213, 3275-3276, 3291, 3310, 3346, 3371, 3386
+app/models.py                         361      0   100%
+app/models_cms.py                      57      0   100%
+app/nav.py                             35      1    97%   69
+app/payment/orders.py                 297     27    91%   37, 56, 65, 67, 170, 208-209, 300-305, 323-333, 345, 395, 462, 492, 494, 535-536
+app/payment/zarinpal.py                65     45    31%   37-44, 49-66, 70-85, 94-115, 119
+app/private_tmp.py                     10      0   100%
+app/push.py                            60      2    97%   38, 80
+app/rag.py                            103     31    70%   38-41, 58-59, 62, 65, 87, 94, 113, 129-138, 145-154
+app/report/claim_validation.py        233     26    89%   64, 67, 76-77, 232-238, 250, 308, 311, 319, 322, 337, 340-342, 362-363, 370-375
+app/report/generator.py                48      8    83%   43-44, 50, 55-58, 62
+app/report/preview.py                  53     22    58%   39, 44, 108-130
+app/report/prompt_builder.py           87      6    93%   115-126
+app/report/prompt_overrides.py         22      2    91%   18-19
+app/report/qa.py                      145     21    86%   100, 131, 141-143, 150, 160-161, 206-208, 210-212, 224, 238, 253, 255, 262-263, 311
+app/report/renderer.py                 75     24    68%   99-102, 105, 108, 115-138
+app/report/rules.py                    74     10    86%   158-161, 180, 184-189, 210
+app/report/transit_alerts.py           77      9    88%   33-34, 67, 71, 97-98, 103-105
+app/report/transit_narrative.py       101     16    84%   46, 63-64, 105, 109, 122-124, 153-156, 163-164, 179-180
+app/report/weekly.py                   90      8    91%   51, 114, 122, 150-151, 159-161
+app/report/worker.py                  271     83    69%   81-82, 85, 89-90, 150-155, 192-193, 224, 241-284, 294-295, 300-301, 312-313, 316-319, 329-330, 335-336, 380-381, 390-391, 394-397, 415-416, 420-421, 425, 432-436
+app/routes/admin.py                   317     76    76%   26, 28, 41, 48-51, 66, 69-71, 82, 85, 119-120, 163, 166, 168, 171, 175, 191-195, 205, 212-226, 235, 247-253, 257-258, 278, 289-290, 296-297, 308, 320-321, 335-336, 341-342, 398, 400, 403, 424, 434-443
+app/routes/auth.py                     43      6    86%   16-17, 37-41
+app/routes/cms_admin.py               233     37    84%   32-33, 48, 92, 96-97, 115, 118, 158, 161, 168, 171-176, 193, 196, 207, 221, 224, 229, 248, 256, 260, 266, 269, 273, 293, 295, 298, 306, 318, 321, 325-326
+app/routes/push.py                     27      1    96%   20
+app/routes/seo.py                     166     15    91%   104-105, 109-110, 114-115, 148-157, 170
+app/routes/wallet.py                   39     18    54%   40-48, 56-65
+app/secret_store.py                    99     16    84%   112-128, 167-169, 232-233
+app/security.py                       139     25    82%   34, 70-72, 89-90, 99-100, 110-111, 133-134, 136, 141, 156-161, 167-168, 178, 218-219
+app/seo/article_banner.py               8      0   100%
+app/seo/content.py                      5      0   100%
+app/seo/moon_signs.py                   2      0   100%
+app/share/card.py                      31      6    81%   65, 70-74
+app/storage.py                         85     34    60%   29, 46-47, 52, 74-81, 92-93, 100-108, 118-124, 130-131, 137, 142-143, 150
+app/timeutil.py                         7      1    86%   19
+app/today/service.py                   71      6    92%   46, 65, 70, 96, 140, 142
+-----------------------------------------------------------------
+TOTAL                                8083   1467    82%
+Required test coverage of 60% reached. Total coverage: 81.85%
+703 passed, 1 skipped, 52 warnings in 46.62s
+==> production boot smoke test (A11: fail-closed secrets honored)
+✓ prod-mode refuses to boot without secrets
+✓ prod-mode refuses to boot without R2
+✓ prod-mode requires Redis rate-limit backend
+/root/chart-platform/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+✓ prod-mode boot + critical routes OK
+==> compileall (syntax)
+==> ruff (bug rules: F pyflakes + E9 syntax)
+All checks passed!
+==> bandit (high-confidence issues only)
+[manager]	WARNING	Test in comment: dev is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: CLI is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: only is not a test name or id, ignoring
+==> pip-audit (dependency vulnerabilities)
+No known vulnerabilities found
+==> secret scan (hardcoded keys/tokens + secret files)
+✓ no hardcoded secrets
+==> brand-language scan (فال/پیش‌بینی ممنوع)
+✓ no banned brand-language
+==> absolute-path scan (R4/W7: no hardcoded /root/chart-platform in app/)
+✓ no hardcoded absolute paths (host-portable)
+==> CI OK
+CI-EXIT=0

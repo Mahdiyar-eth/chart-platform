@@ -1,0 +1,10 @@
+{# W1.3 component: labeled field.
+   vars: name, label, type(text|number|email), placeholder, required(bool), autocomplete #}
+{% set _type = type | default('text') %}
+<div class="field">
+  <label for="f-{{ name }}">{{ label }}</label>
+  <input id="f-{{ name }}" name="{{ name }}" type="{{ _type }}"
+         class="input" placeholder="{{ placeholder or '' }}"
+         {% if required %}required{% endif %}
+         {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}>
+</div>

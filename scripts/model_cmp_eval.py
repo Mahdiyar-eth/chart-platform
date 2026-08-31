@@ -1,8 +1,7 @@
 """Phase 1 evaluation: facts + evidence + 5-dim rubric + cost per model."""
-import asyncio, json, re, sys
+import json, sys
 sys.path.insert(0, "/root/chart-platform")
 from scripts.ai_benchmark_v4 import SIGNS, SIGNS_FA
-from app.core.llm import build_go_pool
 
 SUN = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"]
 

@@ -90,8 +90,10 @@ def sitemap_xml():
     base = os.getenv("PUBLIC_BASE_URL", "https://chart.negar.io").rstrip("/")
     urls = ["/", "/plans", "/birth-form", "/synastry", "/rectify", "/learn", "/privacy",
             "/terms", "/refund", "/disclaimer", "/contact",
-            "/guide", "/about", "/faq", "/articles",
-            "/deep-report", "/self-discovery", "/sky-today"]
+            "/guide", "/about", "/faq", "/articles", "/glossary",
+            "/deep-report", "/self-discovery", "/sky-today",
+            # R14-B5: the new product entry pages are indexable marketing surfaces
+            "/solar-guide", "/relocation-guide"]
     try:
         from app.seo.content import GUIDES, PLANETS, HOUSES, SIGNS
         urls += [f"/learn/{k}" for k in GUIDES]
@@ -207,16 +209,45 @@ def page_faq(request: Request):
     })
 
 
+@router.get("/glossary", response_class=HTMLResponse)
+def glossary_page(request: Request):
+    """R.7 / T2 (F3): linkable glossary of 60+ astrology terms.
+
+    Previously /glossary returned 404 (the plan's F3 workstream was never built).
+    Each term has a #anchor and many deep-link to the /learn or /signs pages that
+    already exist, so the glossary cross-links without duplicating content.
+    """
+    from app.seo.glossary import build_glossary
+    return templates.TemplateResponse(request, "glossary.html", {
+        "title": "واژه‌نامهٔ نجوم و چارت تولد",
+        "glossary": build_glossary(),
+    })
+
+
 @router.get("/articles", response_class=HTMLResponse)
-def page_articles(request: Request):
+def page_articles(request: Request, page: int = 1, cat: str = ""):
+    """R13/P2: pagination + category filter — 12 per page instead of one
+    endless wall; `cat` filters server-side so links stay shareable."""
     from app.main import _load_articles
     arts = _load_articles()
     categories = sorted({a.get("category", "عمومی") for a in arts})
+    if cat:
+        arts = [a for a in arts if a.get("category", "عمومی") == cat]
+    PER_PAGE = 12
+    total = len(arts)
+    pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    page = min(max(1, page), pages)
+    chunk = arts[(page - 1) * PER_PAGE: page * PER_PAGE]
     return templates.TemplateResponse(request, "articles_index.html", {
         "title": "مقالات نجوم و چارت تولد",
         "meta": "مجموعه مقالات آموزشی نجوم، چارت تولد، سیارات، برج‌ها و تحلیل شخصیت — به زبان ساده",
-        "articles": arts,
+        "articles": chunk,
         "categories": categories,
+        "active_cat": cat,
+        "page": page,
+        "pages": pages,
+        "total": total,
+        "base_url": "/articles?cat=" + cat if cat else "/articles",
     })
 
 
@@ -231,6 +262,48 @@ def page_sky(request: Request):
 
 
 # ── P9 — landing pages (plan v2.0 §14: Landing 2/3/4) ───────────────────────
+@router.get("/solar-guide", response_class=HTMLResponse)
+def landing_solar(request: Request):
+    """R14-B5 — marketing entry page for the solar-year product."""
+    return templates.TemplateResponse(request, "landing.html", {
+        "h1": "سالِ تو از تولد تا تولد بعدی، در یک نقشه.",
+        "sub": "چارت سالیانه لحظه‌ی دقیق بازگشت خورشید به جای تولدت را حساب می‌کند و تم سال، خانه‌ی برجسته و ۵ گذر کلیدی را نشان می‌دهد — با شاهد نجومی، نه پیشگویی.",
+        "cta": "چارت سالیانه من", "cta_href": "/birth-form?redirect=/plans",
+        "cta_note": "اول چارت رایگان بساز؛ بعد با ۹ اعتبار باز کن",
+        "chips": ["۹ اعتبار", "۵ گذر کلیدی با تاریخ", "پرسش فصلی", "محل زندگی فعلی"],
+        "cards": [
+            {"icon": "sun", "title": "تم اصلی سال تو",
+             "body": "خورشید سال در کدام خانه نشسته و چه چیزی را پررنگ می‌کند — یک روایت صادقانه برای یک سال."}, 
+            {"icon": "moon", "title": "۵ گذر کلیدی با تاریخ",
+             "body": "مهم‌ترین گذرهای سال روی چارت خودت با تاریخ دقیق شروع؛ برای برنامه‌ریزی، نه پیش‌گویی."},
+            {"icon": "sparkles", "title": "پرسش تأمل فصلی",
+             "body": "برای هر فصل یک پرسش کوچک که نگاهت را به زندگی روزمره برمی‌گرداند."},
+        ],
+        "faq": "چرا محل زندگی فعلی مهم است؟ چون چارت سالیانه روی آسمانِ جایی که الآن زندگی می‌کنی محاسبه می‌شود، نه محل تولد.",
+    })
+
+
+@router.get("/relocation-guide", response_class=HTMLResponse)
+def landing_relocation(request: Request):
+    """R14-B5 — marketing entry page for the relocation product."""
+    return templates.TemplateResponse(request, "landing.html", {
+        "h1": "در کدام شهر، کدام بخش زندگیات روشن‌تر می‌شود؟",
+        "sub": "زمان تولد ثابت می‌ماند؛ فقط مکان عوض می‌شود. خانه‌ها بازمحاسبه می‌شوند تا ببینی هر شهر روی کدام حوزه‌های زندگیات بیشتر اثر می‌گذارد — ۱ تا ۳ شهر کنار هم.",
+        "cta": "مقایسه شهرها را شروع کن", "cta_href": "/birth-form?redirect=/plans",
+        "cta_note": "اول چارت رایگان بساز؛ بعد با ۶ اعتبار باز کن",
+        "chips": ["۶ اعتبار", "مقایسه ۳ شهر", "بدون پیشگویی", "نقشه تمرکز"],
+        "cards": [
+            {"icon": "compass", "title": "خانه‌ها عوض می‌شوند، سیاره‌ها نه",
+             "body": "هر شهر آسمان متفاوتی دارد؛ همین باعث می‌شود کار، رابطه یا رشد شخصی در جایی متفاوت پررنگ شود."},
+            {"icon": "heart", "title": "مقایسه کنار هم",
+             "body": "به‌جای حدس، جدول مقایسه‌ای روشن از اینکه در هر شهر چه چیزی تقویت می‌شود."},
+            {"icon": "help", "title": "سلب مسئولیت صریح",
+             "body": "این نقشه تمرکز است، نه توصیه مهاجرت — تصمیم نهایی همیشه با خودت است."},
+        ],
+        "faq": "آیا این ابزار می‌گوید کجا زندگی کنم؟ نه. فقط نشان می‌دهد هر شهر روی کدام حوزه‌های چارتت بیشتر نور می‌اندازد؛ انتخاب با خودت است.",
+    })
+
+
 @router.get("/deep-report", response_class=HTMLResponse)
 def landing_deep_report(request: Request):
     return templates.TemplateResponse(request, "landing.html", {
@@ -305,10 +378,32 @@ def page_article(slug: str, request: Request):
     art = next((a for a in arts if a["slug"] == slug), None)
     if not art:
         raise HTTPException(404, "article not found")
+    # B-3 (F1 audit): related links must be TOPIC-related, not arbitrary. Prefer
+    # same-category siblings (up to 6) so a reader following "مقالات مرتبط" stays
+    # on-topic; only fall back to other categories when the category is too sparse.
+    _cat = art.get("category", "")
+    others = [a for a in arts if a["slug"] != slug and a.get("category") == _cat]
+    if len(others) < 3:  # category too thin → pad with other topics (still relevant by order)
+        others += [a for a in arts if a["slug"] != slug and a.get("category") != _cat]
+    others = others[:6]
+    # R.8 / S3: deep-link the first occurrence of glossary terms in the body so a
+    # reader can jump to the definition (plan F3: «هر اصطلاح در اولین ظهور شرح داشته باشد»).
+    # The body is admin-authored (trusted, CMS) and link_glossary_terms only wraps a
+    # fixed term string in a safe `<a href="/glossary#…">`. We mark the RESULTing
+    # paragraphs as Markup (after linking, since string slicing would drop Markup),
+    # so Jinja doesn't autoescape the anchor tags.
+    from markupsafe import Markup
+    from app.seo.glossary import link_glossary_terms
+    body = link_glossary_terms(art.get("body") or [])
+    body = [
+        ({**b, "p": Markup(b["p"])} if ("p" in b and isinstance(b["p"], str)) else b)
+        for b in body
+    ]
+    art = {**art, "body": body}
     return templates.TemplateResponse(request, "article.html", {
         "title": art["title"], "meta": art.get("meta", ""), "art": art,
         "banner_svg": article_banner_svg(art.get("category", ""), art["title"]),
-        "others": [a for a in arts if a["slug"] != slug][:6],
+        "others": others,
     })
 
 

@@ -5,10 +5,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "==> alembic chain check (fresh DB → upgrade head → drift check)"
-# Must run BEFORE pytest (which create_all's on the test DB).
-venv/bin/alembic upgrade head
-venv/bin/alembic check
+echo "==> alembic chain check (fresh EMPTY DB → upgrade head → drift check)"
+bash scripts/drift_gate.sh
 
 echo "==> pytest + coverage (gate: >= 60%)"
 venv/bin/python -m pytest tests/ -q --cov=app --cov-report=term-missing --cov-fail-under=60
@@ -58,6 +56,9 @@ SMOKE_DB="${DATABASE_URL:-postgresql://chart_test:chart_test_pw@127.0.0.1:5432/c
 APP_ENV=production DATABASE_URL="$SMOKE_DB" \
   AUTH_SECRET="smoke-test-auth-secret-000" ADMIN_SECRET="smoke-test-admin-secret-000" \
   SECRETS_MASTER_KEY="smoke-test-master-key-000" \
+  RATE_LIMIT_BACKEND="redis" \
+  R2_ACCESS_KEY_ID="smoke-test-r2-access" R2_SECRET_ACCESS_KEY="smoke-test-r2-secret" \
+  R2_ENDPOINT="https://smoke.example" R2_BUCKET="zayche-storage" \
   venv/bin/python - <<'PY'
 from fastapi.testclient import TestClient
 import app.main as m
@@ -70,6 +71,15 @@ PY
 
 echo "==> compileall (syntax)"
 venv/bin/python -m compileall -q app/ scripts/
+
+echo "==> bash -n (syntax) on all scripts/*.sh (R.6 / U4)"
+# A non-parseable script silently never runs (e.g. runtime_withdrawal_race.sh had a
+# dangling continuation; the drill was dead for months). This gate makes any future
+# unparseable shell script fail the build instead of rotting silently.
+for _s in scripts/*.sh; do
+  bash -n "$_s" || { echo "❌ bash -n FAILED: $_s"; exit 1; }
+done
+echo "✓ all scripts/*.sh parse cleanly"
 
 echo "==> ruff (bug rules: F pyflakes + E9 syntax)"
 venv/bin/ruff check --select F,E9 app/ tests/ scripts/
@@ -102,20 +112,22 @@ fi
 echo "✓ no hardcoded secrets"
 
 echo "==> brand-language scan (فال/پیش‌بینی ممنوع)"
-# Promotional fortune-telling is banned; allow: the QA detector itself (qa.py),
-# the educational article contrasting natal charts with daily horoscopes,
-# and the DISCLAIMER («نه تعیین سرنوشت»).
-BAD=$(grep -rniE "پیش ?بینی|فال|طالع ?بینی" \
-  app/templates app/content app/bots app/report app/chat --include="*.html" --include="*.json" --include="*.py" \
-  | grep -v app/report/qa.py \
-  | grep -viE "فال[‌ ]?[‌ ]?(بازی|گویی)|نه فال|فال قطعی|پیش‌بینی قطعی|تفاوت چارت تولد با فال روزانه|فال روزانه فقط بر اساس برج" \
-  | grep -viE "پیش[‌ ]?بینی (نیست|در آسترولوژی|قطع)|پیش[‌ ]?بین" || true)
-
-if [ -n "$BAD" ]; then
-  echo "❌ banned brand-language found:"
-  echo "$BAD"
+# R.5 / V7 (P2-1): explicit file:line ALLOWLIST (scripts/brand_allowlist.txt), not a
+# growing substring grep -v chain that weakens whitelisting. qa.py (the detector)
+# is always allowed; every other hit must be explicitly allowlisted.
+if ! venv/bin/python scripts/brand_language_gate.py; then
   exit 1
 fi
-echo "✓ no banned brand-language"
+
+echo "==> absolute-path scan (R4/W7: no hardcoded /root/chart-platform in app/)"
+# A hardcoded absolute path breaks the app on ANY other host (Docker WORKDIR=/app).
+# The reviewer caught 7 in R4; the sweep is now complete and must stay green.
+ABSPATH=$(grep -rn "/root/chart-platform" app/ --include="*.py" 2>/dev/null || true)
+if [ -n "$ABSPATH" ]; then
+  echo "❌ hardcoded absolute path in app/:"
+  echo "$ABSPATH"
+  exit 1
+fi
+echo "✓ no hardcoded absolute paths (host-portable)"
 
 echo "==> CI OK"

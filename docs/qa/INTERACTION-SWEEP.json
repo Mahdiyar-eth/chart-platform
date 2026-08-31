@@ -1,0 +1,542 @@
+[
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/birth-form",
+    "control": "؟",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/birth-form",
+    "control": "میلادی",
+    "result": "OK",
+    "detail": "attribute toggle (selected state)"
+  },
+  {
+    "page": "/birth-form",
+    "control": "تروپیکال (پیش‌فرض)",
+    "result": "OK",
+    "detail": "attribute toggle (selected state)"
+  },
+  {
+    "page": "/birth-form",
+    "control": "ادامه",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/birth-form",
+    "control": "0\nاعتبار",
+    "result": "SKIP",
+    "detail": "guest-hidden credits chip"
+  },
+  {
+    "page": "/birth-form",
+    "control": "چارت رایگان",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/birth-form",
+    "control": "سازگاری دو نفر",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/synastry"
+  },
+  {
+    "page": "/birth-form",
+    "control": "درباره ما",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/about"
+  },
+  {
+    "page": "/birth-form",
+    "control": "آسمان امروز",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/sky"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/plans",
+    "control": "اعمال",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/plans",
+    "control": "باز کردن با 7 اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form?redirect=%2Fplans"
+  },
+  {
+    "page": "/plans",
+    "control": "باز کردن با 2 اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form?redirect=%2Fplans"
+  },
+  {
+    "page": "/plans",
+    "control": "باز کردن با 8 اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form?redirect=%2Fplans"
+  },
+  {
+    "page": "/plans",
+    "control": "باز کردن با 5 اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form?redirect=%2Fplans"
+  },
+  {
+    "page": "/plans",
+    "control": "باز کردن با 6 اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form?redirect=%2Fplans"
+  },
+  {
+    "page": "/plans",
+    "control": "خرید پک 3تایی",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/plans",
+    "control": "خرید پک 12تایی",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/plans",
+    "control": "0\nاعتبار",
+    "result": "SKIP",
+    "detail": "guest-hidden credits chip"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "ارسال کد",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/account/login",
+    "control": "0\nاعتبار",
+    "result": "SKIP",
+    "detail": "guest-hidden credits chip"
+  },
+  {
+    "page": "/account/login",
+    "control": "محصولها و اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/plans"
+  },
+  {
+    "page": "/account/login",
+    "control": "بازبینی ساعت تولد",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/rectify"
+  },
+  {
+    "page": "/account/login",
+    "control": "مقالات",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/articles"
+  },
+  {
+    "page": "/account/login",
+    "control": "گزارش عمیق",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/deep-report"
+  },
+  {
+    "page": "/account/login",
+    "control": "آموزش نجوم",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn"
+  },
+  {
+    "page": "/account/login",
+    "control": "راهنمای استفاده",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/guide"
+  },
+  {
+    "page": "/account/login",
+    "control": "تماس با پشتیبانی",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/contact"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "محاسبه سازگاری",
+    "result": "OK",
+    "detail": "toast/dialog appeared"
+  },
+  {
+    "page": "/synastry",
+    "control": "0\nاعتبار",
+    "result": "SKIP",
+    "detail": "guest-hidden credits chip"
+  },
+  {
+    "page": "/synastry",
+    "control": "محصولها و اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/plans"
+  },
+  {
+    "page": "/synastry",
+    "control": "بازبینی ساعت تولد",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/rectify"
+  },
+  {
+    "page": "/synastry",
+    "control": "مقالات",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/articles"
+  },
+  {
+    "page": "/synastry",
+    "control": "گزارش عمیق",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/deep-report"
+  },
+  {
+    "page": "/synastry",
+    "control": "آموزش نجوم",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn"
+  },
+  {
+    "page": "/synastry",
+    "control": "راهنمای استفاده",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/guide"
+  },
+  {
+    "page": "/synastry",
+    "control": "تماس با پشتیبانی",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/contact"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "✕",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "+ افزودن رویداد",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/rectify",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/rectify",
+    "control": "چارت رایگان",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form"
+  },
+  {
+    "page": "/rectify",
+    "control": "سازگاری دو نفر",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/synastry"
+  },
+  {
+    "page": "/rectify",
+    "control": "درباره ما",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/about"
+  },
+  {
+    "page": "/rectify",
+    "control": "آسمان امروز",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/sky"
+  },
+  {
+    "page": "/rectify",
+    "control": "کاوش خودشناسی",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/self-discovery"
+  },
+  {
+    "page": "/rectify",
+    "control": "واژه‌نامهٔ نجوم",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/glossary"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/today",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/today",
+    "control": "چارت رایگان",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/birth-form"
+  },
+  {
+    "page": "/today",
+    "control": "سازگاری دو نفر",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/synastry"
+  },
+  {
+    "page": "/today",
+    "control": "درباره ما",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/about"
+  },
+  {
+    "page": "/today",
+    "control": "آسمان امروز",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/sky"
+  },
+  {
+    "page": "/today",
+    "control": "کاوش خودشناسی",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/self-discovery"
+  },
+  {
+    "page": "/today",
+    "control": "واژه‌نامهٔ نجوم",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/glossary"
+  },
+  {
+    "page": "/today",
+    "control": "سؤالات پرتکرار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/faq"
+  },
+  {
+    "page": "/today",
+    "control": "حریم خصوصی",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/privacy"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/glossary",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/glossary",
+    "control": "آموزش نجوم",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn"
+  },
+  {
+    "page": "/glossary",
+    "control": "سیارات",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/glossary#%D8%B3%DB%8C%D8%A7%D8%B1%D8%A7%D8%AA"
+  },
+  {
+    "page": "/glossary",
+    "control": "برج‌ها",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/glossary#%D8%A8%D8%B1%D8%AC%E2%80%8C%D9%87%D8%A7"
+  },
+  {
+    "page": "/glossary",
+    "control": "زوایا و نقاط",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/glossary#%D8%B2%D9%88%D8%A7%DB%8C%D8%A7%20%D9%88%20%D9%86%D9%82%D8%A7%D8%B7"
+  },
+  {
+    "page": "/glossary",
+    "control": "توضیح بیشتر ←",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn/sun"
+  },
+  {
+    "page": "/glossary",
+    "control": "توضیح بیشتر ←",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn/mercury"
+  },
+  {
+    "page": "/glossary",
+    "control": "توضیح بیشتر ←",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn/mars"
+  },
+  {
+    "page": "/glossary",
+    "control": "توضیح بیشتر ←",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/learn/saturn"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/faq",
+    "control": "زایچه",
+    "result": "OK",
+    "detail": "self-link (already on target page)"
+  },
+  {
+    "page": "/faq",
+    "control": "چارت تولد دقیقاً چیست؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "اگر ساعت تولد را ندانم چه کنم؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "چطور PDF گزارش را دانلود کنم؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "آیا می‌توانم چارتم را با دیگران به اشتراک بگذارم؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "آسترولوژی (نجوم احکامی) چیست؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "خانه در چارت تولد یعنی چه؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "برج (نشانه) یعنی چه؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/faq",
+    "control": "Swiss Ephemeris چیست؟▾",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/explore",
+    "control": "شروع (۱ اعتبار)",
+    "result": "OK",
+    "detail": "checkout action (external payment flow)"
+  },
+  {
+    "page": "/explore",
+    "control": "همه تحلیل‌ها (10 کارت)",
+    "result": "OK",
+    "detail": "visible text changed"
+  },
+  {
+    "page": "/explore",
+    "control": "0\nاعتبار",
+    "result": "SKIP",
+    "detail": "guest-hidden credits chip"
+  },
+  {
+    "page": "/explore",
+    "control": "محصولها و اعتبار",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/plans"
+  },
+  {
+    "page": "/explore",
+    "control": "بازبینی ساعت تولد",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/rectify"
+  },
+  {
+    "page": "/explore",
+    "control": "مقالات",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/articles"
+  },
+  {
+    "page": "/explore",
+    "control": "گزارش عمیق",
+    "result": "OK",
+    "detail": "nav→http://127.0.0.1:8899/deep-report"
+  }
+]

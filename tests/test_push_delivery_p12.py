@@ -25,6 +25,21 @@ pytestmark = pytest.mark.skipif(
     not P.vapid_configured(), reason="VAPID not configured in this environment"
 )
 
+
+def test_vapid_public_key_endpoint_when_configured():
+    """R.5 / V5 (P2-2): when VAPID IS configured, the public-key endpoint must
+    answer 200 with a real key. This is the dedicated skipif test replacing the
+    blanket-accept-503 in the E2E flow — it means a prod VAPID break is caught
+    (skipif keeps it out of CI where VAPID is unset)."""
+    from fastapi.testclient import TestClient
+
+    from app.main import app as main_app
+
+    c = TestClient(main_app)
+    r = c.get("/api/push/vapid-public-key")
+    assert r.status_code == 200, r.text
+    assert r.json().get("key"), "empty VAPID public key returned"
+
 _CERT = os.path.join(os.path.dirname(__file__), "..", "data", "test-certs")
 _CERT = os.path.abspath(_CERT)
 

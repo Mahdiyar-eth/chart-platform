@@ -1,9 +1,8 @@
 """Phase 4 eval — rubric comparison thinking-ON vs OFF (uses the proven benchmark rubric)."""
-import asyncio, json, re, sys
+import asyncio, json, sys
 sys.path.insert(0, "/root/chart-platform")
-import app.config
 from app.core.llm import build_go_pool
-from scripts.ai_benchmark_v4 import make_chart, RUBRIC_PROMPT, rubric_eval
+from scripts.ai_benchmark_v4 import make_chart, rubric_eval
 
 RB = ["personalization", "coherence", "persian", "tone", "contradiction"]
 

@@ -336,7 +336,7 @@ def api_admin_health(request: Request, session: Session = Depends(get_session)):
         h["queue"] = None
 
     # last restore drill (from deploy-backups/drill logs when present)
-    drill_log = Path("/root/chart-platform/logs/restore-drill.log")
+    drill_log = Path(__file__).resolve().parent.parent.parent / "logs" / "restore-drill.log"
     if drill_log.exists():
         lines = [l for l in drill_log.read_text().splitlines() if l.strip()]
         h["last_drill"] = lines[-1][:200] if lines else None
@@ -438,8 +438,137 @@ def admin_credit_report(request: Request, session: Session = Depends(get_session
         raise HTTPException(403, "admin only")
     sold = session.exec(select(func.coalesce(func.sum(CreditTransaction.amount), 0)).where(CreditTransaction.amount > 0)).one()
     spent = session.exec(select(func.coalesce(func.sum(-CreditTransaction.amount), 0)).where(CreditTransaction.amount < 0)).one()
-    prices = {p.key: p.credits for p in session.exec(select(CreditPrice)).all()}
+    prices = {p.action_key: p.credits for p in session.exec(select(CreditPrice)).all()}
     by_action = dict(session.exec(select(CreditTransaction.reason, func.count(CreditTransaction.id)).group_by(CreditTransaction.reason)).all())
     return {"credits_sold": int(sold), "credits_spent": int(spent),
             "net": int(sold) - int(spent), "prices": prices,
             "actions_count": by_action}
+
+
+# ── MASTER W14 — cost/revenue report + per-product token cap + daily keys ──
+
+# Per-product LLM token ceiling (plan §9: editable from the admin panel,
+# stored in DB-backed secrets so it survives restarts without redeploy).
+_DEFAULT_TOKEN_CAPS = {
+    "free_preview": 900,      # W2 free preview answer (flash)
+    "daily_insight": 160,     # W5 one-line daily insight (flash)
+    "solar_narrative": 420,   # W6 solar-year narrative
+    "report_section": 2048,   # paid report sections
+    "chat_message": 1200,     # chat answers
+}
+
+
+def _token_cap_key(product: str) -> str:
+    return f"token_cap_{product}"
+
+
+@router.get("/api/admin/token-caps")
+def admin_token_caps(request: Request):
+    """W14 — current per-product token caps (defaults + overrides)."""
+    from fastapi import HTTPException
+    from app.secret_store import get_secret
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    caps = {}
+    for product, default in _DEFAULT_TOKEN_CAPS.items():
+        raw = get_secret(_token_cap_key(product), "", "")
+        try:
+            caps[product] = {"default": default,
+                             "current": int(raw) if raw else default}
+        except Exception:  # noqa: BLE001
+            caps[product] = {"default": default, "current": default}
+    return {"caps": caps}
+
+
+@router.post("/api/admin/token-caps/{product}")
+def admin_token_cap_set(product: str, request: Request, max_tokens: int = Form(...)):
+    """W14 — set a product's token cap (validated 50..8192)."""
+    from fastapi import HTTPException
+    from app.security import audit
+    from app.db import engine as _eng
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    if product not in _DEFAULT_TOKEN_CAPS:
+        raise HTTPException(404, "unknown product")
+    if not (50 <= max_tokens <= 8192):
+        raise HTTPException(400, "max_tokens must be within 50..8192")
+    from app.secret_store import set_secret
+    set_secret(_token_cap_key(product), str(max_tokens))
+    audit(_eng, "admin", "token_cap_set", "TokenCap", f"{product}={max_tokens}")
+    return {"ok": True, "product": product, "max_tokens": max_tokens}
+
+
+@router.get("/api/admin/cost-revenue")
+def admin_cost_revenue(request: Request, session: Session = Depends(get_session),
+                       days: int = 30):
+    """W14 — cost/revenue/margin per product over the last `days` days.
+
+    Revenue = credits consumed × reference rate (50,000 toman/credit).
+    Cost = LLMRun.cost_usd summed per kind (flat subscription ⇒ near-zero,
+    still tracked for when we move to pay-per-token).
+    """
+    from datetime import datetime, timedelta, timezone
+    from fastapi import HTTPException
+    from sqlalchemy import func
+    from app.models import CreditTransaction, CreditPrice, LLMRun
+    if not _is_admin(request):
+        raise HTTPException(403, "admin only")
+    if not (1 <= days <= 365):
+        raise HTTPException(400, "days must be within 1..365")
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since_naive = since.replace(tzinfo=None)
+
+    # revenue proxy: negative ledger rows grouped by reason (= action key)
+    spend_rows = session.exec(
+        select(CreditTransaction.reason,
+               func.sum(-CreditTransaction.amount).label("credits"),
+               func.count(CreditTransaction.id).label("cnt"))
+        .where(CreditTransaction.amount < 0,
+               CreditTransaction.created_at >= since_naive)
+        .group_by(CreditTransaction.reason)
+    ).all()
+    prices = {p.action_key: p.credits for p in session.exec(select(CreditPrice)).all()}
+
+    # LLM cost by kind
+    cost_rows = session.exec(
+        select(LLMRun.kind,
+               func.coalesce(func.sum(LLMRun.cost_usd), 0.0).label("cost"),
+               func.count(LLMRun.id).label("calls"))
+        .where(LLMRun.created_at >= since_naive)
+        .group_by(LLMRun.kind)
+    ).all()
+
+    CREDIT_TOMAN = 50_000
+    products = []
+    total_rev_toman = 0
+    total_cost_usd = sum(float(row[1] or 0) for row in cost_rows)
+    for reason, credits, cnt in spend_rows:
+        unit = prices.get(reason)
+        toman = int(credits) * CREDIT_TOMAN
+        total_rev_toman += toman
+        products.append({
+            "product": reason,
+            "units": int(cnt),
+            "credits": int(credits),
+            "unit_price_credits": unit,
+            "revenue_toman": toman,
+        })
+    products.sort(key=lambda x: -x["revenue_toman"])
+    margin = None
+    if total_rev_toman > 0:
+        # R12/P2-15: the USD→Toman assumption must be explicit. This is a
+        # PLANNING estimate at a configurable rate, not an accounting figure.
+        USD_TOMAN_ESTIMATE = 1_000_000  # planning rate: $1 ≈ ۱٬۰۰۰٬۰۰۰ تومان (label shown in admin UI)
+        margin = round(max(0.0, 1.0 - (total_cost_usd * USD_TOMAN_ESTIMATE / total_rev_toman)) * 100, 2)
+    return {
+        "window_days": days,
+        "credit_rate_toman": CREDIT_TOMAN,
+        "usd_toman_estimate": 1_000_000,  # R12/P2-15: explicit planning rate
+        "margin_is_planning_estimate": True,
+        "products": products,
+        "llm_cost_by_kind": [{"kind": k, "cost_usd": float(c or 0), "calls": int(n)}
+                             for k, c, n in cost_rows],
+        "total_llm_cost_usd": round(total_cost_usd, 4),
+        "total_revenue_toman": total_rev_toman,
+        "margin_percent_estimate": margin,
+    }

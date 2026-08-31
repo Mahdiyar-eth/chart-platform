@@ -9,7 +9,6 @@ testable with a mock at $0 cost.
 """
 from __future__ import annotations
 
-import json
 import logging
 
 from app.core.llm import build_router

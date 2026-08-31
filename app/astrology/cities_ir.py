@@ -31,7 +31,7 @@ def ensure_data_file() -> None:
     """Copy the dataset into the repo if missing (self-contained deploy)."""
     if DATA_PATH.exists():
         return
-    src = Path("/root/chart-platform/app/astrology/data/cities_seed.json")
+    src = Path(__file__).resolve().parent / "data" / "cities_seed.json"
     if src.exists():
         DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
         import shutil

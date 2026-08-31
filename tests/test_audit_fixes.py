@@ -93,19 +93,19 @@ def test_wallet_dispatch_credit_pack(wallet_user, monkeypatch):
 
 
 def test_wallet_report_plan_creates_report(wallet_user, monkeypatch):
-    """F-29: gold via wallet must queue a report like the Zarinpal path."""
+    """F-29 + R13/N3: gold plan retired — the wallet path now settles a
+    DEEP_REPORT_ACTION order and queues the report exactly like before."""
     u = wallet_user
     monkeypatch.setattr(orders_mod, "activate_subscription",
                         lambda s, o: None)
     monkeypatch.setattr(orders_mod, "grant_credits", lambda s, o: None)
-    plan = _plan("gold")
     from app.models import Chart
     c = Chart(chart_json={})
     with Session(engine) as s0:
         s0.add(c)
         s0.commit()
         cid = c.id
-    o, s = _order(u, "gold", plan.price_rial)
+    o, s = _order(u, "report_gold", 6_990_000)  # credit action, not a Plan
     o.chart_id = cid
     s.add(o)
     s.commit()

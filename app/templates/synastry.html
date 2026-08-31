@@ -3,75 +3,96 @@
 {% block description %}مقایسه دو چارت تولد برای سنجش سازگاری عاطفی، شغلی و ارتباطی دو نفر با محاسبات نجومی دقیق{% endblock %}
 
 {% block content %}
-<div class="st-01d6aec8" >
-  <h1 class="st-0d71cd37" >
-    <svg class="st-3af0d0e3" aria-hidden="true"><use href="#icon-heart"/></svg>
+<div class="u-01d6aec8" >
+  <h1 class="u-0d71cd37" >
+    <svg class="u-3af0d0e3" aria-hidden="true"><use href="/static/icons.svg#icon-heart"/></svg>
     سازگاری دو چارت (سیناستری)
   </h1>
-  <p class="muted st-2ead518b" >اطلاعات تولد دو نفر را وارد کن تا هم‌راستایی سیارات، حوزه‌های عشق، ذهن، کار و معنا، و نمره‌ی کلی سازگاری‌تان را ببینی.</p>
+  <p class="muted u-2ead518b" >اطلاعات تولد دو نفر را وارد کن تا هم‌راستایی سیارات، حوزه‌های عشق، ذهن، کار و معنا، و نمره‌ی کلی سازگاری‌تان را ببینی.</p>
 
-  <div class="glass st-a3d5b2d1" >
-    <h2 class="st-17e50df1" >سیناستری چیست؟</h2>
-    <p class="st-4749156b" >
-      سیناستری یعنی مقایسه‌ی دو چارت تولد روی هم. این روش نشان می‌دهد سیاره‌های شما با سیاره‌های طرف مقابل چه زاویه‌هایی می‌سازند — کجا هماهنگی طبیعی دارید و کجا به گفت‌وگو و درک نیاز است. این ابزار برای شناخت رابطه‌ی عاطفی، ازدواج، شراکت کاری یا دوستی به‌کار می‌رود و بر پایه‌ی محاسبه‌ی دقیق نجومی است، نه فال.
+  <div class="glass u-a3d5b2d1" >
+    <h2 class="u-17e50df1" >سازگاری دو نفر چطور کار می‌کند؟</h2>
+    <p class="u-4749156b" >
+      چارت دو نفر روی هم قرار می‌گیرد و زاویه‌های سیاره‌ها مشخص می‌شود — کجا هماهنگی طبیعی دارید و کجا به گفت‌وگو و درک نیاز است. دو محصول جدا داریم: <b>سازگاری عاطفی</b> برای الگوی رابطه (زهره/ماه/مریخ) و <b>سازگاری کاری</b> برای هم‌تیمی و شراکت (خورشید/مریخ/زحل). هر دو بر پایهٔ محاسبهٔ دقیق نجومی‌اند، نه فال.
     </p>
-    <p class="st-e9eccfbb" >
-      اول می‌توانی <b class="st-e39ebac6" >نمره‌ی کلی و خلاصه‌ی رایگان</b> را ببینی؛ تحلیل کامل (۴ حوزه + ۲۵+ ارتباط سیاره‌ای + تفسیر اختصاصی) پس از خرید نمایش داده می‌شود.
+    <p class="u-e9eccfbb" >
+      اول فرم پایین را پر کن؛ <b class="u-link-gold" >نمره‌ی کلی و خلاصه‌ی رایگان</b> همان‌جا نشان داده می‌شود. اگر خواستی عمیق‌تر بروی، تحلیل کامل هر نسخه با ۸ اعتبار باز می‌شود — دکمهٔ خرید همان‌جاست، نه بالای فرم.
     </p>
   </div>
 
-  <form class="st-86de7ac6" id="synForm" >
-    <div class="glass st-8e11ed66" >
-      <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="#icon-user"/></svg> نفر اول</h2>
-      <input name="name_a" placeholder="نام (اختیاری)" class="input st-a4a5b808" >
-      <div class="st-ca566bee" >
+  <form class="u-form-mt" id="synForm" novalidate>
+    <div class="glass u-pad-18" >
+      <h2 class="u-b3eb9039" ><svg class="u-e16a8522" aria-hidden="true"><use href="/static/icons.svg#icon-user"/></svg> نفر اول</h2>
+      <input name="name_a" placeholder="نام (اختیاری)" class="input u-a4a5b808" >
+      <div class="u-ca566bee" >
         <input name="year_a" type="number" placeholder="سال 1373" class="input" required>
         <input name="month_a" type="number" placeholder="ماه" class="input" required>
         <input name="day_a" type="number" placeholder="روز" class="input" required>
       </div>
-      <div class="st-c669aeb3" >
+      <div class="u-c669aeb3" >
         <input name="hour_a" type="number" placeholder="ساعت 06" class="input" required>
         <input name="minute_a" type="number" placeholder="دقیقه 10" class="input" required>
       </div>
-      <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off">
-      <div class="city-suggest-a st-fe7b4979" ></div>
-      <select name="zodiac_a" class="input st-a4a5b808" title="سیستم نجومی">
+      <!-- R14-D6: the wrapper (not the input) is the anchor — .city-suggest
+           is a SIBLING of the input inside this relative div, so top:100%+
+           6px lands exactly under the field for BOTH people. -->
+      <div class="city-field" style="position:relative;">
+        <input name="city_a" placeholder="شهر تولد — مثلاً تهران" class="input u-a4a5b808" required autocomplete="off">
+        <div class="city-suggest cs-a" ></div>
+      </div>
+      <select name="zodiac_a" class="input u-a4a5b808" aria-label="سیستم نجومی نفر اول">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
         <option value="sidereal">سایدریال لاهیری (ودیک)</option>
       </select>
     </div>
 
-    <div class="glass st-11fab7d6" >
-      <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="#icon-user"/></svg> نفر دوم</h2>
-      <input name="name_b" placeholder="نام (اختیاری)" class="input st-a4a5b808" >
-      <div class="st-ca566bee" >
+    <div class="glass u-11fab7d6" >
+      <h2 class="u-b3eb9039" ><svg class="u-e16a8522" aria-hidden="true"><use href="/static/icons.svg#icon-user"/></svg> نفر دوم</h2>
+      <input name="name_b" placeholder="نام (اختیاری)" class="input u-a4a5b808" >
+      <div class="u-ca566bee" >
         <input name="year_b" type="number" placeholder="سال 1369" class="input" required>
         <input name="month_b" type="number" placeholder="ماه" class="input" required>
         <input name="day_b" type="number" placeholder="روز" class="input" required>
       </div>
-      <div class="st-c669aeb3" >
+      <div class="u-c669aeb3" >
         <input name="hour_b" type="number" placeholder="ساعت 14" class="input" required>
         <input name="minute_b" type="number" placeholder="دقیقه 30" class="input" required>
       </div>
-      <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off">
-      <div class="city-suggest-b st-fe7b4979" ></div>
-      <select name="zodiac_b" class="input st-a4a5b808" title="سیستم نجومی">
+      <!-- R14-D6: same wrapper pattern as person A -->
+      <div class="city-field" style="position:relative;">
+        <input name="city_b" placeholder="شهر تولد — مثلاً تهران" class="input u-a4a5b808" required autocomplete="off">
+        <div class="city-suggest cs-b" ></div>
+      </div>
+      <select name="zodiac_b" class="input u-a4a5b808" aria-label="سیستم نجومی نفر دوم">
         <option value="tropical">تروپیکال (پیش‌فرض — برج‌های شمسی)</option>
         <option value="sidereal">سایدریال لاهیری (ودیک)</option>
       </select>
     </div>
 
-    <button type="submit" class="btn st-821ac54e" >
-      <svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-heart"/></svg> محاسبه سازگاری
+    <button type="submit" class="btn u-821ac54e" >
+      <svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-heart"/></svg> محاسبه سازگاری
     </button>
   </form>
 
-  <div class="st-7648d67e" id="synResult" ></div>
+  <div class="u-7648d67e" id="synResult" ></div>
 </div>
 
 <style>
 .inp{ padding:11px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); color:#eee; font-family:inherit; font-size:.9rem; box-sizing:border-box; }
-.sug{ padding:10px; border-radius:8px; margin-top:4px; background:rgba(255,255,255,.08); cursor:pointer; font-size:.85rem; }
+/* R13: unified city dropdown — one class, clean look, works for BOTH people.
+   The parent input is position:relative so the panel anchors to IT (the old
+   absolute-to-page version rendered in the wrong place / under the keyboard). */
+.city-suggest{ position:absolute; z-index:60; top:calc(100% + 6px); left:0; right:0;
+  max-height:250px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  background:var(--surface,#141a3a); border:1px solid var(--stroke,rgba(255,255,255,.14));
+  border-radius:14px; box-shadow:0 16px 40px rgba(0,0,0,.35); overflow-x:hidden; }
+.city-suggest:empty{ display:none; }
+.city-suggest-up{top:auto!important;bottom:calc(100% + 6px);}
+.city-suggest > div{ padding:13px 16px; cursor:pointer; border-bottom:1px solid var(--stroke,rgba(255,255,255,.08));
+  color:var(--txt,#e8ecff); font-size:.95rem; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.city-suggest > div:last-child{ border-bottom:none; }
+.city-suggest > div:hover, .city-suggest > div:hover b{ background:rgba(245,197,24,.12); color:var(--gold-text,#F0C75E); }
+.city-suggest > div small{ opacity:.55; font-size:.75rem; white-space:nowrap; }
 </style>
 <script>
 const esc = s => String(s).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
@@ -79,24 +100,47 @@ async function citySearch(inp, box, sel) {
   inp.addEventListener('input', async () => {
     const q = inp.value.trim();
     if (q.length < 2) { box.innerHTML = ''; return; }
-    const r = await fetch('/api/cities?q=' + encodeURIComponent(q));
-    const d = await r.json();
-    box.innerHTML = '';
-    (d.results || []).slice(0, 4).forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'sug';
-      div.textContent = c.city_fa + ' (' + c.province_fa + ')';
-      div.onclick = () => { sel(c); box.innerHTML = ''; };
-      box.appendChild(div);
-    });
+    try {
+      const r = await fetch('/api/cities?q=' + encodeURIComponent(q));
+      const d = await r.json();
+      box.innerHTML = '';
+      const rect = inp.getBoundingClientRect();
+      box.classList.toggle('city-suggest-up', rect.bottom + 250 > innerHeight - 96);
+      (d.results || []).slice(0, 6).forEach(c => {
+        const div = document.createElement('div');
+        const b = document.createElement('b');
+        b.textContent = c.city_fa;
+        const small = document.createElement('small');
+        small.textContent = c.province_fa || '';
+        div.appendChild(b); div.appendChild(small);
+        div.onclick = () => {
+          sel(c);
+          inp.value = c.city_fa;
+          box.innerHTML = '';
+          inp.dispatchEvent(new Event('city-picked'));
+        };
+        box.appendChild(div);
+      });
+      if (!(d.results || []).length) {
+        box.innerHTML = '<div style="opacity:.6;cursor:default;">شهری پیدا نشد — شهر دیگری را امتحان کن</div>';
+      }
+    } catch (e) { box.innerHTML = ''; }
   });
+  // close the panel when tapping elsewhere
+  document.addEventListener('click', e => { if (!box.contains(e.target) && e.target !== inp) box.innerHTML = ''; });
 }
 let cityA = null, cityB = null;
-citySearch(document.querySelector('input[name=city_a]'), document.querySelector('.city-suggest-a'), c => { cityA = c; document.querySelector('input[name=city_a]').value = c.city_fa; });
-citySearch(document.querySelector('input[name=city_b]'), document.querySelector('.city-suggest-b'), c => { cityB = c; document.querySelector('input[name=city_b]').value = c.city_fa; });
+citySearch(document.querySelector('input[name=city_a]'), document.querySelector('.cs-a'),
+           c => { cityA = c; });
+citySearch(document.querySelector('input[name=city_b]'), document.querySelector('.cs-b'),
+           c => { cityB = c; });
 
 document.getElementById('synForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  // R.10/R4: novalidate is on the form, so we validate in JS for a consistent
+  // Persian message (native bubbles are invisible/browser-dependent).
+  const f0 = new FormData(e.target);
+  if (!f0.get('city_a') || !f0.get('city_b')) { showToast('شهرها را از لیست انتخاب کن', false); return; }
   if (!cityA || !cityB) { showToast('شهرها را از لیست انتخاب کن', false); return; }
   const f = new FormData(e.target);
   f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
@@ -109,12 +153,15 @@ document.getElementById('synForm').addEventListener('submit', async (e) => {
     const cls = d.score >= 65 ? '#4caf7d' : d.score >= 50 ? '#f5c518' : '#ff6b6b';
     document.getElementById('synResult').style.display = 'block';
     document.getElementById('synResult').innerHTML =
-      '<div class="glass glow st-60a0726a" >' +
-      '<h2>نمره سازگاری: <span class="st-161cbb16" >' + d.score + '</span></h2>' +
-      '<p class="st-b6a65a63" >' + esc(d.verdict) + '</p>' +
-      '<p class="muted st-c170110e" >تحلیل کامل (۴ حوزه + ۲۵+ ارتباط سیارهای + تفسیر اختصاصی) پس از خرید نمایش داده میشود.</p>' +
-      '<button class="btn btn-lg st-d6f2af6e" onclick="buySyn()">خرید تحلیل کامل — ۴۹۹ هزار تومان</button>' +
-      '<button class="btn btn-ghost st-334002ff" onclick="shareSyn(' + d.score + ', \'' + escAttr(d.verdict) + '\')">اشتراکگذاری نتیجه</button>' +
+      '<div class="glass glow u-60a0726a" >' +
+      '<h2>نمره سازگاری: <span class="u-161cbb16" >' + d.score + '</span></h2>' +
+      '<p class="u-b6a65a63" >' + esc(d.verdict) + '</p>' +
+      '<p class="muted u-c170110e" >این خلاصهٔ رایگان است. تحلیل کامل در دو نسخه عرضه می‌شود:</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">' +
+      '<button class="btn btn-lg btn-accent" onclick="buySynVariant(\'synastry_love\')">سازگاری عاطفی — ۸ اعتبار</button>' +
+      '<button class="btn btn-lg" onclick="buySynVariant(\'synastry_work\')">سازگاری کاری — ۸ اعتبار</button>' +
+      '</div>' +
+      '<button class="btn btn-ghost u-334002ff" style="margin-top:10px;" onclick="shareSyn(' + d.score + ', \\\'' + escAttr(d.verdict) + '\\\')">اشتراکگذاری نتیجه</button>' +
       '</div>';
   } finally { btn.disabled = false; btn.textContent = 'محاسبه سازگاری'; }
 });
@@ -149,6 +196,38 @@ async function buySyn() {
   location.href = d.payment_url;
 }
 
+// R13: buy a synastry VARIANT with CREDITS on the buyer's own chart.
+// Requires the user to have their OWN chart in the account (chart-scoped).
+async function buySynVariant(actionKey) {
+  if (!cityA || !cityB) { showToast('اول فرم بالا را با انتخاب شهرها کامل کن', false); return; }
+  // find the logged-in user's newest chart via /api/credits/me → login check
+  const me = await fetch('/api/auth/me').then(r => r.json()).catch(() => null);
+  if (!me || !me.user) { showToast('برای خرید با اعتبار، اول وارد حسابت شو', false); setTimeout(()=>location.href='/account/login?next=/synastry', 1200); return; }
+  // the free teaser already computed charts A and B server-side; for credits
+  // we need chart ids — reuse the last teaser call's saved state if present
+  if (!window._synCharts) {
+    // create charts via the same endpoint used by the order path (guest B)
+    const f = new FormData(document.getElementById('synForm'));
+    f.set('city_a', cityA.city_fa); f.set('city_b', cityB.city_fa);
+    const r = await fetch('/api/synastry/charts', { method: 'POST', body: f });
+    if (!r.ok) { showToast((await r.json().catch(()=>({}))).detail || 'خطا', false); return; }
+    window._synCharts = await r.json();
+  }
+  const sc = window._synCharts;
+  const pr = await fetch('/api/purchase', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action_key: actionKey, chart_id: sc.chart_a})
+  });
+  const pj = await pr.json().catch(() => ({}));
+  if (pr.ok && pj.ok) {
+    window.location.href = '/synastry/full?chart_a=' + sc.chart_a + '&chart_b=' + sc.chart_b + '&variant=' + (actionKey === 'synastry_love' ? 'love' : 'work');
+  } else if (pj.login_required) {
+    location.href = '/account/login?next=/synastry';
+  } else {
+    showToast(pj.message || 'اعتبار کافی نیست — از محصولات پک بخر', false);
+  }
+}
+
 async function tryUnlock() {
   if (!synOrderState) return;
   const acc = await fetch('/api/synastry/access?chart_a=' + synOrderState.chart_a + '&chart_b=' + synOrderState.chart_b);
@@ -166,17 +245,17 @@ async function tryUnlock() {
 function renderFullSyn(d) {
   const cls = d.overall >= 65 ? '#4caf7d' : d.overall >= 50 ? '#f5c518' : '#ff6b6b';
   document.getElementById('synResult').innerHTML =
-    '<div class="glass glow st-60a0726a" >' +
-    '<h2>نمره سازگاری: <span class="st-161cbb16" >' + d.overall + '</span></h2>' +
-    '<p class="st-b6a65a63" >' + esc(d.verdict) + '</p>' +
-    '<div class="st-7be34f18" >' +
+    '<div class="glass glow u-60a0726a" >' +
+    '<h2>نمره سازگاری: <span class="u-161cbb16" >' + d.overall + '</span></h2>' +
+    '<p class="u-b6a65a63" >' + esc(d.verdict) + '</p>' +
+    '<div class="u-7be34f18" >' +
     ['love','mind','career','spirit'].map(k => {
       const labels = {love:'عشق', mind:'ذهن', career:'کار', spirit:'معنا'};
-      return '<div class="glass st-cc781baa" ><b>' + labels[k] + '</b><br><span class="st-27e46985" >' + d.domains[k] + '</span></div>';
+      return '<div class="glass u-cc781baa" ><b>' + labels[k] + '</b><br><span class="u-27e46985" >' + d.domains[k] + '</span></div>';
     }).join('') + '</div>' +
-    '<details class="st-d1a9ebfe" ><summary class="st-1f81fc80" >' + d.connections_count + ' ارتباط سیاره‌ای</summary>' +
-    '<div class="st-deeda856" >' +
-    d.connections.slice(0, 16).map(c => '<div class="st-bc546912" >' + c.a + ' (' + c.a_sign + ') ' + esc(c.aspect_fa) + ' ' + c.b + ' (' + c.b_sign + ') — اورب ' + c.orb + '°</div>').join('') +
+    '<details class="u-d1a9ebfe" ><summary class="u-1f81fc80" >' + d.connections_count + ' ارتباط سیاره‌ای</summary>' +
+    '<div class="u-deeda856" >' +
+    d.connections.slice(0, 16).map(c => '<div class="u-bc546912" >' + c.a + ' (' + c.a_sign + ') ' + esc(c.aspect_fa) + ' ' + c.b + ' (' + c.b_sign + ') — اورب ' + c.orb + '°</div>').join('') +
     '</div></details></div>';
 }
 </script>

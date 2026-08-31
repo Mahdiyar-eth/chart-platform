@@ -44,5 +44,5 @@ def test_dashboard_with_chart_shows_8_cards():
     c.cookies.set("chart_user", _user_cookie_value(uid))
     r = c.get("/dashboard")
     assert r.status_code == 200
-    for label in ("گفت‌وگو با چارت", "خودت را کشف کن", "سازگاری دو چارت", "کیف پول", "گزارش‌ها"):
+    for label in ("یک سؤال، یک جواب", "از چارتت بپرس", "سازگاری دو نفر", "اعتبار و دعوت دوستان", "شناخت کامل"):
         assert label in r.text

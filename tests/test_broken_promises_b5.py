@@ -1,6 +1,6 @@
 """B5 — every promise in the UI must point to a REAL product (broken-promise gate)."""
 import os, re
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 
 from fastapi.testclient import TestClient
 import app.main as m
@@ -11,7 +11,7 @@ _ROUTES = None
 def _paths():
     global _ROUTES
     if _ROUTES is None:
-        c = TestClient(m.app)
+        _c = TestClient(m.app)
         _ROUTES = set()
         for r in m.app.routes:
             _ROUTES.add(getattr(r, "path", ""))

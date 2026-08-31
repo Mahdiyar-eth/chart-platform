@@ -55,6 +55,19 @@ def _coupon(s: Session, code: str, max_uses=1) -> Coupon:
     return c
 
 
+def _attach_user(c):
+    """R14-D2: attach a fresh logged-in user cookie for pack purchases."""
+    import uuid as _uuid2
+    from app.auth import _user_cookie_value as _ucv
+    from app.models import User as _User
+    from sqlmodel import Session as _S
+    uid = "u" + _uuid2.uuid4().hex[:10]
+    with _S(engine) as s:
+        s.add(_User(id=uid, phone=uid + "@cr", credits=0)); s.commit()
+    c.cookies.update({"chart_user": _ucv(uid)})
+    return uid
+
+
 def test_last_slot_reserved_at_creation(monkeypatch):
     """Two users racing for the LAST coupon slot: exactly one may create an order."""
     monkeypatch.setattr("app.main.ZarinpalClient", FakeZP)
@@ -65,15 +78,15 @@ def test_last_slot_reserved_at_creation(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
-    c.cookies.update(ck)
-    r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    c.cookies.update(ck); _attach_user(c)
+    r1 = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                 )
     assert r1.status_code == 200, r1.text
     # second user with the same coupon — slot already reserved → 400
     cid2, tok2 = _mk_chart(c)
     ck2 = {"chart_access": json.dumps({cid2: tok2})}
     c.cookies.update(ck2)
-    r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "gold", "coupon": code},
+    r2 = c.post("/api/orders", data={"chart_id": cid2, "plan_key": "credit12", "coupon": code},
                 )
     assert r2.status_code == 400
     assert "مصرف شده" in r2.json()["detail"]
@@ -89,8 +102,8 @@ def test_verify_failure_releases_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
-    c.cookies.update(ck)
-    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    c.cookies.update(ck); _attach_user(c)
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                )
     oid = r.json()["order_id"]
     with Session(engine) as s:
@@ -121,13 +134,33 @@ def test_gateway_down_at_creation_releases_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
-    c.cookies.update(ck)
-    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    c.cookies.update(ck); _attach_user(c)
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                )
     assert r.status_code == 502
     with Session(engine) as s:
         cp = s.exec(select(Coupon).where(Coupon.code == code)).first()
         assert cp.used_count == 0, "slot must be released when gateway is down"
+
+
+def test_gateway_constructor_error_is_friendly_502(monkeypatch):
+    """R.9 / Q3 (P2): a ZarinpalError from the CONSTRUCTOR (no merchant id / bad
+    config) must surface as a friendly 502, not a raw 500 (ZarinpalError previously
+    extended bare Exception and escaped the create_order try/except)."""
+    class BadConfigZP:
+        def __init__(self):
+            from app.payment.zarinpal import ZarinpalError
+            raise ZarinpalError("ZARINPAL_MERCHANT_ID is not set")
+
+    monkeypatch.setattr("app.main.ZarinpalClient", BadConfigZP)
+    monkeypatch.setattr("app.payment.zarinpal.ZarinpalClient", BadConfigZP)
+    c = TestClient(main_app)
+    cid, tok = _mk_chart(c)
+    c.cookies.update({"chart_access": json.dumps({cid: tok})}); _attach_user(c)
+    r = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12"})
+    assert r.status_code == 502, r.status_code
+    assert "درگاه" in r.text or "دوباره" in r.text  # friendly Persian message, not 500 detail
+
 
 
 def test_refund_returns_slot(monkeypatch):
@@ -140,8 +173,8 @@ def test_refund_returns_slot(monkeypatch):
     code = cp0.code
     cid, tok = _mk_chart(c)
     ck = {"chart_access": json.dumps({cid: tok})}
-    c.cookies.update(ck)
-    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "gold", "coupon": code},
+    c.cookies.update(ck); _attach_user(c)
+    oid = c.post("/api/orders", data={"chart_id": cid, "plan_key": "credit12", "coupon": code},
                  ).json()["order_id"]
     with Session(engine) as s:
         auth = s.get(Order, oid).authority

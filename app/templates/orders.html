@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">سفارش‌های من</h1>
+  {% if orders %}
+  <div class="glass divide-y">
+    {% for o in orders %}
+    <div class="flex items-center justify-between py-3 px-4 text-sm">
+      <div>
+        <div class="font-medium">{{ fa_label(o.plan_key) }}</div>
+        <div class="muted">{{ o.created_at.strftime('%Y-%m-%d') }}</div>
+      </div>
+      <span class="chip">{{ {'pending':'در انتظار پرداخت','paid':'پرداخت‌شده','failed':'ناموفق','canceled':'لغوشده'}.get(o.status, o.status) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass" style="padding:var(--sp-5); text-align:center;">
+    <p style="margin:0 0 6px; font-weight:700;">هنوز خریدی نکرده‌ای</p>
+    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">با یک اعتبار (۶۰ هزار تومان) می‌توانی اولین سؤالت را بپرسی.</p>
+    <a class="btn btn-lg btn-primary" href="/plans">دیدن محصول‌ها</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

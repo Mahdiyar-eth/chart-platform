@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="st-4f250d9e" >
+<div class="u-4f250d9e" >
   <a href="/" class="muted back-link" >→ بازگشت</a>
-  <h1 class="st-d2c171b1" >فرم تولد</h1>
-  <p class="muted st-7953b730" >
+  <h1 class="u-mt-2b" >فرم تولد</h1>
+  <p class="muted u-7953b730" >
     این اطلاعات فقط برای محاسبهٔ دقیق چارت تولدت استفاده می‌شود: موقعیت سیارات در لحظه و مکان تولدت.
     تاریخ، ساعت و شهر تولدت ذخیره می‌شود تا چارتت همیشه در دسترس باشد؛ هیچ‌کدام به اشتراک گذاشته یا فروخته نمی‌شود.
   </p>
-  <p class="muted st-13f79ba6" >
+  <p class="muted u-13f79ba6" >
     اگر ساعت دقیق را نمی‌دانی، «نه / تقریبی» را انتخاب کن — چارت با طلوع خورشید محاسبه می‌شود (خانه‌ها تقریبی خواهند بود).
   </p>
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
-  <form id="birthForm" class="glass glow st-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
+  <form id="birthForm" class="glass glow u-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
     <div class="steps">
       <template x-for="(s, i) in 5" :key="i">
         <div class="step-dot" :class="{'on': i < step}"><i></i></div>
@@ -25,12 +25,12 @@
         <button type="button" class="chip" :class="{'sel': cal === 'jalali'}" @click="cal = 'jalali'">شمسی</button>
         <button type="button" class="chip" :class="{'sel': cal === 'gregorian'}" @click="cal = 'gregorian'">میلادی</button>
       </div>
-      <label class="st-56f43562" >سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <label class="u-mt-12" >سیستم نجومی {% with text='تروپیکال = برج‌های خورشیدی رایج (پیش‌فرض — مثلاً «من اسدم»). سایدریال لاهیری = سیستم ودیک/هندی؛ اگر از اخترشناس ودیک پیروی می‌کنی این را انتخاب کن. تفاوت حدود ۲۴ درجه است.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
       <div>
         <button type="button" class="chip" :class="{'sel': zodiac === 'tropical'}" @click="zodiac = 'tropical'">تروپیکال (پیش‌فرض)</button>
         <button type="button" class="chip" :class="{'sel': zodiac === 'sidereal'}" @click="zodiac = 'sidereal'">سایدریال لاهیری</button>
       </div>
-      <div class="st-2d89ff3a" >
+      <div class="u-2d89ff3a" >
         <div><label>سال</label><input class="input" type="number" x-model.number="year" aria-label="سال تولد" :placeholder="cal === 'jalali' ? '۱۳۷۳' : '۱۹۹۴'" min="1300" max="2100"></div>
         <div><label>ماه</label><input class="input" type="number" x-model.number="month" aria-label="ماه تولد" min="1" max="12"></div>
         <div><label>روز</label><input class="input" type="number" x-model.number="day" aria-label="روز تولد" min="1" max="31"></div>
@@ -45,21 +45,21 @@
         <button type="button" class="chip" :class="{'sel': !timeKnown}" @click="timeKnown = false">نه / تقریبی</button>
       </div>
       <template x-if="timeKnown">
-        <div class="st-c119740e" >
+        <div class="u-c119740e" >
           <div><label>ساعت</label><input class="input" type="number" x-model.number="hour" aria-label="ساعت تولد" min="0" max="23"></div>
           <div><label>دقیقه</label><input class="input" type="number" x-model.number="minute" aria-label="دقیقهٔ تولد" min="0" max="59"></div>
         </div>
       </template>
-      <p class="muted st-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
+      <p class="muted u-39302253" x-show="!timeKnown">بدون ساعت دقیق، طالع و خانه‌ها نمایش داده نمی‌شوند — اما خورشید، ماه و سیارات کامل محاسبه می‌شوند.</p>
     </div>
 
     <!-- STEP 3: city -->
     <div x-show="step === 3" x-transition>
-      <label>شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
-      <input class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران">
-      <div class="st-d2c171b1" >
+      <label for="birth-city">شهر تولد {% with text='شهر برای مختصات جغرافیایی (عرض و طول) لازم است — موقعیت خورشید و خانه‌ها به محل تولد وابسته است. بیش از ۳۳۷ شهر ایران پشتیبانی می‌شود.' %}{% include 'partials/help_tip.html' %}{% endwith %}</label>
+      <input id="birth-city" class="input" type="text" x-model="cityQ" @input.debounce.250ms="searchCity()" placeholder="مثلاً تهران" aria-label="شهر تولد">
+      <div class="u-mt-2b" >
         <template x-for="c in cities" :key="c.city_fa + c.province_fa">
-          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted st-0da13144" x-text="' (' + c.province_fa + ')'"></span></button>
+          <button type="button" class="chip" :class="{'sel': picked === c.city_fa}" @click="pickCity(c)"><span x-text="c.city_fa"></span><span class="muted u-text-2xs" x-text="' (' + c.province_fa + ')'"></span></button>
         </template>
       </div>
     </div>
@@ -76,17 +76,17 @@
 
     <!-- STEP 5: question + submit -->
     <div x-show="step === 5" x-transition>
-      <label>سؤال شخصی (اختیاری)</label>
-      <input class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟">
-      <p class="muted st-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
+      <label for="birth-question">سؤال شخصی (اختیاری)</label>
+      <input id="birth-question" class="input" type="text" x-model="question" placeholder="مثلاً: بهترین مسیر شغلی من چیست؟" aria-label="سؤال شخصی">
+      <p class="muted u-7920d10e" >در گزارش کامل، پاسخ این سؤال با توجه به چارت تو تفسیر می‌شود.</p>
     </div>
 
-    <div class="st-82b7dc59" >
-      <button type="button" class="btn btn-ghost st-97445a8d" x-show="step > 1" @click="step--" >قبلی</button>
-      <button type="button" class="btn st-4b3de78f" x-show="step < 5" @click="next()" >ادامه</button>
-      <button type="submit" class="btn st-4b3de78f" x-show="step === 5" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
+    <div class="u-82b7dc59" >
+      <button type="button" class="btn btn-ghost u-97445a8d" x-show="step > 1" @click="step--" >قبلی</button>
+      <button type="button" class="btn u-4b3de78f" x-show="step < 5" @click="next()" >ادامه</button>
+      <button type="submit" class="btn u-4b3de78f" x-show="step === 5" :disabled="loading" data-track="birth_form_submit" x-text="loading ? 'در حال محاسبه…' : 'محاسبه چارت'"></button>
     </div>
-    <p class="st-4060f471" x-show="error" x-text="error" ></p>
+    <p class="u-4060f471" x-show="error" x-text="error" ></p>
   </form>
 </div>
 
@@ -106,7 +106,25 @@ function formState(){
     pickCity(c){ this.picked = c.city_fa; this.city = c; this.cities = []; },
     toggleArea(a){ const i = this.focus.indexOf(a); i >= 0 ? this.focus.splice(i,1) : this.focus.push(a); },
     next(){
-      if(this.step === 1 && (!this.year || !this.month || !this.day)){ this.error = 'تاریخ را کامل وارد کن'; return; }
+      if(this.step === 1){
+        if(!this.year || !this.month || !this.day){ this.error = 'تاریخ را کامل وارد کن'; return; }
+        // R.10/P2-5: validate ranges on the birth form so an invalid date (month 13,
+        // day 40, year 9999) is rejected in Persian BEFORE it hits the backend.
+        const y = Number(this.year), m = Number(this.month), d = Number(this.day);
+        if(this.cal === 'jalali'){
+          if(y < 1200 || y > 1500){ this.error = 'سال نامعتبر است (بازهٔ ۱۲۰۰ تا ۱۵۰۰)'; return; }
+          const jd = {1:31,2:31,3:31,4:31,5:31,6:31,7:30,8:30,9:30,10:30,11:30,12:29};
+          const max = jd[m] || 0;
+          if(m < 1 || m > 12 || d < 1 || d > max){ this.error = 'تاریخ نامعتبر است — ماه و روز را بررسی کن'; return; }
+        } else {
+          if(y < 1900 || y > 2100){ this.error = 'سال نامعتبر است (بازهٔ ۱۹۰۰ تا ۲۱۰۰)'; return; }
+          if(m < 1 || m > 12){ this.error = 'ماه نامعتبر است (۱ تا ۱۲)'; return; }
+          const dim = [31,28,31,30,31,30,31,31,30,31,30,31];
+          let dm = dim[m-1] || 0;
+          if(m === 2 && ((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0)) dm = 29;
+          if(d < 1 || d > dm){ this.error = 'روز نامعتبر است — روزهای این ماه را بررسی کن'; return; }
+        }
+      }
       if(this.step === 3 && !this.city){ this.error = 'شهر تولد را انتخاب کن'; return; }
       this.error = ''; this.step++;
     },

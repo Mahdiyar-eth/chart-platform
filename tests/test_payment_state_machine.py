@@ -31,7 +31,9 @@ def _mk_chart(c):
 
 
 def _paid_order(s, cid, status="pending", with_coupon=False):
-    o = Order(chart_id=cid, plan_key="gold", status=status, amount_rial=99000,
+    # R13/N3: report plans retired — the auto-report path now keys on the
+    # DEEP_REPORT_ACTIONS (credit actions), so this fixture uses report_gold.
+    o = Order(chart_id=cid, plan_key="report_gold", status=status, amount_rial=99000,
               authority="AU" + uuid.uuid4().hex[:8], ref_id="REF1")
     if with_coupon:
         cp = Coupon(code="B7-" + uuid.uuid4().hex[:6].upper(), percent=10,

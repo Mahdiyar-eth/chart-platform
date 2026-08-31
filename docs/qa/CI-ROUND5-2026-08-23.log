@@ -1,0 +1,14 @@
+# CI — بازبینی دور ۵ (Opus R5) — رشته ۲۳ اوت ۲۰۲۶
+run: https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673129800
+job: https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673129800/job/97276902984
+head_sha: 8da2fbb578e3e3645b6d48c408b9d2710177a246
+
+## خلاصه
+714 passed, 3 skipped, 51 warnings in 58.79s — همهٔ گیتها سبز (drift + lint + scans = 'All checks passed!')
+
+run#2 (after docs commit): https://github.com/Mahdiyar-eth/chart-platform/actions/runs/32673355507 — SUCCESS
+mergeStateStatus: MERGEABLE
+## گزیدهٔ لاگ (خطوط کلیدی)
+test	Test (drift gate + full suite + lint + scans)	2026-08-23T23:18:20.8571304Z DRIFT-GATE: CLEAN
+test	Test (drift gate + full suite + lint + scans)	2026-08-23T23:19:22.4262574Z 714 passed, 3 skipped, 51 warnings in 58.79s
+test	Test (drift gate + full suite + lint + scans)	2026-08-23T23:19:27.6671937Z All checks passed!

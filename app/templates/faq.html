@@ -13,25 +13,28 @@
 </script>
 {% endblock %}
 {% block content %}
-<div class="wrap st-dea6d1e3" >
-  <h1 class="st-44c1f7ac" >{{ title }}</h1>
-  <div class="st-33fdf77a" ></div>
+<div class="wrap u-dea6d1e3" >
+  <h1 class="u-44c1f7ac" >{{ title }}</h1>
+  <div class="u-33fdf77a" ></div>
 
   {% for cat in categories %}
-  <h2 class="st-1415f8cd" >{{ cat.name }}</h2>
+  <h2 class="u-1415f8cd" >{{ cat.name }}</h2>
     {% for item in cat['items'] %}
-    <details class="st-c3e58e5c" >
-      <summary class="st-d6bbb642" >
-        {{ item.q }}<span class="st-94808146" >▾</span>
+    <details class="u-c3e58e5c" >
+      <summary class="u-d6bbb642" >
+        {{ item.q }}<span class="u-94808146" >▾</span>
       </summary>
-      <p class="st-ac215a53" >{{ item.a }}</p>
+      <p class="u-ac215a53" >{{ item.a }}</p>
     </details>
     {% endfor %}
   {% endfor %}
 
-  <div class="st-04ccdcd5" >
-    <p class="st-b20d91ab" >سؤال دیگری داری؟</p>
-    <a class="btn btn-lg st-60e32dcb" href="/" >ساخت چارت رایگان</a>
+  <div class="u-04ccdcd5" >
+    <p class="u-b20d91ab" >سؤال دیگری داری؟</p>
+    <a class="btn btn-lg u-60e32dcb" href="/" >ساخت چارت رایگان</a>
+  </div>
+  <div class="u-04ccdcd5" >
+    <a class="u-b20d91ab" href="/glossary" >معنی اصطلاح‌های نجومی را در واژه‌نامه ببین ←</a>
   </div>
 </div>
 {% endblock %}

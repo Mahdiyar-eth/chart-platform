@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">گزارش‌های من</h1>
+  {% if reports %}
+  <div class="glass divide-y">
+    {% for r in reports %}
+    <div class="flex items-center justify-between py-3 px-4 text-sm">
+      <div>
+        <div class="font-medium">گزارش {{ {'basic':'پایه','full':'کامل','gold':'طلایی'}.get(r.plan_key, r.plan_key) }}</div>
+        <div class="muted">{{ r.created_at.strftime('%Y-%m-%d') }}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="chip">{{ {'queued':'در صف','processing':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, r.status) }}</span>
+        {% if r.status in ('done','degraded') %}
+        <a class="btn" href="/chart/{{ r.chart_id }}">مشاهده در چارت</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass" style="padding:var(--sp-5); text-align:center;">
+    <p style="margin:0 0 6px; font-weight:700;">هنوز گزارشی نداری</p>
+    <p class="muted" style="margin:0 0 var(--sp-4); font-size:.88rem;">گزارش کامل، ۱۳ حوزهٔ زندگی را با شاهد نجومی باز می‌کند.</p>
+    <a class="btn btn-lg btn-primary" href="/birth-form">اول چارت رایگانت را بساز</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock content %}

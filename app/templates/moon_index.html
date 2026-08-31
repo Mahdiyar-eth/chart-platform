@@ -4,32 +4,32 @@
 {% block description %}{{ meta_description }}{% endblock %}
 {% block canonical %}{{ canonical }}{% endblock %}
 {% block content %}
-<div class="st-dea6d0cd">
-  <nav class="st-5f258b10">
-    <a class="st-ae3c1652" href="/learn">آموزش نجوم</a>
-    <span class="st-8f93fd3a">←</span><span>ماه در برج‌ها</span>
+<div class="u-dea6d0cd">
+  <nav class="u-sub-sm">
+    <a class="u-link-accent" href="/learn">آموزش نجوم</a>
+    <span class="u-8f93fd3a">←</span><span>ماه در برج‌ها</span>
   </nav>
 
-  <h1 class="st-8b296798">ماه در برج‌ها — جایگاه ماه در چارت تولد</h1>
+  <h1 class="u-8b296798">ماه در برج‌ها — جایگاه ماه در چارت تولد</h1>
 
-  <div class="glass st-ce30f877">
+  <div class="glass u-ce30f877">
     <p>خورشید «هویت» توست اما ماه «احساس» توست: چگونه آرام می‌شوی، عشق را چگونه تجربه می‌کنی و چه چیزی به تو امنیت می‌دهد. جایگاه ماه را معمولاً کمتر کسی می‌داند — همین‌جا پیدا کن.</p>
   </div>
 
-  <div class="st-6788b499">
+  <div class="u-6788b499">
     {% for it in items %}
-    <a class="glass st-20495c40" href="/moon-in/{{ it.slug }}" style="display:block;text-decoration:none;">
-      <div class="st-8d446200">
-        <span class="st-e04ca4b4"></span>
-        <h2 class="st-51e7af29">ماه در {{ it.fa }}</h2>
-        <span class="st-55958bf4">{{ it.element }}</span>
+    <a class="glass u-pad-18-20" href="/moon-in/{{ it.slug }}" style="display:block;text-decoration:none;">
+      <div class="u-8d446200">
+        <span class="u-e04ca4b4"></span>
+        <h2 class="u-51e7af29">ماه در {{ it.fa }}</h2>
+        <span class="u-55958bf4">{{ it.element }}</span>
       </div>
-      <p class="muted st-a2fba331">{{ it.intro }}</p>
+      <p class="muted u-a2fba331">{{ it.intro }}</p>
     </a>
     {% endfor %}
   </div>
 
-  <div class="glass glow st-ce30f877">
+  <div class="glass glow u-ce30f877">
     <b>برج ماه خودت را کشف کن</b>
     <p class="muted">چارت تولد رایگان بساز؛ جایگاه دقیق ماه و خانه‌هایش را ببین.</p>
     <a href="/birth-form" class="btn btn-lg">ساخت چارت رایگان</a>

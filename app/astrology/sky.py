@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import os
+from pathlib import Path
 from datetime import datetime, timezone
 
 import jdatetime
@@ -15,7 +16,7 @@ import swisseph as swe
 
 from app.astrology.transits import SIGNS_FA, PLANET_NAMES, _lon, _angular_diff
 
-swe.set_ephe_path(os.getenv("SWISSEPH_EPHE_PATH", "/root/chart-platform/ephe"))
+swe.set_ephe_path(os.getenv("SWISSEPH_EPHE_PATH", str(Path(__file__).resolve().parent.parent.parent / "ephe")))
 swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
 
 _PLANET_FA = {

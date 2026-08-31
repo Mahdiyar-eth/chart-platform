@@ -1,6 +1,6 @@
 """A6 — entitlement backfill acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"]="postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"]="1"
 
 from sqlmodel import Session, select
@@ -34,7 +34,7 @@ def _ents_for(order_ids):
 def test_backfill_preserves_access_for_5_legacy_orders():
     uid = _mk_user()
     plans = {"basic": "report", "full": "report", "gold": "report",
-             "synastry": "synastry", "monthly": "chat"}
+             "synastry": "synastry_full", "monthly": "chat"}
     ids = {p: _order(uid, p, "paid") for p in plans}
     with Session(engine) as s:
         backfill_entitlements(s, dry_run=False)
@@ -48,7 +48,7 @@ def test_backfill_idempotent_run_twice():
     uid = _mk_user()
     ids = [_order(uid, "gold", "paid"), _order(uid, "synastry", "paid")]
     with Session(engine) as s:
-        rep1 = backfill_entitlements(s, dry_run=False)
+        _rep1 = backfill_entitlements(s, dry_run=False)
     n1 = len(_ents_for(ids))
     with Session(engine) as s:
         rep2 = backfill_entitlements(s, dry_run=False)

@@ -6,7 +6,7 @@ user per week. Anti-duplicate via TransitAlertLog; respects NotificationPrefs.
 """
 from __future__ import annotations
 
-import asyncio, json, logging
+import json, logging
 from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, select

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}چارت مهاجرت — زایچه{% endblock %}
+{% block description %}در کدام شهر کدام بخش زندگی‌ات پررنگ می‌شود؟ مقایسهٔ ۱ تا ۳ شهر مقصد روی چارت خودت.{% endblock %}
+
+{% block content %}
+<div class="wrap u-c24b5a41" x-data="relocApp()" x-init="init()">
+  <h1 class="u-69822621">چارت مهاجرت — کدام شهر برای کدام بخشِ زندگی‌ات؟</h1>
+  <p class="muted u-ee31f211">
+    زمان تولد ثابت می‌ماند؛ مکان عوض می‌شود. با جابه‌جایی مختصات، خانه‌های چارتت دوباره چیده می‌شوند —
+    ببین در هر شهر، کدام حوزهٔ زندگی زیر نور می‌رود.
+  </p>
+
+  <!-- city picker -->
+  <div class="glass u-panel">
+    <div class="u-strong-sm">🏙️ شهرهای مقصد (تا ۳ شهر)</div>
+    <template x-for="(c, i) in cities" :key="'c' + i">
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <input class="input" style="flex:2;" x-model="c.name" placeholder="نام شهر (مثلاً تورنتو)">
+        <input class="input" style="flex:1;" x-model="c.lat" placeholder="عرض" dir="ltr" inputmode="decimal">
+        <input class="input" style="flex:1;" x-model="c.lon" placeholder="طول" dir="ltr" inputmode="decimal">
+        <button class="btn-chip" type="button" @click="cities.splice(i,1)" x-show="cities.length > 1">✕</button>
+      </div>
+    </template>
+    <button class="btn-chip" type="button" @click="addCity()" x-show="cities.length < 3">+ شهر</button>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      {% if has_access %}
+      <button class="btn btn-lg btn-accent" @click="compare()" :disabled="busy">مقایسه کن</button>
+      {% else %}
+      <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۶ اعتبار</button>
+      {% endif %}
+    </div>
+    <p class="muted u-note" x-show="err" x-text="err" x-cloak></p>
+  </div>
+
+  <!-- comparison result -->
+  <template x-if="result">
+    <div>
+      <div class="glass u-panel">
+        <div class="u-strong-sm">📊 مقایسهٔ کنار هم</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;text-align:center;">
+            <thead><tr>
+              <th style="padding:8px;">شهر</th><th>طالع جدید</th><th>حوزهٔ غالب</th><th>خانه‌های جابه‌جا</th>
+            </tr></thead>
+            <tbody>
+              <template x-for="(c, i) in result.cities" :key="'r' + i">
+                <tr style="border-top:1px solid rgba(255,255,255,.08);">
+                  <td style="padding:8px;"><b x-text="c.city"></b></td>
+                  <td x-text="c.asc_sign_fa"></td>
+                  <td x-text="c.focus_area"></td>
+                  <td style="font-size:.85em;" x-text="c.changed_count + ' سیاره'"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <template x-for="(c, i) in result.cities" :key="'d' + i">
+        <div class="glass u-panel" style="margin-top:12px;">
+          <b>📍 <span x-text="c.city"></span></b>
+          <p class="u-body" x-text="'حوزهٔ پررنگ این شهر: ' + c.focus_area"></p>
+          <p class="muted u-note" x-show="c.h10_planets.length"
+             x-text="'روی مسیر شغلی: ' + c.h10_planets.join('، ')"></p>
+          <ul class="u-95982eda" style="margin-top:6px;">
+            <template x-for="(mv, j) in c.moves" :key="'m' + i + j">
+              <li class="u-4dce153e" x-text="mv"></li>
+            </template>
+          </ul>
+        </div>
+      </template>
+      <div class="glass u-card-inset" style="margin-top:12px;">
+        <p class="muted u-note">⚠️ <span x-text="result.disclaimer"></span></p>
+      </div>
+    </div>
+  </template>
+</div>
+
+<script>
+function relocApp() {
+  return {
+    cities: [{ name: '', lat: '', lon: '' }],
+    result: null, busy: false, err: '',
+    addCity() { if (this.cities.length < 3) this.cities.push({ name: '', lat: '', lon: '' }); },
+    _payload() {
+      const cs = this.cities
+        .filter(c => c.lat && c.lon)
+        .map(c => ({ name_fa: c.name || 'مقصد', lat: parseFloat(c.lat), lon: parseFloat(c.lon) }));
+      if (!cs.length) { this.err = 'حداقل یک شهر با عرض/طول معتبر لازم است'; return null; }
+      return JSON.stringify(cs);
+    },
+    compare() {
+      const payload = this._payload(); if (!payload) return;
+      const self = this; this.busy = true; this.err = '';
+      fetch('/api/relocation/{{ chart.id }}?t={{ access_token }}&cities_json=' + encodeURIComponent(payload))
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => { if (ok) self.result = d; else self.err = d.detail || 'خطا'; })
+        .catch(() => { self.err = 'ارتباط با سرور برقرار نشد'; })
+        .finally(() => { self.busy = false; });
+    },
+    buy() {
+      const fd = new FormData();
+      fd.append('chart_id', '{{ chart.id }}');
+      fetch('/api/relocation/purchase', { method: 'POST', body: fd })
+        .then(r => r.json().then(d => ({ ok: r.ok, d, status: r.status })))
+        .then(({ ok, d, status }) => {
+          if (ok && d.ok) location.reload();
+          else if (d.login_required) location.href = '/account/login?next=/relocation/{{ chart.id }}';
+          else if (status === 402) location.href = '/credits';
+          else showToast(d.message || 'خطا؛ دوباره تلاش کن', false);
+        })
+        .catch(() => showToast('ارتباط با سرور برقرار نشد', false));
+    },
+  };
+}
+</script>
+{% endblock %}

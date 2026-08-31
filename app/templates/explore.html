@@ -3,21 +3,21 @@
 {% block description %}ده کارت خودشناسی بر پایهٔ چارت تولدت: شخصیت، مسیر شغلی، روابط، پول و بیشتر. هر کارت با شواهد نجومی از چارت تو.{% endblock %}
 
 {% block content %}
-<div class="wrap st-c24b5a41" >
-  <h1 class="st-7af624f6" >دربارهٔ خودت چه چیزی را می‌خواهی بیشتر بفهمی؟</h1>
-  <p class="muted st-34065b62" >هر کارت یک سؤال را با شواهد چارت تولدت باز می‌کند — هر کاوش ۱ اعتبار.</p>
+<div class="wrap u-c24b5a41" >
+  <h1 class="u-7af624f6" >دربارهٔ خودت چه چیزی را می‌خواهی بیشتر بفهمی؟</h1>
+  <p class="muted u-34065b62" >هر کارت یک سؤال را با شواهد چارت تولدت باز می‌کند — هر کاوش ۱ اعتبار.</p>
 
   <div x-data="exploreApp()" x-init="init()">
     <!-- credits + chart picker -->
-    <div class="glass st-701d1ee0" >
-      <div class="st-015a5e7f" >
-        <span class="st-27e46985" >💎</span>
+    <div class="glass u-701d1ee0" >
+      <div class="u-015a5e7f" >
+        <span class="u-27e46985" >💎</span>
         <div>
-          <div class="muted st-f63147b2" >اعتبار تو</div>
-          <div class="st-2b953210" x-text="credits + ' اعتبار'"></div>
+          <div class="muted u-text-xs" >اعتبار تو</div>
+          <div class="u-b800" x-text="credits + ' اعتبار'"></div>
         </div>
       </div>
-      <select class="input st-8c0b5cf4" x-model="chartId" x-show="charts.length > 1" x-cloak>
+      <select class="input u-8c0b5cf4" x-model="chartId" x-show="charts.length > 1" x-cloak>
         <template x-for="ch in charts" :key="ch.id">
           <option :value="ch.id" x-text="ch.label"></option>
         </template>
@@ -25,76 +25,79 @@
     </div>
 
     <!-- cards grid -->
-    <div class="st-a650e6f1" >
+    <div class="u-a650e6f1" >
       <template x-for="(card, i) in cards" :key="card.key">
-        <div class="glass st-1cb5fed3" x-show="i < showLimit || showAll">
-          <div class="st-710280f4" x-text="card.title_fa"></div>
-          <p class="muted st-5c5bba0a" x-text="card.benefit_fa"></p>
-          <button class="btn st-03c4bb6f" x-on:click="run(card)" :disabled="busy" data-track="explore_card_click" >
+        <div class="glass u-1cb5fed3" x-show="i < showLimit || showAll">
+          <div class="u-strong-sm" x-text="card.title_fa"></div>
+          <p class="muted u-5c5bba0a" x-text="card.benefit_fa"></p>
+          <button class="btn u-03c4bb6f" x-on:click="run(card)" :disabled="busy" data-track="explore_card_click" >
             <span x-text="busyKey === card.key ? 'در حال تحلیل…' : (freeAvailable ? 'اولین کاوش — رایگان' : 'شروع (۱ اعتبار)')"></span>
           </button>
         </div>
       </template>
     </div>
 
-    <button class="btn btn-ghost st-abbdfbe2" x-show="cards.length > showLimit" x-on:click="showAll = !showAll"
+    <button class="btn btn-ghost u-abbdfbe2" x-show="cards.length > showLimit" x-on:click="showAll = !showAll"
             x-cloak>
       <span x-text="showAll ? 'نمایش کمتر' : 'همه تحلیل‌ها (' + cards.length + ' کارت)'"></span>
     </button>
 
     <!-- running state -->
-    <div class="glass st-7995b8d8" x-show="busy" x-cloak>
-      <div class="st-26e70069" x-text="'🔭 ' + (busyCard ? busyCard.title_fa : '') + ' — در حال تحلیل چارت…'"></div>
-      <div class="st-b71c4094" >
-        <div class="st-22991707" ></div>
+    <div class="glass u-7995b8d8" x-show="busy" x-cloak>
+      <div class="u-26e70069" x-text="(busyCard ? busyCard.title_fa : '') + ' — در حال نوشتن'"></div>
+      <div class="rp-track" style="margin-top:10px;">
+        <div class="rp-fill" :style="'width:' + pct + '%'"></div>
       </div>
-      <p class="muted st-e2031403" >معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد — این صفحه را نبند.</p>
+      <p class="muted u-e2031403" x-text="elapsed + ' ثانیه — معمولاً ۲۰ تا ۴۰ ثانیه طول می‌کشد'"></p>
     </div>
 
     <!-- result -->
-    <div class="st-1b0f4999" x-show="result" x-cloak >
-      <div class="glass st-8e11ed66" >
-        <div class="st-bbd6e435" x-text="result?.title_fa"></div>
-        <p class="muted st-c30f71c8" >این کاوش بر پایهٔ عوامل فعال چارت تولدت شکل گرفته است.</p>
+    <div class="u-1b0f4999" x-show="result" x-cloak >
+      <div class="glass u-pad-18" >
+        <div class="u-bbd6e435" x-text="result?.title_fa"></div>
+        <p class="muted u-c30f71c8" >این کاوش بر پایهٔ عوامل فعال چارت تولدت شکل گرفته است.</p>
         <template x-for="(ins, i) in (result?.insights || [])" :key="i">
-          <div class="st-5c2bb5ca" >
-            <p class="st-3cb988e6" x-text="ins.insight"></p>
-            <div class="st-9af1fb41" >
+          <div class="u-5c2bb5ca" >
+            <p class="u-3cb988e6" x-text="ins.insight"></p>
+            <div class="u-9af1fb41" >
               <template x-for="(e, j) in ins.evidence" :key="j">
-                <span class="chip st-760266aa" x-text="e"></span>
+                <span class="chip u-760266aa" x-text="e"></span>
               </template>
             </div>
-            <p class="st-811b793c" x-show="ins.practical_advice" x-cloak>
+            <p class="u-811b793c" x-show="ins.practical_advice" x-cloak>
               💡 <span x-text="ins.practical_advice"></span>
             </p>
           </div>
         </template>
-        <div class="muted st-dceba6d0" x-show="result?.metrics" x-cloak>
+        <div class="muted u-dceba6d0" x-show="result?.metrics" x-cloak>
           <span x-text="'⏱ ' + result?.metrics.duration_s + ' ثانیه · ' + result?.metrics.calls + ' تماس'"></span>
         </div>
       </div>
 
       <!-- deeper layer CTA (funnel: free exploration → deeper) -->
-      <div class="glass glow st-28aed650" >
-        <div class="st-1df3b92c" >یک لایه عمیق‌تر</div>
-        <p class="muted st-dedabf99" >
+      <div class="glass glow u-28aed650" >
+        <div class="u-1df3b92c" >یک لایه عمیق‌تر</div>
+        <p class="muted u-dedabf99" >
           این یک کارت از چارت تو بود. گزارش کامل ۱۳ حوزه‌ای، مسیر شغلی، روابط، پول و الگوهای تکرارشونده را با شواهد دقیق بررسی می‌کند — و چارتت را در کنار «امروز» دنبال می‌کند.
         </p>
-        <div class="st-6002dd78" >
-          <a class="btn st-3e73370b" href="/plans?chart={{ active_chart }}" >مشاهده پلن‌ها</a>
-          <a class="btn btn-ghost st-3e73370b" href="/today?chart={{ active_chart }}" >امروز در چارت من</a>
+        <div class="u-6002dd78" >
+          <a class="btn u-3e73370b" href="/plans?chart={{ active_chart }}" >مشاهده پلن‌ها</a>
+          <a class="btn btn-ghost u-3e73370b" href="/today?chart={{ active_chart }}" >امروز در چارت من</a>
         </div>
       </div>
     </div>
 
     <!-- insufficient credit -->
-    <div class="glass st-7995b8d8" x-show="needCredit" x-cloak>
-      <div class="st-1df3b92c" >اعتبار کافی نداری</div>
-      <p class="muted st-093b6454" >هر کاوش ۱ اعتبار است. می‌توانی پک اعتبار بخری — اعتبارت هرگز منقضی نمی‌شود.</p>
-      <div class="st-6002dd78" >
-        <a class="btn btn-lg st-3e73370b" href="/plans#credits" >خرید اعتبار</a>
-        <a class="btn btn-ghost st-3e73370b" href="/plans" >مشاهده پلن‌ها</a>
+    <div class="glass u-7995b8d8" x-show="needCredit" x-cloak>
+      <div class="u-1df3b92c" >اعتبار کافی نداری</div>
+      <p class="muted u-093b6454" >هر کاوش ۱ اعتبار است. می‌توانی پک اعتبار بخری — اعتبارت هرگز منقضی نمی‌شود.</p>
+      <div class="u-6002dd78" >
+        <a class="btn btn-lg u-3e73370b" href="/plans#credits" >خرید اعتبار</a>
+        <a class="btn btn-ghost u-3e73370b" href="/plans" >مشاهده پلن‌ها</a>
       </div>
+      {% with action_key="explore_card", action_name_fa="کاوش تک‌کارت", needed=1 %}
+        {% include "partials/credit_cta.html" %}
+      {% endwith %}
     </div>
   </div>
 </div>
@@ -109,7 +112,7 @@ function exploreApp() {
     freeAvailable: {{ 'true' if free_available else 'false' }},
     showLimit: 6,
     showAll: false,
-    busy: false,
+    busy: false, pct: 0, elapsed: 0, _tick: null, _abort: null,
     busyKey: "",
     busyCard: null,
     result: null,
@@ -122,9 +125,19 @@ function exploreApp() {
       const self = this;
       this.busy = true; this.busyKey = card.key; this.busyCard = card;
       this.result = null; this.needCredit = false;
+      // UI: a determinate bar and a visible clock. A card that says "20 to 40
+      // seconds" forever is the single worst thing this page can do.
+      this.pct = 4; this.elapsed = 0;
+      clearInterval(this._tick);
+      this._tick = setInterval(() => {
+        self.elapsed += 1;
+        self.pct = Math.min(94, Math.round(4 + (self.elapsed / 40) * 90));
+      }, 1000);
+      this._abort = new AbortController();
+      const killer = setTimeout(() => self._abort.abort(), 90000);
       const fd = new FormData();
       fd.append("chart_id", this.chartId);
-      fetch("/api/explore/" + card.key, { method: "POST", body: fd })
+      fetch("/api/explore/" + card.key, { method: "POST", body: fd, signal: this._abort.signal })
         .then(async (r) => {
           if (!r.ok) {
             let detail = "خطا";
@@ -157,8 +170,18 @@ function exploreApp() {
             }
           }
         })
-        .catch((e) => { if (!self.needCredit) showToast(e.message, false); })
-        .finally(() => { self.busy = false; self.busyKey = ""; self.busyCard = null; });
+        .catch((e) => {
+          if (self.needCredit) return;
+          const msg = (e && e.name === "AbortError")
+            ? "تحلیل بیش از حد طول کشید — اعتبارت برنگشته باشد به‌زودی خودکار برمی‌گردد. دوباره امتحان کن."
+            : (e.message || "خطا");
+          showToast(msg, false);
+        })
+        .finally(() => {
+          clearTimeout(killer); clearInterval(self._tick);
+          self.pct = 100;
+          self.busy = false; self.busyKey = ""; self.busyCard = null;
+        });
     },
   };
 }

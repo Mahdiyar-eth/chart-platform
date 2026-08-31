@@ -24,17 +24,34 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("chart", "چارت رایگان", "/birth-form", icon="icon-compass", primary=True),
     NavItem("mychart", "چارت من", "/dashboard", icon="icon-grid", needs_chart=True),
     NavItem("explore", "کاوش", "/explore", icon="icon-star", needs_chart=True),
-    NavItem("synastry", "سیناستری", "/synastry", icon="icon-heart"),
+    # R13: «سیناستری» واژهٔ تخصصی است — کاربر «سازگاری» می‌فهمد
+    NavItem("synastry", "سازگاری", "/synastry", icon="icon-heart"),
     NavItem("rectify", "بازبینی ساعت", "/rectify", icon="icon-clock"),
-    NavItem("transits", "گذرها", "/sky", icon="icon-sun"),
-    NavItem("plans", "پلن‌ها", "/plans", icon="icon-tag"),
+    # UX: ChatMessage rows and Report rows both existed with no page listing
+    # them — a user who paid for the 30-day conversation had no way back to it.
+    NavItem("chats", "گفت‌وگوهای من", "/chats", icon="icon-chat", needs_chart=True),
+    NavItem("settings", "تنظیمات", "/settings", icon="icon-user", group="حساب"),
+    # R16: /sky = public "today's sky" page — label must say that; the PERSONAL
+    # transit timeline lives on the chart page (/transits/{chart_id}) + dashboard.
+    NavItem("transits", "آسمان امروز", "/sky", icon="icon-sun"),
+    # R13: label «پلن‌ها» گمراه‌کننده بود — صفحه فقط محصولات اعتباری می‌فروشد
+    NavItem("plans", "محصولات", "/plans", icon="icon-tag"),
     # drawer-only groups:
     NavItem("articles", "مقالات", "/articles", icon="icon-book-open", group="یادگیری"),
     NavItem("learn", "آموزش نجوم", "/learn", icon="icon-book", group="یادگیری"),
     NavItem("guide", "راهنما", "/guide", icon="icon-help", group="یادگیری"),
     NavItem("faq", "سؤالات پرتکرار", "/faq", icon="icon-help", group="یادگیری"),
+    NavItem("glossary", "واژه‌نامه", "/glossary", icon="icon-book", group="یادگیری"),
+    # UI-AUDIT: /solar-guide and /relocation-guide were orphans — the two
+    # newest products had a marketing page each that nothing on the site
+    # linked to, so no visitor could ever arrive at them.
+    NavItem("solar_guide", "چارت سالیانه چیست؟", "/solar-guide", icon="icon-sun", group="یادگیری"),
+    NavItem("reloc_guide", "چارت مهاجرت چیست؟", "/relocation-guide", icon="icon-compass", group="یادگیری"),
     
     NavItem("account", "حساب من", "/account", icon="icon-user", group="حساب"),
+    NavItem("credits", "اعتبار من", "/credits", icon="icon-sparkles", group="حساب"),
+    NavItem("orders", "سفارش‌ها", "/orders", icon="icon-tag", group="حساب"),
+    NavItem("reports", "گزارش‌ها", "/reports", icon="icon-book-open", group="حساب"),
     NavItem("about", "درباره ما", "/about", icon="icon-link", group="دربارهٔ ما"),
     NavItem("contact", "تماس با پشتیبانی", "/contact", icon="icon-chat", group="دربارهٔ ما"),
     NavItem("privacy", "حریم خصوصی", "/privacy", icon="icon-lock", group="دربارهٔ ما"),
@@ -42,8 +59,8 @@ NAV_ITEMS: list[NavItem] = [
     NavItem("refund", "استرداد وجه", "/refund", icon="icon-refresh", group="دربارهٔ ما"),
 ]
 
-_BOTTOM_NO_CHART = ["home", "chart", "synastry", "plans", "account"]
-_BOTTOM_WITH_CHART = ["home", "mychart", "explore", "synastry", "account"]
+_BOTTOM_NO_CHART = ["home", "synastry", "chart", "plans", "account"]  # R14-D5: FAB is the MIDDLE slot (3rd of 5)
+_BOTTOM_WITH_CHART = ["home", "explore", "mychart", "synastry", "account"]  # R14-D5: dashboard FAB centered too
 _TOP_BASE = ["home", "synastry", "rectify", "transits", "plans"]
 
 
@@ -63,11 +80,19 @@ def nav_for(*, has_chart: bool) -> dict:
         if has_chart and k == "chart":
             continue
         bottom.append(it)
+    # R14-D5: with-chart users get the dashboard FAB as the centered action.
+    if has_chart:
+        for i, it in enumerate(bottom):
+            if it.key == "mychart":
+                it = NavItem(it.key, it.label_fa, it.url, icon=it.icon,
+                             group=it.group, needs_chart=it.needs_chart, primary=True)
+                bottom[i] = it
+                break
 
     top = [by_key[k] for k in _TOP_BASE if _visible(by_key[k], has_chart)]
     if has_chart and by_key["mychart"] not in top:
         top.insert(1, by_key["mychart"])
-    top = top[:6]  # max 5 items + brand-safe cap
+    top = top[:5]  # R18/X21: hard cap — max 5 top items
 
     groups: dict[str, list[NavItem]] = {}
     for it in NAV_ITEMS:

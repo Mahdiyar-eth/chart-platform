@@ -1,0 +1,102 @@
+{
+ "R1": [
+  "TRUE",
+  "بازتولید زنده: transits_page وقتی payload ماه ۱۲ به شکل list است در خط analysis=...get('narratives') میشکند → except → events=[] و پیام «محاسبه نشد» حتی بدون خرید؛ بعد از خرید payload=dict → events|tojson ابجکت. هر دو مسیر خراب — فراگیرتر از ادعای کلود."
+ ],
+ "R2": [
+  "TRUE",
+  "main.py:2253 کلید بدون user/دوره + هیچ چک کشی قبل از LLM."
+ ],
+ "R3": [
+  "TRUE",
+  "بازتولید: n_narr=0، refunded=5، qa_failures=10 → بازگشت کامل."
+ ],
+ "R4": [
+  "TRUE",
+  "api_create_report فقط Order paid (main.py:623-627)."
+ ],
+ "R5": [
+  "TRUE",
+  "entitlements.py:48 استحقاق بیاسکوپ همهجا میخورد؛ ref_id هرگز ست نمیشود."
+ ],
+ "R6": [
+  "TRUE",
+  "spend داخلاً commit (credits.py:102) + Entitlement جدا."
+ ],
+ "R7": [
+  "TRUE",
+  "consume() صفر فراخوانی؛ expires_at هرگز."
+ ],
+ "R8": [
+  "TRUE",
+  "rectify/audio فقط _report_gate نه spend."
+ ],
+ "R9": [
+  "TRUE",
+  "مسیر هاردکد main.py:335؛ PDF روی دیسک هست ولی git ls-files خالی (.gitignore *.pdf)."
+ ],
+ "R10": [
+  "TRUE",
+  "security_guard فقط otp/v1/payments/chat — subscribe/track غایب."
+ ],
+ "R11": [
+  "TRUE",
+  "GET تغییردهندهٔ وضعیت + توکن مشترک با دانلود."
+ ],
+ "R12": [
+  "TRUE",
+  "main.py:2136 حلقهٔ پایتونی روی همهٔ ردیفها."
+ ],
+ "R13": [
+  "TRUE",
+  "۱۲۰ قاعدهٔ color:# هاردکد؛ دو کلاس مذکور ۷ بار در plans.html — تم روشن شکسته."
+ ],
+ "R14": [
+  "TRUE",
+  "فایل فعلی فقط ۵ صفحه — اجرای بعدی رونویسی کرد (خطای گزارشی من)."
+ ],
+ "R15": [
+  "TRUE",
+  "بدون exception_handler؛ صفحات /credits //orders //reports ندارند."
+ ],
+ "R16": [
+  "TRUE",
+  "nav.py:29 گذرها→/sky."
+ ],
+ "R17": [
+  "TRUE",
+  "nav.py:70 top[:6]."
+ ],
+ "R19": [
+  "TRUE",
+  "yearly در _kind_for_plan نیست."
+ ],
+ "R20": [
+  "TRUE",
+  "فقط spend هندل دارد؛ refund/grant خام."
+ ],
+ "R21": [
+  "TRUE",
+  "کلید تهی = بدون dedupe."
+ ],
+ "R22": [
+  "TRUE",
+  "پس از TTL رونویسی با list خام."
+ ],
+ "R23": [
+  "TRUE",
+  "TransitForecast بدون unique(chart_id,months)."
+ ],
+ "R24": [
+  "TRUE",
+  "_crossing_points مرده؛ DETECT_ORB دوبار (45,51)."
+ ],
+ "R26": [
+  "TRUE",
+  "consume بدون commit."
+ ],
+ "R27": [
+  "TRUE",
+  "consume انقضا چک نمیکند."
+ ]
+}

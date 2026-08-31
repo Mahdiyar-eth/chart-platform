@@ -1,6 +1,6 @@
 """A7 — admin credit-economy panel acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"]="postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"]="1"
 
 from sqlmodel import Session, select
@@ -54,3 +54,16 @@ def test_admin_non_admin_403():
     c = TestClient(main_app)
     r = c.post("/api/admin/credits/grant", data={"user_id": uid, "amount": "5"}, cookies={"chart_admin": "wrong"})
     assert r.status_code == 403, r.status_code
+
+
+def test_admin_credit_report_200():
+    """R.9 / Q2 (P1): the credit-economy report used `p.key` (nonexistent) instead
+    of `p.action_key`, so it ALWAYS 500'd. Verify it now returns 200 with data."""
+    c = TestClient(main_app)
+    r = c.get("/api/admin/credit-report", cookies=_admin_cookie())
+    assert r.status_code == 200, r.text
+    j = r.json()
+    assert "credits_sold" in j and "credits_spent" in j and "net" in j and "prices" in j
+    assert isinstance(j["prices"], dict)
+    # prices keyed by action_key, e.g. report_full present
+    assert "report_full" in j["prices"], list(j["prices"])[:5]

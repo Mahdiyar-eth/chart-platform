@@ -8,7 +8,7 @@ Flow: create payment -> request (real gateway URL) -> [HUMAN pays with card]
       -> callback hits /payment/verify -> verify with gateway -> entitlement
       -> report. Prints each stage's proof.
 """
-import argparse, asyncio, json, os, sys, time, uuid
+import asyncio, os, sys
 sys.path.insert(0, "/root/chart-platform")
 
 import httpx

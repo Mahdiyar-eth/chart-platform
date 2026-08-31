@@ -1,9 +1,8 @@
 """Phase 1 eval v2: per-planet grounding + hallucination + 5-dim rubric (fixed judge)."""
 import asyncio, json, re, sys
 sys.path.insert(0, "/root/chart-platform")
-from scripts.ai_benchmark_v4 import SIGNS, SIGNS_FA
+from scripts.ai_benchmark_v4 import SIGNS_FA
 from app.core.llm import build_go_pool
-from scripts.model_cmp import build_prompt, get_sysprompt
 
 PRICES = {
     "pro-go-direct": (0.435, 0.87), "pro-omni": (0.435, 0.87), "flash": (0.14, 0.28),
@@ -69,7 +68,7 @@ def main():
     summary = {}
     for key in sorted(set(r["key"] for r in rows)):
         rs = [r for r in rows if r["key"] == key]
-        grounded = 0; halluc = 0; judged = 0; lats = []; tin = 0; tout = 0
+        grounded = 0; halluc = 0; lats = []; tin = 0; tout = 0
         rb = {"personalization": [], "coherence": [], "persian": [], "tone": [], "contradiction": []}
         for r in rs:
             c = charts[r["i"]]

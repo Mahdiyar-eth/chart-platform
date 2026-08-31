@@ -536,8 +536,8 @@ class OmniProvider(LLMProvider):
     async def complete(self, prompt: str, system: str | None = None,
                        max_tokens: int = 2048, temperature: float = 0.7,
                        json_mode: bool = False) -> LLMResult:
-        res = await super().complete(prompt, system=system, max_tokens=max_tokens,
-                                     temperature=temperature)
+        await super().complete(prompt, system=system, max_tokens=max_tokens,
+                               temperature=temperature)
         if not self.api_key:
             return LLMResult(text="", provider="omni", model=self.MODEL,
                              error="OMNI_API_KEY not set")

@@ -7,7 +7,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Index, Integer, UniqueConstraint, text
+import sqlalchemy as sa
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, UniqueConstraint, text
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
@@ -256,7 +257,9 @@ class Order(SQLModel, table=True):
     profile_id: str | None = Field(default=None, foreign_key="birth_profiles.id", index=True)
     chart_id: str | None = Field(default=None, foreign_key="charts.id", index=True)
     user_id: str | None = Field(default=None, foreign_key="users.id", index=True)  # P6: pack orders without chart
-    plan_key: str = Field(default=None, foreign_key="plans.key", index=True)
+    # R13/N3: FK dropped to a plain indexed column — credit-action orders
+    # (report_full etc.) don't reference plans.key. Legacy rows keep working.
+    plan_key: str = Field(default=None, index=True)
     amount_rial: int
     status: str = Field(default="pending")  # pending | paid | failed | expired
     coupon_id: str | None = Field(default=None, foreign_key="coupons.id")
@@ -444,7 +447,7 @@ class NotificationPrefs(SQLModel, table=True):
     daily_insight: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     weekly_reflection: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
     report_ready: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))
-    transit_alerts: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true"))  # B4: weekly transit push opt-out
+    transit_alerts: bool = Field(default=True, sa_column=Column(Boolean, default=True, server_default="true", nullable=False))  # B4/Z11: NOT NULL (model = truth; c8d2 had flipped it nullable)
     quiet_start: int = Field(default=23)   # local hour (0-23)
     quiet_end: int = Field(default=7)      # local hour (0-23)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -490,8 +493,20 @@ class FunnelEvent(SQLModel, table=True):
 class TransitForecast(SQLModel, table=True):
     """B1 cache — transit forecast payload per chart + months, TTL 7 days."""
     __tablename__ = "transit_forecasts"
+    __table_args__ = (
+        UniqueConstraint("chart_id", "months", name="uq_transit_chart_months"),  # X-R23
+    )
     id: int | None = Field(primary_key=True, default=None, sa_column_kwargs={"autoincrement": True})
-    chart_id: str = Field(index=True, max_length=64)
+    # Z2/R3: FK restored — this table holds PAID narratives (personal data);
+    # it must die with the chart (PRIVACY.md), not outlive it. The c8d2e3f4a5b6
+    # migration had dropped the constraint to satisfy `alembic check` — fixed
+    # in the right direction here (model first, then migration).
+    chart_id: str = Field(
+        max_length=64,
+        sa_column=Column("chart_id", String(64),
+                         sa.ForeignKey("charts.id", ondelete="CASCADE"),
+                         nullable=False, index=True),
+    )
     months: int = Field(default=12)
     payload_json: str = Field(default="{}")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

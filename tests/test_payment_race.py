@@ -45,7 +45,9 @@ def paid_order(monkeypatch):
         c = Coupon(code=f"RACE{int(time.time())}", percent=50, max_uses=5, used_count=0)
         s.add(c)
         s.flush()
-        o = Order(plan_key="full", amount_rial=1_490_000, status="pending",
+        # R13/N3: report plans are retired — this race test pins the coupon
+        # reservation semantics on the CREDIT-PACK path (still orderable).
+        o = Order(plan_key="credit12", amount_rial=1_490_000, status="pending",
                   authority=auth, chart_id=ch.id, coupon_id=c.id)
         s.add(o)
         s.commit()
@@ -70,9 +72,13 @@ def test_concurrent_verify_processes_once(paid_order):
         o = s.get(Order, paid_order["order_id"])
         coupon = s.get(Coupon, paid_order["coupon_id"])
         reports = s.exec(select(Report).where(Report.chart_id == o.chart_id)).all()
+    # R13/N3: credit packs don't auto-create reports — the race semantics
+    # under test are: exactly ONE verify + ONE paid order + coupon untouched.
     assert FakeZarinpalClient.verify_calls == 1, f"verify called {FakeZarinpalClient.verify_calls}x"
     assert o.status == "paid"
     # audit r4 A10: coupon consumption moved to order CREATION (reservation);
     # a raw-DB fixture order never reserved → used_count stays 0
     assert coupon.used_count == 0, f"coupon consumed {coupon.used_count}x"
-    assert len(reports) == 1, f"{len(reports)} reports created (expected 1)"
+    # R13/N3: credit packs never auto-create reports (report unlock is a
+    # separate credit action) — assert zero, pinning the new behaviour.
+    assert len(reports) == 0, f"{len(reports)} reports created for a credit pack"

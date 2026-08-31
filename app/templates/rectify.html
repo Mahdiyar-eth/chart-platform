@@ -3,49 +3,49 @@
 {% block description %}ساعت تولد را نمی‌دانید؟ با ابزار بازبینی ساعت تولد بر اساس رویدادهای کلیدی زندگی، چارت دقیق‌تری بسازید{% endblock %}
 
 {% block content %}
-<div class="st-01d6aec8" >
-  <h1 class="st-0d71cd37" >
-    <svg class="st-3af0d0e3" aria-hidden="true"><use href="#icon-clock"/></svg>
+<div class="u-01d6aec8" >
+  <h1 class="u-0d71cd37" >
+    <svg class="u-3af0d0e3" aria-hidden="true"><use href="/static/icons.svg#icon-clock"/></svg>
     بازبینی ساعت تولد
   </h1>
-  <p class="muted st-2ead518b" >ساعت دقیق تولدت را نمی‌دانی؟ با ثبت چند رویداد مهم زندگی، محتمل‌ترین زمان تولدت را بازسازی می‌کنیم.</p>
+  <p class="muted u-2ead518b" >ساعت دقیق تولدت را نمی‌دانی؟ با ثبت چند رویداد مهم زندگی، محتمل‌ترین زمان تولدت را بازسازی می‌کنیم.</p>
 
-  <div class="glass st-a3d5b2d1" >
-    <h2 class="st-17e50df1" >این روش چطور کار می‌کند؟</h2>
-    <p class="st-4749156b" >
+  <div class="glass u-a3d5b2d1" >
+    <h2 class="u-17e50df1" >این روش چطور کار می‌کند؟</h2>
+    <p class="u-4749156b" >
       در نجوم، «بازبینی» (Rectification) روشی قدیمی برای پیدا کردن ساعت تولد نامشخص است. منطق آن ساده است: بعضی رویدادهای مهم زندگی — مثل ازدواج، تولد فرزند، تغییر شغل یا مهاجرت — با گذر سیاره‌ها از روی نقاط حساس چارت هم‌زمان می‌شوند. ما موقعیت سیاره‌ها در تاریخِ آن رویدادها را بررسی می‌کنیم و می‌بینیم کدام ساعت تولد، بهترین هم‌راستایی را با آن‌ها دارد.
     </p>
-    <p class="st-e9eccfbb" >
-      مهم است بدانی: این یک <b class="st-e39ebac6" >تخمین نجومی</b> است، نه روش علمیِ تثبیت‌شده، و جایگزین سند رسمی تولد نیست. هرچه رویدادهای بیشتری با تاریخ تقریبی ثبت کنی، نتیجه دقیق‌تر می‌شود.
+    <p class="u-e9eccfbb" >
+      مهم است بدانی: این یک <b class="u-link-gold" >تخمین نجومی</b> است، نه روش علمیِ تثبیت‌شده، و جایگزین سند رسمی تولد نیست. هرچه رویدادهای بیشتری با تاریخ تقریبی ثبت کنی، نتیجه دقیق‌تر می‌شود.
     </p>
   </div>
 
-  <form class="st-86de7ac6" id="recForm" >
+  <form class="u-form-mt" id="recForm" >
     <input type="hidden" name="calendar" value="jalali">
-    <div class="glass st-8e11ed66" >
-      <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="#icon-calendar"/></svg> تاریخ تولد</h2>
-      <div class="st-040c55ed" >
+    <div class="glass u-pad-18" >
+      <h2 class="u-b3eb9039" ><svg class="u-e16a8522" aria-hidden="true"><use href="/static/icons.svg#icon-calendar"/></svg> تاریخ تولد</h2>
+      <div class="u-040c55ed" >
         <input name="year" type="number" placeholder="سال 1373" class="input" required>
         <input name="month" type="number" placeholder="ماه" class="input" required>
         <input name="day" type="number" placeholder="روز" class="input" required>
       </div>
-      <input name="city_fa" placeholder="شهر تولد — مثلاً تهران" class="input st-a4a5b808" required autocomplete="off">
-      <div class="city-sug st-fe7b4979" ></div>
+      <input name="city_fa" placeholder="شهر تولد — مثلاً تهران" class="input u-a4a5b808" required autocomplete="off">
+      <div class="city-sug u-fe7b4979" ></div>
     </div>
 
-    <div class="glass st-11fab7d6" >
-      <h2 class="st-b3eb9039" ><svg class="st-e16a8522" aria-hidden="true"><use href="#icon-sparkles"/></svg> رویدادهای مهم زندگی</h2>
-      <p class="muted st-5e5f5be4" >حداقل ۲ رویداد با تاریخ تقریبی (سال/ماه/روز) ثبت کن — هرچه بیشتر، دقیق‌تر</p>
-      <div class="st-d2c171b1" id="eventsBox" ></div>
-      <button type="button" id="addEvent" class="btn btn-ghost st-3437ef63" >+ افزودن رویداد</button>
+    <div class="glass u-11fab7d6" >
+      <h2 class="u-b3eb9039" ><svg class="u-e16a8522" aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg> رویدادهای مهم زندگی</h2>
+      <p class="muted u-5e5f5be4" >حداقل ۲ رویداد با تاریخ تقریبی (سال/ماه/روز) ثبت کن — هرچه بیشتر، دقیق‌تر</p>
+      <div class="u-mt-2b" id="eventsBox" ></div>
+      <button type="button" id="addEvent" class="btn btn-ghost u-3437ef63" >+ افزودن رویداد</button>
     </div>
 
-    <button type="submit" class="btn st-821ac54e" >
-      <svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-clock"/></svg> بازسازی ساعت تولد
+    <button type="submit" class="btn u-821ac54e" >
+      <svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-clock"/></svg> بازسازی ساعت تولد
     </button>
   </form>
 
-  <div class="st-7648d67e" id="recResult" ></div>
+  <div class="u-7648d67e" id="recResult" ></div>
 </div>
 
 <style>
@@ -118,14 +118,14 @@ document.getElementById('recForm').addEventListener('submit', async (e) => {
     const box = document.getElementById('recResult');
     box.style.display = 'block';
     box.innerHTML =
-      '<div class="glass glow st-60a0726a" >' +
-      '<h2>محتمل‌ترین ساعت تولد: <span class="st-dcc6ae22" >' + esc(d.best_time) + '</span></h2>' +
-      '<p class="muted st-d035d1e3" >بر اساس ' + d.events_used + ' رویداد — امتیاز هم‌راستایی: ' + d.score + '</p>' +
-      '<div class="st-c8e8cde2" >' +
-      d.candidates.map(c => '<div class="glass st-59bdf7cb" ><b>' + esc(c.time) + '</b><div class="muted st-0da13144" >امتیاز ' + c.score + '</div></div>').join('') +
+      '<div class="glass glow u-60a0726a" >' +
+      '<h2>محتمل‌ترین ساعت تولد: <span class="u-gold" >' + esc(d.best_time) + '</span></h2>' +
+      '<p class="muted u-d035d1e3" >بر اساس ' + d.events_used + ' رویداد — امتیاز هم‌راستایی: ' + d.score + '</p>' +
+      '<div class="u-c8e8cde2" >' +
+      d.candidates.map(c => '<div class="glass u-59bdf7cb" ><b>' + esc(c.time) + '</b><div class="muted u-text-2xs" >امتیاز ' + c.score + '</div></div>').join('') +
       '</div>' +
-      '<p class="muted st-1f682c99" >این تخمین جایگزین سند رسمی تولد نیست.</p>' +
-      '<a href="/birth-form" class="btn st-c3be602e" >ساخت چارت با این ساعت</a></div>';
+      '<p class="muted u-1f682c99" >این تخمین جایگزین سند رسمی تولد نیست.</p>' +
+      '<a href="/birth-form" class="btn u-c3be602e" >ساخت چارت با این ساعت</a></div>';
   } finally { btn.disabled = false; btn.textContent = 'بازسازی ساعت تولد'; }
 });
 </script>

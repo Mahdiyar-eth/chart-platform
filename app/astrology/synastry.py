@@ -1,7 +1,12 @@
-"""Synastry (plan §8) — deterministic cross-chart aspects + compatibility score.
+"""Synastry (plan §8 + MASTER W8) — cross-chart aspects + compatibility.
 
-Given two chart JSONs, computes cross aspects (orb 5°), per-domain scores and
-an overall compatibility index 0-100. Pure deterministic — LLM layer optional.
+W8: the old single «سیناستری» is SPLIT into two products with different
+lenses and prompts:
+  - «سازگاری عاطفی» (synastry_love): Venus/Moon/Mars — emotional pattern
+  - «سازگاری کاری» (synastry_work): Sun/Mars/Saturn/Mercury — work pattern
+
+`variant` selects the lens; the overall score is variant-weighted so each
+product answers its own question honestly.
 """
 from __future__ import annotations
 
@@ -21,8 +26,25 @@ _DOMAINS = {
     "spirit": ["Jupiter", "Sun"],
 }
 
+# MASTER W8 — variant lenses
+VARIANTS = {
+    "love": {
+        "title_fa": "سازگاری عاطفی",
+        "domains": ["love", "mind"],          # ranked: emotional first
+        "planets_a": {"Venus", "Moon", "Mars", "Mercury"},
+        "question": "الگوی رابطه‌ای شما دو نفر چگونه کار می‌کند؟",
+    },
+    "work": {
+        "title_fa": "سازگاری کاری",
+        "domains": ["career", "spirit"],      # ranked: work first
+        "planets_a": {"Sun", "Mars", "Saturn", "Jupiter"},
+        "question": "به‌عنوان هم‌تیمی یا هم‌شرکت چطور کنار هم کار می‌کنید؟",
+    },
+}
 
-def synastry(chart_a: dict, chart_b: dict) -> dict:
+
+def synastry(chart_a: dict, chart_b: dict, variant: str = "love") -> dict:
+    v = VARIANTS.get(variant, VARIANTS["love"])
     pa = chart_a.get("planets", {})
     pb = chart_b.get("planets", {})
     connections: list[dict] = []
@@ -61,13 +83,30 @@ def synastry(chart_a: dict, chart_b: dict) -> dict:
             return 50.0
         return round(50 + 50 * (pos - neg) / total, 1)
 
-    domains = {k: _domain_score(v) for k, v in _DOMAINS.items()}
-    overall = round(sum(domains.values()) / len(domains), 1)
+    domains = {k: _domain_score(v_) for k, v_ in _DOMAINS.items()}
+    # W8: the OVERALL score is variant-weighted — love leans on love/mind,
+    # work leans on career/spirit, so two products give two honest answers.
+    lens = v["domains"]
+    primary = [domains[d] for d in lens if d in domains]
+    secondary = [domains[d] for d, s in domains.items() if d not in lens]
+    overall = round((sum(primary) / len(primary)) * 0.7
+                    + (sum(secondary) / len(secondary)) * 0.3, 1)
 
     return {
+        "variant": variant,
+        "variant_title_fa": v["title_fa"],
+        "question": v["question"],  # R12/P2-14: expose the variant's lens question
+        "lens_planets": sorted(v["planets_a"]),  # R12/P2-14: the lens is now explicit
         "connections_count": len(connections),
         "connections": sorted(connections, key=lambda c: -1.0 / (1.0 + c["orb"]))[:24],
         "domains": domains,
+        "primary_domains": lens,
+        # R12/P2-14: connections are FILTERED by the lens planets — the love
+        # report really reads Venus/Moon/Mars(/Mercury) links, the work report
+        # Sun/Mars/Saturn/Jupiter links, instead of sharing one raw list.
+        "lens_connections": [c for c in
+                             sorted(connections, key=lambda c: -1.0 / (1.0 + c["orb"]))
+                             if c["a"] in v["planets_a"]][:24],
         "overall": overall,
         "verdict": _verdict(overall),
     }

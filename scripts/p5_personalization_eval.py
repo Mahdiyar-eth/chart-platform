@@ -5,7 +5,7 @@ deepseek-v4-pro (GO) · deepseek-v4-pro thinking-ON (GO direct).
 6 charts x 3 personalization-probing questions = 18 answers/model.
 Rubric judge: gemini (as in phase 2). Output: scores + cost + latency.
 """
-import asyncio, json, os, re, sys, time
+import asyncio, json, os, sys, time
 sys.path.insert(0, "/root/chart-platform")
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 

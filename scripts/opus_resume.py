@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Resume opus audit: dim-5 + synthesis only, slow pace (45s gaps)."""
-import json, re, sys, time
+import json, re, time
 from pathlib import Path
 import urllib.request
 

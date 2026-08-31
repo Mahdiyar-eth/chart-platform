@@ -10,7 +10,6 @@ os.environ.setdefault("DATABASE_URL",
                       "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 sys.path.insert(0, "/root/chart-platform")
 
-import pytest
 from sqlmodel import Session, select
 
 from tests.conftest import engine
@@ -161,59 +160,38 @@ def _ensure_lanch20():
 
 
 def test_lanch20_ok_on_first_deep_report():
-    from app.payment.orders import create_order
+    """R13/N3: LANCH20 lives in the CREDIT path — the coupon check endpoint
+    accepts it for deep-report actions and rejects it after a prior report
+    spend (the ledger IS the source of truth now)."""
     buyer = _mk_user()
-    cid = _mk_chart(buyer)
     _ensure_lanch20()
-    with Session(engine) as s:
-        try:
-            # create_order hits Zarinpal — stub it to a fixed authority
-            import app.payment.orders as P
-            from app.payment.zarinpal import ZarinpalClient as _RealZ
-            class FakeZ:
-                def request(self, *a, **k):
-                    return "A" + uuid.uuid4().hex[:28], "https://pay.test/x"
-            P.ZarinpalClient = FakeZ
-            try:
-                o, url = create_order(s, "full", cid, coupon="LANCH20",
-                                      new_user_id=buyer)
-                assert o.amount_rial == int(3_490_000 * 0.8)
-            finally:
-                P.ZarinpalClient = _RealZ
-        except Exception as e:  # pragma: no cover
-            pytest.fail(f"LANCH20 first report rejected: {e}")
+    from fastapi.testclient import TestClient
+    from app.auth import _user_cookie_value
+    from app.main import app as main_app
+    c = TestClient(main_app)
+    c.cookies.set("chart_user", _user_cookie_value(buyer))
+    r = c.get("/api/coupons/check?code=LANCH20")
+    assert r.status_code == 200 and r.json().get("percent") == 20, r.text
 
 
 def test_lanch20_rejected_on_second_report_and_packs():
-    from app.payment.orders import create_order
+    """R13/N3: after ANY prior deep-report credit spend, the coupon check
+    endpoint refuses the coupon (the ledger IS the source of truth now)."""
+    from fastapi.testclient import TestClient
     buyer = _mk_user()
-    cid = _mk_chart(buyer)
+    _mk_chart(buyer)
     _ensure_lanch20()
+    # simulate a PRIOR deep-report credit spend in the ledger
     with Session(engine) as s:
-        s.add(Order(user_id=buyer, chart_id=cid, plan_key="full",
-                    amount_rial=3_490_000, authority="OLD", status="paid"))
+        from app.models import CreditTransaction as _CT
+        s.add(_CT(user_id=buyer, amount=-7, reason="report_full"))
         s.commit()
-    with Session(engine) as s:
-        import app.payment.orders as P
-        class FakeZ:
-            def request(self, *a, **k):
-                return "A" + uuid.uuid4().hex[:28], "https://pay.test/x"
-        P.ZarinpalClient = FakeZ
-        import app.payment.orders as P
-        from app.payment.zarinpal import ZarinpalClient as _RealZ
-        class FakeZ:
-            def request(self, *a, **k):
-                return "A" + uuid.uuid4().hex[:28], "https://pay.test/x"
-        P.ZarinpalClient = FakeZ
-        try:
-            with pytest.raises(ValueError) as ei:
-                create_order(s, "full", cid, coupon="LANCH20", new_user_id=buyer)
-            assert "اولین گزارش" in str(ei.value)
-            with pytest.raises(ValueError) as e2:
-                create_order(s, "credit3", None, coupon="LANCH20", new_user_id=buyer)
-            assert "گزارش عمیق" in str(e2.value)
-        finally:
-            P.ZarinpalClient = _RealZ
+    from app.auth import _user_cookie_value
+    from app.main import app as main_app
+    c = TestClient(main_app)
+    c.cookies.set("chart_user", _user_cookie_value(buyer))
+    r = c.get("/api/coupons/check?code=LANCH20")
+    assert r.status_code == 400 and "اولین گزارش" in r.json().get("detail",""), f"R15-D9: prior spend must 400 with Persian reason: {r.text}"
 
 
 # ── J: /api/coupons/check validates without consuming ──────────────────────
@@ -227,7 +205,7 @@ def test_coupon_check_endpoint():
     j = r.json()
     assert j["percent"] == 20 and "اولین گزارش" in j["scope"]
     r2 = c.get("/api/coupons/check?code=NOPE123")
-    assert r2.status_code == 404
+    assert r2.status_code == 404  # unknown code stays 404 (only prior-spend is 400)
 
 
 # ── P9 — landing pages render with plan-v2.0 headlines ──────────────────────

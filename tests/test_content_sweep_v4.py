@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-ROOT = Path("/root/chart-platform")
+ROOT = Path(__file__).resolve().parent.parent  # repo root — host-portable (was hardcoded /root/chart-platform)
 
 BANNED = ["پیش‌بینی سالانه", "پیش بینی سالانه", "پیشگویی آینده",
           "فال هفتگی", "طالع امروز", "پیش‌بینی هفتگی"]

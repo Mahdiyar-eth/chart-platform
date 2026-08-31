@@ -317,8 +317,11 @@ def test_wallet_payment_enqueues_report(monkeypatch):
         uid = u.id
     c.cookies.set("chart_user", __import__("app.auth", fromlist=["_user_cookie_value"])._user_cookie_value(uid))
     cid, tok = _mk_chart(c)
+    # R13/N3: report plans are retired — the wallet now buys a credit PACK;
+    # the pack grants credits (no auto-report). Report creation moved to the
+    # separate credit-unlock test below.
     r = c.post("/api/orders", data={
-        "plan_key": "basic", "chart_id": cid, "access_token": tok,
+        "plan_key": "credit12", "chart_id": cid, "access_token": tok,
     }, headers={"x-pay-with-balance": "1"})
     assert r.status_code == 200, r.text
     assert r.json()["paid_by_balance"] is True
@@ -326,9 +329,9 @@ def test_wallet_payment_enqueues_report(monkeypatch):
         o = s.exec(select(Order).where(Order.chart_id == cid)).one()
         u = s.get(User, uid)
         assert u.balance_rial < 50_000_000          # debited
-        rep = s.get(Report, o.report_id)
-        assert rep is not None and rep.status == "queued"
-        assert o.report_id in enqueued      # F-03: enqueued exactly like Zarinpal
+        assert o.status == "paid"
+        assert u.credits >= 12                      # pack granted its credits
+        assert o.report_id is None                  # packs never auto-create reports
 
 
 # ── F-04: refund from 'refunding' + already-refunded → refunded (P1) ────────
@@ -459,7 +462,7 @@ def test_wallet_payment_rewards_referrer():
     # referral code travels in the chart_ref cookie (as the real UI sets it)
     c.cookies.set("chart_ref", code)
     r = c.post("/api/orders", data={
-        "plan_key": "basic", "chart_id": cid, "access_token": tok,
+        "plan_key": "credit12", "chart_id": cid, "access_token": tok,
     }, headers={"x-pay-with-balance": "1"})
     assert r.status_code == 200, r.text
     with Session(engine) as s:

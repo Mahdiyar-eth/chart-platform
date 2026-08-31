@@ -3,17 +3,17 @@
 {% block description %}هر روز یک لحظه برای دیدن آسمان و دیدن خودت: گذرهای امروز، یک سؤال برای تأمل و یک اقدام کوچک.{% endblock %}
 
 {% block content %}
-<div class="wrap st-c24b5a41" >
-  <h1 class="st-69822621" >هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
+<div class="wrap u-c24b5a41" >
+  <h1 class="u-69822621" >هر روز یک لحظه برای دیدن آسمان و دیدن خودت.</h1>
 
   <div x-data="todayApp()" x-init="init()">
     <!-- chart picker -->
-    <div class="glass st-5a5e59ed" >
+    <div class="glass u-5a5e59ed" >
       <div>
-        <div class="muted st-f63147b2" >تاریخ</div>
-        <div class="st-e3ec02ac" x-text="status?.today_label"></div>
+        <div class="muted u-text-xs" >تاریخ</div>
+        <div class="u-e3ec02ac" x-text="status?.today_label"></div>
       </div>
-      <select class="input st-8c0b5cf4" x-model="chartId" x-on:change="load()" >
+      <select class="input u-8c0b5cf4" aria-label="انتخاب چارت برای امروز" x-model="chartId" x-on:change="onChartChange()" >
         <template x-for="ch in charts" :key="ch.id">
           <option :value="ch.id" x-text="ch.label"></option>
         </template>
@@ -21,22 +21,22 @@
     </div>
 
     <!-- streak -->
-    <div class="glass st-f0e8728e" >
-      <span class="st-d4169b69" >🔥</span>
+    <div class="glass u-f0e8728e" >
+      <span class="u-d4169b69" >🔥</span>
       <div>
-        <div class="muted st-a726b01e" >پیوستگی روزانه</div>
-        <div class="st-3c945c05" x-text="status?.streak + ' روز متوالی'"></div>
+        <div class="muted u-a726b01e" >پیوستگی روزانه</div>
+        <div class="u-3c945c05" x-text="status?.streak + ' روز متوالی'"></div>
       </div>
-      <div class="muted st-ee31f211" x-show="status?.streak > 0" x-cloak>
+      <div class="muted u-ee31f211" x-show="status?.streak > 0" x-cloak>
         <span x-text="status?.best_streak"></span> بیشترین
       </div>
     </div>
 
     <!-- sky facts -->
-    <div class="glass st-ed375c82" >
-      <div class="st-ea49063c" >
-        <div class="st-710280f4" >✨ امروز در آسمان</div>
-        <button class="st-4ebb4d1b btn-chip" type="button" x-show="status?.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
+    <div class="glass u-panel" >
+      <div class="u-ea49063c" >
+        <div class="u-strong-sm" >✨ امروز در آسمان</div>
+        <button class="u-4ebb4d1b btn-chip" type="button" x-show="status?.facts.length" x-cloak @click="shareTransit()" >اشتراک‌گذاری گذر</button>
       </div>
       <template x-if="status && status.factsLoaded && !status.facts.length">
         <div class="empty-state" >
@@ -47,45 +47,99 @@
       <div x-show="!status || !status.factsLoaded" class="skeleton sk-line" aria-hidden="true"></div>
       <div x-show="!status || !status.factsLoaded" class="skeleton sk-line" style="width:70%" aria-hidden="true"></div>
       <template x-for="(f, i) in status?.facts" :key="i">
-        <div class="st-38697191" >
-          <span class="st-3a38b258" aria-hidden="true"></span>
-          <p class="st-362151c5" >
-            <span class="st-2b953210" x-text="f.planet_fa"></span>
-            امروز در <span class="st-39660e9f" x-text="f.sign_fa"></span> با
-            <span class="st-2b953210" x-text="f.target_fa"></span> تو در
-            <span class="st-e5be8c0d" x-text="f.aspect_fa"></span> است.
+        <div class="u-38697191" >
+          <span class="u-3a38b258" aria-hidden="true"></span>
+          <p class="u-362151c5" >
+            <span class="u-b800" x-text="f.planet_fa"></span>
+            امروز در <span class="u-39660e9f" x-text="f.sign_fa"></span> با
+            <span class="u-b800" x-text="f.target_fa"></span> تو در
+            <span class="u-e5be8c0d" x-text="f.aspect_fa"></span> است.
           </p>
         </div>
       </template>
     </div>
 
     <!-- question -->
-    <div class="glass st-ed375c82" >
-      <div class="st-24a83240" >🪞 سؤال امروز</div>
-      <p class="st-08fa3ec5" x-text="status?.question"></p>
-      <div class="st-56f43562" x-show="status?.access === 'preview'" x-cloak >
-        <div class="glass st-21e3cb79" >
-          <p class="muted st-9cec68b5" >ثبت تأمل روزانه و پیوستگی مخصوص پلن طلایی و اشتراک ماهانه است.</p>
-          <a class="btn btn-lg st-80d654f9" href="/plans" >مشاهده پلن‌ها</a>
+    <div class="glass u-panel" >
+      <div class="u-24a83240" >🪞 سؤال امروز</div>
+      <p class="u-body" x-text="status?.question"></p>
+      <div class="u-mt-12" x-show="status?.access === 'preview'" x-cloak >
+        <div class="glass u-21e3cb79" >
+          <p class="muted u-9cec68b5" >ثبت تأمل روزانه و پیوستگی، بخشی از بستهٔ «شناخت + همراهی» است — با اعتبار باز می‌شود.</p>
+          <a class="btn btn-lg u-80d654f9" href="/plans" >مشاهده محصولها</a>
         </div>
       </div>
-      <div class="st-33c48088" x-show="status?.access === 'full' && status?.done" x-cloak >
-        <div class="st-52e1e5cb" >✓ تأمل امروز ثبت شد</div>
-        <p class="muted st-efc7d33a" x-text="'ساعت ' + status?.done_at"></p>
+      <div class="u-33c48088" x-show="status?.access === 'full' && status?.done" x-cloak >
+        <div class="u-52e1e5cb" >✓ تأمل امروز ثبت شد</div>
+        <p class="muted u-efc7d33a" x-text="'ساعت ' + status?.done_at"></p>
       </div>
-      <div class="st-56f43562" x-show="status?.access === 'full' && !status?.done" x-cloak >
-        <textarea class="input st-dd0a679c" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" ></textarea>
-        <button class="btn btn-lg st-9202fe4c" x-on:click="submit()" :disabled="busy">
+      <div class="u-mt-12" x-show="status?.access === 'full' && !status?.done" x-cloak >
+        <textarea class="input u-dd0a679c" x-model="answer" rows="3" placeholder="پاسخ امروزت را اینجا بنویس… (فقط خودت می‌بینی)" ></textarea>
+        <button class="btn btn-lg u-9202fe4c" x-on:click="submit()" :disabled="busy">
           <span x-text="busy ? 'در حال ثبت…' : 'ثبت تأمل امروز'"></span>
         </button>
-        <p class="st-068f6825" x-show="err" x-cloak x-text="err"></p>
+        <p class="u-068f6825" x-show="err" x-cloak x-text="err"></p>
       </div>
     </div>
 
     <!-- action -->
-    <div class="glass st-ed375c82" >
-      <div class="st-ef8b9018" >🌱 اقدام کوچک امروز</div>
-      <p class="st-08fa3ec5" x-text="status?.action"></p>
+    <div class="glass u-panel" >
+      <div class="u-ef8b9018" >🌱 اقدام کوچک امروز</div>
+      <p class="u-body" x-text="status?.action"></p>
+    </div>
+
+    <!-- MASTER W5 (N1): the five reflective daily cards — «امروزِ تو» -->
+    <div class="glass u-panel" x-show="daily.loaded" x-cloak>
+      <div class="u-ea49063c">
+        <div class="u-strong-sm">🪐 امروزِ تو — پنج کارت از گذرهای واقعی چارتت</div>
+        <span class="chip" x-show="daily.fresh">● تازه</span>
+      </div>
+
+      <template x-if="daily.sky_today">
+        <div style="margin-top:12px;">
+          <b>✨ آسمانِ امروزِ تو</b>
+          <p class="u-body" x-text="daily.sky_today.meaning"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.reflection_line">
+        <div style="margin-top:12px;">
+          <b>🪞 یک جملهٔ تأمل</b>
+          <p class="u-body" x-text="daily.reflection_line.line"></p>
+          <p class="muted u-note" x-text="'پرسش برای خودت: ' + daily.reflection_line.question"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.inner_weather">
+        <div style="margin-top:12px;">
+          <b>🌙 حال‌وهوای درونی</b>
+          <p class="u-body" x-text="daily.inner_weather.text"></p>
+        </div>
+      </template>
+
+      <template x-if="daily.active_area">
+        <div style="margin-top:12px;">
+          <b>🎯 حوزهٔ فعال امروز</b>
+          <p class="u-body"><span x-text="daily.active_area.title"></span> — <span x-text="daily.active_area.why"></span></p>
+        </div>
+      </template>
+
+      <template x-if="daily.relationship_today">
+        <div style="margin-top:12px;">
+          <b>💞 الگوی رابطه‌ای امروز</b>
+          <p class="u-body" x-text="daily.relationship_today.text"></p>
+        </div>
+      </template>
+
+      <!-- one LLM sentence, cached per (chart, date) -->
+      <template x-if="daily.insight">
+        <div style="margin-top:12px;" class="glass u-card-inset">
+          <b>💡 نگاه امروز</b>
+          <p class="u-body" x-text="daily.insight"></p>
+        </div>
+      </template>
+
+      <p class="muted u-note" style="margin-top:10px;">این کارت‌ها هر شب با گذرهای تازهٔ همان روز بازنویسی می‌شوند — نه امتیاز، نه شانس، فقط آینهٔ آسمان روی چارت خودت.</p>
     </div>
   </div>
 </div>
@@ -99,9 +153,11 @@ function todayApp() {
     answer: "",
     busy: false,
     err: "",
+    daily: { loaded: false, fresh: false, sky_today: null, reflection_line: null,
+             inner_weather: null, active_area: null, relationship_today: null, insight: null },
     init() {
       if (!this.chartId) { this.chartId = this.charts.length ? this.charts[0].id : ""; }
-      if (this.chartId) this.load();
+      if (this.chartId) { this.load(); this.loadDaily(); }
     },
     load() {
       const self = this;
@@ -109,6 +165,26 @@ function todayApp() {
         .then(r => r.json())
         .then(d => { if (d && typeof d === "object") { self.status = { ...d, factsLoaded: true }; } else { self.status = { ...(self.status||{}), facts: self.status?.facts || [], factsLoaded: true }; } })
         .catch(() => { self.status = { ...self.status, facts: [] }; });
+    },
+    loadDaily() {
+      if (!this.chartId) return;
+      const self = this;
+      fetch("/api/today/daily?chart_id=" + encodeURIComponent(this.chartId))
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (!d) return;
+          self.daily = { loaded: true, fresh: !d.cached,
+            sky_today: d.sky_today || null, reflection_line: d.reflection_line || null,
+            inner_weather: d.inner_weather || null, active_area: d.active_area || null,
+            relationship_today: d.relationship_today || null, insight: d.insight || null };
+        })
+        .catch(() => { /* the free layer must never break the page */ });
+    },
+    // chart switcher reloads both layers
+    onChartChange() {
+      this.daily = { loaded: false, fresh: false, sky_today: null, reflection_line: null,
+                     inner_weather: null, active_area: null, relationship_today: null, insight: null };
+      this.load(); this.loadDaily();
     },
     submit() {
       if (!this.answer.trim()) return;

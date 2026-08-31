@@ -10,11 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16   # R4/W5: pgvector-ready; the service user (chart_test) is the superuser
         env:
           POSTGRES_DB: chart_platform_test
           POSTGRES_USER: chart_test
           POSTGRES_PASSWORD: chart_test_pw
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U chart_test"
@@ -28,16 +29,33 @@ jobs:
       DATABASE_URL: postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test
       PUBLIC_BASE_URL: http://127.0.0.1:8000
       REDIS_URL: redis://127.0.0.1:6379/0
+      # R4/W2: required-at-import secrets (gitignored, so set test-safe defaults
+      # so a fresh checkout runs without any external key). Never prod values.
+      ADMIN_PIN: "000000"
+      AUTH_SECRET: "ci-test-auth-secret-000"
+      SECRETS_MASTER_KEY: "ci-test-master-key-000"
+      ADMIN_SECRET: "ci-test-admin-secret-000"
+      RATE_LIMIT_BACKEND: "redis"   # prod-boot smoke needs redis (1c overrides to memory)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install deps
+      - name: Install deps (venv)
         run: |
-          pip install -r requirements.txt
+          # R4/W5: create the venv the repo's scripts expect (venv/bin/*), install
+          # deps into it, then activate for every subsequent step.
           sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0
-      - name: Test
+          python -m venv venv
+          venv/bin/pip install --upgrade pip
+          venv/bin/pip install -r requirements.txt
+          # R.9/Q7: lint/audit tools are now PINNED in requirements.txt, so a future
+          # release can't silently bump them and break CI. No unpinned install here.
+          # R4/W5: chart share-card renders via headless Chromium — install it.
+          venv/bin/playwright install chromium
+          venv/bin/playwright install-deps chromium 2>/dev/null || true
+          echo ".../venv/bin" >> "$GITHUB_PATH"
+      - name: Test (drift gate + full suite + lint + scans)
         run: |
-          scripts/ci.sh
+          bash scripts/ci.sh

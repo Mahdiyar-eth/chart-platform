@@ -1,6 +1,6 @@
 """A4 — unified purchase endpoint acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
 
 from fastapi.testclient import TestClient
@@ -61,10 +61,12 @@ def test_purchase_insufficient_returns_402_with_packs():
     assert j["needed"] > 0 and j["have"] == 0
     assert isinstance(j["packs"], list) and any(p["key"] == "credit12" for p in j["packs"])
 
-def test_credits_me_requires_login():
+def test_credits_me_guest_returns_zero():
+    """R.9 / Q6: a guest gets 200 {balance:0} — not a 401 that spams the console."""
     c = TestClient(main_app)
     r = c.get("/api/credits/me")
-    assert r.status_code == 401
+    assert r.status_code == 200, r.status_code
+    assert r.json()["balance"] == 0 and r.json().get("guest") is True
 
 
 def test_credits_me_returns_balance():

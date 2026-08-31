@@ -3,7 +3,6 @@
 The multi-audit found inconsistent section counts across docs (14 vs 15).
 Canon: basic=5, full=13, gold=14. A future plan change MUST update this test.
 """
-import pytest
 from app.report.prompt_builder import PLAN_SECTIONS, DOMAINS, CORE_DOMAINS
 
 

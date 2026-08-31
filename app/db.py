@@ -1,7 +1,7 @@
 """DB session + init (Postgres). For tests: override engine with temp SQLite."""
 import os
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlmodel import Session, SQLModel
 
 from app.env import IS_PROD
@@ -23,6 +23,15 @@ def init_db() -> None:
     # would silently ignore drift. It runs only when explicitly enabled
     # (tests / fresh dev DBs), never on a normal production boot.
     if os.getenv("CREATE_ALL_ON_BOOT", "0") == "1":
+        # R4/W5: ensure the pgvector extension exists before create_all (models
+        # use VECTOR(384)). Idempotent + guarded: in CI the service POSTGRES_USER
+        # is a superuser so this succeeds; locally it's a no-op if already present.
+        # Never raise on privilege failure — the drift gate/migrations own DDL.
+        try:
+            with engine.begin() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception:  # noqa: BLE001 — best-effort; schema may already be ready
+            pass
         SQLModel.metadata.create_all(engine)
     seed_plans()
     seed_credit_prices()
@@ -37,19 +46,26 @@ def seed_plans() -> None:
         dict(key="basic", name_fa="پایه", subtitle_fa="آشنایی اولیه با چارت تولد — برای شروع شناخت", price_toman=149_000,
              features=["چارت تولد تعاملی + SVG اختصاصی", "سه‌گانه‌ی اصلی (خورشید، ماه، طالع) با تفسیر",
                        "۵ بخش اصلی گزارش (شخصیت، ذهن، احساسات، رابطه، مسیر)",
-                       "پیش‌نمایش رایگان قبل از خرید", "دانلود PDF"], sort=1),
+                       "پیش‌نمایش رایگان قبل از خرید", "دانلود PDF"], sort=1, active=False),  # R13/N3: legacy toman plan retired — credits only
         dict(key="full", name_fa="کامل", subtitle_fa="گزارش کامل ۱۳ بخشی با شواهد نجومی — پرفروش‌ترین", price_toman=349_000,
              features=["همه‌ی امکانات پلن پایه", "گزارش کامل هر ۱۳ حوزه‌ی زندگی (شخصیت، عشق، شغل، خانواده، مالی، سلامت و…)",
                        "تحلیل کامل جنبه‌ها و خانه‌ها", "هر بینش با شاهد نجومی (کدام سیاره، کدام خانه، کدام زاویه)",
-                       "دانلود PDF ۲۵+ صفحه + Word قابل ویرایش", "نمودارهای SVG اختصاصی"], sort=2),
+                       "دانلود PDF ۲۵+ صفحه + Word قابل ویرایش", "نمودارهای SVG اختصاصی"], sort=2, active=False),  # R13/N3: retired
         dict(key="gold", name_fa="طلایی", subtitle_fa="شناخت عمیق + گفت‌وگوی شخصی با هوش مصنوعی + ترانزیت", price_toman=699_000,
              features=["همه‌ی امکانات پلن کامل", "گفت‌وگو با هوش مصنوعی درباره‌ی چارت (۵ سوال در روز)",
                        "فصل فرهنگی-اسلامی", "نقشه‌ی گذرهای ۴ ماه آینده نسبت به چارت",
-                       "اولویت در صف تولید گزارش", "به‌روزرسانی‌های آینده رایگان"], sort=3),
+                       "اولویت در صف تولید گزارش", "به‌روزرسانی‌های آینده رایگان"], sort=3, active=False),  # R13/N3: retired
         dict(key="synastry", name_fa="سیناستری", subtitle_fa="سنجش سازگاری دو چارت — برای رابطه، ازدواج و شراکت", price_toman=499_000,
              features=["نمره‌ی سازگاری ۴ حوزه‌ای (عشق، ذهن، کار، معنا)",
                        "۲۵+ ارتباط سیاره‌ای میان دو چارت",
                        "تفسیر اختصاصی و عمیق رابطه", "پیش‌نمایش رایگان نمره‌ی کلی"],
+             sort=4, active=False),  # R14-D3: toman currency retired — synastry is credit-only (love/work, 8cr)
+        # SALES-STRATEGY: the entry ticket must not cost 3.6x the entry product.
+        # The cheapest product is 1 credit (50,000t of value) but the cheapest
+        # pack was 3 credits at 180,000t, so a buyer who wanted one answer had
+        # to pay for three and hold two unused credits. This is the first rung.
+        dict(key="credit1", name_fa="۱ اعتبار", subtitle_fa="برای امتحان‌کردن — یک سؤال، یک جواب", price_toman=60_000,
+             credits_grant=1, features=["بدون تاریخ انقضا", "همین حالا قابل استفاده"],
              sort=4),
         dict(key="credit3", name_fa="۳ اعتبار", subtitle_fa="سه کاوش خودشناسی", price_toman=180_000,
              credits_grant=3, features=["هر کاوش = ۱ اعتبار", "بدون تاریخ انقضا"],
@@ -63,11 +79,10 @@ def seed_plans() -> None:
         dict(key="monthly", name_fa="اشتراک ماهانه", subtitle_fa="همراه ماهانه‌ی زایچه — برای دنبال‌کنندگان آسمان", price_toman=99_000,
              features=["نگاهی به آسمان امروز (Today) — هر روز", "تأمل هفتگی کوتاه در ربات و سایت",
                        "اعلان گذرهای مهم سیاره‌ای", "۵ اعتبار کاوش در ماه"],
-             sort=5),
+             sort=5, active=False),  # R12/P2-11: subscription retired from sale (owner §12-1)
         dict(key="yearly", name_fa="اشتراک سالانه", subtitle_fa="همراه سالانه — دو ماه رایگان نسبت به ماهانه", price_toman=890_000,
-             features=["همه‌ی امکانات اشتراک ماهانه", "معادل ۱۰ ماه برای ۱۲ ماه (دو ماه رایگان)",
-                       "۵ اعتبار کاوش در ماه", "اولویت در صف تولید گزارش"],
-             sort=8),
+             features=[],
+             sort=8, active=False),  # R12/P2-11: retired
     ]
     with Session(engine) as s:
         for item in catalog:
@@ -78,6 +93,8 @@ def seed_plans() -> None:
                 existing.subtitle_fa = item["subtitle_fa"]
                 existing.features = item["features"]
                 existing.sort = item["sort"]
+                if "active" in item:
+                    existing.active = item["active"]  # R12/P2-11: honor retirements
                 s.add(existing)
             else:
                 s.add(Plan(**item))
@@ -112,16 +129,23 @@ def seed_credit_prices() -> None:
     from app.models import CreditPrice
 
     catalog: list[dict] = [
-        dict(action_key="explore_card",  title_fa="کاوش تک‌کارت",                               credits=1),
-        dict(action_key="report_basic",  title_fa="گزارش پایه (۵ بخش)",                          credits=3),
-        dict(action_key="report_full",   title_fa="گزارش کامل (۱۳ بخش)",                         credits=7),
-        dict(action_key="report_gold",   title_fa="گزارش طلایی (۱۳ بخش + چت ۳۰ روزه + گذر ۱۲ماهه)", credits=14),
-        dict(action_key="synastry_full", title_fa="سیناستری کامل",                               credits=10),
-        dict(action_key="transit_3m",    title_fa="تحلیل گذرهای ۳ ماه آینده",                    credits=2),
-        dict(action_key="transit_12m",   title_fa="تحلیل گذرهای ۱۲ ماه آینده",                   credits=5),
-        dict(action_key="rectify",       title_fa="بازبینی ساعت تولد",                           credits=2),
-        dict(action_key="chat_pack_20",  title_fa="بستهٔ ۲۰ پیام چت (اعتبار ۳۰ روزه)",            credits=2),
-        dict(action_key="report_audio",  title_fa="نسخهٔ صوتی گزارش",                            credits=1),
+        # MASTER W4 (§6): result-oriented names — the product is named by the
+        # sentence in the user's head, not by astrological jargon.
+        dict(action_key="explore_card",  title_fa="یک سؤال، یک جواب",                            credits=1),
+        dict(action_key="report_basic",  title_fa="آشنایی (۵ بخش) — شروعِ سریع",                  credits=3),
+        dict(action_key="report_full",   title_fa="شناخت کامل (۱۳ بخش)",                          credits=7),
+        dict(action_key="report_gold",   title_fa="شناخت + همراهی (۱۳بخش + چت ۳۰روزه + ۱۲ماهه)",   credits=14),
+        dict(action_key="synastry_full", title_fa="سازگاری دو نفر — ما به هم می‌خوریم؟",           credits=10,
+             active=False),  # R13/N2: retired — love/work are the products now
+        dict(action_key="transit_3m",    title_fa="۳ ماه آیندهٔ من",                              credits=2),
+        dict(action_key="transit_12m",   title_fa="۱۲ ماه آیندهٔ من",                             credits=5),
+        dict(action_key="rectify",       title_fa="ساعت تولدم را نمی‌دانم",                       credits=2, active=False),  # Z8: free (Y15), keep row inactive for correct admin financial report
+        dict(action_key="chat_pack_20",  title_fa="از چارتت بپرس — ۲۰ پیام (۳۰ روزه)",             credits=2),
+        dict(action_key="report_audio",  title_fa="گزارشت را گوش کن (نسخهٔ صوتی)",                 credits=1),
+        dict(action_key="solar_return",  title_fa="چارت سالیانه — سال تولد تا تولد بعدی",          credits=9),
+        dict(action_key="relocation",    title_fa="چارت مهاجرت — کدام شهر برای چه بخشی از زندگی‌ات", credits=6),
+        dict(action_key="synastry_love", title_fa="سازگاری عاطفی — الگوی رابطهٔ شما دو نفر",        credits=8),
+        dict(action_key="synastry_work", title_fa="سازگاری کاری — هم‌تیمی/هم‌شرکت چطورید؟",         credits=8),
     ]
     with Session(engine) as s:
         for item in catalog:
@@ -129,7 +153,12 @@ def seed_credit_prices() -> None:
                 CreditPrice.action_key == item["action_key"])).first()
             if existing:
                 existing.title_fa = item["title_fa"]
-                existing.credits = item["credits"]
+                # R12/P1-7: NEVER overwrite `credits` — an admin price edit
+                # (A7 panel) must survive app restarts. Only NEW rows get the
+                # seed price; existing rows keep their runtime value.
+                if not item.get("active", True) and not existing.active:
+                    pass  # keep inactive rows (rectify) as they are
+                existing.active = item.get("active", True)
                 s.add(existing)
             else:
                 s.add(CreditPrice(**item))

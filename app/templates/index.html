@@ -2,217 +2,197 @@
 {% block body_attrs %}data-page="landing"{% endblock %}
 {% block content %}
 <style>
-  .mode-btn{padding:9px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--muted);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
-  .mode-btn.mode-on{background:linear-gradient(135deg,#F0C75E,#C8901E);color:#1a1626;border-color:transparent;}
   .feat{position:relative;display:block;padding:20px;text-decoration:none;color:inherit;border-radius:18px;}
   .feat .ic{width:30px;height:30px;color:var(--gold);}
   .feat b{display:block;margin-top:12px;font-size:1rem;}
   .feat p{margin-top:7px;font-size:.86rem;line-height:1.75;color:var(--muted);}
-  .feat .more{display:inline-flex;align-items:center;gap:5px;margin-top:11px;font-size:.8rem;font-weight:700;color:var(--gold);}
-  .feat.flag{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(232,142,11,.05));border-color:rgba(245,197,24,.35);}
-  .sample .tag{display:inline-block;font-size:.7rem;font-weight:800;color:var(--gold);background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;}
+  .feat .more{display:inline-flex;align-items:center;gap:5px;margin-top:11px;font-size:.8rem;font-weight:700;color:var(--gold-text,var(--gold));}
+  .feat.flag{background:rgba(245,197,24,.07);border-color:rgba(245,197,24,.28);}
+  .report-sample .tag{display:inline-block;}
+  .sample .tag{display:inline-block;font-size:.7rem;font-weight:800;color:var(--gold-text,var(--gold));background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;}
+.report-sample summary{cursor:pointer;list-style:none;appearance:none;}
+.report-sample summary::-webkit-details-marker{display:none;}
+.report-sample summary{display:flex;flex-direction:column;gap:6px;}
+.report-sample summary::after{content:'خواندن متن کامل ↓';color:var(--gold-text,var(--gold));font-size:.78rem;font-weight:800;margin-top:8px;}
+.report-sample[open] summary::after{content:'بستن ↑';}
+.report-sample[open] summary::before{content:'';}
 </style>
 
-<header class="st-470ff171" x-data="{spec:false}">
-  <h1 class="st-a187dc99" >چارت تولد آنلاین — زایچه</h1>
-  <p class="muted st-899f6ff5" >
-    نقشه‌ی آسمانِ لحظه‌ی تولدت، برای شناخت بهتر خودت، مسیر شغلی، روابط و استعدادهایت — با محاسبه‌ی دقیق نجومی، نه فال.
+<header class="u-470ff171" >
+  <h1 class="u-a187dc99" >آسمان، دقیقاً لحظه‌ای که به دنیا آمدی</h1>
+  <p class="muted u-899f6ff5" >
+    روز و ساعت و شهر تولدت را بگو تا نقشهٔ واقعی آن لحظه ترسیم شود. بعد هر جمله‌ای که دربارهٔ خودت می‌خوانی
+    شاهدش را همراه دارد: کدام سیاره، در کدام خانه. محاسبهٔ نجومی است، نه فال.
   </p>
 
-  <div class="st-9ad9b858" role="tablist" aria-label="سطح توضیحات">
-    <button type="button" class="mode-btn" :class="!spec && 'mode-on'" @click="spec=false">توضیح ساده</button>
-    <button type="button" class="mode-btn" :class="spec && 'mode-on'" @click="spec=true">توضیح تخصصی</button>
+  <!-- MASTER W11: primary CTA above every friction — first, before tabs -->
+  <div class="u-b963591c" style="margin:18px 0;">
+    <a class="btn btn-lg" href="/birth-form"><svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> چارت رایگان من</a>
+    <a class="btn btn-ghost" href="/plans">ببین چه می‌گیری</a>
   </div>
 
-  <div class="glass st-cee30795" >
-    <p class="st-4bbb9420" x-show="!spec" >
-      کافیست تاریخ، ساعت و محل تولدت را وارد کنی تا نقشه‌ی آسمانِ همان لحظه ساخته شود. بعد از آن می‌توانی گزارش شخصیت و استعدادهایت را بخوانی، با هوش مصنوعی درباره‌ی چارتِ خودت گفت‌وگو کنی، سازگاری‌ات با دیگران را بسنجی، ساعت نامشخص تولدت را بازسازی کنی و آسمان امروز را دنبال کنی.
-    </p>
-    <p class="st-0f84fef8" x-show="spec" x-cloak >
-      محاسبه با موتور <b class="st-e39ebac6 link-tap" >Swiss Ephemeris</b> — همان استاندارد اخترشناسان حرفه‌ای. سیستم پیش‌فرض <b class="st-e39ebac6 link-tap" >تروپیکال</b> (برج‌های شمسی رایج) است و سیستم <b class="st-e39ebac6 link-tap" >سایدریال لاهیری</b> (ودیک) هم در فرم قابل انتخاب است. موقعیت سیاره‌ها، ۱۲ خانه، زاویه‌های اصلی و فرعی و گذرهای سیاره‌ای با دقت تا درجه محاسبه می‌شوند. هر بینشِ گزارش با «شاهد نجومی» می‌آید: کدام سیاره، در کدام خانه و با چه زاویه‌ای — قابل ردیابی، نه ادعای کلی.
+  <div class="glass u-cee30795" >
+    <p class="u-4bbb9420" >
+      روزِ تولدت، ساعتت، شهرت — همین سه چیز را بگو تا آسمانِ همان لحظه برایت ترسیم شود.
+      از همان نقشه می‌فهمی چه استعدادهایی داری، در رابطه‌ها چه الگویی تکرار می‌کنی و
+      مسیر شغلی‌ات با کدام انرژی‌هایت جور است. هر جمله‌ای که می‌خوانی با «شاهد نجومی»
+      همراه است: کدام سیاره، در کدام خانه، با کدام زاویه — پس نه فال است، نه حدس؛
+      چیزی است که می‌توانی خودت بررسی کنی.
     </p>
   </div>
 
-  <div class="st-b963591c" >
-    <a class="btn btn-lg" href="/birth-form"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> چارت رایگان من</a>
-    <a class="btn btn-ghost" href="/plans"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-tag"/></svg> مشاهده پلن‌ها</a>
-  </div>
-  <div class="st-1b0f4999" >
-    <a class="st-8491e6e3" href="/gift-guide" >
-      <svg class="st-5304332b" aria-hidden="true"><use href="#icon-book-open"/></svg> دانلود راهنمای رایگان (PDF)
+  <div class="u-1b0f4999" >
+    <a class="u-8491e6e3" href="/gift-guide" >
+      <svg class="u-icon-18" aria-hidden="true"><use href="/static/icons.svg#icon-book-open"/></svg> راهنمای رایگان (PDF)
     </a>
   </div>
 </header>
 
-<section class="glass glow st-d348ff27" >
-  <svg class="st-d1039ed9" aria-hidden="true"><use href="#icon-chat"/></svg>
-  <h2 class="st-bea3ad6b" >گفت‌وگو با هوش مصنوعی درباره‌ی چارتِ خودت</h2>
-  <p class="muted st-d9eba3fc" >
-    از شخصیت، شغل، رابطه یا مسیر زندگی‌ات هر چیزی بپرس — هوش مصنوعی با تکیه بر <b class="st-f18be2a6" >محاسبه‌ی دقیق نجومی چارتِ خودت</b> (موقعیت سیاره‌ها، خانه‌ها و زاویه‌ها) پاسخ می‌دهد، نه با حدس کلی.
-    تاریخچه‌ی گفتگوهایت هم ذخیره می‌شود تا هر وقت خواستی برگردی و ادامه بدهی.
+<section class="glass glow u-d348ff27" >
+  <svg class="u-d1039ed9" aria-hidden="true"><use href="/static/icons.svg#icon-chat"/></svg>
+  <h2 class="u-bea3ad6b" >از چارتت بپرس — گفت‌وگو با هوش مصنوعی</h2>
+  <p class="muted u-d9eba3fc" >
+    هر سؤالی که ذهنت را مشغول کرده بپرس: «چرا در رابطه‌ها این‌طور رفتار می‌کنم؟»،
+    «امسال برای شغلم چه گذرهایی در راه است؟». جواب از روی چارتِ خودت ساخته می‌شود —
+    با همان سیاره‌ها و خانه‌های نقشه‌ات، نه با جمله‌های کلی. گفت‌وگو بخشی از بستهٔ
+    <b class="u-f18be2a6" >«شناخت + همراهی» (۱۴ اعتبار)</b> است؛ ۳۰ روز پرسش‌وپاسخ.
   </p>
-  <div class="st-b0440da7" >
-    <a class="btn btn-lg" href="/birth-form">چارت بساز و گفتگو کن</a>
-    <a class="btn btn-ghost" href="/plans">این ویژگی در پلن طلایی است</a>
+  <div class="u-b0440da7" >
+    <a class="btn btn-lg" href="/birth-form">چارت بساز و شروع کن</a>
+    <a class="btn btn-ghost" href="/plans">دیدن همهٔ محصولها</a>
   </div>
 </section>
 
-<section class="st-2fbbbcd4" >
-  <h2 class="st-f5af4736" >همه‌ی امکانات زایچه</h2>
-  <p class="muted st-04e790e9" >از چارت رایگان تا گزارش کامل و ابزارهای تخصصی — همه در یک‌جا</p>
-  <div class="st-104ff8a2" >
+<section class="u-2fbbbcd4 u-lazy" >
+  <h2 class="u-f5af4736" >چه چیزی اینجا پیدا می‌کنی</h2>
+  <p class="muted u-04e790e9" >از چارت رایگان تا ابزارهای تخصصی — همه روی یک موتور دقیق نجومی</p>
+  <div class="u-104ff8a2" >
 
     <a class="glass feat" href="/birth-form">
-      <svg class="ic" aria-hidden="true"><use href="#icon-compass"/></svg>
-      <b>چارت تولد تعاملی</b>
-      <p>موتور Swiss Ephemeris — همان استاندارد اخترشناسان حرفه‌ای. نقشه‌ی دقیق و قابل چرخش، بدون فال‌بازی.</p>
-      <span class="more">ساخت چارت <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+      <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg>
+      <b>چارت تولد تعاملی + بینش رایگان</b>
+      <p>موتور Swiss Ephemeris، نقشه‌ی قابل چرخش؛ سه‌گانه‌ی اصلی و چند بینش کوتاه از چارت خودت را قبل از هر پرداختی ببین.</p>
+      <span class="more">ساخت چارت <svg class="u-53d332de" aria-hidden="true"><use href="/static/icons.svg#icon-arrow-left"/></svg></span>
     </a>
 
-    <a class="glass feat" href="/plans">
-      <svg class="ic" aria-hidden="true"><use href="#icon-book-open"/></svg>
-      <b>گزارش ۱۳ بخشی با مدرک</b>
-      <p>هر بینش با «شاهد نجومی» می‌آید: کدام سیاره، کدام خانه، کدام زاویه — قابل ردیابی تا درجه.</p>
-      <span class="more">مشاهده پلن‌ها <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+    <a class="glass feat flag" href="/plans">
+      <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#icon-book-open"/></svg>
+      <b>گزارش‌ها با شاهد نجومی</b>
+      <p>از «یک سؤال، یک جواب» تا شناخت کامل ۱۳ حوزه‌ای و گزارش صوتی — هر ادعا با کدام سیاره و کدام خانه، قابل ردیابی.</p>
+      <span class="more">دیدن محصولها <svg class="u-53d332de" aria-hidden="true"><use href="/static/icons.svg#icon-arrow-left"/></svg></span>
     </a>
 
-    <a class="glass feat flag" href="/synastry">
-      <svg class="ic" aria-hidden="true"><use href="#icon-heart"/></svg>
-      <b>سیناستری (سازگاری رابطه)</b>
-      <p>نمره‌ی سازگاری در ۴ حوزه + ۲۵+ ارتباط سیاره‌ای میان چارت تو و طرف مقابل. برای ازدواج، شراکت و دوستی.</p>
-      <span class="more">سنجش سازگاری <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
-    </a>
-
-    <a class="glass feat flag" href="/rectify">
-      <svg class="ic" aria-hidden="true"><use href="#icon-clock"/></svg>
-      <b>بازبینی ساعت تولد</b>
-      <p>ساعت دقیق تولدت را نمی‌دانی؟ از روی رویدادهای کلیدی زندگی، محتمل‌ترین زمان تولد را بازسازی می‌کنیم.</p>
-      <span class="more">یافتن ساعت تولد <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
-    </a>
-
-    <a class="glass feat" href="/sky">
-      <svg class="ic" aria-hidden="true"><use href="#icon-moon"/></svg>
-      <b>آسمان امروز و ترانزیت</b>
-      <p>موقعیت امروز سیاره‌ها، فاز ماه، جنبه‌ها و رجوعی‌ها — رایگان برای همه. + گذرهای ۴ ماه آینده نسبت به چارتت.</p>
-      <span class="more">آسمان امروز <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
-    </a>
-
-    <a class="glass feat" href="/learn">
-      <svg class="ic" aria-hidden="true"><use href="#icon-book"/></svg>
-      <b>آموزش نجوم</b>
-      <p>از صفر: خانه‌ها، سیاره‌ها، زاویه‌ها و خواندن چارت — به زبان ساده و گام‌به‌گام.</p>
-      <span class="more">شروع یادگیری <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
-    </a>
-
-    <a class="glass feat" href="/articles">
-      <svg class="ic" aria-hidden="true"><use href="#icon-book-open"/></svg>
-      <b>مقالات تخصصی</b>
-      <p>بیش از ۵۰ مقاله‌ی دسته‌بندی‌شده درباره‌ی برج‌ها، سیاره‌ها، خانه‌ها، ترانزیت و سازگاری.</p>
-      <span class="more">مطالعه مقالات <svg class="st-53d332de" aria-hidden="true"><use href="#icon-arrow-left"/></svg></span>
+    <a class="glass feat" href="/synastry">
+      <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#icon-heart"/></svg>
+      <b>سازگاری دو نفر: عاطفی یا کاری</b>
+      <p>نمره‌ی رایگان در چند ثانیه؛ تحلیل کامل با تمرکز روی رابطه یا همکاری — برای ازدواج، شراکت و دوستی.</p>
+      <span class="more">سنجش سازگاری <svg class="u-53d332de" aria-hidden="true"><use href="/static/icons.svg#icon-arrow-left"/></svg></span>
     </a>
 
     <div class="glass feat">
-      <svg class="ic" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-      <b>اینسایت‌های رایگان فوری</b>
-      <p>قبل از هر پرداختی، سه‌گانه‌ی اصلی (خورشید، ماه، طالع) و چند بینش کوتاهِ چارتِ خودت را رایگان ببین.</p>
-    </div>
-  </div>
-</section>
-
-<section class="st-c2f8546b" >
-  <h2 class="st-f5af4736" >نمونه‌ی انواع گزارش‌ها</h2>
-  <p class="muted st-04e790e9" >ببین گزارش کامل چه شکلی است — هر بینش بر پایه‌ی موقعیت واقعی سیاره‌های چارت نوشته می‌شود</p>
-  <div class="st-fb424857" >
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">شخصیت</span>
-      <b class="st-b2e36ad1" >خورشید در اسد، ماه در حوت، طالع اسد</b>
-      <p class="muted st-b571ae96" >«خورشید در اسد به تو اعتمادبه‌نفس و میل به درخشیدن می‌دهد؛ اما ماه در حوت، لایه‌ای عمیق از حساسیت و همدلی زیر این ظاهر پرشور دارد. این ترکیب یعنی رهبری گرمی که در عین حال عمیقاً احساس می‌کند…»</p>
-    </div>
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">شغل و موفقیت</span>
-      <b class="st-b2e36ad1" >مریخ در سرطان، خانه یازدهم</b>
-      <p class="muted st-b571ae96" >«مریخ در سرطان و خانه یازدهم، انرژی عمل تو را به سمت اهداف جمعی و حمایت از دیگران می‌برد. مسیر شغلی تو در کارهایی شکوفا می‌شود که هم احساسی و هم اجتماعی‌اند…»</p>
-    </div>
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">عشق و رابطه</span>
-      <b class="st-b2e36ad1" >زهره در ترازو، خانه هفتم</b>
-      <p class="muted st-b571ae96" >«زهره در ترازو و خانه هفتم یعنی در عشق، ظرافت، عدالت و همراهی را می‌جویی. شریکِ ایده‌آل تو کسی است که هم زیبایی را می‌فهمد و هم اهل گفت‌وگوی صادقانه است…»</p>
-    </div>
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">سیناستری</span>
-      <b class="st-b2e36ad1" >ماه تو روی ماه او — سه‌ضلعی</b>
-      <p class="muted st-b571ae96" >«ماه تو روی ماه او سه‌ضلعی می‌سازد؛ یعنی هماهنگی عاطفیِ طبیعی و امن. اما مریخ تو مقابل زحل او، چالشی در شیوه‌ی ابراز خواسته‌هاست که با گفتگو حل می‌شود…»</p>
-    </div>
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">استعداد و خلاقیت</span>
-      <b class="st-b2e36ad1" >عطارد در جوزا، خانه سوم</b>
-      <p class="muted st-b571ae96" >«عطارد در جوزا و خانه سوم یعنی ذهنی تیز، زبانی چابک و استعداد طبیعی در نوشتن، تدریس و ارتباط. خلاقیت تو از کنجکاوی بی‌پایان سرچشمه می‌گیرد…»</p>
-    </div>
-
-    <div class="glass sample st-769fed37" >
-      <span class="tag">چالش و رشد</span>
-      <b class="st-b2e36ad1" >زحل در جدی، خانه دهم</b>
-      <p class="muted st-b571ae96" >«زحل در جدی و خانه دهم، درس صبر و مسئولیت را به مسیر شغلی‌ات گره می‌زند. قله‌ای که دیرتر به آن می‌رسی، اما آنچه می‌سازی ماندگار و واقعی است…»</p>
+      <svg class="ic" aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg>
+      <b>آسمان امروز + یادگیری</b>
+      <p>موقعیت امروز سیاره‌ها و فاز ماه رایگان است؛ اگر عمیق‌تر می‌خواهی، آموزش گام‌به‌گام و بیش از ۵۰ مقاله تخصصی هست.</p>
     </div>
 
   </div>
 </section>
 
-<section class="st-c2f8546b" >
-  <h2 class="st-0bef36c7" >چطور کار می‌کند؟</h2>
-  <div class="st-7bad902b" >
-    <div class="glass st-769fed37" >
-      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-compass"/></svg>
-      <b class="st-7f153e1c" >۱ · چارت رایگان بساز</b>
-      <p class="muted st-a0f8be2d" >فقط تاریخ، ساعت و محل تولد. بدون ثبت‌نام، بدون هزینه.</p>
+<section class="u-c2f8546b u-lazy" >
+  <!-- MASTER W11: hero sample of REAL output — the visitor sees what they get -->
+  <h2 class="u-f5af4736" >نمونه‌ی واقعی خروجی — قبل از خرید</h2>
+  <p class="muted u-04e790e9" >هر بینش با «شاهد نجومی» می‌آید؛ این یک نمونهٔ کوچک است، چارت خودت شخصی‌سازی‌اش می‌کند</p>
+  <div class="glass glow" style="max-width:720px;margin:14px auto;padding:20px;border-radius:18px;">
+    <span class="tag" style="display:inline-block;font-size:.7rem;font-weight:800;color:#F0C75E;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.3);border-radius:999px;padding:2px 12px;margin-bottom:10px;">سؤال کاربر: «آیا شغلم را عوض کنم؟»</span>
+    <p style="line-height:2.1;">«چارتت نشان می‌دهد خورشید در خانهٔ دهم است؛ یعنی مسئلهٔ شغل همیشه یکی از فشارهای اصلی زندگی تو بوده. مشتری روی همین نقطه نشسته و رشد از راه یادگیری برایت آسان‌تر جواب داده. تغییر مسیر بیشتر یک تصمیم لایه‌ای است نه پرش کامل.»</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span class="chip">شاهد: خورشید در جدی، خانهٔ ۱۰</span>
+      <span class="chip">شاهد: مشتری فعال روی MC</span>
     </div>
-    <div class="glass st-769fed37" >
-      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-      <b class="st-7f153e1c" >۲ · اینسایت‌های رایگان ببین</b>
-      <p class="muted st-a0f8be2d" >سه‌گانه‌ی اصلی و چند بینش کوتاه، فوری و رایگان — تا ببینی گزارش چه شکلی است.</p>
-    </div>
-    <div class="glass st-769fed37" >
-      <svg class="st-93d33063" aria-hidden="true"><use href="#icon-book-open"/></svg>
-      <b class="st-7f153e1c" >۳ · گزارش کامل را بگیر</b>
-      <p class="muted st-a0f8be2d" >۲۵+ صفحه با شواهد نجومی قابل ردیابی + PDF و Word. هر وقت خودت خواستی.</p>
-    </div>
-  </div>
-  <div class="st-e67a6afa" >
-    <a class="btn btn-lg" href="/birth-form"><svg class="st-d6af8c32" aria-hidden="true"><use href="#icon-compass"/></svg> شروع رایگان</a>
   </div>
 </section>
 
-<section class="glass glow st-74218447" >
-  <h2 class="st-450d3105" >گزارش کامل — از ۱۴۹ هزار تومان</h2>
-  <p class="muted st-8a77e5a3" >هزینه‌ی یک جلسه مشاوره، با خروجی دائمی و قابل ویرایش (Word) و شواهد نجومی.</p>
-  <div class="st-59314cde" >
-    <span class="chip">۳ حوزه‌ی زندگی</span>
-    <span class="chip">Big Three</span>
-    <span class="chip">گفتگو با AI</span>
-    <span class="chip">سیناستری</span>
-    <span class="chip">ترانزیت ۴ ماهه</span>
-    <span class="chip">فصل فرهنگی-اسلامی</span>
+<section class="u-c2f8546b u-lazy" >
+  <h2 class="u-f5af4736" >یک تکه از گزارش واقعی — بخوان و قضاوت کن</h2>
+  <p class="muted u-04e790e9" >این دقیقاً همان لحن و همان عمقی است که در گزارشت می‌خوانی؛ هر ادعا با شاهد نجومی‌اش.</p>
+  <div class="u-fb424857">
+
+    <details class="glass sample u-769fed37 report-sample" open>
+      <summary><span class="tag">شخصیت · از بخش «هویت»</span><b class="u-b2e36ad1">خورشید در اسد، خانهٔ ۵ — ماه در حوت، خانهٔ ۱۲</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«روی صحنه بودن برای تو انتخاب نیست، نیاز است. خورشید در اسدِ خانهٔ پنجم یعنی انرژی‌ات وقتی جاری می‌شود که دیده شوی — کلاس درس، صحنهٔ کار، حتی یک جمع دوستانه. اما ماه در حوتِ خانهٔ دوازدهم یک راز دیگر دارد: بعد از هر جمعی به تنهایی نیاز داری تا احساس‌هایت ته‌نشین شوند. خیلی‌ها این را «سردشدن» می‌فهمند؛ در واقع دارید باتری‌تان را دوباره پر می‌کنید. اگر این دو را نشناسید، مدام بین دیده‌شدن و گوشه‌گیری می‌پلنگید. اگر بشناسیدشان، اول صحنه می‌گیرید، بعد خلوت — و هیچ‌کدام‌تان را قربانی دیگری نمی‌کنید.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Sun در Leo، خانه ۵</span><span class="chip">شاهد: Moon در Pisces، خانه ۱۲</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">عشق · از بخش «روابط»</span><b class="u-b2e36ad1">زهره در میزان، خانهٔ هفتم — ماه مربعی زحل</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«تو در رابطه دنبال تعادل واقعی هستی، نه نیمه‌کاری. زهره در ترازو و خانهٔ هفتم یعنی برایت مهم است طرف مقابل هم بدهد، هم بگیرد — رابطه‌ای که فقط تو در آن تلاش می‌کنی، زود خسته‌ات می‌کند. اما ماهِ تربیع‌شده با زحل یک الگوی قدیمی ساخته: وقتی رابطه جدی می‌شود، بی‌اختیار محتاط می‌شوی؛ انگار منتظری صدایی بگوید «هنوز نه». این بدبختی نیست — زحل همین‌جا دارد به تو یاد می‌دهد قبل از سپردن قلبت، عقلت را هم وارد مذاکره کنی. کسی که با حوصله این محافظه‌کاری را پاسخ دهد، امن‌ترین آدم زندگی‌ات خواهد بود.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Venus در Libra، خانه ۷</span><span class="chip">شاهد: Moon □ Saturn</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">کار · از بخش «مسیر شغلی»</span><b class="u-b2e36ad1">MC در قوس، مشتری خانهٔ ۱۰ — مریخ در جوزا</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«مسیر شغلی‌ات خط مستقیم نیست و قرار هم نیست باشد. MC در قوس یعنی با هر سالِ زندگی، افق جدیدی برایت باز می‌شود — آموزش، سفر، یا حتی یک کتاب که نگرشت را عوض می‌کند. مشتری در دهُم این را تأیید می‌کند: بزرگ‌ترین رشد حرفه‌ای‌ات همیشه از جایی آمده که یاد گرفتی، نه از جایی که تکرار کردی. مریخ در جوزا ابزارت است: ذهنی سریع که سه پروژه را هم‌زمان جلو می‌برد. تنها خطرش؟ شروعِ زیاد، تمامِ کم. ساختاری که برایت کار می‌کند این است: یکی را «پروژهٔ اصلی» کن، بقیه آزمایشگاه.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: MC در Sagittarius</span><span class="chip">شاهد: Jupiter خانه ۱۰</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="glass sample u-769fed37 report-sample">
+      <summary><span class="tag">سازگاری عاطفی · نمونهٔ دو نفره</span><b class="u-b2e36ad1">ماهِ او روی ماهِ تو — هم‌نشینی</b></summary>
+      <div>
+        <p class="muted u-b571ae96">«وقتی ماهِ شما دو نفر هم‌نشینی می‌سازد، یک زبان مشترک پنهان دارید: هر دو درست همان لحظه غذا می‌خورید که حالتان بد می‌شود، و هر دو سکوت را به بحث ترجیح می‌دهید. این پایهٔ خوبی است. اما به جزئیات نگاه کنید: مریخِ او مقابل زحلِ تو یعنی وقتی او سریع تصمیم می‌گیرد، تو با احتیاطت او را کند حس می‌کنی — و وقتی تو محک می‌زنی، او تو را بی‌انگیزه می‌بیند. نسخهٔ کامل این گزارش می‌گوید این اختلاف را کجای زندگی روزمره دامن می‌زند و قرار ساده‌ای که هر دو را راضی نگه می‌دارد چیست.»</p>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="chip">شاهد: Moon ☌ Moon</span><span class="chip">شاهد: Mars ☍ Saturn</span>
+        </div>
+      </div>
+    </details>
+
   </div>
-  <a class="btn btn-lg st-1b0f4999" href="/plans" >مشاهده همه پلن‌ها و قیمت‌ها</a>
 </section>
 
-<section class="st-47d96f90" >
-  <div class="glass st-8e11ed66" >
-    <b class="st-b2e36ad1" >شفافیت روش</b>
-    <p class="muted st-e081f918" >روش محاسبه، موتور نجومی و مرز روشنِ «نقشه، نه پیش‌گویی» را شفاف نوشته‌ایم. <a class="st-e39ebac6 link-tap" href="/disclaimer" >سلب مسئولیت</a> و <a class="st-e39ebac6 link-tap" href="/privacy" >حریم خصوصی</a>.</p>
+<section class="u-c2f8546b u-lazy" >
+  <h2 class="u-0bef36c7" >سه قدم تا گزارش خودت</h2>
+  <div class="u-7bad902b" >
+    <div class="glass u-769fed37" >
+      <svg class="u-93d33063" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg>
+      <b class="u-7f153e1c" >۱ · چارت رایگان بساز</b>
+      <p class="muted u-a0f8be2d" >تاریخ، ساعت، محل تولد — بدون ثبت‌نام.</p>
+    </div>
+    <div class="glass u-769fed37" >
+      <svg class="u-93d33063" aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg>
+      <b class="u-7f153e1c" >۲ · پاسخ سؤالت را ببین</b>
+      <p class="muted u-a0f8be2d" >پیش‌نمایش رایگان نشان می‌دهد گزارش چه شکلی است.</p>
+    </div>
+    <div class="glass u-769fed37" >
+      <svg class="u-93d33063" aria-hidden="true"><use href="/static/icons.svg#icon-book-open"/></svg>
+      <b class="u-7f153e1c" >۳ · همان را با اعتبار باز کن</b>
+      <p class="muted u-a0f8be2d" >PDF و Word دائمی، با شاهد نجومی قابل ردیابی.</p>
+    </div>
   </div>
-  <div class="glass st-8e11ed66" >
-    <b class="st-b2e36ad1" >حریم خصوصی</b>
-    <p class="muted st-e081f918" >داده‌ی تولد تو فقط برای چارت خودت استفاده می‌شود و هرگز فروخته نمی‌شود. <a class="st-e39ebac6 link-tap" href="/privacy" >بیشتر بدان</a>.</p>
+  <div class="u-e67a6afa" >
+    <a class="btn btn-lg" href="/birth-form"><svg class="u-icon-20" aria-hidden="true"><use href="/static/icons.svg#icon-compass"/></svg> شروع رایگان</a>
+    <a class="btn btn-ghost" href="/plans">دیدن محصولها</a>
   </div>
-  <div class="glass st-8e11ed66" >
-    <b class="st-b2e36ad1" >نمونه را ببین</b>
-    <p class="muted st-e081f918" >هنوز مطمئن نیستی؟ چارت رایگان بساز و اینسایت‌های واقعی چارت خودت را قبل از هر پرداختی ببین.</p>
+</section>
+
+<section class="u-47d96f90 u-lazy" >
+  <div class="glass u-pad-18" >
+    <b class="u-b2e36ad1" >شفافیت روش و حریم خصوصی</b>
+    <p class="muted u-e081f918" >موتور محاسبه و مرز «نقشه، نه پیش‌گویی» شفاف نوشته شده؛ داده‌ی تولدت فقط برای چارت خودت استفاده می‌شود. <a class="u-link-gold link-tap" href="/disclaimer" >سلب مسئولیت</a> · <a class="u-link-gold link-tap" href="/privacy" >حریم خصوصی</a></p>
+  </div>
+  <div class="glass u-pad-18" >
+    <b class="u-b2e36ad1" >هنوز مطمئن نیستی؟</b>
+    <p class="muted u-e081f918" >چارت رایگان بساز و اینسایت‌های واقعی چارت خودت را قبل از هر پرداختی ببین.</p>
   </div>
 </section>
 {% endblock %}

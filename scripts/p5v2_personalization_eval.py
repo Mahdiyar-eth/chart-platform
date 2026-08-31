@@ -5,7 +5,7 @@ so models hallucinated houses and the judge scored genericness. v2 uses the
 real production context builder (app.chat.service._retrieve) exactly like
 phase 2 — comparable numbers. pro-thinking uses phase-4 parsing.
 """
-import asyncio, json, os, re, sys, time
+import asyncio, json, sys, time
 sys.path.insert(0, "/root/chart-platform")
 import httpx
 

@@ -1,10 +1,10 @@
 """A3 — entitlement layer acceptance tests (hermetic, no LLM)."""
 import os, uuid
-os.environ["DATABASE_URL"] = "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test"
+os.environ.setdefault("DATABASE_URL", "postgresql://chart_test:chart_test_pw@127.0.0.1:5432/chart_platform_test")
 os.environ["CREATE_ALL_ON_BOOT"] = "1"
-from sqlmodel import Session, select
+from sqlmodel import Session
 from app.db import engine
-from app.models import User, Entitlement, Order, CreditTransaction
+from app.models import User, Entitlement, Order
 from app.entitlements import has, consume, grant_from_credits, grant_from_order
 from app.credits import get_price
 
@@ -27,7 +27,7 @@ def _ent(user_id, kind="report", chart_id=None, ref_id=None, quantity=1, used=0,
 
 def test_has_returns_matching_kind():
     uid = _mk_user()
-    eid = _ent(uid, kind="report")
+    _eid = _ent(uid, kind="report")
     with Session(engine) as s:
         assert has(s, uid, "report") is not None
         assert has(s, uid, "chat") is None   # different kind

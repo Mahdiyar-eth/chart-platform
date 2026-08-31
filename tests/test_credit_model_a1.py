@@ -21,9 +21,11 @@ def _phone() -> str:
 
 
 def test_credit_prices_seeded_with_10_rows():
+    """MASTER W6/W7/W8: the catalogue grew from 10 to 14 rows (solar 9,
+    relocation 6, synastry_love 8, synastry_work 8)."""
     with Session(engine) as s:
         rows = s.exec(select(CreditPrice)).all()
-    assert len(rows) == 10
+    assert len(rows) == 14
     by_key = {r.action_key: r.credits for r in rows}
     assert by_key["explore_card"] == 1
     assert by_key["report_basic"] == 3

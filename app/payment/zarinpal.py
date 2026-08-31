@@ -20,7 +20,7 @@ SANDBOX_PAY = "https://sandbox.zarinpal.com/pg/StartPay"
 PROD_PAY = "https://payment.zarinpal.com/pg/StartPay"
 
 
-class ZarinpalError(Exception):
+class ZarinpalError(RuntimeError):
     """Structured gateway error.
 
     F-14 (audit v6 P1): carries the gateway error code when the API provides

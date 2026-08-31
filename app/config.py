@@ -1,6 +1,6 @@
 """Env loader — must be imported FIRST (before app.db / any env reads).
 
-Loads /root/chart-platform/.env (secrets: bot tokens, zarinpal, keys path).
+Loads the repo-root .env (secrets: bot tokens, zarinpal, keys path) — path resolved relative to this file, never hardcoded.
 """
 from pathlib import Path
 

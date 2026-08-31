@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}واژه‌نامهٔ نجوم و چارت تولد — زایچه{% endblock %}
+{% block description %}واژه‌نامهٔ سادهٔ اصطلاحات نجوم و چارت تولد: معنی سیارات، خانه‌ها، برج‌ها، جنبه‌ها و زوایا به زبان عامه‌فهم{% endblock %}
+{% block canonical %}{{ request.url.scheme }}://{{ request.url.netloc }}/glossary{% endblock %}
+{% block og_title %}واژه‌نامهٔ نجوم و چارت تولد — زایچه{% endblock %}
+{% block content %}
+<style>
+  .u-glossary-list dt{ margin-top:14px; font-size:.98rem; }
+  .u-glossary-list dd{ margin:2px 0 0; font-size:.86rem; line-height:1.6; }
+  .u-glossary-list dt a{ margin-start:8px; font-size:.78rem; }
+  .u-glossary-list dt span{ font-size:.74rem; margin-start:6px; }
+</style>
+<div class="u-page-narrow" >
+  <nav class="u-sub-sm" >
+    <a class="u-link-accent" href="/learn" >آموزش نجوم</a>
+    <span class="u-8f93fd3a" >←</span><span>واژه‌نامه</span>
+  </nav>
+  <h1 class="u-8b296798" >واژه‌نامهٔ نجوم و چارت تولد</h1>
+  <p class="muted">معنی سادهٔ ۷۸ اصطلاح رایج — هر اصطلاح یک <a href="#anchor">لنگر</a> دارد و بسیاری به صفحهٔ آموزشی مرتبط لینک شده‌اند.</p>
+
+  {% set groups = [
+    ("سیارات", glossary | selectattr("cat", "equalto", "planet") | list),
+    ("خانه‌ها", glossary | selectattr("cat", "equalto", "house") | list),
+    ("برج‌ها", glossary | selectattr("cat", "equalto", "sign") | list),
+    ("جنبه‌ها", glossary | selectattr("cat", "equalto", "aspect") | list),
+    ("زوایا و نقاط", glossary | selectattr("cat", "equalto", "angle") | list),
+    ("اصطلاحات عمومی", glossary | selectattr("cat", "equalto", "general") | list),
+  ] %}
+
+  <nav class="u-935d2fc2" >
+    {% for title, _ in groups %}
+      <a href="#{{ title }}" class="glass u-tile" >{{ title }}</a>
+    {% endfor %}
+  </nav>
+
+  {% for title, items in groups %}
+    {% if items %}
+    <h2 id="{{ title }}" class="u-block-mt" >{{ title }}</h2>
+    <dl class="u-glossary-list" >
+      {% for t in items %}
+      <dt id="{{ t.term }}">
+        <b>{{ t.term }}</b>
+        {% if t.latin and t.latin != "برج" %}<span class="muted u-87f0fcbc" >({{ t.latin }})</span>{% endif %}
+        {% if t.link %}<a href="{{ t.link }}" class="u-4b6becd2" >توضیح بیشتر ←</a>{% endif %}
+      </dt>
+      <dd class="muted" >{{ t.def }}</dd>
+      {% endfor %}
+    </dl>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock content %}
