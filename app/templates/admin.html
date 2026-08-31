@@ -493,11 +493,11 @@ document.addEventListener('DOMContentLoaded', function(){
           <td style="color:{% if w.status == 'paid' %}#2a9d8f{% elif w.status == 'rejected' %}#c0392b{% else %}#f5c518{% endif %};font-weight:700;">{{ {'pending':'در انتظار','paid':'پرداخت شد','rejected':'رد شد'}.get(w.status, w.status) }}</td>
           <td>
             {% if w.status == 'pending' %}
-            <form class="u-b0ad2a16" method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" >
+            <form class="u-b0ad2a16" method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" hx-boost="false">
               <input type="hidden" name="status" value="paid">
               <button class="btn u-ac5c9932" >تأیید واریز</button>
             </form>
-            <form class="u-cccfa456" method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" >
+            <form class="u-cccfa456" method="post" action="/api/admin/withdrawals/{{ w.id }}/resolve" hx-boost="false">
               <input type="hidden" name="status" value="rejected">
               <button class="btn btn-ghost u-f6eefb4c" >رد</button>
             </form>

@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   {% block robots %}{% endblock %}
   <title>{% block title %}چارت تولد آنلاین — زایچه{% endblock %}</title>
   <meta name="description" content="{% block description %}گزارش اختصاصی چارت تولد با محاسبه‌ی دقیق نجومی — شناخت شخصیت، مسیر شغلی، روابط و استعدادها.{% endblock %}">
@@ -64,12 +64,18 @@
   </script>
   {% block head_extra %}{% endblock %}
 </head>
-<body {% block body_attrs %}{% endblock %}>
+<body {% block body_attrs %}{% endblock %}
+      hx-boost="true"
+      hx-target="#app-main"
+      hx-select="#app-main"
+      hx-swap="outerHTML transition:true show:window:top"
+      hx-indicator="#navProgress">
   <!-- W3: sprite is an EXTERNAL cached file (was 35KB inline in every page).
        <use> with external href works in all evergreen browsers. -->
   <svg aria-hidden="true" style="display:none" data-sprite-ext><use href="/static/icons.svg?v={{ asset_version }}#icon-sun"/></svg>
   <div class="aurora"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
   <div class="starfield"></div>
+  <div id="navProgress" class="nav-progress" aria-hidden="true"><i></i></div>
   <div class="wrap">
     <header class="appbar">
       <div class="appbar-inner">
@@ -80,7 +86,7 @@
         <button id="themeToggle" class="hamburger theme-toggle" aria-label="تغییر حالت روشن/تاریک" title="حالت روشن/تاریک" onclick="(function(b){var d=document.documentElement,t=d.getAttribute('data-theme')==='light'?'dark':'light';d.setAttribute('data-theme',t);try{localStorage.setItem('zayche-theme',t==='light'?'light':'dark')}catch(e){}})(this)"><svg aria-hidden="true"><use href="/static/icons.svg#icon-moon"/></svg></button>
         <button class="hamburger" aria-label="باز کردن منو" onclick="toggleDrawer(true)"><svg aria-hidden="true"><use href="/static/icons.svg#icon-menu"/></svg></button>
         <nav class="appnav" aria-label="ناوبری اصلی">
-          {% for it in request.state.nav.top %}<a href="{{ it.url }}" class="nav-item{% if it.primary %} nav-primary{% endif %}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>{% endfor %}
+          {% for it in request.state.nav.top %}<a href="{{ it.url }}" class="nav-item{% if it.primary %} nav-primary{% endif %}" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="/static/icons.svg?v={{ asset_version }}#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>{% endfor %}
         </nav>
         <a href="/account" class="credits-chip u-3ccf1f98" x-data="creditsBall" x-init="loader()" x-show="show" aria-label="اعتبار شما" >
           <svg class="u-2535720e" aria-hidden="true" ><use href="/static/icons.svg#icon-sparkles"/></svg>
@@ -89,7 +95,7 @@
         </a>
       </div>
     </header>
-    {% block content %}{% endblock %}
+    <main id="app-main">{% block content %}{% endblock %}</main>
     <footer class="footer">
       <div class="footer-grid">
         <div class="footer-col">
@@ -139,19 +145,25 @@
     <div class="drawer-group">
       <div class="drawer-group-title">{{ gname }}</div>
       {% for it in items %}
-      <a href="{{ it.url }}" class="drawer-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>
+      <a href="{{ it.url }}" class="drawer-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}>{% if it.icon %}<svg aria-hidden="true"><use href="/static/icons.svg?v={{ asset_version }}#{{ it.icon }}"/></svg>{% endif %}{{ it.label_fa }}</a>
       {% endfor %}
     </div>
     {% endfor %}
+    <div class="drawer-group">
+      <button id="installApp" class="btn btn-ghost drawer-install" hidden type="button">
+        <svg aria-hidden="true"><use href="/static/icons.svg#icon-sparkles"/></svg>
+        نصب زایچه روی گوشی
+      </button>
+    </div>
   </aside>
   <nav class="bottomnav" aria-label="ناوبری پایین">
     {% for it in request.state.nav.bottom %}{% if it.primary %}
     <a href="{{ it.url }}" class="bn-fab" aria-label="{{ it.label_fa }}">
-      <span class="fab-circle"><svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg></span>
+      <span class="fab-circle"><svg aria-hidden="true"><use href="/static/icons.svg?v={{ asset_version }}#{{ it.icon }}"/></svg></span>
       <span>{{ it.label_fa }}</span>
     </a>
     {% else %}
-    <a href="{{ it.url }}" class="bn-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="#{{ it.icon }}"/></svg>{{ it.label_fa }}</a>
+    <a href="{{ it.url }}" class="bn-item" {% if request.url.path == it.url %}aria-current="page"{% endif %}><svg aria-hidden="true"><use href="/static/icons.svg?v={{ asset_version }}#{{ it.icon }}"/></svg>{{ it.label_fa }}</a>
     {% endif %}{% endfor %}
   </nav>
   <div id="degradedBar" class="degraded-bar hidden" role="alert">
@@ -163,13 +175,73 @@
     document.getElementById('drawer').classList.toggle('open', open);
     document.getElementById('drawerBackdrop').classList.toggle('show', open);
   }
-  document.addEventListener('DOMContentLoaded', function(){
+  /* Active-nav highlighting. This used to run once on DOMContentLoaded, which
+     with client-side navigation fires only for the very first page — the
+     highlighted tab would then never move again. Re-run it after every swap. */
+  function markActiveNav(){
     var p = location.pathname;
     document.querySelectorAll('.nav-item, .bn-item, .drawer-item').forEach(function(a){
       var h = a.getAttribute('href');
-      if (p === h || (h !== '/' && p.startsWith(h))) a.classList.add('active');
+      var on = (p === h || (h !== '/' && h && p.startsWith(h)));
+      a.classList.toggle('active', on);
+      if (on) { a.setAttribute('aria-current', 'page'); }
+      else { a.removeAttribute('aria-current'); }
     });
+  }
+  document.addEventListener('DOMContentLoaded', markActiveNav);
+  document.body.addEventListener('htmx:afterSettle', function(){
+    markActiveNav();
+    if (window.Alpine && window.Alpine.initTree) {
+      var m = document.getElementById('app-main');
+      if (m) { try { window.Alpine.initTree(m); } catch(e){} }
+    }
   });
+
+  /* Navigation progress. hx-indicator toggles .htmx-request on #navProgress;
+     aria-busy lets assistive tech announce the pending navigation. */
+  document.body.addEventListener('htmx:beforeRequest', function(){
+    document.getElementById('app-main')?.setAttribute('aria-busy', 'true');
+  });
+  document.body.addEventListener('htmx:afterRequest', function(){
+    document.getElementById('app-main')?.removeAttribute('aria-busy');
+  });
+  /* A boosted navigation that fails must not strand the user on a dead page. */
+  document.body.addEventListener('htmx:responseError', function(e){
+    window.location.href = e.detail.pathInfo?.requestPath || location.href;
+  });
+  document.body.addEventListener('htmx:sendError', function(){
+    showToast('اتصال برقرار نشد — دوباره تلاش کن', false);
+  });
+  /* Drawer must close when a link inside it navigates client-side. */
+  document.body.addEventListener('htmx:beforeRequest', function(){
+    if (typeof toggleDrawer === 'function') toggleDrawer(false);
+  });
+
+  /* PWA install. Nothing captured beforeinstallprompt before, so the site
+     could never be installed from a button — only via the browser's own
+     buried menu. Offer it once the visitor has something worth keeping. */
+  (function(){
+    var deferred = null;
+    var btn = document.getElementById('installApp');
+    function show(){ if (btn && deferred) btn.hidden = false; }
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault(); deferred = e; show();
+    });
+    window.addEventListener('appinstalled', function(){
+      deferred = null; if (btn) btn.hidden = true;
+      try { localStorage.setItem('zayche-installed', '1'); } catch(e){}
+    });
+    if (btn) btn.addEventListener('click', async function(){
+      if (!deferred) return;
+      deferred.prompt();
+      try { await deferred.userChoice; } catch(e){}
+      deferred = null; btn.hidden = true;
+    });
+    /* Installed apps get the standalone class so chrome can adapt. */
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      document.documentElement.classList.add('is-standalone');
+    }
+  })();
   /* audit r4 (C5): degraded-status banner — poll /readiness, show when any dependency down */
   (function(){
     var shown = false;

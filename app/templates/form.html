@@ -12,7 +12,7 @@
   </p>
   <p class="muted">۵ گام ساده — چارت رایگان تو چند ثانیه آماده می‌شود.</p>
 
-  <form id="birthForm" class="glass glow u-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)">
+  <form id="birthForm" class="glass glow u-dfeb10fe" x-data="formState()" @submit.prevent="submit($event)" hx-boost="false">
     <div class="steps">
       <template x-for="(s, i) in 5" :key="i">
         <div class="step-dot" :class="{'on': i < step}"><i></i></div>

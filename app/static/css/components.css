@@ -147,3 +147,78 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* G8b: breadcrumb links are touch targets too */
 .st-5f258b10 a{ display:inline-flex; align-items:center; min-height:40px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   APP SHELL — iOS Human Interface
+   Client-side navigation (hx-boost) + View Transitions. The point is that a
+   page change should feel like a screen change in a native app: the chrome
+   stays put, only the content crossfades, and the user is never shown a
+   white flash or a repainted tab bar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── page transition ─────────────────────────────────────────────────────── */
+@view-transition { navigation: auto; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: cubic-bezier(.32, .72, 0, 1); /* iOS ease */
+}
+/* Outgoing screen recedes, incoming screen rises — the iOS push feel, but
+   subtle enough to survive being seen fifty times a session. */
+::view-transition-old(root) { animation-name: vt-out; }
+::view-transition-new(root) { animation-name: vt-in; }
+
+@keyframes vt-out { to   { opacity: 0; transform: translateY(-6px) scale(.995); } }
+@keyframes vt-in  { from { opacity: 0; transform: translateY(8px); } }
+
+/* The chrome must not participate in the transition — that is what separates
+   an app from a website. */
+.appbar, .bottomnav, .drawer, .nav-progress { view-transition-name: none; }
+
+/* ── navigation progress ─────────────────────────────────────────────────── */
+.nav-progress {
+  position: fixed; inset-inline: 0; top: 0; height: 2px;
+  z-index: 1200; pointer-events: none;
+  opacity: 0; transition: opacity var(--dur-fast) ease;
+}
+.nav-progress > i {
+  display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--gold), var(--gold-deep));
+  box-shadow: 0 0 8px rgba(245, 197, 24, .6);
+}
+/* htmx toggles .htmx-request on the hx-indicator target for the whole request */
+.nav-progress.htmx-request { opacity: 1; }
+.nav-progress.htmx-request > i { animation: nav-load 1.4s cubic-bezier(.2,.8,.2,1) forwards; }
+
+/* Deliberately never reaches 100%: the bar is honest about not knowing how
+   long the server will take, and completion is the page actually arriving. */
+@keyframes nav-load {
+  0%   { width: 0; }
+  40%  { width: 62%; }
+  100% { width: 88%; }
+}
+
+/* ── installed (standalone) mode ─────────────────────────────────────────── */
+@media (display-mode: standalone) {
+  /* No browser URL bar, so the app bar is the top edge and owns the status
+     area. Pad it by the notch inset or the title collides with the clock. */
+  .appbar { padding-top: env(safe-area-inset-top, 0px); }
+  /* Links out to the marketing footer are noise inside an installed app. */
+  .footer-grid { display: none; }
+}
+.is-standalone .appbar { padding-top: env(safe-area-inset-top, 0px); }
+
+/* Install button stays hidden until beforeinstallprompt actually fires —
+   offering an install that cannot happen is worse than not offering one. */
+#installApp[hidden] { display: none !important; }
+
+/* ── reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+  .nav-progress.htmx-request > i { animation: none; width: 88%; }
+}
+
+.drawer-install { width: 100%; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+.drawer-install svg { width: 18px; height: 18px; }

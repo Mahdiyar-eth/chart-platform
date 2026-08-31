@@ -7,14 +7,14 @@
 
     <div class="u-a4ecc208" x-data="login()" x-cloak >
       <template x-if="!sent">
-        <form @submit.prevent="send()">
+        <form @submit.prevent="send()" hx-boost="false">
           <label>شماره موبایل</label>
           <input class="input u-6be0d8ba" type="tel" x-model="phone" inputmode="numeric" placeholder="09xxxxxxxxx" dir="ltr" >
           <button class="btn u-6dae102d" type="submit" :disabled="busy" x-text="busy ? 'در حال ارسال…' : 'ارسال کد'"></button>
         </form>
       </template>
       <template x-if="sent">
-        <form @submit.prevent="verify()">
+        <form @submit.prevent="verify()" hx-boost="false">
           <label>کد تأیید</label>
           <input class="input u-a04b6b13" type="tel" x-model="code" inputmode="numeric" placeholder="00000" dir="ltr" >
           <p class="muted u-5e5f5be4" x-show="devCode">کد تست (dev): <b class="u-gold" x-text="devCode" ></b></p>

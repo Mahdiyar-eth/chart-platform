@@ -87,7 +87,7 @@
         <div class="u-e0cf0e75" >⚠️</div>
         <h3 class="u-761d3add" >حذف کامل حساب</h3>
         <p class="muted u-22bf9de2" >همه داده‌های تو (چارت‌ها، گزارش‌ها، سفارش‌ها) <strong>برای همیشه</strong> حذف می‌شود و قابل بازگشت نیست. ادامه می‌دهی؟</p>
-        <form class="u-d6f2af6e" method="post" action="/account/delete" >
+        <form class="u-d6f2af6e" method="post" action="/account/delete" hx-boost="false">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button type="submit" class="btn u-f9c4962a" >بله، حذف کن</button>
           <button type="button" @click="open = false" class="btn btn-ghost u-0466783d" >انصراف</button>

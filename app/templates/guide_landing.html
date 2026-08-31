@@ -6,7 +6,7 @@
 
   <div class="glass guide-card" x-data="{contact:'', sent:false, err:'', url:''}">
     <template x-if="!sent">
-      <form @submit.prevent="async () => {
+      <form @submit.prevent="async () = hx-boost="false"> {
         err='';
         try{
           const fd = new FormData(); fd.append('contact', contact); fd.append('source', 'guide');

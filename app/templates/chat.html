@@ -31,7 +31,7 @@
   @keyframes blink{50%{opacity:0;}}
   </style>
 
-  <form class="u-ab6fd1c0" @submit.prevent="send()" x-show="!locked" >
+  <form class="u-ab6fd1c0" @submit.prevent="send()" x-show="!locked" hx-boost="false">
     <input class="input u-97445a8d" x-model="q" placeholder="مثلاً: چه مسیر شغلی برای من بهتر است؟" required maxlength="500"
            :disabled="busy || remaining <= 0" >
     <button class="btn btn-lg u-0d768e62" :disabled="busy || remaining <= 0" >ارسال</button>
