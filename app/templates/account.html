@@ -50,7 +50,7 @@
       <div class="u-279b1349" >
         <div>
           <b>گزارش #{{ r.id[:8] }}</b>
-          <span class="muted u-498344f5" >{{ r.status }}</span>
+          <span class="muted u-498344f5" >{{ {'queued':'در صف','running':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, 'در حال بررسی') }}</span>
         </div>
         {% if r.status == 'done' %}
         <a class="btn u-9a3cf707" href="/api/reports/{{ r.id }}/pdf">دانلود PDF</a>

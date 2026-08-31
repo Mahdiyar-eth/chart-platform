@@ -11,7 +11,7 @@
         <div class="muted">{{ r.created_at.strftime('%Y-%m-%d') }}</div>
       </div>
       <div class="flex items-center gap-2">
-        <span class="chip">{{ {'queued':'در صف','processing':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, r.status) }}</span>
+        <span class="chip">{{ {'queued':'در صف','running':'در حال تولید','done':'آماده','degraded':'آماده (ناقص)','failed':'ناموفق'}.get(r.status, 'در حال بررسی') }}</span>
         {% if r.status in ('done','degraded') %}
         <a class="btn" href="/chart/{{ r.chart_id }}">مشاهده در چارت</a>
         {% endif %}

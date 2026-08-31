@@ -772,7 +772,10 @@ def api_create_report(chart_id: str, request: Request,
         .order_by(Report.created_at.desc())
     ).first()
     if existing and not regenerate:
-        if existing.status in ("queued", "processing"):
+        # "running" is what worker.py actually writes; the old "processing"
+        # matched nothing, so a retry mid-generation fell through and queued
+        # a second full 13-section LLM job.
+        if existing.status in ("queued", "running"):
             return {"report_id": existing.id, "status": existing.status,
                     "queued": True, "plan_key": existing.plan_key, "existing": True}
         if existing.status in ("done", "degraded"):
