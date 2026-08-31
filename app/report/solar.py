@@ -109,23 +109,16 @@ def solar_return_for(natal_chart: dict, current_lat: float,
         guess = datetime(y, now_local.month, min(now_local.day, 28),
                          12, 0, tzinfo=tz).astimezone(ZoneInfo("UTC"))
         candidates.append(guess.replace(tzinfo=None))
-    best = None
-    for cand in candidates:
-        sr = find_solar_return(sun_lon, cand, current_lat, current_lon,
-                               tz_name, zodiac)
-        if best is None or sr.moment_utc < best.moment_utc:
-            if best is None or True:
-                pass
-            best = sr
-        # pick the most recent SR that is not in the future beyond a small margin
-    # choose the latest SR ≤ now+1d (the active solar year), else earliest
+    # Each find_solar_return is ~88 swe.calc_ut calls plus a full compute_chart.
+    # There used to be a first pass over the same candidates building a `best`
+    # that was never read again (it even carried an `if best is None or True:
+    # pass`), so every call did the work twice — and a paid page view calls
+    # this function twice, for the teaser and the content. Compute once.
     now_naive = now_local.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
     sr_active = None
-    # recompute both years properly and select
-    results = []
-    for cand in candidates:
-        results.append(find_solar_return(sun_lon, cand, current_lat,
-                                         current_lon, tz_name, zodiac))
+    results = [find_solar_return(sun_lon, cand, current_lat, current_lon,
+                                 tz_name, zodiac)
+               for cand in candidates]
     past = [r for r in results if r.moment_utc.replace(tzinfo=None) <= now_naive]
     if past:
         sr_active = max(past, key=lambda r: r.moment_utc)

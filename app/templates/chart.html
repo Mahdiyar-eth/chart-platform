@@ -85,7 +85,20 @@
 
   <!-- free preview (MASTER W2): answer to YOUR question + 3 patterns + next transit -->
   <section class="glass u-2e500338" >
-    <h2>پاسخ چارت به سؤال تو</h2>
+    <!-- the heading used to promise an answer even when no question was
+         asked, over content that answers nothing -->
+    <h2 x-text="preview.personal_question ? 'پاسخ چارت به سؤال تو' : 'نگاه اول به چارت تو'">نگاه اول به چارت تو</h2>
+    <template x-if="previewLoading">
+      <div class="u-mt-2" aria-live="polite" aria-busy="true">
+        <div class="skeleton sk-line"></div>
+        <div class="skeleton sk-line" style="width:82%"></div>
+        <div class="skeleton sk-line" style="width:64%"></div>
+        <p class="muted u-text-2xs">در حال خواندن چارت تو…</p>
+      </div>
+    </template>
+    <template x-if="previewErr">
+      <p class="muted u-mt-2">خواندن تحلیل اولیه طول کشید — چارت و نمودارهایت پایین‌تر کامل در دسترس‌اند. صفحه را تازه کن تا دوباره تلاش شود.</p>
+    </template>
     {% if big_three.get('Moon') %}
     <ul class="u-95982eda" >
       <li class="u-4dce153e" >
@@ -225,7 +238,7 @@
 function reportState(){
   return {
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
-    repTotal: 13, elapsed: 0, _tick: null,
+    repTotal: 13, elapsed: 0, _tick: null, previewLoading: false, previewErr: false,
     preview: { patterns: [], llm_patterns: [], focus_areas: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
@@ -259,20 +272,35 @@ function reportState(){
     async init(){
       if(this.checked) return;
       this.checked = true;
-      try{
-        const p = await fetch('/api/charts/{{ chart.id }}/preview?t={{ access_token }}');
-        const pd = await p.json();
-        this.insights = (pd.insights || []).slice(0, 5);
-        this.preview = {
-          patterns: pd.patterns || [],
-          llm_patterns: pd.llm_patterns || [],  // R12/P1-4: LLM patterns get their own block
-          focus_areas: pd.focus_areas || [],
-          question_answer: pd.question_answer || '',
-          personal_question: pd.personal_question || '',
-          next_transit: pd.next_transit || null,
-          element_summary: pd.element_summary || null,
-        };
-      }catch(_e){}
+      // The preview can include an LLM call. It used to be awaited with no
+      // feedback of any kind AND ahead of the report status, so a slow preview
+      // also delayed the report progress UI from ever appearing. Run both at
+      // once and show a skeleton while the preview is in flight.
+      this.previewLoading = true;
+      const previewJob = (async () => {
+        const ac = new AbortController();
+        const kill = setTimeout(() => ac.abort(), 45000);
+        try{
+          const p = await fetch('/api/charts/{{ chart.id }}/preview?t={{ access_token }}',
+                                {signal: ac.signal});
+          const pd = await p.json();
+          this.insights = (pd.insights || []).slice(0, 5);
+          this.preview = {
+            patterns: pd.patterns || [],
+            llm_patterns: pd.llm_patterns || [],  // R12/P1-4: LLM patterns get their own block
+            focus_areas: pd.focus_areas || [],
+            question_answer: pd.question_answer || '',
+            personal_question: pd.personal_question || '',
+            next_transit: pd.next_transit || null,
+            element_summary: pd.element_summary || null,
+          };
+        }catch(_e){
+          this.previewErr = true;
+        }finally{
+          clearTimeout(kill);
+          this.previewLoading = false;
+        }
+      })();
       const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
       const d = await r.json();
       // carry the id in every state: the audio button needs it, and it was

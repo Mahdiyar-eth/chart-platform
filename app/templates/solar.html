@@ -53,12 +53,22 @@
       </div>
     </div>
   </template>
-  <div x-show="!loaded" class="skeleton sk-line" aria-hidden="true"></div>
+  <template x-if="!loaded && !err">
+    <div aria-live="polite" aria-busy="true">
+      <div class="skeleton sk-line"></div>
+      <div class="skeleton sk-line" style="width:78%"></div>
+      <p class="muted u-text-2xs">در حال محاسبهٔ چارت سالیانه…</p>
+    </div>
+  </template>
+  <!-- err was assigned here and rendered nowhere: any failure left the user
+       on a skeleton that would never resolve -->
+  <p class="muted u-note" x-show="err" x-text="err" x-cloak></p>
   {% else %}
   <div class="glass glow u-56ef63c4">
     <h2>چارت سالیانه را باز کن — ۹ اعتبار</h2>
     <p class="muted u-note-gold">تم اصلی سال · خانهٔ برجسته · ۵ گذر کلیدی با تاریخ · پرسش فصلی · روایت کامل</p>
-    <button class="btn btn-lg btn-accent" @click="buy()">باز کردن با ۹ اعتبار</button>
+    <button class="btn btn-lg btn-accent" @click="buy()" :disabled="busy"
+            x-text="busy ? 'در حال باز کردن…' : 'باز کردن با ۹ اعتبار'">باز کردن با ۹ اعتبار</button>
     <p class="muted u-note">تنها محصولی که هر سال دوباره معنا پیدا می‌کند — سالِ بعد، چارتِ سالِ بعد.</p>
   </div>
   {% endif %}
@@ -68,7 +78,7 @@
 function solarApp() {
   return {
     teaser: { moment_utc: '', precision_arcmin: null },
-    sec: null, loaded: false, err: '',
+    sec: null, loaded: false, err: '', busy: false,
     init() {
       fetch('/api/solar/{{ chart.id }}/teaser?t={{ access_token }}')
         .then(r => r.ok ? r.json() : null)
@@ -87,18 +97,25 @@ function solarApp() {
         .catch(() => { this.err = 'ارتباط با سرور برقرار نشد'; });
     },
     buy() {
+      if (this.busy) return;
+      this.busy = true;
       window.track && window.track('checkout_started', { plan: 'solar_return' });
       const fd = new FormData();
       fd.append('chart_id', '{{ chart.id }}');
+      // `status` has to be carried through: the next handler destructures the
+      // response away, so reading r.status there was a ReferenceError that
+      // .catch() swallowed — a user short on credits was told the server was
+      // unreachable instead of being sent to /credits.
       fetch('/api/solar/purchase', { method: 'POST', body: fd })
-        .then(r => r.json().then(d => ({ ok: r.ok, d })))
-        .then(({ ok, d }) => {
+        .then(r => r.json().then(d => ({ ok: r.ok, d, status: r.status })))
+        .then(({ ok, d, status }) => {
           if (ok && d.ok) location.reload();
           else if (d.login_required) location.href = '/account/login?next=/solar/{{ chart.id }}';
-          else if (r.status === 402) location.href = '/credits';
+          else if (status === 402) location.href = '/credits';
           else showToast(d.message || 'خطا؛ دوباره تلاش کن', false);
         })
-        .catch(() => showToast('ارتباط با سرور برقرار نشد', false));
+        .catch(() => showToast('ارتباط با سرور برقرار نشد', false))
+        .finally(() => { this.busy = false; });
     },
   };
 }

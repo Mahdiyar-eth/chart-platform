@@ -79,7 +79,7 @@
 function relocApp() {
   return {
     cities: [{ name: '', lat: '', lon: '' }],
-    result: null, busy: false, err: '',
+    result: null, busy: false, buying: false, err: '',
     addCity() { if (this.cities.length < 3) this.cities.push({ name: '', lat: '', lon: '' }); },
     _payload() {
       const cs = this.cities
@@ -98,6 +98,8 @@ function relocApp() {
         .finally(() => { self.busy = false; });
     },
     buy() {
+      if (this.buying) return;
+      this.buying = true;
       const fd = new FormData();
       fd.append('chart_id', '{{ chart.id }}');
       fetch('/api/relocation/purchase', { method: 'POST', body: fd })
@@ -108,7 +110,8 @@ function relocApp() {
           else if (status === 402) location.href = '/credits';
           else showToast(d.message || 'خطا؛ دوباره تلاش کن', false);
         })
-        .catch(() => showToast('ارتباط با سرور برقرار نشد', false));
+        .catch(() => showToast('ارتباط با سرور برقرار نشد', false))
+        .finally(() => { this.buying = false; });
     },
   };
 }
