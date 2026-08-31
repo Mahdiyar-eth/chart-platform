@@ -185,8 +185,14 @@
     <div class="u-d6f2af6e" x-cloak>
       <template x-if="repStatus === 'queued' || repStatus === 'running'">
         <div class="report-progress" role="status" aria-live="polite">
-          <p class="muted" style="margin:0 0 8px;">در حال نوشتن گزارش — بخش <b x-text="Math.max(repSections,1)"></b> از ۱۳ آماده شد</p>
-          <div class="rp-track"><div class="rp-fill" :style="'width:' + Math.min(96, Math.round(100 * Math.max(repSections,1) / 13)) + '%'"></div></div>
+          <p class="muted" style="margin:0 0 8px;">
+            در حال نوشتن گزارش — بخش <b x-text="repSections"></b> از <b x-text="repTotal"></b> آماده شد
+            <span class="u-text-2xs" x-show="elapsed > 20" x-text="'· ' + fmtElapsed()"></span>
+          </p>
+          <div class="rp-track" role="progressbar" :aria-valuenow="repSections"
+               aria-valuemin="0" :aria-valuemax="repTotal">
+            <div class="rp-fill" :style="'width:' + pct() + '%'"></div>
+          </div>
           <p class="muted" style="margin:8px 0 0; font-size:.78rem;">می‌توانی صفحه را ببندی — گزارش در حساب کاربری‌ات ذخیره می‌شود.</p>
         </div>
       </template>
@@ -219,6 +225,7 @@
 function reportState(){
   return {
     repStatus: '', pdfUrl: '', repId: '', checked: false, insights: [], repSections: 0,
+    repTotal: 13, elapsed: 0, _tick: null,
     preview: { patterns: [], llm_patterns: [], focus_areas: [], question_answer: '', personal_question: '', next_transit: null, element_summary: null },
     audioStatus: '', audioUrl: '', audioTimer: null,
     async requestAudio(){
@@ -268,8 +275,30 @@ function reportState(){
       }catch(_e){}
       const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
       const d = await r.json();
-      if(d.status === 'queued' || d.status === 'running'){ this.repStatus = d.status; this.repSections = d.sections_count || 0; this._poll(); }
+      // carry the id in every state: the audio button needs it, and it was
+      // only ever set inside genReport(), so it was inert on a normal visit
+      if(d.report_id) this.repId = d.report_id;
+      this._adopt(d);
+      if(d.status === 'queued' || d.status === 'running'){ this.repStatus = d.status; this._poll(); }
       else if(d.status === 'done' || d.status === 'degraded'){ this.repStatus = d.status; this.pdfUrl = d.pdf_url; window.umami?.track('report_created'); }
+      // a report that is already failed rendered nothing at all before, so the
+      // retry button never mounted and the user had no way forward
+      else if(d.status === 'failed'){ this.repStatus = 'failed'; }
+    },
+    _adopt(d){
+      if(typeof d.sections_done === 'number') this.repSections = Math.max(this.repSections, d.sections_done);
+      else if(typeof d.sections_count === 'number') this.repSections = Math.max(this.repSections, d.sections_count);
+      if(d.sections_total) this.repTotal = d.sections_total;
+    },
+    pct(){
+      // never claim 100% before the file exists — the last few percent are the
+      // PDF render and upload, which the section counter knows nothing about
+      if(!this.repTotal) return 6;
+      return Math.max(6, Math.min(96, Math.round(100 * this.repSections / this.repTotal)));
+    },
+    fmtElapsed(){
+      const m = Math.floor(this.elapsed / 60), s = this.elapsed % 60;
+      return m ? (m + ' دقیقه و ' + s + ' ثانیه') : (s + ' ثانیه');
     },
     async genReport(e){
       window.track && window.track('report_started');
@@ -285,16 +314,23 @@ function reportState(){
       else { this.repStatus = 'failed'; btn.disabled = false; btn.style.opacity = 1; }
     },
     async _poll(){
-      // UI: a poll with no end is how "هیچ اتفاقی نیفتاد" happens — if the
-      // worker dies the user waits forever with no message. Give up at 4min.
-      const deadline = Date.now() + 240000;
+      // A poll with no end is how "هیچ اتفاقی نیفتاد" happens. But the old 4
+      // minute deadline was far shorter than the worker's own job_timeout of
+      // 30 minutes, so users were told the report had stalled while it was
+      // generating perfectly well — and the retry that offered them used to
+      // start a second billable job. Allow the worker its full run.
+      const deadline = Date.now() + 1800000;
+      const t0 = Date.now();
+      clearInterval(this._tick);
+      this._tick = setInterval(() => { this.elapsed = Math.floor((Date.now() - t0) / 1000); }, 1000);
       while(this.repStatus === 'queued' || this.repStatus === 'running'){
         if(Date.now() > deadline){ this.repStatus = 'stalled'; break; }
         await new Promise(r => setTimeout(r, 6000));
         const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}');
         const d = await r.json();
         this.repStatus = d.status;
-        if(typeof d.sections_count === 'number') this.repSections = Math.max(this.repSections, d.sections_count);
+        if(d.report_id) this.repId = d.report_id;
+        this._adopt(d);
         if(d.pdf_url) this.pdfUrl = d.pdf_url;
         if(d.status === 'failed' || d.status === 'done' || d.status === 'degraded'){
           window.umami?.track('report_created');
@@ -302,6 +338,7 @@ function reportState(){
           if(btn){ btn.disabled = false; btn.style.opacity = 1; }
         }
       }
+      clearInterval(this._tick);
     }
   }
 }

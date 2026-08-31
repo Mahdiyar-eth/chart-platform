@@ -935,7 +935,12 @@ def api_report_status(chart_id: str, request: Request, session: Session = Depend
         "status": rep.status,
         "error": rep.error,
         "metrics": rep.metrics,
-        "sections_count": len(rep.sections or {}),
+        # Live progress. rep.sections is only written when generation ends, so
+        # during a run the count comes from the worker's incremental counter.
+        "sections_count": len(rep.sections or {}) or (rep.metrics or {}).get("sections_done", 0),
+        "sections_done": len(rep.sections or {}) or (rep.metrics or {}).get("sections_done", 0),
+        # the client used to hardcode 13, which is wrong for every basic plan
+        "sections_total": (rep.metrics or {}).get("sections_total", 0),
         "pdf_url": f"/api/reports/{rep.id}/pdf" if rep.status in ("done", "degraded") else None,
     }
 

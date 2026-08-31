@@ -13,6 +13,7 @@ from pathlib import Path
 
 from arq.connections import RedisSettings
 from arq.cron import cron
+from sqlalchemy import text
 from sqlmodel import Session
 
 import app.config  # noqa: F401 — load .env FIRST
@@ -67,6 +68,35 @@ def budget_fallback_sections(chart_json: dict, plan_key: str) -> dict[str, dict]
     return {d: fallback_section(d, ctx) for d, (_, ctx) in prompts.items()}
 
 
+def _publish_progress(report_id: str | None, total: int) -> None:
+    """Bump this report's completed-section count by one, live.
+
+    The progress bar on the chart page was a placebo: rep.sections was written
+    exactly once, after asyncio.gather() over every section had returned, so
+    sections_count stayed 0 for the entire multi-minute run and the bar sat at
+    ~8% before jumping to done.
+
+    Incremented by the database rather than read-modify-written in Python:
+    SECTION_CONC sections finish concurrently and Python-side arithmetic would
+    lose counts. Never raises — progress reporting must not break generation.
+    """
+    if not report_id:
+        return
+    try:
+        with Session(db_engine) as _s:
+            _s.execute(text("""
+                UPDATE reports SET metrics = jsonb_set(
+                    jsonb_set(COALESCE(metrics, '{}'::jsonb),
+                              '{sections_total}', to_jsonb(CAST(:total AS int)), true),
+                    '{sections_done}',
+                    to_jsonb(COALESCE(CAST(metrics->>'sections_done' AS int), 0) + 1), true)
+                WHERE id = :id
+            """), {"id": report_id, "total": int(total)})
+            _s.commit()
+    except Exception:  # noqa: BLE001 — never break a report over a progress tick
+        pass
+
+
 async def generate_sections_async(chart: dict, max_tokens: int = 8192,
                                    report_id: str | None = None, plan_key: str = "full",
                                    focus_areas: list[str] | None = None,
@@ -88,6 +118,7 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
     for key, content in get_overrides().items():
         if key in prompts:
             prompts[key] = (content, prompts[key][1])
+    _total_sections = len(prompts)
     sections: dict[str, dict] = {}
     fallback_domains: list[str] = []
     metrics = {"calls": 0, "retries": 0, "total_tokens": 0, "cost_usd": 0.0,
@@ -212,6 +243,8 @@ async def generate_sections_async(chart: dict, max_tokens: int = 8192,
             if not ok:
                 fallback_domains.append(domain)
                 sections[domain] = fallback_section(domain, ctx_info)
+            # this section is settled either way — the user is waiting, tell them
+            _publish_progress(report_id, _total_sections)
 
 
     await asyncio.gather(*(_gen_one(d, p, c) for d, (p, c) in prompts.items()))
@@ -362,7 +395,8 @@ async def generate_report(ctx: dict, report_id: str) -> None:
                 router=None,
                 user_id=(profile.user_id if profile else None))
             rep.sections = sections
-            rep.metrics = {**metrics, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S")}
+            rep.metrics = {**metrics, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                           "sections_done": len(sections), "sections_total": len(sections)}
 
             # render PDF
             chart_json = chart.chart_json
