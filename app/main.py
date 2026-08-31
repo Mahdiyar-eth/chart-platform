@@ -756,8 +756,8 @@ def api_create_report(chart_id: str, request: Request,
         from app.models import CreditTransaction as _CT
         _tx = session.get(_CT, ent.source_ref)
         if _tx is not None:
-            _credit_plan = {"report_basic": "basic", "report_full": "full",
-                            "report_gold": "gold"}.get(_tx.reason or "")
+            from app.payment.orders import REPORT_TIER_BY_ACTION
+            _credit_plan = REPORT_TIER_BY_ACTION.get(_tx.reason or "")
     # audit r4 A7: report generation is IDEMPOTENT — repeated clicks must not
     # enqueue multiple LLM jobs. queued/processing → return existing;
     # done/degraded → return existing unless ?regenerate=1; failed → re-queue.
@@ -1095,12 +1095,68 @@ def api_purchase(payload: "PurchasePayload", request: Request,
         return JSONResponse(status_code=400, content={
             "error": "chart_id_required",
             "message": "برای این خرید، شناسهٔ چارت الزامی است"})
+    # ...and the chart has to be real and theirs. Without this, credits could be
+    # spent against a chart id that does not exist (minting a dead entitlement
+    # and taking the money) or against someone else's chart.
+    if payload.chart_id:
+        _chart = session.get(Chart, payload.chart_id)
+        if not _chart:
+            return JSONResponse(status_code=404, content={
+                "error": "chart_not_found",
+                "message": "چارت پیدا نشد"})
+        if not _owns_chart(_chart, session, request):
+            return JSONResponse(status_code=403, content={
+                "error": "not_authorized",
+                "message": "این چارت متعلق به تو نیست"})
     ent = ent_grant_credits(
         session, user.id, payload.action_key,
         idempotency_key=f"purchase:{user.id}:{payload.action_key}:{payload.chart_id or 'none'}",
         chart_id=payload.chart_id,
     )
-    return {"ok": True, "entitlement_id": ent.id, "remaining": balance(session, user.id)}
+
+    # Buying a report has to produce a report.
+    #
+    # POST /api/charts/{id}/report has exactly one caller — genReport() in
+    # chart.html — and that button only exists inside the `failed` and
+    # `stalled` templates, states unreachable until a report already exists.
+    # Auto-creation lived solely on the legacy Zarinpal order path, which
+    # /plans stopped using when purchases moved here. So a customer bought a
+    # report, the credits were deducted, an entitlement was created, and
+    # nothing was ever generated or even offered.
+    from app.payment.orders import DEEP_REPORT_ACTIONS, REPORT_TIER_BY_ACTION
+    report_id = None
+    if payload.action_key in DEEP_REPORT_ACTIONS and payload.chart_id:
+        existing = session.exec(
+            select(Report).where(Report.chart_id == payload.chart_id)
+            .order_by(Report.created_at.desc())
+        ).first()
+        if existing and existing.status in ("queued", "running", "done", "degraded"):
+            report_id = existing.id       # idempotent re-purchase
+        else:
+            rep = Report(chart_id=payload.chart_id, status="queued",
+                         plan_key=REPORT_TIER_BY_ACTION.get(payload.action_key, "full"))
+            session.add(rep)
+            session.flush()
+            # bind the entitlement to this report so one purchase cannot
+            # unlock a second one (same rule as the report endpoint's Z5 path)
+            if ent is not None and not ent.ref_id:
+                ent.ref_id = rep.id
+                session.add(ent)
+            session.commit()
+            report_id = rep.id
+            # enqueue AFTER the commit — the worker must see a committed row
+            if not _enqueue_report(rep.id):
+                rep.status = "failed"
+                rep.error = "queue unavailable at purchase time — از ادمین بازتولید کنید"
+                session.add(rep)
+                session.commit()
+
+    out = {"ok": True, "entitlement_id": ent.id, "remaining": balance(session, user.id)}
+    if report_id:
+        # the UI needs somewhere to send the buyer other than /account
+        out["report_id"] = report_id
+        out["next"] = f"/chart/{payload.chart_id}"
+    return out
 
 
 @app.get("/api/credits/me")

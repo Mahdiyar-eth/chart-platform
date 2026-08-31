@@ -16,7 +16,7 @@ from sqlmodel import Session, select
 from app.auth import USER_COOKIE, _user_cookie_value
 from app.db import engine
 from app.main import app
-from app.models import Entitlement, User
+from app.models import BirthProfile, Chart, Entitlement, User
 
 
 def _mk_user(n):
@@ -25,6 +25,27 @@ def _mk_user(n):
         s.add(u)
         s.commit()
         return u.id
+
+
+def _mk_chart(uid):
+    """A real chart owned by this user.
+
+    This used to pass the literal "CHX". /api/purchase never checked that the
+    chart existed, so credits could be spent against a chart id that was not
+    real — the entitlement was minted, the money was taken, and nothing could
+    ever be delivered against it. The endpoint validates now, so the fixture
+    has to be a real chart; the assertion below is unchanged.
+    """
+    with Session(engine) as s:
+        prof = BirthProfile(user_id=uid, raw_year=1373, raw_month=6, raw_day=1,
+                            hour=6, minute=10, lat=35.6889, lon=51.3897,
+                            city_fa="تهران")
+        s.add(prof)
+        s.commit()
+        ch = Chart(profile_id=prof.id, chart_json={}, access_token=uuid.uuid4().hex)
+        s.add(ch)
+        s.commit()
+        return ch.id
 
 
 def _cookie(uid):
@@ -55,8 +76,9 @@ def test_plans_page_wires_api_purchase_not_only_orders():
 def test_buy_credit_product_reaches_entitlement():
     """End-to-end from a credit product action_key → /api/purchase → Entitlement row."""
     uid = _mk_user(50)
+    cid = _mk_chart(uid)
     c = TestClient(app)
-    r = c.post("/api/purchase", json={"action_key": "report_basic", "chart_id": "CHX"},
+    r = c.post("/api/purchase", json={"action_key": "report_basic", "chart_id": cid},
                cookies=_cookie(uid))
     assert r.status_code == 200, r.text
     assert r.json().get("ok") is True

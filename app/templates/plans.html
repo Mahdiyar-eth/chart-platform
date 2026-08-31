@@ -263,8 +263,19 @@ function purchase() {
           body: JSON.stringify({action_key: actionKey, chart_id: chartId})
         });
         const j = await r.json().catch(() => ({}));
-        if (r.ok && j.ok) { showToast('باز شد! در حال بارگذاری…', true); location.href = '/account'; }
-        else if (j.login_required) { location.href = '/account/login?next=/plans'; }
+        if (r.ok && j.ok) {
+          showToast('باز شد! در حال بارگذاری…', true);
+          // Go to the thing that was just bought. Sending every buyer to
+          // /account meant a report purchase ended on a page with no report,
+          // no link to one, and no way to start one.
+          location.href = j.next || (chartId ? '/chart/' + chartId : '/account');
+        }
+        else if (j.login_required) {
+          // the chart id was dropped from `next`, so returning to /plans
+          // without ?chart= bounced the user straight back to /birth-form
+          const back = '/plans' + (chartId ? '?chart=' + encodeURIComponent(chartId) : '');
+          location.href = '/account/login?next=' + encodeURIComponent(back);
+        }
         else if (r.status === 402) { showToast('اعتبار کافی نیست — از پک اعتبار بخر', false); location.href = '/credits'; }
         else { showToast(j.message || 'خطا؛ دوباره تلاش کن', false); this.busy = false; }
       } catch (e) { showToast('ارتباط با سرور برقرار نشد', false); this.busy = false; }
