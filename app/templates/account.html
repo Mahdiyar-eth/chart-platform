@@ -145,6 +145,13 @@
     <a class="btn btn-ghost u-516bc368" href="/plans" >مشاهده پلن‌ها</a>
     <a class="btn btn-ghost u-516bc368" href="/birth-form" >چارت جدید</a>
   </div>
+</div>
+
+<script>
+/* G10 (§90) — dashboard search over profiles/reports/orders */
+function dashSearch() {
+  return {
+    q: '',
     items: {{ search_items|tojson }},
     init() {},
     norm(s) { return (s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک'); },
