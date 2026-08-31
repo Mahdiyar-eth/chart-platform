@@ -2104,7 +2104,20 @@ async def api_chat_stream(
     /api/chat; quota is claimed ONCE up front and released if the stream dies
     before any token. History is persisted on completion."""
     from fastapi.responses import StreamingResponse
+
+    # G11 (§108): this is the endpoint the UI actually posts to, so the ops
+    # kill switch has to be here or it halts nothing.
+    from app.feature_flags import flag
+    if not flag("chat", "on"):
+        raise HTTPException(503, "گفت‌وگو با چارت موقتاً غیرفعال است؛ بعداً تلاش کن [ZAY-AI-002]")
+
     chart, order, acct, profile, report = _chat_guarded_context(request, chart_id, session)
+
+    # X6/R7: a chat-pack entitlement is consumed per successful answer. Grab the
+    # id now — the request session is gone by the time the generator finishes.
+    _ent = getattr(request.state, "chat_ent", None)
+    _ent_id = _ent.id if _ent is not None else None
+    _daily_limit = _chat_daily_limit(order)
 
     async def event_stream():
         from app.chat.service import chat_stream
@@ -2150,8 +2163,38 @@ async def api_chat_stream(
                             s2.commit()
                     except Exception:  # noqa: BLE001 — history must never break the stream
                         pass
+
+                    # X6/R7: consume one unit of the chat pack. Runs in its own
+                    # session and never breaks the answer the user already has.
+                    pack = None
+                    if _ent_id:
+                        try:
+                            with Session(engine) as s3:
+                                from app.entitlements import consume as ent_consume
+                                from app.models import Entitlement
+                                ent = s3.get(Entitlement, _ent_id)
+                                if ent is not None:
+                                    if ent_consume(s3, ent, 1):
+                                        s3.commit()  # R26: consume() does not commit
+                                        pack = {"used": ent.used, "limit": ent.quantity,
+                                                "remaining": max(0, ent.quantity - ent.used)}
+                                    else:
+                                        pack = {"exhausted": True}
+                        except Exception:  # noqa: BLE001
+                            pass
+
+                    # the UI's remaining-questions counter only ever moved on
+                    # the error path before, so it never decremented
+                    shown = chat_quota_used(acct)
+                    if shown is None:
+                        shown = 0
+                    q = {"type": "quota", "used": shown, "limit": _daily_limit,
+                         "remaining": max(0, _daily_limit - shown)}
+                    if pack:
+                        q["pack"] = pack
+                    yield f"event: quota\ndata: {json.dumps(q, ensure_ascii=False)}\n\n"
                 if ev["type"] == "error":
-                    yield f"event: quota\ndata: {json.dumps({'used': 0, 'limit': 0, 'remaining': 0}, ensure_ascii=False)}\n\n"
+                    yield f"event: quota\ndata: {json.dumps({'type': 'quota', 'used': 0, 'limit': 0, 'remaining': 0}, ensure_ascii=False)}\n\n"
         except Exception as e:  # noqa: BLE001 — never leave the client hanging
             yield f"event: error\ndata: {json.dumps({'type': 'error', 'message': str(e)[:200]}, ensure_ascii=False)}\n\n"
         finally:
