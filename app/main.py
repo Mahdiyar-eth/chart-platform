@@ -591,6 +591,28 @@ def _compute_and_save_chart(
 CHART_ACCESS_COOKIE = "chart_access"  # {chart_id: token} — anonymous ownership (P0-1)
 
 
+def _safe_next(raw: str | None, default: str = "/account") -> str:
+    """Sanitise a ``next=`` destination down to an internal absolute path.
+
+    Every login caller passes one (chart.html, plans.html, solar.html,
+    relocation.html) and the page used to ignore all of them. Honouring it
+    naively would be an open redirect, so: absolute path only, no
+    protocol-relative ``//host``, no backslash tricks, no control characters.
+    """
+    if not raw:
+        return default
+    n = str(raw).strip()
+    if not n or any(ch in n for ch in "\r\n\t\x00"):
+        return default
+    if not n.startswith("/"):
+        return default          # relative, scheme-ful, or bare host
+    if n.startswith("//"):
+        return default          # protocol-relative -> external
+    if "\\" in n:
+        return default          # /\evil.example is treated as // by browsers
+    return n
+
+
 def _chart_tokens(request: Request) -> dict:
     raw = request.cookies.get(CHART_ACCESS_COOKIE, "")
     try:
@@ -2660,7 +2682,10 @@ async def server_error_fa(request: Request, exc):
 
 @app.get("/account/login", response_class=HTMLResponse)
 def account_login_page(request: Request):
-    return templates.TemplateResponse(request, "account_login.html", {"title": "ورود"})
+    return templates.TemplateResponse(request, "account_login.html", {
+        "title": "ورود",
+        "next_url": _safe_next(request.query_params.get("next")),
+    })
 
 
 # ── B3 — transit forecast: deterministic data (free) + paid analysis ─────────────

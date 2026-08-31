@@ -33,10 +33,24 @@ def auth_otp_verify(request: Request, phone: str = Form(...), code: str = Form(.
     u = verify_otp(phone, code)
     if not u:
         raise HTTPException(401, "[ZAY-AUTH-001] کد نادرست یا منقضی شده")
-    if cap:
+
+    # A5 (F-37) — link the guest's charts to the account they just created.
+    #
+    # `cap` as a form field never actually arrives: chart_access is httpOnly,
+    # so the login page cannot read it and has never posted one. Read the
+    # cookie here instead, and claim every chart in it (a guest may well have
+    # built more than one before signing up). The explicit `cap` parameter is
+    # still honoured for callers that do have a bare token.
+    from app.main import _chart_tokens
+    caps = list(_chart_tokens(request).values())
+    if cap and cap not in caps:
+        caps.append(cap)
+    if caps:
         session = next(get_session())
         try:
-            claim_anonymous_charts(session, u, cap)  # A5 (F-37): link guest chart
+            for token in caps:
+                # never steals: claim_anonymous_charts skips owned profiles
+                claim_anonymous_charts(session, u, token)
         finally:
             session.close()
     return set_user_cookie(request, u.id)

@@ -31,6 +31,9 @@
 function login(){
   return {
     phone: '', code: '', sent: false, busy: false, error: '', devCode: '',
+    // server-sanitised destination (open-redirect safe); every caller that
+    // sends ?next= is finally honoured instead of being dropped on /account
+    next: {{ (next_url or '/account')|tojson }},
     async send(){
       this.busy = true; this.error = '';
       window.track && window.track('signup_started');
@@ -50,7 +53,7 @@ function login(){
         const r = await fetch('/api/auth/otp/verify', {method:'POST', body: fd});
         if(!r.ok){ const d = await r.json().catch(()=>({})); throw new Error(d.detail || 'کد نادرست'); }
         window.track && window.track('signup_completed');
-        window.location.href = '/account';
+        window.location.href = this.next;
       }catch(e){ this.error = e.message; }
       finally{ this.busy = false; }
     }
