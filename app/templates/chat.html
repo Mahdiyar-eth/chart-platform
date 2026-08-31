@@ -15,7 +15,11 @@
 
   <div class="u-ac1e817f" x-show="!locked && msgs.length === 0" >
     {% for p in presets %}
-    <button class="btn btn-ghost u-02c44d08" type="button" x-on:click="q = {{ p|tojson }}; send()">{{ p }}</button>
+    <!-- single-quoted on purpose: |tojson emits double quotes, which inside a
+         double-quoted attribute terminate it early. The handler became
+         literally `q = ` and every suggested question threw on click. Jinja's
+         tojson escapes ' (and < > &), so single quotes are safe here. -->
+    <button class="btn btn-ghost u-02c44d08" type="button" x-on:click='q = {{ p|tojson }}; send()'>{{ p }}</button>
     {% endfor %}
   </div>
 

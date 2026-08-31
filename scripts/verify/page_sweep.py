@@ -23,12 +23,37 @@ with sync_playwright() as p:
         except Exception as e:
             status = f"EXC {str(e)[:40]}"
         fails = [f for f in fails if "favicon" not in f]
-        ok = status == 200 and not errs and not fails
+        # Alpine compiles every x-/:/@ attribute with new AsyncFunction. A
+        # malformed one throws only when Alpine reaches it, so it can sit in a
+        # page for months: chat.html had seven suggested-question buttons whose
+        # handler had been truncated to "q = " by a |tojson quote collision.
+        try:
+            alpine = pg.evaluate("""() => {
+              const AF = Object.getPrototypeOf(async function(){}).constructor;
+              const out = [];
+              document.querySelectorAll('*').forEach(el => {
+                for (const a of el.attributes) {
+                  const n = a.name;
+                  if (!(n.startsWith('x-') || n.startsWith(':') || n.startsWith('@'))) continue;
+                  if (['x-cloak','x-ref','x-transition','x-teleport'].includes(n)) continue;
+                  if (n.startsWith('x-transition')) continue;
+                  try { new AF(['__s'], 'with(__s){ (' + a.value + ') }'); }
+                  catch (e) {
+                    try { new AF(['__s'], 'with(__s){ ' + a.value + ' }'); }
+                    catch (e2) { out.push(n + '=' + JSON.stringify(a.value).slice(0,50)); }
+                  }
+                }
+              });
+              return [...new Set(out)]; }""")
+        except Exception:
+            alpine = []
+        ok = status == 200 and not errs and not fails and not alpine
         if not ok: bad += 1
         mark = "ok  " if ok else "BAD "
         extra = ""
         if errs: extra += f" errors={errs[:1]}"
         if fails: extra += f" failed={fails[:2]}"
+        if alpine: extra += f" bad-alpine={alpine[:2]}"
         print(f"  {mark}{status} {path}{extra}")
         pg.remove_listener("pageerror", pg.listeners("pageerror")[-1]) if False else None
     b.close()
