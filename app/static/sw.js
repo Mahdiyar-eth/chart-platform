@@ -1,10 +1,26 @@
 /* Chart-platform service worker (PWA — plan §13.9): offline app shell + last chart.
    Cache-first for static assets, network-first for pages. */
-const CACHE = "chart-v2";
-const SHELL = ["/", "/birth-form", "/learn", "/static/tailwind_inline.css", "/static/sw-register.js"];
+const CACHE = "chart-v3";
+const SHELL = ["/", "/birth-form", "/learn", "/static/sw-register.js"];
 
+/* Routes that render per-user content. A shared Cache Storage bucket is shared
+   across everyone who uses the device, so caching these would hand one user's
+   account, chart or chat to the next. Network-only, never stored. */
+const PRIVATE = ["/account", "/settings", "/dashboard", "/admin", "/chat",
+                 "/chats", "/reports", "/credits", "/orders"];
+
+const isPrivate = (path) =>
+  PRIVATE.some((p) => path === p || path.startsWith(p + "/"));
+
+/* Precache each entry independently: cache.addAll() is atomic, so a single
+   404 rejects install and the worker never activates at all. One missing
+   asset should cost that asset, not the entire PWA. */
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.allSettled(SHELL.map((u) => c.add(u))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
@@ -30,11 +46,14 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  // pages: network-first with offline fallback to cache
+  // Private pages: network-only. Never stored, never served from cache.
+  if (isPrivate(url.pathname)) return;
+
+  // Public pages: network-first with offline fallback to cache
   e.respondWith(
     fetch(e.request)
       .then((r) => {
-        if (r.ok) {
+        if (r.ok && r.type === "basic") {
           const copy = r.clone();
           caches.open(CACHE).then((c) => c.put(e.request, copy));
         }
@@ -53,8 +72,8 @@ self.addEventListener("push", (e) => {
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/static/app-icon.png",
-      badge: "/static/app-icon.png",
+      icon: "/static/icon-192.png",
+      badge: "/static/icon-192.png",
       data: { url: data.url },
       dir: "rtl",
       lang: "fa",
