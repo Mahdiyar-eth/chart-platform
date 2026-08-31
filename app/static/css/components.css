@@ -222,3 +222,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 .drawer-install { width: 100%; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-2); }
 .drawer-install svg { width: 18px; height: 18px; }
+
+/* relocation destination picker */
+.reloc-city { margin-top: var(--sp-2); }
+.reloc-city-row { display: flex; gap: var(--sp-2); align-items: center; }

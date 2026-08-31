@@ -13,12 +13,32 @@
   <!-- city picker -->
   <div class="glass u-panel">
     <div class="u-strong-sm">🏙️ شهرهای مقصد (تا ۳ شهر)</div>
+    <!-- This used to ask the user to type latitude and longitude by hand,
+         after they had already spent 6 credits. /api/cities has covered Iran
+         and the world all along and the birth form has used it since day one;
+         it simply was never wired up here. -->
     <template x-for="(c, i) in cities" :key="'c' + i">
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-        <input class="input" style="flex:2;" x-model="c.name" placeholder="نام شهر (مثلاً تورنتو)">
-        <input class="input" style="flex:1;" x-model="c.lat" placeholder="عرض" dir="ltr" inputmode="decimal">
-        <input class="input" style="flex:1;" x-model="c.lon" placeholder="طول" dir="ltr" inputmode="decimal">
-        <button class="btn-chip" type="button" @click="cities.splice(i,1)" x-show="cities.length > 1">✕</button>
+      <div class="reloc-city">
+        <div class="reloc-city-row">
+          <input class="input" style="flex:1;" x-model="c.q"
+                 @input.debounce.250ms="searchCity(i)"
+                 :placeholder="'شهر مقصد ' + (i+1) + ' (مثلاً تورنتو)'"
+                 :aria-label="'شهر مقصد ' + (i+1)">
+          <button class="btn-chip" type="button" @click="cities.splice(i,1)"
+                  x-show="cities.length > 1" aria-label="حذف شهر">✕</button>
+        </div>
+        <div class="u-mt-2b" x-show="c.hits && c.hits.length">
+          <template x-for="h in c.hits" :key="h.city_fa + h.province_fa">
+            <button type="button" class="chip" @click="pickCity(i, h)">
+              <span x-text="h.city_fa"></span>
+              <span class="muted u-text-2xs" x-text="' (' + h.province_fa + ')'"></span>
+            </button>
+          </template>
+        </div>
+        <p class="muted u-text-2xs" x-show="c.name" x-cloak>
+          ✓ <span x-text="c.name"></span>
+          <span x-text="'· ' + Number(c.lat).toFixed(2) + ', ' + Number(c.lon).toFixed(2)"></span>
+        </p>
       </div>
     </template>
     <button class="btn-chip" type="button" @click="addCity()" x-show="cities.length < 3">+ شهر</button>
@@ -78,14 +98,31 @@
 <script>
 function relocApp() {
   return {
-    cities: [{ name: '', lat: '', lon: '' }],
+    cities: [{ q: '', name: '', lat: '', lon: '', hits: [] }],
     result: null, busy: false, buying: false, err: '',
-    addCity() { if (this.cities.length < 3) this.cities.push({ name: '', lat: '', lon: '' }); },
+    addCity() {
+      if (this.cities.length < 3) this.cities.push({ q: '', name: '', lat: '', lon: '', hits: [] });
+    },
+    async searchCity(i) {
+      const c = this.cities[i];
+      if (!c.q || !c.q.trim()) { c.hits = []; return; }
+      try {
+        const r = await fetch('/api/cities?q=' + encodeURIComponent(c.q.trim()));
+        c.hits = (await r.json()).results || [];
+      } catch (e) { c.hits = []; }
+    },
+    pickCity(i, h) {
+      // coordinates come from the dataset, so they are always valid — the user
+      // never has to know what a latitude is
+      const c = this.cities[i];
+      c.name = h.city_fa; c.lat = h.lat; c.lon = h.lon; c.q = h.city_fa; c.hits = [];
+      this.err = '';
+    },
     _payload() {
       const cs = this.cities
-        .filter(c => c.lat && c.lon)
+        .filter(c => c.lat !== '' && c.lon !== '')
         .map(c => ({ name_fa: c.name || 'مقصد', lat: parseFloat(c.lat), lon: parseFloat(c.lon) }));
-      if (!cs.length) { this.err = 'حداقل یک شهر با عرض/طول معتبر لازم است'; return null; }
+      if (!cs.length) { this.err = 'حداقل یک شهر را از فهرست پیشنهادها انتخاب کن'; return null; }
       return JSON.stringify(cs);
     },
     compare() {

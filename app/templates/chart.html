@@ -68,7 +68,7 @@
   <section class="glass onboard" aria-label="قدم‌های بعدی">
     <h2 class="onboard-title">چارتت آماده است — قدم بعدی؟</h2>
     <div class="onboard-grid">
-      <a class="onb-card" href="/explore">
+      <a class="onb-card" href="/explore?chart={{ chart.id }}">
         <b>۱. کاوش رایگان</b>
         <span>اولین تحلیل عمیق چارتت — رایگان</span>
       </a>
@@ -79,6 +79,17 @@
       <a class="onb-card" href="/chat/{{ chart.id }}">
         <b>۳. گفت‌وگو با چارت</b>
         <span>هر سؤالی دربارهٔ خودت بپرس</span>
+      </a>
+      <!-- UI-AUDIT: the two newest products had no route in from the chart
+           page at all — only a footer CTA far below the fold and a drawer
+           entry under "یادگیری". A user who just made a chart never saw them. -->
+      <a class="onb-card" href="/solar/{{ chart.id }}">
+        <b>۴. چارت سالیانه</b>
+        <span>تم امسالِ تو، از تولد تا تولد</span>
+      </a>
+      <a class="onb-card" href="/relocation/{{ chart.id }}">
+        <b>۵. چارت مهاجرت</b>
+        <span>هر شهر، چه بخشی از تو را روشن می‌کند</span>
       </a>
     </div>
   </section>
@@ -163,7 +174,7 @@
     <h2>گذرهای سال آینده</h2>
     <p class="muted u-28c79581" >وقتی سیارات کند (مشتری تا پلوتو) به سیارات شخصی چارتت می‌رسند — ماه به ماه.</p>
     <div class="u-c23902c1" >
-      <img class="u-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg" alt="نقشه گذرهای سالانه" loading="lazy" >
+      <img class="u-5918cf51" src="/api/charts/{{ chart.id }}/transit-year.svg?t={{ access_token }}" alt="نقشه گذرهای سالانه" loading="lazy" >
     </div>
   </section>
 
@@ -331,7 +342,7 @@ function reportState(){
     async genReport(e){
       window.track && window.track('report_started');
       const btn = e.currentTarget; btn.disabled = true; btn.style.opacity = .6;
-      const r = await fetch('/api/charts/{{ chart.id }}/report', {method:'POST'});
+      const r = await fetch('/api/charts/{{ chart.id }}/report?t={{ access_token }}', {method:'POST'});
       const d = await r.json();
       this.repId = d.report_id;
       if(d.queued){ this.repStatus = 'queued'; this._poll(); }
